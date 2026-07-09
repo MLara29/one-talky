@@ -12,10 +12,10 @@ export default function Home() {
   const [resolvedRole, setResolvedRole] = useState(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     if (user.role === "admin") { setChecking(false); return; }
     checkProfile();
-  }, [user]);
+  }, [user?.id]);
 
   const checkProfile = async () => {
     try {
