@@ -92,3 +92,31 @@
     @apply bg-background text-foreground font-body;
   }
 }
+
+/* ── Light theme overrides ─────────────────────────────── */
+.light-theme {
+  --app-bg: #f4f4f8;
+  --app-sidebar-bg: rgba(255,255,255,0.9);
+  --app-header-bg: rgba(255,255,255,0.85);
+  --app-border: rgba(0,0,0,0.07);
+  --app-card-bg: rgba(255,255,255,0.85);
+  --app-text-primary: #1a1a2e;
+  --app-text-secondary: #6b7280;
+  --app-text-muted: #9ca3af;
+  --app-nav-active-bg: rgba(124,58,237,0.1);
+  --app-nav-hover-bg: rgba(0,0,0,0.05);
+}
+
+/* ── Dark theme (default) ──────────────────────────────── */
+.dark-theme, :root:not(.light-theme) {
+  --app-bg: #030309;
+  --app-sidebar-bg: rgba(2,2,15,0.6);
+  --app-header-bg: rgba(2,2,15,0.8);
+  --app-border: rgba(255,255,255,0.05);
+  --app-card-bg: rgba(255,255,255,0.05);
+  --app-text-primary: #ffffff;
+  --app-text-secondary: #6b7280;
+  --app-text-muted: #374151;
+  --app-nav-active-bg: rgba(139,92,246,0.15);
+  --app-nav-hover-bg: rgba(255,255,255,0.05);
+}

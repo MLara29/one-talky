@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { useTheme } from "@/lib/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
   MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home
+  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon
 } from "lucide-react";
 
 const STUDENT_NAV = [
@@ -29,60 +30,81 @@ const ADMIN_NAV = [
   { label: "Users", path: "/admin/users", icon: User },
 ];
 
-const NAV_COLORS = {
-  Search: "text-violet-400",
-  Home: "text-violet-400",
-  BookOpen: "text-indigo-400",
-  BarChart3: "text-emerald-400",
-  DollarSign: "text-amber-400",
-  Calendar: "text-blue-400",
-  Star: "text-amber-400",
-  GraduationCap: "text-violet-400",
-  User: "text-indigo-400",
-};
-
 export default function AppLayout() {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const role = user?.role || "student";
   const nav = role === "admin" ? ADMIN_NAV : role === "tutor" ? TUTOR_NAV : STUDENT_NAV;
+  const isLight = theme === "light";
 
   const handleLogout = () => {
     base44.auth.logout("/");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-[#0f0f1f] to-slate-950">
+    <div
+      className="min-h-screen transition-colors duration-300"
+      style={{ background: isLight ? "linear-gradient(135deg, #f0f0f8, #e8e8f4, #f4f0ff)" : "linear-gradient(135deg, #030309, #0f0f1f, #030309)" }}
+    >
       {/* Top bar */}
-      <header className="fixed top-0 left-0 right-0 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 z-40 h-14">
+      <header
+        className="fixed top-0 left-0 right-0 backdrop-blur-xl z-40 h-14 transition-colors duration-300"
+        style={{ background: "var(--app-header-bg)", borderBottom: "1px solid var(--app-border)" }}
+      >
         <div className="h-full px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button className="lg:hidden p-1 text-gray-400 hover:text-white transition-colors" onClick={() => setMobileOpen(!mobileOpen)}>
+            <button
+              className="lg:hidden p-1 transition-colors"
+              style={{ color: "var(--app-text-secondary)" }}
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <Link to="/dashboard" className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
                 <MessageCircle className="w-4 h-4 text-white" />
               </div>
-              <span className="font-display text-lg font-bold text-white hidden sm:block">Just Speak</span>
+              <span className="font-display text-lg font-bold hidden sm:block" style={{ color: "var(--app-text-primary)" }}>
+                Just Speak
+              </span>
             </Link>
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 capitalize hidden sm:block">
+            <span
+              className="text-xs font-medium px-2.5 py-1 rounded-full capitalize hidden sm:block"
+              style={{
+                background: isLight ? "rgba(124,58,237,0.1)" : "rgba(139,92,246,0.15)",
+                border: "1px solid rgba(124,58,237,0.25)",
+                color: isLight ? "#7c3aed" : "#c4b5fd"
+              }}
+            >
               {role}
             </span>
           </div>
           <div className="flex items-center gap-1">
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg transition-all hover:scale-110"
+              style={{
+                background: isLight ? "rgba(124,58,237,0.1)" : "rgba(255,255,255,0.08)",
+                color: isLight ? "#7c3aed" : "#a78bfa"
+              }}
+              title={isLight ? "Switch to dark mode" : "Switch to light mode"}
+            >
+              {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
             <Link to="/notifications">
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-white/5">
+              <Button variant="ghost" size="icon" style={{ color: "var(--app-text-secondary)" }}>
                 <Bell className="w-4 h-4" />
               </Button>
             </Link>
             <Link to="/profile">
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-white/5">
+              <Button variant="ghost" size="icon" style={{ color: "var(--app-text-secondary)" }}>
                 <User className="w-4 h-4" />
               </Button>
             </Link>
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-400 hover:text-red-400 hover:bg-red-500/10">
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:text-red-400 hover:bg-red-500/10" style={{ color: "var(--app-text-secondary)" }}>
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
@@ -91,29 +113,34 @@ export default function AppLayout() {
 
       <div className="flex pt-14">
         {/* Sidebar - desktop */}
-        <aside className="hidden lg:flex flex-col w-56 fixed top-14 left-0 bottom-0 bg-slate-950/60 backdrop-blur-xl border-r border-white/5 p-4">
+        <aside
+          className="hidden lg:flex flex-col w-56 fixed top-14 left-0 bottom-0 backdrop-blur-xl p-4 transition-colors duration-300"
+          style={{ background: "var(--app-sidebar-bg)", borderRight: "1px solid var(--app-border)" }}
+        >
           <nav className="space-y-1 flex-1">
             {nav.map(item => {
               const active = location.pathname === item.path;
-              const iconName = item.icon.displayName || item.icon.name;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    active
-                      ? "bg-violet-500/15 text-white border border-violet-500/20"
-                      : "text-gray-500 hover:text-gray-200 hover:bg-white/5"
-                  }`}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    background: active ? "var(--app-nav-active-bg)" : "transparent",
+                    color: active ? (isLight ? "#7c3aed" : "#ffffff") : "var(--app-text-secondary)",
+                    border: active ? "1px solid rgba(124,58,237,0.25)" : "1px solid transparent"
+                  }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = "var(--app-nav-hover-bg)"; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
                 >
-                  <item.icon className={`w-4 h-4 ${active ? "text-violet-400" : "text-gray-600"}`} />
+                  <item.icon className="w-4 h-4" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)" }} />
                   {item.label}
                 </Link>
               );
             })}
           </nav>
-          <div className="border-t border-white/5 pt-3">
-            <p className="text-[10px] text-gray-700 text-center">Just Speak v1.0</p>
+          <div className="pt-3" style={{ borderTop: "1px solid var(--app-border)" }}>
+            <p className="text-[10px] text-center" style={{ color: "var(--app-text-muted)" }}>Just Speak v1.0</p>
           </div>
         </aside>
 
@@ -121,7 +148,11 @@ export default function AppLayout() {
         {mobileOpen && (
           <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setMobileOpen(false)}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <aside className="absolute top-14 left-0 bottom-0 w-64 bg-slate-950 border-r border-white/5 p-4" onClick={e => e.stopPropagation()}>
+            <aside
+              className="absolute top-14 left-0 bottom-0 w-64 p-4 transition-colors duration-300"
+              style={{ background: isLight ? "#ffffff" : "#030309", borderRight: "1px solid var(--app-border)" }}
+              onClick={e => e.stopPropagation()}
+            >
               <nav className="space-y-1">
                 {nav.map(item => {
                   const active = location.pathname === item.path;
@@ -130,11 +161,14 @@ export default function AppLayout() {
                       key={item.path}
                       to={item.path}
                       onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        active ? "bg-violet-500/15 text-white border border-violet-500/20" : "text-gray-500 hover:text-gray-200 hover:bg-white/5"
-                      }`}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                      style={{
+                        background: active ? "var(--app-nav-active-bg)" : "transparent",
+                        color: active ? (isLight ? "#7c3aed" : "#ffffff") : "var(--app-text-secondary)",
+                        border: active ? "1px solid rgba(124,58,237,0.25)" : "1px solid transparent"
+                      }}
                     >
-                      <item.icon className={`w-4 h-4 ${active ? "text-violet-400" : "text-gray-600"}`} />
+                      <item.icon className="w-4 h-4" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)" }} />
                       {item.label}
                     </Link>
                   );
@@ -153,14 +187,19 @@ export default function AppLayout() {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-white/5 lg:hidden z-40">
+      <nav
+        className="fixed bottom-0 left-0 right-0 backdrop-blur-xl lg:hidden z-40 transition-colors duration-300"
+        style={{ background: isLight ? "rgba(255,255,255,0.9)" : "rgba(3,3,9,0.9)", borderTop: "1px solid var(--app-border)" }}
+      >
         <div className="flex justify-around py-2">
           {nav.slice(0, 4).map(item => {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path} className="flex flex-col items-center gap-0.5 p-2">
-                <item.icon className={`w-5 h-5 transition-colors ${active ? "text-violet-400" : "text-gray-600"}`} />
-                <span className={`text-[10px] transition-colors ${active ? "text-violet-400 font-semibold" : "text-gray-600"}`}>{item.label}</span>
+                <item.icon className="w-5 h-5 transition-colors" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)" }} />
+                <span className="text-[10px] transition-colors" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)", fontWeight: active ? 600 : 400 }}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
