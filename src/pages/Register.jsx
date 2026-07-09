@@ -1,16 +1,19 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2, BookOpen, GraduationCap } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 
 export default function Register() {
+  const [searchParams] = useSearchParams();
+  const defaultRole = searchParams.get("role") === "tutor" ? "tutor" : "student";
+  const [role, setRole] = useState(defaultRole);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -45,7 +48,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = "/";
+      window.location.href = role === "tutor" ? "/onboarding/tutor" : "/onboarding/student";
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -67,7 +70,8 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+    const dest = role === "tutor" ? "/onboarding/tutor" : "/onboarding/student";
+    base44.auth.loginWithProvider("google", dest);
   };
 
   if (showOtp) {
@@ -138,6 +142,36 @@ export default function Register() {
         </>
       }
     >
+      {/* Role selector */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <button
+          type="button"
+          onClick={() => setRole("student")}
+          className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+            role === "student"
+              ? "border-violet-500 bg-violet-500/10 text-violet-600"
+              : "border-border text-muted-foreground hover:border-violet-300"
+          }`}
+        >
+          <BookOpen className="w-6 h-6" />
+          <span className="text-sm font-semibold">I'm a student</span>
+          <span className="text-xs opacity-70">I want to learn</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setRole("tutor")}
+          className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+            role === "tutor"
+              ? "border-violet-500 bg-violet-500/10 text-violet-600"
+              : "border-border text-muted-foreground hover:border-violet-300"
+          }`}
+        >
+          <GraduationCap className="w-6 h-6" />
+          <span className="text-sm font-semibold">I'm a tutor</span>
+          <span className="text-xs opacity-70">I want to teach</span>
+        </button>
+      </div>
+
       <Button
         variant="outline"
         className="w-full h-12 text-sm font-medium mb-6"

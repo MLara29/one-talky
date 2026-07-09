@@ -346,9 +346,14 @@ export default function Landing() {
               <p className="text-sm text-gray-600 mb-2">Become a tutor</p>
             </div>
             <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Legal</h4>
-              <p className="text-sm text-gray-600 mb-2">Privacy Policy</p>
-              <p className="text-sm text-gray-600 mb-2">Terms of Service</p>
+              <h4 className="text-white font-semibold text-sm mb-4">Tutors</h4>
+              <Link to="/register?role=tutor" className="block text-sm text-violet-400 hover:text-violet-300 transition-colors mb-2 font-medium">
+                Apply as a tutor →
+              </Link>
+              <Link to="/login" className="block text-sm text-gray-600 hover:text-gray-400 transition-colors mb-2">
+                Tutor login
+              </Link>
+              <p className="text-sm text-gray-600 mb-2">Tutor guidelines</p>
             </div>
           </div>
           <div className="border-t border-white/5 pt-8 text-center text-sm text-gray-700">
