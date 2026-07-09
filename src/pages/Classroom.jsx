@@ -54,7 +54,8 @@ export default function Classroom() {
       setLesson(l);
       await joinChannel(l);
     } catch (e) {
-      toast({ title: "Erro ao carregar aula", description: e.message, variant: "destructive" });
+      console.error("Classroom error:", e);
+      toast({ title: "Erro ao carregar aula", description: String(e?.message || e || "Erro desconhecido"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
