@@ -63,5 +63,47 @@
     "tutor_id",
     "student_id",
     "language"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "student"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.student_id": "{{user.id}}"
+        },
+        {
+          "data.tutor_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.student_id": "{{user.id}}"
+        },
+        {
+          "data.tutor_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

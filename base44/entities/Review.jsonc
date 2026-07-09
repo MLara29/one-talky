@@ -37,5 +37,32 @@
     "tutor_id",
     "student_id",
     "rating"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "student"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tutor"
+          }
+        }
+      ]
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

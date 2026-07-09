@@ -110,5 +110,30 @@
     "full_name",
     "native_languages",
     "bio"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "tutor"
+      }
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
