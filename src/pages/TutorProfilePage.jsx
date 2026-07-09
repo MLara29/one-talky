@@ -34,7 +34,7 @@ export default function TutorProfilePage() {
       const studentProfiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
       const sp = studentProfiles[0];
       const lesson = await base44.entities.Lesson.create({
-        tutor_id: tutor.id, student_id: sp?.id || user.id,
+        tutor_id: tutor.user_id, student_id: user.id,
         tutor_name: tutor.full_name, student_name: sp?.full_name || user.full_name,
         language: tutor.native_languages?.[0] || "english",
         status: "in_progress", type: "instant", started_at: new Date().toISOString(),
@@ -51,7 +51,7 @@ export default function TutorProfilePage() {
       const studentProfiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
       const sp = studentProfiles[0];
       await base44.entities.Lesson.create({
-        tutor_id: tutor.id, student_id: sp?.id || user.id,
+        tutor_id: tutor.user_id, student_id: user.id,
         tutor_name: tutor.full_name, student_name: sp?.full_name || user.full_name,
         language: tutor.native_languages?.[0] || "english",
         status: "scheduled", type: "scheduled",
