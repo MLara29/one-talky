@@ -1,29 +1,62 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Clock, DollarSign, Star, Users, AlertCircle } from "lucide-react";
+import { Clock, DollarSign, Star, Users, AlertCircle, X, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function TutorDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [liveAlert, setLiveAlert] = useState(null); // lesson that just went live
+  const prevLessonsRef = useRef([]);
 
   useEffect(() => { loadData(); }, [user]);
+
+  // Poll every 10s to detect new live lessons
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (!user) return;
+      try {
+        const live = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "in_progress" });
+        const sched = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" });
+        const allLessons = [...live, ...sched];
+
+        // Detect newly live lessons not previously in_progress
+        const prevIds = prevLessonsRef.current.filter(l => l.status === "in_progress").map(l => l.id);
+        const newLive = live.find(l => !prevIds.includes(l.id));
+        if (newLive) {
+          setLiveAlert(newLive);
+          toast({
+            title: "📞 Aula ao vivo!",
+            description: `${newLive.student_name} está aguardando você na aula de ${newLive.language}!`,
+          });
+        }
+
+        prevLessonsRef.current = allLessons;
+        setLessons(allLessons);
+      } catch {}
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const loadData = async () => {
     try {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
         setProfile(profiles[0]);
-        const l = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" });
         const live = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "in_progress" });
-        setLessons([...live, ...l]);
-        setLessons(l);
+        const sched = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" });
+        const allLessons = [...live, ...sched];
+        prevLessonsRef.current = allLessons;
+        setLessons(allLessons);
       }
     } catch {} finally { setLoading(false); }
   };
@@ -32,6 +65,16 @@ export default function TutorDashboard() {
     if (!profile) return;
     await base44.entities.TutorProfile.update(profile.id, { is_available_now: !profile.is_available_now });
     setProfile({ ...profile, is_available_now: !profile.is_available_now });
+  };
+
+  const rejectLesson = async (lessonId) => {
+    try {
+      await base44.entities.Lesson.update(lessonId, { status: "cancelled" });
+      setLessons(prev => prev.filter(l => l.id !== lessonId));
+      toast({ title: "Aula rejeitada", description: "A aula foi cancelada." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível cancelar a aula.", variant: "destructive" });
+    }
   };
 
   if (loading) return (
@@ -77,6 +120,31 @@ export default function TutorDashboard() {
 
   return (
     <div>
+      {/* Live alert banner */}
+      {liveAlert && (
+        <div className="mb-6 flex items-center justify-between gap-4 bg-gradient-to-r from-red-500/15 to-rose-500/10 border border-red-500/30 rounded-2xl px-5 py-4 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0">
+              <Bell className="w-5 h-5 text-red-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-white text-sm">📞 {liveAlert.student_name} está aguardando você!</p>
+              <p className="text-xs text-red-300">Aula de {liveAlert.language} ao vivo agora</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to={`/classroom/${liveAlert.id}`}>
+              <Button size="sm" className="bg-gradient-to-r from-red-500 to-rose-600 text-white border-0 shadow-lg shadow-red-500/30">
+                Entrar agora
+              </Button>
+            </Link>
+            <button onClick={() => setLiveAlert(null)} className="text-gray-500 hover:text-white transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">
@@ -117,11 +185,20 @@ export default function TutorDashboard() {
                     {l.language} · {l.status === "in_progress" ? "🔴 Live now" : new Date(l.scheduled_at).toLocaleString()}
                   </p>
                 </div>
-                <Link to={`/classroom/${l.id}`}>
-                  <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-violet-600 to-indigo-600 shadow-violet-500/20"}`}>
-                    {l.status === "in_progress" ? "Join now" : "Join"}
-                  </Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link to={`/classroom/${l.id}`}>
+                    <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-violet-600 to-indigo-600 shadow-violet-500/20"}`}>
+                      {l.status === "in_progress" ? "Join now" : "Join"}
+                    </Button>
+                  </Link>
+                  <button
+                    onClick={() => rejectLesson(l.id)}
+                    className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all hover:scale-105"
+                    title="Rejeitar aula"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

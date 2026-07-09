@@ -47,10 +47,29 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, []);
 
+  const notifyTutor = async (l) => {
+    try {
+      // Only notify if student is joining (not the tutor themselves)
+      if (user?.role !== "tutor") {
+        await base44.entities.Notification.create({
+          user_id: l.tutor_id,
+          title: "📞 Aula ao vivo iniciada!",
+          message: `${l.student_name} está aguardando você na aula de ${l.language}. Entre agora!`,
+          type: "lesson_booked",
+          link: `/classroom/${l.id}`,
+          is_read: false,
+        });
+        // Also update lesson to in_progress
+        await base44.entities.Lesson.update(l.id, { status: "in_progress", started_at: new Date().toISOString() });
+      }
+    } catch {}
+  };
+
   const loadLesson = async () => {
     try {
       const l = await base44.entities.Lesson.get(id);
       setLesson(l);
+      await notifyTutor(l);
       await joinChannel(l);
     } catch (e) {
       console.error("Classroom error:", e);
