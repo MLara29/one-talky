@@ -60,10 +60,11 @@ export default function OnboardingTutor() {
   const handleSubmit = async () => {
     setSaving(true);
     try {
+      const me = await base44.auth.me();
       await base44.auth.updateMe({ role: "tutor", profile_completed: true });
       await base44.entities.TutorProfile.create({
         ...form,
-        user_id: (await base44.auth.me()).id,
+        user_id: me.id,
         status: "pending",
       });
       toast({ title: "Application submitted! 🎉", description: "We'll review your profile and get back to you soon." });
@@ -182,7 +183,7 @@ export default function OnboardingTutor() {
                 </Button>
                 <Button
                   onClick={() => setStep(3)}
-                  disabled={!form.bio || !form.intro_video_url}
+                  disabled={!form.bio}
                   className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
                 >
                   Continue <ChevronRight className="w-4 h-4 ml-1" />
