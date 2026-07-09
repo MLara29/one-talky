@@ -20,7 +20,9 @@ export default function TutorDashboard() {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
         setProfile(profiles[0]);
-        const l = await base44.entities.Lesson.filter({ tutor_id: profiles[0].id, status: "scheduled" });
+        const l = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" });
+        const live = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "in_progress" });
+        setLessons([...live, ...l]);
         setLessons(l);
       }
     } catch {} finally { setLoading(false); }
@@ -111,11 +113,13 @@ export default function TutorDashboard() {
               <div key={l.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
                 <div>
                   <p className="font-medium text-white">{l.student_name}</p>
-                  <p className="text-sm text-gray-500">{l.language} · {new Date(l.scheduled_at).toLocaleString()}</p>
+                  <p className="text-sm text-gray-500">
+                    {l.language} · {l.status === "in_progress" ? "🔴 Live now" : new Date(l.scheduled_at).toLocaleString()}
+                  </p>
                 </div>
                 <Link to={`/classroom/${l.id}`}>
-                  <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:scale-105 transition-transform shadow-lg shadow-violet-500/20">
-                    Join
+                  <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-violet-600 to-indigo-600 shadow-violet-500/20"}`}>
+                    {l.status === "in_progress" ? "Join now" : "Join"}
                   </Button>
                 </Link>
               </div>
