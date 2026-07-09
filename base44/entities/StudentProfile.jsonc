@@ -72,11 +72,7 @@
     "level"
   ],
   "rls": {
-    "create": {
-      "user_condition": {
-        "role": "student"
-      }
-    },
+    "create": null,
     "read": {
       "$or": [
         {
