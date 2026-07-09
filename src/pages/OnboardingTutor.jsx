@@ -54,17 +54,26 @@ export default function OnboardingTutor() {
     }
     setSaving(true);
     try {
-      await base44.entities.TutorProfile.create({
-        ...form,
-        user_id: userId,
+      const profileData = {
+        full_name: form.full_name,
+        country: form.country,
+        nationality: form.nationality,
+        native_languages: form.native_languages,
+        bio: form.bio,
+        interests: form.interests,
+        price_per_minute: Number(form.price_per_minute) || 0.5,
         status: "pending",
-      });
+        user_id: userId,
+      };
+      if (form.intro_video_url) profileData.intro_video_url = form.intro_video_url;
+
+      await base44.entities.TutorProfile.create(profileData);
       await base44.auth.updateMe({ role: "tutor", profile_completed: true });
       toast({ title: "Candidatura enviada! 🎉", description: "Vamos revisar o seu perfil e entraremos em contato em breve." });
       window.location.href = "/";
     } catch (e) {
-      console.error(e);
-      toast({ title: "Erro", description: e?.message || "Algo correu mal. Tente novamente.", variant: "destructive" });
+      console.error("TutorProfile create error:", e);
+      toast({ title: "Erro ao finalizar cadastro", description: String(e?.message || "Tente novamente."), variant: "destructive" });
     } finally {
       setSaving(false);
     }
