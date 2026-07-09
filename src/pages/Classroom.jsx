@@ -9,8 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
-const AGORA_APP_ID = import.meta.env.VITE_AGORA_APP_ID;
-const AGORA_TOKEN = import.meta.env.VITE_AGORA_TOKEN || null;
+const AGORA_APP_ID = import.meta.env.VITE_AGORA_APP_ID || "cb91268f716240d289c3df39c7d69aaa";
 
 export default function Classroom() {
   const { id } = useParams();
