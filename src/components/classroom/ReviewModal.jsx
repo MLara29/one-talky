@@ -19,69 +19,47 @@ export default function ReviewModal({ lesson, userRole, onClose }) {
     setSubmitting(true);
     try {
       await base44.entities.Review.create({
-        lesson_id: lesson.id,
-        tutor_id: lesson.tutor_id,
-        student_id: lesson.student_id,
-        student_name: lesson.student_name || user?.full_name,
-        rating,
-        comment,
-        language: lesson.language,
+        lesson_id: lesson.id, tutor_id: lesson.tutor_id, student_id: lesson.student_id,
+        student_name: lesson.student_name || user?.full_name, rating, comment, language: lesson.language,
       });
-      toast({ title: "Review submitted! ⭐", description: "Thanks for your feedback." });
+      toast({ title: "Review submitted! ⭐" });
       onClose();
-    } catch {
-      toast({ title: "Error", variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
+    } catch { toast({ title: "Error", variant: "destructive" }); } finally { setSubmitting(false); }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md p-8">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md p-8 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display text-xl font-bold text-gray-900">How was your lesson?</h2>
-          <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
+          <h2 className="font-display text-xl font-bold text-white">How was your lesson?</h2>
+          <button onClick={onClose} className="text-gray-600 hover:text-gray-300 transition-colors"><X className="w-5 h-5" /></button>
         </div>
 
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-500 mb-6">
           Rate your session with {userRole === "tutor" ? lesson?.student_name : lesson?.tutor_name}
         </p>
 
-        <div className="flex justify-center gap-2 mb-6">
+        <div className="flex justify-center gap-3 mb-7">
           {[1, 2, 3, 4, 5].map(n => (
-            <button
-              key={n}
-              onMouseEnter={() => setHovered(n)}
-              onMouseLeave={() => setHovered(0)}
-              onClick={() => setRating(n)}
-            >
-              <Star
-                className={`w-10 h-10 transition-colors ${
-                  n <= (hovered || rating)
-                    ? "fill-amber-400 text-amber-400"
-                    : "text-gray-200"
-                }`}
-              />
+            <button key={n} onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(0)} onClick={() => setRating(n)} className="transition-transform hover:scale-110">
+              <Star className={`w-10 h-10 transition-all ${n <= (hovered || rating) ? "fill-amber-400 text-amber-400" : "text-gray-700"}`} />
             </button>
           ))}
         </div>
 
         <Textarea
-          value={comment}
-          onChange={e => setComment(e.target.value)}
+          value={comment} onChange={e => setComment(e.target.value)}
           placeholder="Leave a comment (optional)..."
-          className="mb-6 h-24"
+          className="mb-6 h-24 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
         />
 
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1">Skip</Button>
+          <Button variant="outline" onClick={onClose} className="flex-1 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 bg-transparent">Skip</Button>
           <Button
-            onClick={handleSubmit}
-            disabled={rating === 0 || submitting}
-            className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+            onClick={handleSubmit} disabled={rating === 0 || submitting}
+            className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20"
           >
-            {submitting ? "Submitting..." : "Submit"}
+            {submitting ? "Submitting..." : "Submit review"}
           </Button>
         </div>
       </div>

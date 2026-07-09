@@ -5,54 +5,56 @@ import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
 
 export default function TutorCard({ tutor }) {
   return (
-    <Link to={`/tutor/${tutor.id}`} className="block">
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:shadow-violet-100/50 transition-all group">
+    <Link to={`/tutor/${tutor.id}`} className="block group">
+      <div className="bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 hover:border-violet-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-violet-500/10 hover:-translate-y-1">
         <div className="flex items-start gap-4">
-          <div className="relative">
+          <div className="relative shrink-0">
             <img
-              src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=8b5cf6&color=fff&size=80`}
+              src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=7c3aed&color=fff&size=80`}
               alt={tutor.full_name}
-              className="w-16 h-16 rounded-2xl object-cover"
+              className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10 group-hover:ring-violet-500/30 transition-all"
             />
             {tutor.is_available_now && (
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 border-2 border-white rounded-full flex items-center justify-center">
-                <Circle className="w-2 h-2 fill-white text-white" />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 border-2 border-slate-950 rounded-full">
+                <span className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-60" />
               </div>
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate group-hover:text-violet-600 transition-colors">{tutor.full_name}</h3>
-            <p className="text-sm text-gray-500 flex items-center gap-1">
+            <h3 className="font-display font-bold text-white group-hover:text-violet-300 transition-colors truncate">{tutor.full_name}</h3>
+            <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
               {getCountryFlag(tutor.country)} {tutor.country}
             </p>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="flex items-center gap-1 text-sm text-amber-500 font-medium">
+            <div className="flex items-center gap-3 mt-1.5">
+              <span className="flex items-center gap-1 text-sm text-amber-400 font-semibold">
                 <Star className="w-3.5 h-3.5 fill-amber-400" />
                 {tutor.average_rating?.toFixed(1) || "New"}
               </span>
-              <span className="text-xs text-gray-400">{tutor.total_lessons || 0} lessons</span>
+              <span className="text-xs text-gray-600">{tutor.total_lessons || 0} lessons</span>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm font-bold text-gray-900">${tutor.price_per_minute?.toFixed(2)}</p>
-            <p className="text-xs text-gray-400">/min</p>
+          <div className="text-right shrink-0">
+            <p className="text-sm font-bold text-white">${tutor.price_per_minute?.toFixed(2)}</p>
+            <p className="text-xs text-gray-600">/min</p>
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
+
+        <div className="mt-4 flex flex-wrap gap-1.5">
           {tutor.native_languages?.map(l => (
-            <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-violet-50 text-violet-600 font-medium">
+            <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium">
               {getLanguageLabel(l)}
             </span>
           ))}
           {tutor.interests?.slice(0, 3).map(i => (
-            <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-gray-50 text-gray-500">
+            <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">
               {i}
             </span>
           ))}
         </div>
+
         {tutor.is_available_now && (
-          <div className="mt-3 text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full inline-flex items-center gap-1">
-            <Circle className="w-2 h-2 fill-emerald-500" /> Available now
+          <div className="mt-3 text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Available now
           </div>
         )}
       </div>
