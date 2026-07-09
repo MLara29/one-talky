@@ -9,23 +9,25 @@ import AdminDashboard from "@/pages/AdminDashboard";
 export default function Home() {
   const { user } = useAuth();
   const [checking, setChecking] = useState(true);
-  const [hasProfile, setHasProfile] = useState(false);
+  const [resolvedRole, setResolvedRole] = useState(null);
 
   useEffect(() => {
-    if (!user || user.role === "admin") { setChecking(false); return; }
+    if (!user) return;
+    if (user.role === "admin") { setChecking(false); return; }
     checkProfile();
   }, [user]);
 
   const checkProfile = async () => {
     try {
-      // Check both profile types in parallel to handle role mismatches
       const [tutorProfiles, studentProfiles] = await Promise.all([
         base44.entities.TutorProfile.filter({ user_id: user.id }),
         base44.entities.StudentProfile.filter({ user_id: user.id }),
       ]);
-      setHasProfile(tutorProfiles.length > 0 || studentProfiles.length > 0);
+      if (tutorProfiles.length > 0) setResolvedRole("tutor");
+      else if (studentProfiles.length > 0) setResolvedRole("student");
+      else setResolvedRole(null);
     } catch {
-      setHasProfile(!!user?.profile_completed);
+      setResolvedRole(user?.role === "tutor" ? "tutor" : null);
     } finally {
       setChecking(false);
     }
@@ -39,10 +41,8 @@ export default function Home() {
     </div>
   );
 
-  if (!hasProfile && !user?.profile_completed) {
-    return <Navigate to="/choose-role" replace />;
-  }
+  if (!resolvedRole) return <Navigate to="/choose-role" replace />;
 
-  if (user?.role === "tutor") return <TutorDashboard />;
+  if (resolvedRole === "tutor") return <TutorDashboard />;
   return <StudentDashboard />;
 }
