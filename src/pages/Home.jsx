@@ -18,15 +18,13 @@ export default function Home() {
 
   const checkProfile = async () => {
     try {
-      if (user.role === "tutor") {
-        const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
-        setHasProfile(profiles.length > 0);
-      } else {
-        const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
-        setHasProfile(profiles.length > 0);
-      }
+      // Check both profile types in parallel to handle role mismatches
+      const [tutorProfiles, studentProfiles] = await Promise.all([
+        base44.entities.TutorProfile.filter({ user_id: user.id }),
+        base44.entities.StudentProfile.filter({ user_id: user.id }),
+      ]);
+      setHasProfile(tutorProfiles.length > 0 || studentProfiles.length > 0);
     } catch {
-      // If profile_completed flag is set, trust it
       setHasProfile(!!user?.profile_completed);
     } finally {
       setChecking(false);
