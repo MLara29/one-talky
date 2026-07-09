@@ -3,13 +3,15 @@
   "type": "object",
   "properties": {
     "user_id": {
-      "type": "string",
-      "description": "Reference to User entity"
+      "type": "string"
     },
     "full_name": {
       "type": "string"
     },
     "photo_url": {
+      "type": "string"
+    },
+    "nationality": {
       "type": "string"
     },
     "native_language": {
@@ -60,8 +62,7 @@
     },
     "credits_minutes": {
       "type": "number",
-      "default": 15,
-      "description": "Available minutes"
+      "default": 15
     }
   },
   "required": [
