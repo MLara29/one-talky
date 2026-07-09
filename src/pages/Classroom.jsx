@@ -4,16 +4,19 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Circle, Send, Globe, X } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, Globe, X, User } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
+import AgoraRTC from "agora-rtc-sdk-ng";
+
+const AGORA_APP_ID = import.meta.env.VITE_AGORA_APP_ID || "10bad40239ef45a9a465397a4feecdda";
 
 export default function Classroom() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const videoRef = useRef(null);
+
   const [lesson, setLesson] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cameraOn, setCameraOn] = useState(true);
@@ -24,12 +27,19 @@ export default function Classroom() {
   const [elapsed, setElapsed] = useState(0);
   const [showReview, setShowReview] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const streamRef = useRef(null);
+  const [remoteUser, setRemoteUser] = useState(null);
+  const [joined, setJoined] = useState(false);
+
+  // Agora refs
+  const clientRef = useRef(null);
+  const localAudioTrackRef = useRef(null);
+  const localVideoTrackRef = useRef(null);
+  const localVideoDiv = useRef(null);
+  const remoteVideoDiv = useRef(null);
 
   useEffect(() => {
     loadLesson();
-    startCamera();
-    return () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
+    return () => leaveChannel();
   }, [id]);
 
   useEffect(() => {
@@ -41,22 +51,73 @@ export default function Classroom() {
     try {
       const l = await base44.entities.Lesson.get(id);
       setLesson(l);
-    } catch {} finally { setLoading(false); }
+      await joinChannel(l);
+    } catch (e) {
+      toast({ title: "Erro ao carregar aula", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      streamRef.current = stream;
-      if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch {}
+  const joinChannel = async (l) => {
+    const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+    clientRef.current = client;
+
+    client.on("user-published", async (remoteAgoraUser, mediaType) => {
+      await client.subscribe(remoteAgoraUser, mediaType);
+      if (mediaType === "video") {
+        setRemoteUser(remoteAgoraUser);
+        setTimeout(() => {
+          if (remoteVideoDiv.current) {
+            remoteAgoraUser.videoTrack.play(remoteVideoDiv.current);
+          }
+        }, 300);
+      }
+      if (mediaType === "audio") {
+        remoteAgoraUser.audioTrack.play();
+      }
+    });
+
+    client.on("user-unpublished", (remoteAgoraUser, mediaType) => {
+      if (mediaType === "video") setRemoteUser(null);
+    });
+
+    client.on("user-left", () => setRemoteUser(null));
+
+    // Use lesson id as channel name; token null = testing mode (no certificate)
+    await client.join(AGORA_APP_ID, id, null, user?.id?.slice(0, 32));
+
+    const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+    localAudioTrackRef.current = audioTrack;
+    localVideoTrackRef.current = videoTrack;
+
+    await client.publish([audioTrack, videoTrack]);
+
+    if (localVideoDiv.current) {
+      videoTrack.play(localVideoDiv.current);
+    }
+
+    setJoined(true);
   };
 
-  const toggleCamera = () => {
-    if (streamRef.current) { streamRef.current.getVideoTracks().forEach(t => { t.enabled = !t.enabled; }); setCameraOn(!cameraOn); }
+  const leaveChannel = async () => {
+    localAudioTrackRef.current?.close();
+    localVideoTrackRef.current?.close();
+    await clientRef.current?.leave();
   };
-  const toggleMic = () => {
-    if (streamRef.current) { streamRef.current.getAudioTracks().forEach(t => { t.enabled = !t.enabled; }); setMicOn(!micOn); }
+
+  const toggleCamera = async () => {
+    if (localVideoTrackRef.current) {
+      await localVideoTrackRef.current.setEnabled(!cameraOn);
+      setCameraOn(!cameraOn);
+    }
+  };
+
+  const toggleMic = async () => {
+    if (localAudioTrackRef.current) {
+      await localAudioTrackRef.current.setEnabled(!micOn);
+      setMicOn(!micOn);
+    }
   };
 
   const sendMessage = () => {
@@ -64,17 +125,16 @@ export default function Classroom() {
     const msg = { text: msgInput, sender: "me", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
     setMessages(prev => [...prev, msg]);
     setMsgInput("");
-    setTimeout(() => {
-      setMessages(prev => [...prev, { text: `[Translated] ${msgInput}`, sender: "system", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-    }, 800);
   };
 
   const endLesson = async () => {
-    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    await leaveChannel();
     try {
       await base44.entities.Lesson.update(id, {
-        status: "completed", ended_at: new Date().toISOString(),
-        duration_minutes: Math.round(elapsed / 60), is_recorded: isRecording,
+        status: "completed",
+        ended_at: new Date().toISOString(),
+        duration_minutes: Math.round(elapsed / 60),
+        is_recorded: isRecording,
       });
     } catch {}
     setShowReview(true);
@@ -90,14 +150,16 @@ export default function Classroom() {
 
   return (
     <div className="fixed inset-0 bg-[#05050f] flex flex-col z-50">
-      {/* HUD Top bar */}
+      {/* Top bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-black/40 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
             <MessageCircle className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-white text-sm font-semibold">{user?.role === "tutor" ? lesson?.student_name : lesson?.tutor_name}</p>
+            <p className="text-white text-sm font-semibold">
+              {user?.role === "tutor" ? lesson?.student_name : lesson?.tutor_name}
+            </p>
             <p className="text-gray-500 text-xs capitalize">{lesson?.language} session</p>
           </div>
         </div>
@@ -120,23 +182,30 @@ export default function Classroom() {
 
       {/* Video area */}
       <div className="flex-1 flex relative overflow-hidden">
-        {/* Partner video placeholder */}
-        <div className="flex-1 flex items-center justify-center relative">
-          {/* Decorative glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-violet-600/5 blur-3xl pointer-events-none" />
-          <div className="text-center relative z-10">
-            <div className="w-28 h-28 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
-              <Video className="w-12 h-12 text-gray-700" />
+        {/* Remote video (main) */}
+        <div className="flex-1 relative bg-black">
+          {remoteUser ? (
+            <div ref={remoteVideoDiv} className="w-full h-full" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-violet-600/5 blur-3xl pointer-events-none" />
+              <div className="text-center relative z-10">
+                <div className="w-28 h-28 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
+                  <User className="w-12 h-12 text-gray-700" />
+                </div>
+                <p className="text-gray-500 text-sm font-medium">
+                  Waiting for {user?.role === "tutor" ? "student" : "tutor"} to connect...
+                </p>
+                {joined && <p className="text-emerald-500 text-xs mt-1">✓ You're connected to the channel</p>}
+              </div>
             </div>
-            <p className="text-gray-500 text-sm font-medium">Waiting for {user?.role === "tutor" ? "student" : "tutor"} to connect...</p>
-            <p className="text-gray-700 text-xs mt-1">Your camera is active below</p>
-          </div>
+          )}
         </div>
 
-        {/* Self video (PiP) */}
+        {/* Local video (PiP) */}
         <div className="absolute bottom-4 right-4 w-36 sm:w-48 aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
           {cameraOn ? (
-            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+            <div ref={localVideoDiv} className="w-full h-full" />
           ) : (
             <div className="w-full h-full bg-gray-900 flex items-center justify-center">
               <VideoOff className="w-8 h-8 text-gray-700" />
@@ -149,7 +218,7 @@ export default function Classroom() {
           <div className="w-80 bg-black/60 backdrop-blur-xl border-l border-white/5 flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
               <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                <Globe className="w-4 h-4 text-emerald-400" /> Chat + Translation
+                <Globe className="w-4 h-4 text-emerald-400" /> Chat
               </div>
               <button onClick={() => setChatOpen(false)} className="text-gray-600 hover:text-gray-300 transition-colors">
                 <X className="w-4 h-4" />
@@ -157,16 +226,19 @@ export default function Classroom() {
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {messages.map((m, i) => (
-                <div key={i} className={m.sender === "me" ? "flex justify-end" : m.sender === "system" ? "flex justify-center" : "flex justify-start"}>
+                <div key={i} className={m.sender === "me" ? "flex justify-end" : "flex justify-start"}>
                   <div className={`px-3 py-2 rounded-2xl text-sm max-w-[85%] ${
-                    m.sender === "me" ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white" :
-                    m.sender === "system" ? "bg-emerald-900/30 border border-emerald-500/20 text-emerald-400 text-xs italic" :
-                    "bg-white/10 text-white"
+                    m.sender === "me"
+                      ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white"
+                      : "bg-white/10 text-white"
                   }`}>
                     {m.text}
                   </div>
                 </div>
               ))}
+              {messages.length === 0 && (
+                <p className="text-gray-700 text-xs text-center mt-4">No messages yet</p>
+              )}
             </div>
             <div className="p-3 border-t border-white/5">
               <div className="flex gap-2">
@@ -186,12 +258,11 @@ export default function Classroom() {
         )}
       </div>
 
-      {/* Floating controls */}
+      {/* Controls */}
       <div className="flex items-center justify-center gap-4 py-5 px-4 bg-black/40 backdrop-blur-xl border-t border-white/5">
         <button
           onClick={toggleMic}
-          title={micOn ? "Mute" : "Unmute"}
-          className={`w-13 h-13 rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
+          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
             micOn ? "bg-white/10 hover:bg-white/15 text-white border border-white/10" : "bg-red-500/20 border border-red-500/40 text-red-400 shadow-red-500/20"
           }`}
           style={{ width: 52, height: 52 }}
@@ -200,8 +271,7 @@ export default function Classroom() {
         </button>
         <button
           onClick={toggleCamera}
-          title={cameraOn ? "Stop camera" : "Start camera"}
-          className={`w-13 h-13 rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
+          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
             cameraOn ? "bg-white/10 hover:bg-white/15 text-white border border-white/10" : "bg-red-500/20 border border-red-500/40 text-red-400 shadow-red-500/20"
           }`}
           style={{ width: 52, height: 52 }}
@@ -221,7 +291,6 @@ export default function Classroom() {
           onClick={endLesson}
           className="bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-xl shadow-red-500/30"
           style={{ width: 56, height: 52 }}
-          title="End lesson"
         >
           <PhoneOff className="w-5 h-5" />
         </button>
@@ -229,7 +298,8 @@ export default function Classroom() {
 
       {showReview && (
         <ReviewModal
-          lesson={lesson} userRole={user?.role}
+          lesson={lesson}
+          userRole={user?.role}
           onClose={() => { setShowReview(false); navigate("/my-lessons"); }}
         />
       )}
