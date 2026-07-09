@@ -31,7 +31,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await base44.auth.register({ email, password });
+      await base44.auth.register({ email, password, role });
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
