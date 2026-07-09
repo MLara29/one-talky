@@ -9,7 +9,8 @@ import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
-const AGORA_APP_ID = import.meta.env.VITE_AGORA_APP_ID || "10bad40239ef45a9a465397a4feecdda";
+const AGORA_APP_ID = import.meta.env.VITE_AGORA_APP_ID;
+const AGORA_TOKEN = import.meta.env.VITE_AGORA_TOKEN || null;
 
 export default function Classroom() {
   const { id } = useParams();
@@ -85,7 +86,7 @@ export default function Classroom() {
     client.on("user-left", () => setRemoteUser(null));
 
     // Use lesson id as channel name; token null = testing mode (no certificate)
-    await client.join(AGORA_APP_ID, id, null, user?.id?.slice(0, 32));
+    await client.join(AGORA_APP_ID, id, AGORA_TOKEN, user?.id?.slice(0, 32));
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;
