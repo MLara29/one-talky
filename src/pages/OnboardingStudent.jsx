@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ export default function OnboardingStudent() {
   const [uiLang, setUiLang] = useState("en");
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState(null);
   const [form, setForm] = useState({
     full_name: "",
     nationality: "",
@@ -36,22 +37,35 @@ export default function OnboardingStudent() {
     accent_preference: "",
   });
 
+  useEffect(() => {
+    base44.auth.me().then(me => setUserId(me.id)).catch(() => {});
+  }, []);
+
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
   const handleSubmit = async () => {
+    if (!userId) {
+      toast({ title: "Erro de autenticação", description: "Recarregue a página e tente novamente.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
-      const me = await base44.auth.me();
-      await base44.auth.updateMe({ role: "student", profile_completed: true });
       await base44.entities.StudentProfile.create({
-        ...form,
-        user_id: me.id,
-        full_name: form.full_name || me.full_name,
+        full_name: form.full_name,
+        nationality: form.nationality,
+        native_language: form.native_language,
+        target_language: form.target_language,
+        level: form.level,
+        objective: form.objective,
+        accent_preference: form.accent_preference || "",
+        user_id: userId,
       });
+      await base44.auth.updateMe({ role: "student", profile_completed: true });
       toast({ title: t(uiLang, "welcomeTitle"), description: t(uiLang, "welcomeDesc") });
       window.location.href = "/";
     } catch (e) {
-      toast({ title: "Error", description: t(uiLang, "errorMsg"), variant: "destructive" });
+      console.error("StudentProfile create error:", e);
+      toast({ title: "Erro", description: String(e?.message || t(uiLang, "errorMsg")), variant: "destructive" });
     } finally {
       setSaving(false);
     }
