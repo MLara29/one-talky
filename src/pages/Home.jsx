@@ -23,11 +23,13 @@ export default function Home() {
         base44.entities.TutorProfile.filter({ user_id: user.id }),
         base44.entities.StudentProfile.filter({ user_id: user.id }),
       ]);
+      console.log("checkProfile:", { userId: user.id, tutors: tutorProfiles.length, students: studentProfiles.length });
       if (tutorProfiles.length > 0) setResolvedRole("tutor");
       else if (studentProfiles.length > 0) setResolvedRole("student");
       else setResolvedRole(null);
-    } catch {
-      setResolvedRole(user?.role === "tutor" ? "tutor" : null);
+    } catch (e) {
+      console.error("checkProfile error:", e);
+      setResolvedRole(null);
     } finally {
       setChecking(false);
     }
