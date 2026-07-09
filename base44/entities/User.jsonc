@@ -1,0 +1,19 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "tutor",
+        "student"
+      ],
+      "default": "student"
+    },
+    "profile_completed": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

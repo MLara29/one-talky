@@ -1,0 +1,41 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "lesson_id": {
+      "type": "string"
+    },
+    "tutor_id": {
+      "type": "string"
+    },
+    "student_id": {
+      "type": "string"
+    },
+    "student_name": {
+      "type": "string"
+    },
+    "student_photo": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "comment": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "is_visible": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "tutor_id",
+    "student_id",
+    "rating"
+  ]
+}

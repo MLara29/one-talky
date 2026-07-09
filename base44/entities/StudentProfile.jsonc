@@ -1,0 +1,73 @@
+{
+  "name": "StudentProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to User entity"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "native_language": {
+      "type": "string"
+    },
+    "target_language": {
+      "type": "string"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ]
+    },
+    "objective": {
+      "type": "string"
+    },
+    "accent_preference": {
+      "type": "string"
+    },
+    "total_minutes": {
+      "type": "number",
+      "default": 0
+    },
+    "total_lessons": {
+      "type": "number",
+      "default": 0
+    },
+    "streak_days": {
+      "type": "number",
+      "default": 0
+    },
+    "last_practice_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "basic",
+        "standard",
+        "premium"
+      ],
+      "default": "free"
+    },
+    "credits_minutes": {
+      "type": "number",
+      "default": 15,
+      "description": "Available minutes"
+    }
+  },
+  "required": [
+    "full_name",
+    "native_language",
+    "target_language",
+    "level"
+  ]
+}

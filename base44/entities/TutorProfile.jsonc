@@ -1,0 +1,114 @@
+{
+  "name": "TutorProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to User entity"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "nationality": {
+      "type": "string"
+    },
+    "native_languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Native languages"
+    },
+    "other_languages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "basic",
+              "intermediate",
+              "advanced"
+            ]
+          }
+        }
+      }
+    },
+    "bio": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "intro_video_url": {
+      "type": "string"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "price_per_minute": {
+      "type": "number",
+      "default": 0.5
+    },
+    "availability": {
+      "type": "object",
+      "description": "Weekly availability schedule"
+    },
+    "is_available_now": {
+      "type": "boolean",
+      "default": false
+    },
+    "accent": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "total_lessons": {
+      "type": "number",
+      "default": 0
+    },
+    "total_minutes": {
+      "type": "number",
+      "default": 0
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0
+    },
+    "bank_info": {
+      "type": "string",
+      "description": "Simulated bank info"
+    }
+  },
+  "required": [
+    "full_name",
+    "native_languages",
+    "bio"
+  ]
+}

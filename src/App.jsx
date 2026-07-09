@@ -1,17 +1,39 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
+import ProtectedRoute from '@/components/ProtectedRoute';
+
+import Landing from '@/pages/Landing';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import ChooseRole from '@/pages/ChooseRole';
+import OnboardingStudent from '@/pages/OnboardingStudent';
+import OnboardingTutor from '@/pages/OnboardingTutor';
+import Home from '@/pages/Home';
+import MyLessons from '@/pages/MyLessons';
+import Progress from '@/pages/Progress';
+import Plans from '@/pages/Plans';
+import TutorProfilePage from '@/pages/TutorProfilePage';
+import Classroom from '@/pages/Classroom';
+import TutorSchedule from '@/pages/TutorSchedule';
+import TutorEarnings from '@/pages/TutorEarnings';
+import TutorReviews from '@/pages/TutorReviews';
+import AdminApprovals from '@/pages/AdminApprovals';
+import AdminUsers from '@/pages/AdminUsers';
+import Notifications from '@/pages/Notifications';
+import Profile from '@/pages/Profile';
+import AppLayout from '@/components/AppLayout';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -20,21 +42,46 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route path="/landing" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/landing" replace />} />}>
+        <Route path="/choose-role" element={<ChooseRole />} />
+        <Route path="/onboarding/student" element={<OnboardingStudent />} />
+        <Route path="/onboarding/tutor" element={<OnboardingTutor />} />
+        <Route path="/classroom/:id" element={<Classroom />} />
+
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Home />} />
+          <Route path="/my-lessons" element={<MyLessons />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/plans" element={<Plans />} />
+          <Route path="/tutor/:id" element={<TutorProfilePage />} />
+          <Route path="/schedule" element={<TutorSchedule />} />
+          <Route path="/earnings" element={<TutorEarnings />} />
+          <Route path="/reviews" element={<TutorReviews />} />
+          <Route path="/admin/approvals" element={<AdminApprovals />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+      </Route>
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -42,7 +89,6 @@ const AuthenticatedApp = () => {
 
 
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
