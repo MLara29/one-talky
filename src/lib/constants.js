@@ -66,11 +66,14 @@ export const PRICE_PER_MIN_BRL = 2.20;
 // Básico: R$66/30min = R$2,20/min
 // Standard: 2x mais minutos que básico (60min), 10% off → R$66×2×0.9 = R$118,80
 // Premium: 4x mais minutos que básico (120min), 20% off → R$66×4×0.8 = R$211,20
+// Básico: 1 aula/semana de 30min → R$66/sem → R$264/mês
+// Standard: 2 aulas/semana de 30min → R$118,80/sem (10% off) → R$475,20/mês
+// Premium: 4 aulas/semana de 30min → R$211,20/sem (20% off) → R$844,80/mês
 export const PLANS = [
-  { id: "free", name: "Teste Grátis", minutes: 15, price_brl: 0, description: "Experimente a plataforma" },
-  { id: "basic", name: "Básico", minutes: 30, price_brl: 66, description: "30 min/mês · R$ 2,20/min", popular: false },
-  { id: "standard", name: "Standard", minutes: 60, price_brl: 118.80, description: "60 min/mês · 10% off", popular: true },
-  { id: "premium", name: "Premium", minutes: 120, price_brl: 211.20, description: "120 min/mês · 20% off" },
+  { id: "free", name: "Teste Grátis", minutes: 15, price_brl: 0, price_weekly: 0, price_monthly: 0, description: "Experimente a plataforma", sessions_per_week: 0 },
+  { id: "basic", name: "Básico", minutes: 30, price_brl: 264, price_weekly: 66, price_monthly: 264, description: "1 aula por semana · 30 min", popular: false, sessions_per_week: 1 },
+  { id: "standard", name: "Standard", minutes: 60, price_brl: 475.20, price_weekly: 118.80, price_monthly: 475.20, description: "2 aulas por semana · 30 min", popular: true, sessions_per_week: 2 },
+  { id: "premium", name: "Premium", minutes: 120, price_brl: 844.80, price_weekly: 211.20, price_monthly: 844.80, description: "4 aulas por semana · 30 min", sessions_per_week: 4 },
 ];
 
 // Pacotes pré-pagos (sem mensalidade)

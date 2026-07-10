@@ -111,10 +111,17 @@ export default function Plans() {
                   <h3 className="theme-heading font-display font-bold text-white mb-1">{plan.name}</h3>
                   <p className="theme-subtext text-gray-500 text-xs mb-5">{plan.description}</p>
                   <div className="mb-5">
-                    <span className="theme-heading font-display text-2xl font-extrabold text-white">
-                      {plan.price_brl === 0 ? "Grátis" : fmtBRL(plan.price_brl)}
-                    </span>
-                    {plan.price_brl > 0 && <span className="theme-subtext text-gray-500 text-sm">/mês</span>}
+                    {plan.price_weekly === 0 ? (
+                      <span className="theme-heading font-display text-2xl font-extrabold text-white">Grátis</span>
+                    ) : (
+                      <>
+                        <div className="flex items-baseline gap-1">
+                          <span className="theme-heading font-display text-2xl font-extrabold text-white">{fmtBRL(plan.price_weekly)}</span>
+                          <span className="theme-subtext text-gray-500 text-sm">/semana</span>
+                        </div>
+                        <p className="theme-subtext text-gray-500 text-xs mt-1">{fmtBRL(plan.price_monthly)}/mês</p>
+                      </>
+                    )}
                   </div>
                   <ul className="space-y-2 mb-6">
                     <li className="theme-subtext flex items-center gap-2 text-sm text-gray-500">
