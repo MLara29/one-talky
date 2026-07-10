@@ -1,20 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LANGUAGES } from "@/lib/constants";
 import TutorCard from "@/components/tutors/TutorCard";
+import CreditsBanner from "@/components/student/CreditsBanner";
 
 export default function StudentDashboard() {
+  const { user } = useAuth();
   const [tutors, setTutors] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [langFilter, setLangFilter] = useState("all");
   const [availableNow, setAvailableNow] = useState(false);
 
-  useEffect(() => { loadTutors(); }, []);
+  useEffect(() => { loadData(); }, [user]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [data, profiles] = await Promise.all([
+        base44.entities.TutorProfile.filter({ status: "approved" }),
+        base44.entities.StudentProfile.filter({ user_id: user?.id }),
+      ]);
+      setTutors(data);
+      if (profiles.length > 0) setProfile(profiles[0]);
+    } catch { setTutors([]); } finally { setLoading(false); }
+  };
 
   const loadTutors = async () => {
     setLoading(true);
@@ -33,6 +49,7 @@ export default function StudentDashboard() {
 
   return (
     <div>
+      {profile && <CreditsBanner profile={profile} onUpdate={setProfile} />}
       <div className="mb-8">
         <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Find your tutor</h1>
         <p className="theme-subtext text-gray-500 text-sm mt-1">Browse native speakers ready to help you practice</p>

@@ -84,14 +84,8 @@ export default function Profile() {
               />
               <p className="theme-subtext text-xs text-gray-500 mt-1">{(profile?.bio || "").length}/300</p>
             </div>
-            <div>
-              <Label className="theme-subtext text-gray-500 text-sm">Price per minute (USD)</Label>
-              <Input
-                type="number" min={0.1} step={0.1}
-                value={profile?.price_per_minute || 0.5}
-                onChange={e => setProfile({ ...profile, price_per_minute: parseFloat(e.target.value) || 0 })}
-                className="theme-input mt-1.5 bg-white/5 border-white/10 text-white focus:border-violet-500/50"
-              />
+            <div className="p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20">
+              <p className="theme-subtext text-xs text-violet-600 font-medium">💡 A precificação das aulas é definida pelo administrador da plataforma. R$ 2,20/min (R$ 66/30min).</p>
             </div>
           </>
         )}

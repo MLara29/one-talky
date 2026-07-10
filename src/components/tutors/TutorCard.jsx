@@ -34,8 +34,9 @@ export default function TutorCard({ tutor }) {
             </div>
           </div>
           <div className="text-right shrink-0">
-            <p className="theme-heading text-sm font-bold text-white">${tutor.price_per_minute?.toFixed(2)}</p>
-            <p className="theme-subtext text-xs text-gray-600">/min</p>
+            <span className="theme-badge-violet text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/20 text-emerald-600 font-semibold">
+              {tutor.is_available_now ? "● Disponível" : "Agendável"}
+            </span>
           </div>
         </div>
 

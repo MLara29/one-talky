@@ -59,11 +59,24 @@ export const COUNTRIES = [
   "New Zealand", "Netherlands", "Sweden", "Norway", "Denmark",
 ];
 
+// Preço base: R$ 66 por 30 minutos (R$ 2,20/min)
+// R$/min = 2.20
+export const PRICE_PER_MIN_BRL = 2.20;
+
 export const PLANS = [
-  { id: "free", name: "Free Trial", minutes: 15, price: 0, description: "Try it out" },
-  { id: "basic", name: "Basic", minutes: 30, price: 19.90, description: "30 min/week" },
-  { id: "standard", name: "Standard", minutes: 60, price: 34.90, description: "60 min/week", popular: true },
-  { id: "premium", name: "Premium", minutes: 120, price: 59.90, description: "120 min/week" },
+  { id: "free", name: "Teste Grátis", minutes: 15, price_brl: 0, description: "Experimente a plataforma" },
+  { id: "basic", name: "Básico", minutes: 120, price_brl: 264, description: "120 min/mês · R$ 2,20/min", popular: false },
+  { id: "standard", name: "Standard", minutes: 240, price_brl: 475.20, description: "240 min/mês · 10% off", popular: true },
+  { id: "premium", name: "Premium", minutes: 480, price_brl: 844.80, description: "480 min/mês · 20% off" },
+];
+
+// Pacotes pré-pagos (sem mensalidade)
+export const PREPAID_PACKS = [
+  { id: "pp_30", minutes: 30, price_brl: 66, label: "30 minutos" },
+  { id: "pp_60", minutes: 60, price_brl: 126, label: "60 minutos", badge: "5% off" },
+  { id: "pp_120", minutes: 120, price_brl: 237.60, label: "2 horas", badge: "10% off" },
+  { id: "pp_300", minutes: 300, price_brl: 561, label: "5 horas", badge: "15% off" },
+  { id: "pp_600", minutes: 600, price_brl: 1056, label: "10 horas", badge: "20% off" },
 ];
 
 export function getLanguageLabel(value) {

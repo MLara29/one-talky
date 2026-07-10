@@ -23,7 +23,7 @@ export default function OnboardingTutor() {
     bio: "",
     intro_video_url: "",
     interests: [],
-    price_per_minute: 0.5,
+    price_per_minute: 2.20,
   });
 
   // Fetch user id once on mount — before submit to avoid race condition
@@ -153,7 +153,7 @@ export default function OnboardingTutor() {
             </div>
           )}
 
-          {/* Step 2 — Bio + video + price */}
+          {/* Step 2 — Bio + video */}
           {step === 2 && (
             <div className="space-y-5">
               <div>
@@ -172,16 +172,8 @@ export default function OnboardingTutor() {
                 onVideoRemoved={() => set("intro_video_url", "")}
               />
 
-              <div>
-                <Label className="text-gray-300">Preço por minuto (USD)</Label>
-                <Input
-                  type="number"
-                  min={0.1}
-                  step={0.1}
-                  value={form.price_per_minute}
-                  onChange={e => set("price_per_minute", parseFloat(e.target.value) || 0)}
-                  className="mt-1.5 bg-white/5 border-white/10 text-white focus:border-emerald-500/50"
-                />
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <p className="text-xs text-emerald-400 font-medium">💡 Remuneração definida pela plataforma: R$ 2,20/min. O aluno paga R$ 66 a cada 30 minutos.</p>
               </div>
 
               <div className="flex gap-3 mt-2">
