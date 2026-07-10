@@ -63,11 +63,14 @@ export const COUNTRIES = [
 // R$/min = 2.20
 export const PRICE_PER_MIN_BRL = 2.20;
 
+// Básico: R$66/30min = R$2,20/min
+// Standard: 2x mais minutos que básico (60min), 10% off → R$66×2×0.9 = R$118,80
+// Premium: 4x mais minutos que básico (120min), 20% off → R$66×4×0.8 = R$211,20
 export const PLANS = [
   { id: "free", name: "Teste Grátis", minutes: 15, price_brl: 0, description: "Experimente a plataforma" },
-  { id: "basic", name: "Básico", minutes: 120, price_brl: 264, description: "120 min/mês · R$ 2,20/min", popular: false },
-  { id: "standard", name: "Standard", minutes: 240, price_brl: 475.20, description: "240 min/mês · 10% off", popular: true },
-  { id: "premium", name: "Premium", minutes: 480, price_brl: 844.80, description: "480 min/mês · 20% off" },
+  { id: "basic", name: "Básico", minutes: 30, price_brl: 66, description: "30 min/mês · R$ 2,20/min", popular: false },
+  { id: "standard", name: "Standard", minutes: 60, price_brl: 118.80, description: "60 min/mês · 10% off", popular: true },
+  { id: "premium", name: "Premium", minutes: 120, price_brl: 211.20, description: "120 min/mês · 20% off" },
 ];
 
 // Pacotes pré-pagos (sem mensalidade)
