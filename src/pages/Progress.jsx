@@ -33,28 +33,28 @@ export default function Progress() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-8">Your Progress</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">Your Progress</h1>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
         {stats.map(s => (
-          <div key={s.label} className="bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 transition-all">
+          <div key={s.label} className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 transition-all">
             <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-4 shadow-lg`}>
               <s.icon className="w-5 h-5 text-white" />
             </div>
-            <p className="font-display text-2xl font-bold text-white">{s.value}</p>
-            <p className="text-xs text-gray-600 mt-0.5">{s.label}</p>
+            <p className="theme-heading font-display text-2xl font-bold text-white">{s.value}</p>
+            <p className="theme-subtext text-xs text-gray-600 mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
       {profile?.target_language && (
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-          <h3 className="font-display font-bold text-white mb-4">Language in progress</h3>
+        <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
+          <h3 className="theme-heading font-display font-bold text-white mb-4">Language in progress</h3>
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20">
             <span className="text-4xl">{getLanguageFlag(profile.target_language)}</span>
             <div>
-              <p className="font-display font-bold text-white">{getLanguageLabel(profile.target_language)}</p>
-              <p className="text-sm text-gray-500 capitalize">{profile.level}</p>
+              <p className="theme-heading font-display font-bold text-white">{getLanguageLabel(profile.target_language)}</p>
+              <p className="theme-subtext text-sm text-gray-500 capitalize">{profile.level}</p>
             </div>
           </div>
         </div>

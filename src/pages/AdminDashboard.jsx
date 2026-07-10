@@ -38,16 +38,16 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-8">Admin Dashboard</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">Admin Dashboard</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map(c => (
-          <div key={c.label} className="bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 transition-all">
+          <div key={c.label} className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 transition-all">
             <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${c.gradient} flex items-center justify-center mb-4 shadow-lg`}>
               <c.icon className="w-5 h-5 text-white" />
             </div>
-            <p className="font-display text-2xl font-bold text-white">{c.value}</p>
-            <p className="text-xs text-gray-600 mt-0.5">{c.label}</p>
+            <p className="theme-heading font-display text-2xl font-bold text-white">{c.value}</p>
+            <p className="theme-subtext text-xs text-gray-500 mt-0.5">{c.label}</p>
           </div>
         ))}
       </div>
@@ -55,14 +55,14 @@ export default function AdminDashboard() {
       {stats.pending > 0 && (
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-400" />
+            <AlertCircle className="w-5 h-5 text-amber-500" />
             <div>
-              <p className="font-semibold text-amber-300">{stats.pending} pending application{stats.pending > 1 ? "s" : ""}</p>
-              <p className="text-sm text-amber-500/70">Review and approve new tutors</p>
+              <p className="font-semibold text-amber-600">{stats.pending} pending application{stats.pending > 1 ? "s" : ""}</p>
+              <p className="theme-subtext text-sm text-amber-600/70">Review and approve new tutors</p>
             </div>
           </div>
           <Link to="/admin/approvals">
-            <Button size="sm" className="bg-amber-500/20 border border-amber-500/30 text-amber-400 hover:bg-amber-500/30">Review</Button>
+            <Button size="sm" className="bg-amber-500 text-white border-0 hover:bg-amber-600">Review</Button>
           </Link>
         </div>
       )}

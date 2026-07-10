@@ -31,27 +31,27 @@ export default function Notifications() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-8">Notifications</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">Notifications</h1>
 
       {notifications.length === 0 ? (
-        <div className="text-center py-20 bg-white/3 border border-white/5 rounded-3xl">
-          <Bell className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-          <h3 className="font-display font-bold text-white mb-1">All clear!</h3>
-          <p className="text-sm text-gray-600">No notifications yet</p>
+        <div className="theme-empty text-center py-20 bg-white/3 border border-white/5 rounded-3xl">
+          <Bell className="theme-muted-icon w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="theme-heading font-display font-bold text-white mb-1">All clear!</h3>
+          <p className="theme-subtext text-sm text-gray-600">No notifications yet</p>
         </div>
       ) : (
         <div className="space-y-2">
           {notifications.map(n => (
-            <div key={n.id} className={`rounded-2xl border p-4 flex items-start justify-between gap-3 transition-all ${
+            <div key={n.id} className={`theme-card rounded-2xl border p-4 flex items-start justify-between gap-3 transition-all ${
               n.is_read ? "bg-white/3 border-white/5" : "bg-violet-500/10 border-violet-500/20"
             }`}>
               <div>
-                <p className={`text-sm ${n.is_read ? "text-gray-500" : "text-white font-medium"}`}>{n.title}</p>
-                <p className="text-xs text-gray-600 mt-0.5">{n.message}</p>
-                <p className="text-[10px] text-gray-700 mt-1">{new Date(n.created_date).toLocaleString()}</p>
+                <p className={`text-sm font-medium ${n.is_read ? "theme-subtext text-gray-500" : "theme-heading text-white"}`}>{n.title}</p>
+                <p className="theme-subtext text-xs text-gray-500 mt-0.5">{n.message}</p>
+                <p className="theme-subtext text-[10px] text-gray-500 mt-1">{new Date(n.created_date).toLocaleString()}</p>
               </div>
               {!n.is_read && (
-                <Button size="sm" variant="ghost" onClick={() => markRead(n.id)} className="shrink-0 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10">
+                <Button size="sm" variant="ghost" onClick={() => markRead(n.id)} className="shrink-0 text-violet-500 hover:text-violet-600 hover:bg-violet-500/10">
                   <Check className="w-4 h-4" />
                 </Button>
               )}

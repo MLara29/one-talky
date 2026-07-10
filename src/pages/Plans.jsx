@@ -33,8 +33,8 @@ export default function Plans() {
   return (
     <div>
       <div className="text-center mb-12">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2">Plans & Credits</h1>
-        <p className="text-gray-500 text-sm">Choose the plan that fits your learning pace</p>
+        <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-2">Plans & Credits</h1>
+        <p className="theme-subtext text-gray-500 text-sm">Choose the plan that fits your learning pace</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -43,7 +43,7 @@ export default function Plans() {
           return (
             <div
               key={plan.id}
-              className={`relative rounded-3xl p-6 border transition-all ${
+              className={`theme-card relative rounded-3xl p-6 border transition-all ${
                 plan.popular
                   ? "bg-gradient-to-b from-violet-500/20 to-indigo-500/10 border-violet-500/40 shadow-xl shadow-violet-500/10"
                   : "bg-white/5 border-white/10 hover:bg-white/8"
@@ -54,32 +54,32 @@ export default function Plans() {
                   <Zap className="w-3 h-3" /> Popular
                 </div>
               )}
-              <h3 className="font-display font-bold text-white mb-1">{plan.name}</h3>
-              <p className="text-gray-600 text-xs mb-5">{plan.description}</p>
+              <h3 className="theme-heading font-display font-bold text-white mb-1">{plan.name}</h3>
+              <p className="theme-subtext text-gray-500 text-xs mb-5">{plan.description}</p>
               <div className="mb-5">
-                <span className="font-display text-3xl font-extrabold text-white">
+                <span className="theme-heading font-display text-3xl font-extrabold text-white">
                   {plan.price === 0 ? "Free" : `$${plan.price.toFixed(2)}`}
                 </span>
-                {plan.price > 0 && <span className="text-gray-600 text-sm">/week</span>}
+                {plan.price > 0 && <span className="theme-subtext text-gray-500 text-sm">/week</span>}
               </div>
               <ul className="space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-sm text-gray-400">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" /> {plan.minutes} minutes/week
+                <li className="theme-subtext flex items-center gap-2 text-sm text-gray-500">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" /> {plan.minutes} minutes/week
                 </li>
-                <li className="flex items-center gap-2 text-sm text-gray-400">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" /> All native tutors
+                <li className="theme-subtext flex items-center gap-2 text-sm text-gray-500">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" /> All native tutors
                 </li>
-                <li className="flex items-center gap-2 text-sm text-gray-400">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" /> Lesson recordings
+                <li className="theme-subtext flex items-center gap-2 text-sm text-gray-500">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" /> Lesson recordings
                 </li>
               </ul>
               <Button
                 onClick={() => selectPlan(plan)}
                 disabled={isCurrent}
                 className={`w-full border-0 transition-all hover:scale-105 ${
-                  isCurrent ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-400" :
+                  isCurrent ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-600" :
                   plan.popular ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20" :
-                  "bg-white/10 text-white hover:bg-white/15"
+                  "bg-gradient-to-r from-slate-600 to-slate-700 text-white hover:from-slate-500 hover:to-slate-600"
                 }`}
               >
                 {isCurrent ? "✓ Current plan" : "Select plan"}

@@ -39,33 +39,33 @@ export default function TutorEarnings() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-8">Earnings</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">Earnings</h1>
 
       <div className="grid grid-cols-2 gap-4 mb-8">
         {stats.map(s => (
-          <div key={s.label} className="bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 transition-all">
+          <div key={s.label} className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 transition-all">
             <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-4 shadow-lg`}>
               <s.icon className="w-5 h-5 text-white" />
             </div>
-            <p className="font-display text-2xl font-bold text-white">{s.value}</p>
-            <p className="text-xs text-gray-600 mt-0.5">{s.label}</p>
+            <p className="theme-heading font-display text-2xl font-bold text-white">{s.value}</p>
+            <p className="theme-subtext text-xs text-gray-600 mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-5">
-        <h3 className="font-display font-bold text-white mb-5">Recent lessons</h3>
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 mb-5">
+        <h3 className="theme-heading font-display font-bold text-white mb-5">Recent lessons</h3>
         {lessons.length === 0 ? (
-          <p className="text-center text-sm text-gray-600 py-6">No completed lessons yet</p>
+          <p className="theme-subtext text-center text-sm text-gray-600 py-6">No completed lessons yet</p>
         ) : (
           <div className="space-y-3">
             {lessons.map(l => (
               <div key={l.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
                 <div>
-                  <p className="font-medium text-sm text-white">{l.student_name}</p>
-                  <p className="text-xs text-gray-600">{l.duration_minutes || 0} min · {new Date(l.ended_at || l.created_date).toLocaleDateString()}</p>
+                  <p className="theme-heading font-medium text-sm text-white">{l.student_name}</p>
+                  <p className="theme-subtext text-xs text-gray-600">{l.duration_minutes || 0} min · {new Date(l.ended_at || l.created_date).toLocaleDateString()}</p>
                 </div>
-                <span className="text-sm font-bold text-emerald-400">+${((l.duration_minutes || 0) * rate).toFixed(2)}</span>
+                <span className="text-sm font-bold text-emerald-500">+${((l.duration_minutes || 0) * rate).toFixed(2)}</span>
               </div>
             ))}
           </div>
@@ -73,8 +73,8 @@ export default function TutorEarnings() {
       </div>
 
       <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5">
-        <p className="text-sm text-amber-400/80">
-          <strong className="text-amber-400">Note:</strong> Earnings shown are simulated. Payment processing will be available in a future update.
+        <p className="text-sm text-amber-600">
+          <strong className="text-amber-600">Note:</strong> Earnings shown are simulated. Payment processing will be available in a future update.
         </p>
       </div>
     </div>

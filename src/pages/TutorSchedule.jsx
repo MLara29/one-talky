@@ -57,32 +57,32 @@ export default function TutorSchedule() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">My Schedule</h1>
-          <p className="text-gray-500 text-sm mt-1">Set your weekly availability</p>
+          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">My Schedule</h1>
+          <p className="theme-subtext text-gray-500 text-sm mt-1">Set your weekly availability</p>
         </div>
-        <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
-          <div className={`w-2.5 h-2.5 rounded-full ${profile?.is_available_now ? "bg-emerald-400 animate-pulse" : "bg-gray-700"}`} />
-          <Label className="text-sm font-medium text-gray-300">Available now</Label>
+        <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
+          <div className={`w-2.5 h-2.5 rounded-full ${profile?.is_available_now ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`} />
+          <Label className="theme-subtext text-sm font-medium text-gray-500">Available now</Label>
           <Switch checked={profile?.is_available_now} onCheckedChange={toggleAvailableNow} />
         </div>
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-3xl p-5 overflow-x-auto">
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 overflow-x-auto">
         <div className="min-w-[640px]">
           <div className="grid grid-cols-8 gap-1 mb-2">
-            <div className="text-xs text-gray-600 font-medium p-2">Time</div>
-            {DAYS.map(d => <div key={d} className="text-xs text-gray-400 font-semibold p-2 text-center">{d.slice(0, 3)}</div>)}
+            <div className="theme-subtext text-xs text-gray-500 font-medium p-2">Time</div>
+            {DAYS.map(d => <div key={d} className="theme-subtext text-xs text-gray-500 font-semibold p-2 text-center">{d.slice(0, 3)}</div>)}
           </div>
           <div className="space-y-1 max-h-[500px] overflow-y-auto">
             {HOURS.map(hour => (
               <div key={hour} className="grid grid-cols-8 gap-1">
-                <div className="text-xs text-gray-600 p-2 flex items-center">{hour}</div>
+                <div className="theme-subtext text-xs text-gray-500 p-2 flex items-center">{hour}</div>
                 {DAYS.map(day => {
                   const active = (availability[day] || []).includes(hour);
                   return (
                     <button key={day} onClick={() => toggleSlot(day, hour)}
                       className={`h-8 rounded-xl text-xs font-semibold transition-all ${
-                        active ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-400" : "bg-white/3 text-transparent border border-white/5 hover:bg-white/8 hover:text-gray-600"
+                        active ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-600" : "bg-white/3 border border-white/5 hover:bg-violet-500/10 hover:border-violet-500/20"
                       }`}
                     >
                       {active ? "✓" : ""}

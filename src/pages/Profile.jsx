@@ -51,46 +51,46 @@ export default function Profile() {
 
   return (
     <div className="max-w-lg mx-auto">
-      <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-8">My Profile</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">My Profile</h1>
 
-      <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-5">
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-5">
         <div className="flex items-center gap-4 mb-2">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
             <User className="w-8 h-8 text-white" />
           </div>
           <div>
-            <p className="font-display font-bold text-white">{profile?.full_name}</p>
-            <p className="text-sm text-gray-500 capitalize">{role}</p>
+            <p className="theme-heading font-display font-bold text-white">{profile?.full_name}</p>
+            <p className="theme-subtext text-sm text-gray-500 capitalize">{role}</p>
           </div>
         </div>
 
         <div>
-          <Label className="text-gray-400 text-sm">Full name</Label>
+          <Label className="theme-subtext text-gray-500 text-sm">Full name</Label>
           <Input
             value={profile?.full_name || ""}
             onChange={e => setProfile({ ...profile, full_name: e.target.value })}
-            className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
+            className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-violet-500/50"
           />
         </div>
 
         {role === "tutor" && (
           <>
             <div>
-              <Label className="text-gray-400 text-sm">Bio</Label>
+              <Label className="theme-subtext text-gray-500 text-sm">Bio</Label>
               <Textarea
                 value={profile?.bio || ""}
                 onChange={e => setProfile({ ...profile, bio: e.target.value.slice(0, 300) })}
-                className="mt-1.5 h-24 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
+                className="theme-input mt-1.5 h-24 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-violet-500/50"
               />
-              <p className="text-xs text-gray-700 mt-1">{(profile?.bio || "").length}/300</p>
+              <p className="theme-subtext text-xs text-gray-500 mt-1">{(profile?.bio || "").length}/300</p>
             </div>
             <div>
-              <Label className="text-gray-400 text-sm">Price per minute (USD)</Label>
+              <Label className="theme-subtext text-gray-500 text-sm">Price per minute (USD)</Label>
               <Input
                 type="number" min={0.1} step={0.1}
                 value={profile?.price_per_minute || 0.5}
                 onChange={e => setProfile({ ...profile, price_per_minute: parseFloat(e.target.value) || 0 })}
-                className="mt-1.5 bg-white/5 border-white/10 text-white focus:border-violet-500/50"
+                className="theme-input mt-1.5 bg-white/5 border-white/10 text-white focus:border-violet-500/50"
               />
             </div>
           </>
