@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Star, Globe, Clock, MapPin, Video, Calendar, ChevronLeft } from "lucide-react";
 import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
+import ScheduleModal from "@/components/tutors/ScheduleModal";
 
 export default function TutorProfilePage() {
   const { id } = useParams();
@@ -16,6 +17,7 @@ export default function TutorProfilePage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
 
   useEffect(() => { loadTutor(); }, [id]);
 
@@ -45,7 +47,7 @@ export default function TutorProfilePage() {
     } finally { setBooking(false); }
   };
 
-  const scheduleLesson = async () => {
+  const scheduleLesson = async (scheduledAt) => {
     setBooking(true);
     try {
       const studentProfiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
@@ -55,8 +57,9 @@ export default function TutorProfilePage() {
         tutor_name: tutor.full_name, student_name: sp?.full_name || user.full_name,
         language: tutor.native_languages?.[0] || "english",
         status: "scheduled", type: "scheduled",
-        scheduled_at: new Date(Date.now() + 86400000).toISOString(),
+        scheduled_at: scheduledAt,
       });
+      setShowSchedule(false);
       toast({ title: "Lesson scheduled! 📅", description: "Check 'My Lessons' to see your booking." });
     } catch {
       toast({ title: "Error", description: "Could not schedule.", variant: "destructive" });
@@ -152,7 +155,7 @@ export default function TutorProfilePage() {
             </Button>
           )}
           <Button
-            onClick={scheduleLesson} disabled={booking}
+            onClick={() => setShowSchedule(true)} disabled={booking}
             className={`flex-1 h-12 rounded-2xl border-0 transition-all hover:scale-105 ${
               tutor.is_available_now
                 ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
@@ -163,6 +166,15 @@ export default function TutorProfilePage() {
           </Button>
         </div>
       </div>
+
+      {showSchedule && (
+        <ScheduleModal
+          tutor={tutor}
+          onClose={() => setShowSchedule(false)}
+          onConfirm={scheduleLesson}
+          booking={booking}
+        />
+      )}
 
       <div className="mt-5 bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8">
         <h3 className="font-display font-bold text-white mb-5">Reviews ({reviews.length})</h3>
