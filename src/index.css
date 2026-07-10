@@ -168,6 +168,26 @@
   background: #e2e8f0 !important;
 }
 
+/* ── Dark-theme nested inside light-theme: restore white text ── */
+.light-theme .dark-theme .text-white,
+.light-theme .dark-theme .text-gray-300,
+.light-theme .dark-theme .text-gray-400,
+.light-theme .dark-theme .text-gray-500,
+.light-theme .dark-theme .text-gray-600,
+.light-theme .dark-theme .text-gray-700 {
+  color: inherit !important;
+}
+.light-theme .dark-theme .bg-white\/5,
+.light-theme .dark-theme .bg-white\/3,
+.light-theme .dark-theme .bg-white\/10,
+.light-theme .dark-theme .bg-white\/8,
+.light-theme .dark-theme .border-white\/5,
+.light-theme .dark-theme .border-white\/10,
+.light-theme .dark-theme .border-white\/15 {
+  background-color: revert !important;
+  border-color: revert !important;
+}
+
 /* ── Light theme global text overrides ─────────────────── */
 /* Any element using text-white inside light-theme gets dark text */
 .light-theme .text-white {
