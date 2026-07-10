@@ -34,22 +34,22 @@ export default function StudentDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">Find your tutor</h1>
-        <p className="text-gray-500 text-sm mt-1">Browse native speakers ready to help you practice</p>
+        <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Find your tutor</h1>
+        <p className="theme-subtext text-gray-500 text-sm mt-1">Browse native speakers ready to help you practice</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-8">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+          <Search className="theme-muted-icon absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by name..."
-            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:ring-violet-500/20"
+            className="theme-input pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
           />
         </div>
         <Select value={langFilter} onValueChange={setLangFilter}>
-          <SelectTrigger className="w-full sm:w-44 bg-white/5 border-white/10 text-white">
+          <SelectTrigger className="theme-input w-full sm:w-44 bg-white/5 border-white/10 text-white">
             <SelectValue placeholder="Language" />
           </SelectTrigger>
           <SelectContent className="bg-slate-900 border-white/10 text-white">
@@ -61,7 +61,7 @@ export default function StudentDashboard() {
           onClick={() => setAvailableNow(!availableNow)}
           className={`transition-all ${availableNow
             ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30"
-            : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+            : "theme-btn-ghost bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
           }`}
           variant="ghost"
           size="sm"
@@ -77,10 +77,10 @@ export default function StudentDashboard() {
           <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-24">
-          <Search className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-          <h3 className="font-display font-bold text-white mb-1">No tutors found</h3>
-          <p className="text-sm text-gray-600">Try adjusting your filters or check back later</p>
+        <div className="theme-empty text-center py-24 rounded-3xl border border-white/5">
+          <Search className="theme-muted-icon w-12 h-12 text-gray-700 mx-auto mb-4" />
+          <h3 className="theme-heading font-display font-bold text-white mb-1">No tutors found</h3>
+          <p className="theme-subtext text-sm text-gray-600">Try adjusting your filters or check back later</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">

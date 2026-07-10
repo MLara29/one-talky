@@ -46,7 +46,7 @@ export default function AppLayout() {
   return (
     <div
       className="min-h-screen transition-colors duration-300"
-      style={{ background: isLight ? "linear-gradient(135deg, #f0f0f8, #e8e8f4, #f4f0ff)" : "linear-gradient(135deg, #030309, #0f0f1f, #030309)" }}
+      style={{ background: isLight ? "#f1f3f8" : "linear-gradient(135deg, #030309, #0f0f1f, #030309)" }}
     >
       {/* Top bar */}
       <header

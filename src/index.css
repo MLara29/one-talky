@@ -95,16 +95,16 @@
 
 /* ── Light theme overrides ─────────────────────────────── */
 .light-theme {
-  --app-bg: #f4f4f8;
-  --app-sidebar-bg: rgba(255,255,255,0.9);
-  --app-header-bg: rgba(255,255,255,0.85);
-  --app-border: rgba(0,0,0,0.07);
-  --app-card-bg: rgba(255,255,255,0.85);
-  --app-text-primary: #1a1a2e;
-  --app-text-secondary: #6b7280;
-  --app-text-muted: #9ca3af;
-  --app-nav-active-bg: rgba(124,58,237,0.1);
-  --app-nav-hover-bg: rgba(0,0,0,0.05);
+  --app-bg: #f1f3f8;
+  --app-sidebar-bg: rgba(255,255,255,0.98);
+  --app-header-bg: rgba(255,255,255,0.97);
+  --app-border: rgba(0,0,0,0.10);
+  --app-card-bg: #ffffff;
+  --app-text-primary: #0f172a;
+  --app-text-secondary: #475569;
+  --app-text-muted: #94a3b8;
+  --app-nav-active-bg: rgba(109,40,217,0.10);
+  --app-nav-hover-bg: rgba(109,40,217,0.05);
 }
 
 /* ── Dark theme (default) ──────────────────────────────── */
@@ -119,4 +119,48 @@
   --app-text-muted: #374151;
   --app-nav-active-bg: rgba(139,92,246,0.15);
   --app-nav-hover-bg: rgba(255,255,255,0.05);
+}
+
+/* ── Theme-aware utility classes ───────────────────────── */
+.light-theme .theme-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.07), 0 1px 2px -1px rgba(0,0,0,0.07);
+}
+.light-theme .theme-card:hover {
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10);
+}
+.light-theme .theme-heading {
+  color: #0f172a !important;
+}
+.light-theme .theme-subtext {
+  color: #64748b !important;
+}
+.light-theme .theme-input {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.light-theme .theme-input::placeholder {
+  color: #94a3b8 !important;
+}
+.light-theme .theme-muted-icon {
+  color: #94a3b8 !important;
+}
+.light-theme .theme-empty {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+.light-theme .theme-badge-violet {
+  background: rgba(109,40,217,0.10) !important;
+  border-color: rgba(109,40,217,0.20) !important;
+  color: #6d28d9 !important;
+}
+.light-theme .theme-btn-ghost {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+.light-theme .theme-btn-ghost:hover {
+  background: #e2e8f0 !important;
 }

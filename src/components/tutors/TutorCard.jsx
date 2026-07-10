@@ -1,12 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Star, Circle } from "lucide-react";
+import { Star } from "lucide-react";
 import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
 
 export default function TutorCard({ tutor }) {
   return (
     <Link to={`/tutor/${tutor.id}`} className="block group">
-      <div className="bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 hover:border-violet-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-violet-500/10 hover:-translate-y-1">
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:border-violet-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1">
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <img
@@ -21,40 +21,40 @@ export default function TutorCard({ tutor }) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-display font-bold text-white group-hover:text-violet-300 transition-colors truncate">{tutor.full_name}</h3>
-            <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+            <h3 className="theme-heading font-display font-bold text-white group-hover:text-violet-600 transition-colors truncate">{tutor.full_name}</h3>
+            <p className="theme-subtext text-sm text-gray-500 flex items-center gap-1 mt-0.5">
               {getCountryFlag(tutor.country)} {tutor.country}
             </p>
             <div className="flex items-center gap-3 mt-1.5">
-              <span className="flex items-center gap-1 text-sm text-amber-400 font-semibold">
+              <span className="flex items-center gap-1 text-sm text-amber-500 font-semibold">
                 <Star className="w-3.5 h-3.5 fill-amber-400" />
                 {tutor.average_rating?.toFixed(1) || "New"}
               </span>
-              <span className="text-xs text-gray-600">{tutor.total_lessons || 0} lessons</span>
+              <span className="theme-subtext text-xs text-gray-600">{tutor.total_lessons || 0} lessons</span>
             </div>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-sm font-bold text-white">${tutor.price_per_minute?.toFixed(2)}</p>
-            <p className="text-xs text-gray-600">/min</p>
+            <p className="theme-heading text-sm font-bold text-white">${tutor.price_per_minute?.toFixed(2)}</p>
+            <p className="theme-subtext text-xs text-gray-600">/min</p>
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-1.5">
           {tutor.native_languages?.map(l => (
-            <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium">
+            <span key={l} className="theme-badge-violet text-xs px-2.5 py-1 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium">
               {getLanguageLabel(l)}
             </span>
           ))}
           {tutor.interests?.slice(0, 3).map(i => (
-            <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">
+            <span key={i} className="theme-btn-ghost text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">
               {i}
             </span>
           ))}
         </div>
 
         {tutor.is_available_now && (
-          <div className="mt-3 text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Available now
+          <div className="mt-3 text-xs font-semibold text-emerald-500 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Available now
           </div>
         )}
       </div>
