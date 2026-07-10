@@ -168,25 +168,26 @@
   background: #e2e8f0 !important;
 }
 
-/* ── Dark-theme nested inside light-theme: restore white text ── */
-.light-theme .dark-theme .text-white,
-.light-theme .dark-theme .text-gray-300,
-.light-theme .dark-theme .text-gray-400,
-.light-theme .dark-theme .text-gray-500,
-.light-theme .dark-theme .text-gray-600,
-.light-theme .dark-theme .text-gray-700 {
-  color: inherit !important;
+/* ── Dark-theme nested inside light-theme: restore original dark colors ── */
+.light-theme .dark-theme * {
+  --tw-text-opacity: 1;
 }
-.light-theme .dark-theme .bg-white\/5,
-.light-theme .dark-theme .bg-white\/3,
-.light-theme .dark-theme .bg-white\/10,
-.light-theme .dark-theme .bg-white\/8,
-.light-theme .dark-theme .border-white\/5,
-.light-theme .dark-theme .border-white\/10,
-.light-theme .dark-theme .border-white\/15 {
-  background-color: revert !important;
-  border-color: revert !important;
-}
+.light-theme .dark-theme .text-white { color: #ffffff !important; }
+.light-theme .dark-theme .text-gray-300 { color: #d1d5db !important; }
+.light-theme .dark-theme .text-gray-400 { color: #9ca3af !important; }
+.light-theme .dark-theme .text-gray-500 { color: #6b7280 !important; }
+.light-theme .dark-theme .text-gray-600 { color: #4b5563 !important; }
+.light-theme .dark-theme .text-gray-700 { color: #374151 !important; }
+.light-theme .dark-theme .bg-white\/5  { background-color: rgba(255,255,255,0.05) !important; }
+.light-theme .dark-theme .bg-white\/3  { background-color: rgba(255,255,255,0.03) !important; }
+.light-theme .dark-theme .bg-white\/8  { background-color: rgba(255,255,255,0.08) !important; }
+.light-theme .dark-theme .bg-white\/10 { background-color: rgba(255,255,255,0.10) !important; }
+.light-theme .dark-theme .border-white\/5  { border-color: rgba(255,255,255,0.05) !important; }
+.light-theme .dark-theme .border-white\/10 { border-color: rgba(255,255,255,0.10) !important; }
+.light-theme .dark-theme .border-white\/15 { border-color: rgba(255,255,255,0.15) !important; }
+.light-theme .dark-theme .border-white\/20 { border-color: rgba(255,255,255,0.20) !important; }
+.light-theme .dark-theme label,
+.light-theme .dark-theme .text-gray-400.text-sm { color: #9ca3af !important; }
 
 /* ── Light theme global text overrides ─────────────────── */
 /* Any element using text-white inside light-theme gets dark text */
