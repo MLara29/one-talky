@@ -6,7 +6,7 @@ import { useTheme } from "@/lib/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
   MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon
+  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon, TrendingUp
 } from "lucide-react";
 
 const STUDENT_NAV = [
@@ -28,6 +28,7 @@ const ADMIN_NAV = [
   { label: "Dashboard", path: "/dashboard", icon: Home },
   { label: "Approvals", path: "/admin/approvals", icon: GraduationCap },
   { label: "Users", path: "/admin/users", icon: User },
+  { label: "Custos & Lucro", path: "/admin/costs", icon: TrendingUp },
 ];
 
 export default function AppLayout() {
@@ -67,7 +68,7 @@ export default function AppLayout() {
                 <MessageCircle className="w-4 h-4 text-white" />
               </div>
               <span className="font-display text-lg font-bold hidden sm:block" style={{ color: "var(--app-text-primary)" }}>
-                Just Speak
+                Only Talk
               </span>
             </Link>
             <span
@@ -140,7 +141,7 @@ export default function AppLayout() {
             })}
           </nav>
           <div className="pt-3" style={{ borderTop: "1px solid var(--app-border)" }}>
-            <p className="text-[10px] text-center" style={{ color: "var(--app-text-muted)" }}>Just Speak v1.0</p>
+            <p className="text-[10px] text-center" style={{ color: "var(--app-text-muted)" }}>Only Talk v1.0</p>
           </div>
         </aside>
 
