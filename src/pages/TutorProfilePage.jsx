@@ -72,80 +72,92 @@ export default function TutorProfilePage() {
     </div>
   );
 
-  if (!tutor) return <div className="text-center py-24 text-gray-500">Tutor not found</div>;
+  if (!tutor) return <div className="theme-subtext text-center py-24 text-gray-500">Tutor not found</div>;
 
   return (
     <div className="max-w-3xl mx-auto">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-white mb-6 transition-colors">
+      <button
+        onClick={() => navigate(-1)}
+        className="theme-subtext flex items-center gap-1 text-sm text-gray-500 hover:text-violet-500 mb-6 transition-colors font-medium"
+      >
         <ChevronLeft className="w-4 h-4" /> Back
       </button>
 
-      <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
+      {/* Main card */}
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
         {/* Header */}
         <div className="p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row items-start gap-6">
-            <div className="relative">
+            <div className="relative shrink-0">
               <img
                 src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=7c3aed&color=fff&size=120`}
                 alt={tutor.full_name}
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-white/10"
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-violet-500/20"
               />
               {tutor.is_available_now && (
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 border-2 border-slate-950 rounded-full">
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 border-2 border-white rounded-full">
                   <span className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-60" />
                 </div>
               )}
             </div>
             <div className="flex-1">
-              <h1 className="font-display text-2xl font-bold text-white">{tutor.full_name}</h1>
-              <p className="text-gray-500 flex items-center gap-1 mt-1 text-sm">
+              <h1 className="theme-heading font-display text-2xl font-bold text-white">{tutor.full_name}</h1>
+              <p className="theme-subtext text-gray-500 flex items-center gap-1 mt-1 text-sm">
                 <MapPin className="w-3.5 h-3.5" /> {getCountryFlag(tutor.country)} {tutor.country}
               </p>
               <div className="flex items-center gap-4 mt-3">
-                <span className="flex items-center gap-1 text-amber-400 font-bold">
+                <span className="flex items-center gap-1 text-amber-500 font-bold">
                   <Star className="w-4 h-4 fill-amber-400" /> {tutor.average_rating?.toFixed(1) || "New"}
                 </span>
-                <span className="text-sm text-gray-500">{tutor.total_reviews || 0} reviews</span>
-                <span className="text-sm text-gray-500">{tutor.total_lessons || 0} lessons</span>
+                <span className="theme-subtext text-sm text-gray-500">{tutor.total_reviews || 0} reviews</span>
+                <span className="theme-subtext text-sm text-gray-500">{tutor.total_lessons || 0} lessons</span>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {tutor.native_languages?.map(l => (
-                  <span key={l} className="text-xs px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium">
+                  <span key={l} className="theme-badge-violet text-xs px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium">
                     {getLanguageLabel(l)} (Native)
                   </span>
                 ))}
               </div>
             </div>
-            <div className="text-right">
-              <p className="font-display text-2xl font-bold text-white">${tutor.price_per_minute?.toFixed(2)}</p>
-              <p className="text-sm text-gray-600">per minute</p>
+            <div className="text-right shrink-0">
+              <p className="theme-heading font-display text-2xl font-bold text-white">${tutor.price_per_minute?.toFixed(2)}</p>
+              <p className="theme-subtext text-sm text-gray-500">per minute</p>
             </div>
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="mx-6 sm:mx-8 border-t border-white/10" style={{ borderColor: "var(--app-border)" }} />
+
         {tutor.intro_video_url && (
-          <div className="px-6 sm:px-8 pb-6">
+          <div className="px-6 sm:px-8 py-6">
+            <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">Intro Video</h3>
             <video src={tutor.intro_video_url} controls className="w-full rounded-2xl bg-black" style={{ maxHeight: 360 }} />
           </div>
         )}
 
-        <div className="px-6 sm:px-8 pb-6">
-          <h3 className="font-display font-bold text-white mb-3">About</h3>
-          <p className="text-gray-400 text-sm leading-relaxed">{tutor.bio}</p>
+        <div className="px-6 sm:px-8 py-6">
+          <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">About</h3>
+          <p className="theme-subtext text-gray-400 text-sm leading-relaxed">{tutor.bio}</p>
         </div>
 
         {tutor.interests?.length > 0 && (
           <div className="px-6 sm:px-8 pb-6">
-            <h3 className="font-display font-bold text-white mb-3">Conversation topics</h3>
+            <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">Conversation Topics</h3>
             <div className="flex flex-wrap gap-2">
               {tutor.interests.map(i => (
-                <span key={i} className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">{i}</span>
+                <span key={i} className="theme-btn-ghost text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">{i}</span>
               ))}
             </div>
           </div>
         )}
 
-        <div className="px-6 sm:px-8 pb-8 flex flex-col sm:flex-row gap-3">
+        {/* Divider */}
+        <div className="mx-6 sm:mx-8 border-t border-white/10" style={{ borderColor: "var(--app-border)" }} />
+
+        {/* Action buttons */}
+        <div className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row gap-3">
           {tutor.is_available_now && (
             <Button
               onClick={startInstantLesson} disabled={booking}
@@ -156,10 +168,10 @@ export default function TutorProfilePage() {
           )}
           <Button
             onClick={() => setShowSchedule(true)} disabled={booking}
-            className={`flex-1 h-12 rounded-2xl border-0 transition-all hover:scale-105 ${
+            className={`flex-1 h-12 rounded-2xl border-0 transition-all hover:scale-105 shadow-lg ${
               tutor.is_available_now
                 ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
-                : "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20"
+                : "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-violet-500/20"
             }`}
           >
             <Calendar className="w-4 h-4 mr-2" /> Schedule lesson
@@ -176,23 +188,24 @@ export default function TutorProfilePage() {
         />
       )}
 
-      <div className="mt-5 bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8">
-        <h3 className="font-display font-bold text-white mb-5">Reviews ({reviews.length})</h3>
+      {/* Reviews */}
+      <div className="theme-card mt-5 bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8">
+        <h3 className="theme-heading font-display font-bold text-white mb-5">Reviews ({reviews.length})</h3>
         {reviews.length === 0 ? (
-          <p className="text-sm text-gray-600 text-center py-4">No reviews yet</p>
+          <p className="theme-subtext text-sm text-gray-600 text-center py-4">No reviews yet</p>
         ) : (
           <div className="space-y-4">
             {reviews.map(r => (
-              <div key={r.id} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
+              <div key={r.id} className="pb-4 last:pb-0" style={{ borderBottom: "1px solid var(--app-border)" }}>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="font-semibold text-sm text-white">{r.student_name || "Student"}</span>
+                  <span className="theme-heading font-semibold text-sm text-white">{r.student_name || "Student"}</span>
                   <div className="flex gap-0.5">
                     {Array.from({ length: r.rating }).map((_, i) => (
                       <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
                 </div>
-                {r.comment && <p className="text-sm text-gray-500">{r.comment}</p>}
+                {r.comment && <p className="theme-subtext text-sm text-gray-500">{r.comment}</p>}
               </div>
             ))}
           </div>
