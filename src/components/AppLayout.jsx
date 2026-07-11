@@ -68,7 +68,7 @@ export default function AppLayout() {
                 <MessageCircle className="w-4 h-4 text-white" />
               </div>
               <span className="font-display text-lg font-bold hidden sm:block" style={{ color: "var(--app-text-primary)" }}>
-                Only Talk
+                One Talky
               </span>
             </Link>
             <span
@@ -141,7 +141,7 @@ export default function AppLayout() {
             })}
           </nav>
           <div className="pt-3" style={{ borderTop: "1px solid var(--app-border)" }}>
-            <p className="text-[10px] text-center" style={{ color: "var(--app-text-muted)" }}>Only Talk v1.0</p>
+            <p className="text-[10px] text-center" style={{ color: "var(--app-text-muted)" }}>One Talky v1.0</p>
           </div>
         </aside>
 

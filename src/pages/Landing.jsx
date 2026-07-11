@@ -14,7 +14,7 @@ const FEATURED_TUTORS = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Pedro Silva", role: "Software Engineer", text: "In 3 months of daily conversation with native tutors, I went from barely understanding to having fluent business calls in English. Just Speak changed my career.", rating: 5, avatar: "PS" },
+  { name: "Pedro Silva", role: "Software Engineer", text: "In 3 months of daily conversation with native tutors, I went from barely understanding to having fluent business calls in English. One Talky changed my career.", rating: 5, avatar: "PS" },
   { name: "Yuki Tanaka", role: "Designer", text: "I tried apps, courses, grammar books... nothing worked like actually talking to real people. 20 minutes a day and I'm finally confident speaking French.", rating: 5, avatar: "YT" },
   { name: "Lisa Müller", role: "Marketing Director", text: "The instant lesson feature is amazing. Whenever I have free time, I just open the app and start speaking Spanish with a native. No scheduling hassle!", rating: 5, avatar: "LM" },
 ];
@@ -52,7 +52,7 @@ export default function Landing() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
               <MessageCircle className="w-4.5 h-4.5 text-white" />
             </div>
-            <span className="font-display text-xl font-bold text-white">Just Speak</span>
+            <span className="font-display text-xl font-bold text-white">One Talky</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
             <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
@@ -243,7 +243,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Why Just Speak */}
+      {/* Why One Talky */}
       <section className="py-24 px-4 relative">
         <div className="absolute inset-0 bg-gradient-to-br from-violet-950/50 via-indigo-950/30 to-[#0a0a1a] pointer-events-none" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-b from-transparent to-violet-500/50" />
@@ -331,7 +331,7 @@ export default function Landing() {
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
                   <MessageCircle className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-display font-bold text-white text-lg">Just Speak</span>
+                <span className="font-display font-bold text-white text-lg">One Talky</span>
               </div>
               <p className="text-sm text-gray-600">Real conversations with real natives.</p>
             </div>
@@ -357,7 +357,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="border-t border-white/5 pt-8 text-center text-sm text-gray-700">
-            © 2026 Just Speak. All rights reserved.
+            © 2026 One Talky. All rights reserved.
           </div>
         </div>
       </footer>

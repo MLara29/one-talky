@@ -83,7 +83,7 @@ export default function OnboardingStudent() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
               <MessageCircle className="w-4.5 h-4.5 text-white" />
             </div>
-            <span className="font-display text-xl font-bold text-white">Just Speak</span>
+            <span className="font-display text-xl font-bold text-white">One Talky</span>
           </div>
 
           {/* UI Language selector */}
