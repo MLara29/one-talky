@@ -6,6 +6,7 @@ import { Check, Zap, Clock, CreditCard } from "lucide-react";
 import { PLANS, PREPAID_PACKS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams } from "react-router-dom";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -17,8 +18,44 @@ export default function Plans() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => { loadProfile(); }, [user]);
+
+  // Confirma pagamento ao voltar do MP
+  useEffect(() => {
+    const status = searchParams.get("status");
+    const paymentId = searchParams.get("payment_id");
+    const externalRef = searchParams.get("external_reference");
+
+    if (status === "success" && paymentId) {
+      confirmPayment(paymentId, externalRef);
+    } else if (status === "failure") {
+      toast({ title: "Pagamento não aprovado", description: "Tente novamente.", variant: "destructive" });
+    } else if (status === "pending") {
+      toast({ title: "Pagamento pendente", description: "Assim que confirmado, seus créditos serão adicionados." });
+    }
+  }, []);
+
+  const confirmPayment = async (paymentId, externalRef) => {
+    try {
+      const res = await base44.functions.invoke("mpConfirmPayment", {
+        payment_id: paymentId,
+        external_reference: externalRef,
+      });
+      if (res.data?.success) {
+        const parts = (externalRef || "").split(":");
+        const type = parts[0];
+        const minutes = parseInt(parts[2] || "0", 10);
+        if (type === "plan") {
+          toast({ title: "Plano ativado! 🎉", description: `+${minutes} minutos adicionados à sua conta.` });
+        } else {
+          toast({ title: `+${minutes} minutos adicionados! ⏱️` });
+        }
+        loadProfile();
+      }
+    } catch {}
+  };
 
   const loadProfile = async () => {
     try {
@@ -27,21 +64,26 @@ export default function Plans() {
     } catch {} finally { setLoading(false); }
   };
 
+  const getBaseUrl = () => window.location.origin + "/plans";
+
   const selectPlan = async (plan) => {
-    if (!profile || processing) return;
+    if (!profile || processing || plan.price_brl === 0) return;
     setProcessing(true);
     try {
-      // Integração Stripe seria aqui — por ora simula aprovação
-      toast({ title: "Redirecionando para pagamento…", description: "Em breve: integração Stripe ativa." });
-      await new Promise(r => setTimeout(r, 800));
-      await base44.entities.StudentProfile.update(profile.id, {
-        plan: plan.id,
-        credits_minutes: (profile.credits_minutes || 0) + plan.minutes,
+      toast({ title: "Redirecionando para o Mercado Pago…" });
+      const res = await base44.functions.invoke("mpCreatePreference", {
+        title: `One Talky — Plano ${plan.name} (${plan.minutes} min/mês)`,
+        unit_price: plan.price_monthly,
+        external_reference: `plan:${plan.id}:${plan.minutes}`,
+        success_url: `${getBaseUrl()}?status=success`,
+        failure_url: `${getBaseUrl()}?status=failure`,
+        pending_url: `${getBaseUrl()}?status=pending`,
       });
-      setProfile(p => ({ ...p, plan: plan.id, credits_minutes: (p.credits_minutes || 0) + plan.minutes }));
-      toast({ title: `Plano ${plan.name} ativado! 🎉`, description: `Você ganhou ${plan.minutes} minutos.` });
-    } catch {
-      toast({ title: "Erro ao processar pagamento", variant: "destructive" });
+      const url = res.data?.sandbox_init_point || res.data?.init_point;
+      if (url) window.location.href = url;
+      else throw new Error("URL não retornada");
+    } catch (e) {
+      toast({ title: "Erro ao iniciar pagamento", description: e.message, variant: "destructive" });
     } finally { setProcessing(false); }
   };
 
@@ -49,15 +91,20 @@ export default function Plans() {
     if (!profile || processing) return;
     setProcessing(true);
     try {
-      toast({ title: "Redirecionando para pagamento…", description: "Em breve: integração Stripe ativa." });
-      await new Promise(r => setTimeout(r, 800));
-      await base44.entities.StudentProfile.update(profile.id, {
-        credits_minutes: (profile.credits_minutes || 0) + pack.minutes,
+      toast({ title: "Redirecionando para o Mercado Pago…" });
+      const res = await base44.functions.invoke("mpCreatePreference", {
+        title: `One Talky — ${pack.label}`,
+        unit_price: pack.price_brl,
+        external_reference: `pack:${pack.id}:${pack.minutes}`,
+        success_url: `${getBaseUrl()}?status=success`,
+        failure_url: `${getBaseUrl()}?status=failure`,
+        pending_url: `${getBaseUrl()}?status=pending`,
       });
-      setProfile(p => ({ ...p, credits_minutes: (p.credits_minutes || 0) + pack.minutes }));
-      toast({ title: `+${pack.minutes} minutos adicionados! ⏱️`, description: `Saldo atual: ${(profile.credits_minutes || 0) + pack.minutes} min.` });
-    } catch {
-      toast({ title: "Erro ao processar pagamento", variant: "destructive" });
+      const url = res.data?.sandbox_init_point || res.data?.init_point;
+      if (url) window.location.href = url;
+      else throw new Error("URL não retornada");
+    } catch (e) {
+      toast({ title: "Erro ao iniciar pagamento", description: e.message, variant: "destructive" });
     } finally { setProcessing(false); }
   };
 
@@ -136,7 +183,7 @@ export default function Plans() {
                   </ul>
                   <Button
                     onClick={() => selectPlan(plan)}
-                    disabled={isCurrent || processing}
+                    disabled={isCurrent || processing || plan.price_brl === 0}
                     className={`w-full border-0 transition-all hover:scale-105 ${
                       isCurrent ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-600" :
                       plan.popular ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20" :
@@ -144,7 +191,7 @@ export default function Plans() {
                     }`}
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    {isCurrent ? "✓ Plano atual" : processing ? "Processando…" : "Assinar via Stripe"}
+                    {isCurrent ? "✓ Plano atual" : plan.price_brl === 0 ? "Grátis" : processing ? "Redirecionando…" : "Pagar com Mercado Pago"}
                   </Button>
                 </div>
               );
@@ -186,7 +233,7 @@ export default function Plans() {
               ))}
             </div>
             <p className="theme-subtext text-center text-xs text-gray-500 mt-6">
-              Pagamento seguro via Stripe · Créditos não expiram
+              Pagamento seguro via Mercado Pago · PIX, Cartão e Boleto · Créditos não expiram
             </p>
           </div>
         </TabsContent>
