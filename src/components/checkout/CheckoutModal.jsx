@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { X, CreditCard, Lock, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { X, Lock, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -11,30 +11,99 @@ function fmtBRL(val) {
 export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
   const [step, setStep] = useState("form"); // form | processing | success | error
   const [errorMsg, setErrorMsg] = useState("");
-  const [mpReady, setMpReady] = useState(false);
-  const mpRef = useRef(null);
   const cardFormRef = useRef(null);
+  const mpRef = useRef(null);
 
-  const [formData, setFormData] = useState({
-    cardholderName: "",
-    identificationNumber: "",
-    identificationType: "CPF",
-    installments: "1",
-  });
-
-  // Load MP SDK + fetch public key
+  // Load MP SDK + mount CardForm
   useEffect(() => {
-    const loadSDK = (publicKey) => {
+    let mounted = true;
+
+    const mountCardForm = (mp) => {
+      if (!mounted) return;
+
+      cardFormRef.current = mp.cardForm({
+        amount: String(item.price),
+        iframe: true,
+        form: {
+          id: "mp-card-form",
+          cardholderName: { id: "mp-cardholder-name", placeholder: "NOME NO CARTÃO" },
+          cardholderEmail: { id: "mp-cardholder-email", value: userEmail || "" },
+          cardNumber: { id: "mp-card-number", placeholder: "Número do cartão" },
+          cardExpirationDate: { id: "mp-card-expiry", placeholder: "MM/AA" },
+          securityCode: { id: "mp-card-cvv", placeholder: "CVV" },
+          installments: { id: "mp-installments" },
+          identificationType: { id: "mp-identification-type" },
+          identificationNumber: { id: "mp-identification-number", placeholder: "CPF do titular" },
+        },
+        callbacks: {
+          onFormMounted: (err) => {
+            if (err) console.error("CardForm mount error", err);
+          },
+          onSubmit: async (event) => {
+            event.preventDefault();
+            if (!mounted) return;
+            setStep("processing");
+            setErrorMsg("");
+
+            try {
+              const {
+                paymentMethodId,
+                issuerId,
+                cardholderEmail,
+                amount,
+                token,
+                installments,
+                identificationNumber,
+                identificationType,
+              } = cardFormRef.current.getCardFormData();
+
+              const res = await base44.functions.invoke("mpProcessPayment", {
+                token,
+                payment_method_id: paymentMethodId,
+                issuer_id: issuerId,
+                installments: parseInt(installments) || 1,
+                external_reference: item.external_reference,
+                payer_email: cardholderEmail || userEmail,
+                description: item.title,
+                transaction_amount: item.price,
+                identification_type: identificationType,
+                identification_number: identificationNumber,
+              });
+
+              if (res.data?.success) {
+                setStep("success");
+                setTimeout(() => { onSuccess?.(); onClose?.(); }, 2500);
+              } else if (res.data?.status === "pending" || res.data?.status === "in_process") {
+                setStep("success");
+                setTimeout(() => { onSuccess?.("pending"); onClose?.(); }, 2500);
+              } else {
+                throw new Error(res.data?.status_detail || res.data?.error || "Pagamento recusado");
+              }
+            } catch (err) {
+              setErrorMsg(err.message || "Erro ao processar pagamento");
+              setStep("error");
+            }
+          },
+          onError: (errors) => {
+            console.error("CardForm errors", errors);
+          },
+        },
+      });
+    };
+
+    const initWithKey = (publicKey) => {
+      if (!mounted) return;
       if (window.MercadoPago) {
         mpRef.current = new window.MercadoPago(publicKey, { locale: "pt-BR" });
-        setMpReady(true);
+        mountCardForm(mpRef.current);
         return;
       }
       const script = document.createElement("script");
       script.src = "https://sdk.mercadopago.com/js/v2";
       script.onload = () => {
+        if (!mounted) return;
         mpRef.current = new window.MercadoPago(publicKey, { locale: "pt-BR" });
-        setMpReady(true);
+        mountCardForm(mpRef.current);
       };
       document.body.appendChild(script);
     };
@@ -46,84 +115,20 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
         setStep("error");
         return;
       }
-      loadSDK(key);
+      initWithKey(key);
     }).catch(() => {
       setErrorMsg("Erro ao carregar configuração de pagamento.");
       setStep("error");
     });
 
     return () => {
+      mounted = false;
       if (cardFormRef.current) {
         cardFormRef.current.unmount?.();
         cardFormRef.current = null;
       }
     };
   }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!mpReady || !mpRef.current) return;
-
-    setStep("processing");
-    setErrorMsg("");
-
-    try {
-      // Create card token using MP SDK
-      const cardTokenRes = await mpRef.current.createCardToken({
-        cardholderName: formData.cardholderName,
-        cardNumber: document.getElementById("mp-card-number")?.value?.replace(/\s/g, ""),
-        cardExpirationMonth: document.getElementById("mp-expiry")?.value?.split("/")[0]?.trim(),
-        cardExpirationYear: `20${document.getElementById("mp-expiry")?.value?.split("/")[1]?.trim()}`,
-        securityCode: document.getElementById("mp-cvv")?.value,
-        identificationType: formData.identificationType,
-        identificationNumber: formData.identificationNumber.replace(/\D/g, ""),
-      });
-
-      if (cardTokenRes.error) {
-        throw new Error(cardTokenRes.error.message || "Erro ao tokenizar cartão");
-      }
-
-      const token = cardTokenRes.id;
-
-      // Detect payment method
-      const cardNumber = document.getElementById("mp-card-number")?.value?.replace(/\s/g, "") || "";
-      const pmRes = await mpRef.current.getPaymentMethods({ bin: cardNumber.slice(0, 6) });
-      const paymentMethodId = pmRes?.results?.[0]?.id || "visa";
-
-      // Process payment via backend
-      const res = await base44.functions.invoke("mpProcessPayment", {
-        token,
-        payment_method_id: paymentMethodId,
-        installments: parseInt(formData.installments),
-        external_reference: item.external_reference,
-        payer_email: userEmail,
-        description: item.title,
-        transaction_amount: item.price,
-      });
-
-      if (res.data?.success) {
-        setStep("success");
-        setTimeout(() => {
-          onSuccess?.();
-          onClose?.();
-        }, 2500);
-      } else if (res.data?.status === "pending" || res.data?.status === "in_process") {
-        setStep("success");
-        setTimeout(() => {
-          onSuccess?.("pending");
-          onClose?.();
-        }, 2500);
-      } else {
-        const detail = res.data?.status_detail || res.data?.error || "Pagamento recusado";
-        throw new Error(detail);
-      }
-    } catch (err) {
-      setErrorMsg(err.message || "Erro ao processar pagamento");
-      setStep("error");
-    }
-  };
-
-  const installmentOptions = [1, 2, 3, 6, 12];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -180,127 +185,82 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
           </div>
         )}
 
-        {/* Form */}
-        {step === "form" && (
-          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-
-            {/* Card number */}
+        {/* CardForm - always in DOM so MP can mount iframes, hidden when not on form step */}
+        <div style={{ display: step === "form" ? "block" : "none" }}>
+          <form id="mp-card-form" className="px-6 py-5 space-y-4">
             <div>
-              <Label className="text-gray-400 text-xs mb-1 block">Número do cartão</Label>
-              <div className="relative">
-                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input
-                  id="mp-card-number"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={19}
-                  placeholder="0000 0000 0000 0000"
-                  required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-violet-500 transition-colors"
-                  onChange={e => {
-                    let v = e.target.value.replace(/\D/g, "").slice(0, 16);
-                    e.target.value = v.replace(/(.{4})/g, "$1 ").trim();
-                  }}
-                />
-              </div>
+              <Label className="text-gray-400 text-xs mb-1 block">Nome no cartão</Label>
+              <input
+                id="mp-cardholder-name"
+                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-violet-500 transition-colors"
+              />
             </div>
 
-            {/* Expiry + CVV */}
+            <div>
+              <Label className="text-gray-400 text-xs mb-1 block">Número do cartão</Label>
+              <div
+                id="mp-card-number"
+                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm h-10"
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-gray-400 text-xs mb-1 block">Validade</Label>
-                <input
-                  id="mp-expiry"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={5}
-                  placeholder="MM/AA"
-                  required
-                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-violet-500 transition-colors"
-                  onChange={e => {
-                    let v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                    if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
-                    e.target.value = v;
-                  }}
+                <div
+                  id="mp-card-expiry"
+                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm h-10"
                 />
               </div>
               <div>
                 <Label className="text-gray-400 text-xs mb-1 block">CVV</Label>
-                <input
-                  id="mp-cvv"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={4}
-                  placeholder="123"
-                  required
-                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-violet-500 transition-colors"
-                  onChange={e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4); }}
+                <div
+                  id="mp-card-cvv"
+                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm h-10"
                 />
               </div>
             </div>
 
-            {/* Cardholder name */}
-            <div>
-              <Label className="text-gray-400 text-xs mb-1 block">Nome no cartão</Label>
-              <input
-                type="text"
-                placeholder="NOME SOBRENOME"
-                required
-                value={formData.cardholderName}
-                onChange={e => setFormData(f => ({ ...f, cardholderName: e.target.value.toUpperCase() }))}
-                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-violet-500 transition-colors"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-gray-400 text-xs mb-1 block">Tipo doc.</Label>
+                <select
+                  id="mp-identification-type"
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#0f0f1a] border border-white/10 text-white text-sm focus:outline-none focus:border-violet-500 transition-colors h-10"
+                />
+              </div>
+              <div>
+                <Label className="text-gray-400 text-xs mb-1 block">CPF / Documento</Label>
+                <input
+                  id="mp-identification-number"
+                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-violet-500 transition-colors"
+                />
+              </div>
             </div>
 
-            {/* CPF */}
-            <div>
-              <Label className="text-gray-400 text-xs mb-1 block">CPF do titular</Label>
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="000.000.000-00"
-                required
-                value={formData.identificationNumber}
-                onChange={e => {
-                  let v = e.target.value.replace(/\D/g, "").slice(0, 11);
-                  if (v.length > 9) v = v.slice(0, 3) + "." + v.slice(3, 6) + "." + v.slice(6, 9) + "-" + v.slice(9);
-                  else if (v.length > 6) v = v.slice(0, 3) + "." + v.slice(3, 6) + "." + v.slice(6);
-                  else if (v.length > 3) v = v.slice(0, 3) + "." + v.slice(3);
-                  setFormData(f => ({ ...f, identificationNumber: v }));
-                }}
-                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-violet-500 transition-colors"
-              />
-            </div>
-
-            {/* Parcelas */}
             <div>
               <Label className="text-gray-400 text-xs mb-1 block">Parcelas</Label>
               <select
-                value={formData.installments}
-                onChange={e => setFormData(f => ({ ...f, installments: e.target.value }))}
-                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-violet-500 transition-colors"
-              >
-                {installmentOptions.map(n => (
-                  <option key={n} value={n} className="bg-[#0f0f1a]">
-                    {n}x {fmtBRL(item.price / n)} {n === 1 ? "(sem juros)" : ""}
-                  </option>
-                ))}
-              </select>
+                id="mp-installments"
+                className="w-full px-3 py-2.5 rounded-xl bg-[#0f0f1a] border border-white/10 text-white text-sm focus:outline-none focus:border-violet-500 transition-colors h-10"
+              />
             </div>
+
+            {/* Hidden email field */}
+            <input id="mp-cardholder-email" type="hidden" value={userEmail || ""} />
 
             <Button
               type="submit"
-              disabled={!mpReady}
               className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 h-11 text-base font-semibold shadow-lg shadow-violet-500/20 hover:scale-[1.02] transition-all"
             >
-              {mpReady ? `Pagar ${fmtBRL(item.price)}` : "Carregando…"}
+              Pagar {fmtBRL(item.price)}
             </Button>
 
             <p className="text-center text-xs text-gray-600 flex items-center justify-center gap-1">
               <Lock className="w-3 h-3" /> Pagamento criptografado pelo Mercado Pago
             </p>
           </form>
-        )}
+        </div>
       </div>
     </div>
   );
