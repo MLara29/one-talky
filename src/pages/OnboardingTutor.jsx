@@ -68,7 +68,7 @@ export default function OnboardingTutor() {
       if (form.intro_video_url) profileData.intro_video_url = form.intro_video_url;
 
       await base44.entities.TutorProfile.create(profileData);
-      await base44.auth.updateMe({ profile_completed: true });
+      await base44.auth.updateMe({ profile_completed: true, role: "tutor" });
       toast({ title: "Candidatura enviada! 🎉", description: "Vamos revisar o seu perfil e entraremos em contato em breve." });
       window.location.href = "/";
     } catch (e) {

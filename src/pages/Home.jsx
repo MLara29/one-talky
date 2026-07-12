@@ -26,9 +26,16 @@ export default function Home() {
         base44.entities.StudentProfile.filter({ user_id: user.id }),
       ]);
       console.log("checkProfile:", { userId: user.id, tutors: tutorProfiles.length, students: studentProfiles.length });
-      if (tutorProfiles.length > 0) setResolvedRole("tutor");
-      else if (studentProfiles.length > 0) setResolvedRole("student");
-      else setResolvedRole(null);
+      if (tutorProfiles.length > 0) {
+        setResolvedRole("tutor");
+        // Self-heal: fix role if it wasn't set correctly during onboarding
+        if (user.role !== "tutor") await base44.auth.updateMe({ role: "tutor" });
+      } else if (studentProfiles.length > 0) {
+        setResolvedRole("student");
+        if (user.role !== "student") await base44.auth.updateMe({ role: "student" });
+      } else {
+        setResolvedRole(null);
+      }
     } catch (e) {
       console.error("checkProfile error:", e);
       setResolvedRole(null);
