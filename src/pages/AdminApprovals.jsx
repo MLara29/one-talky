@@ -20,10 +20,14 @@ export default function AdminApprovals() {
     } catch {} finally { setLoading(false); }
   };
 
-  const handleDecision = async (tutorId, decision) => {
+  const handleDecision = async (tutor, decision) => {
     try {
-      await base44.entities.TutorProfile.update(tutorId, { status: decision });
-      setTutors(prev => prev.filter(t => t.id !== tutorId));
+      await base44.entities.TutorProfile.update(tutor.id, { status: decision });
+      // Update user role when approved so dashboard routing works correctly
+      if (decision === "approved" && tutor.user_id) {
+        await base44.entities.User.update(tutor.user_id, { role: "tutor" });
+      }
+      setTutors(prev => prev.filter(t => t.id !== tutor.id));
       toast({ title: decision === "approved" ? "Tutor approved ✅" : "Tutor rejected" });
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
@@ -81,10 +85,10 @@ export default function AdminApprovals() {
                   )}
 
                   <div className="flex gap-3 mt-5">
-                    <Button onClick={() => handleDecision(t.id, "approved")} className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/30" size="sm">
+                    <Button onClick={() => handleDecision(t, "approved")} className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/30" size="sm">
                       <Check className="w-4 h-4 mr-1" /> Approve
                     </Button>
-                    <Button onClick={() => handleDecision(t.id, "rejected")} size="sm" className="bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/30">
+                    <Button onClick={() => handleDecision(t, "rejected")} size="sm" className="bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/30">
                       <X className="w-4 h-4 mr-1" /> Reject
                     </Button>
                   </div>

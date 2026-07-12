@@ -14,6 +14,8 @@ export default function Home() {
   useEffect(() => {
     if (!user?.id) return;
     if (user.role === "admin") { setChecking(false); return; }
+    if (user.role === "tutor") { setResolvedRole("tutor"); setChecking(false); return; }
+    if (user.role === "student") { setResolvedRole("student"); setChecking(false); return; }
     checkProfile();
   }, [user?.id]);
 
