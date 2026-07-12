@@ -104,8 +104,10 @@ export default function Classroom() {
 
     client.on("user-left", () => setRemoteUser(null));
 
-    // Use lesson id as channel name; token null = testing mode (no certificate)
-    await client.join(AGORA_APP_ID, id, null, user?.id?.slice(0, 32));
+    // Use lesson id as channel name; uid must be numeric for Agora
+    const uid = Math.abs(user?.id?.split("").reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0)) % 100000 || 1;
+    const agoraToken = import.meta.env.VITE_AGORA_TOKEN || null;
+    await client.join(AGORA_APP_ID, id, agoraToken, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;

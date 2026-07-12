@@ -23,7 +23,8 @@ export default function Profile() {
       if (role === "tutor") {
         const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
         if (profiles.length > 0) setProfile(profiles[0]);
-      } else if (role === "student") {
+      } else {
+        // student or user role — always try StudentProfile
         const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
         if (profiles.length > 0) setProfile(profiles[0]);
       }
@@ -39,6 +40,7 @@ export default function Profile() {
       } else {
         await base44.entities.StudentProfile.update(profile.id, { full_name: profile.full_name });
       }
+      await base44.auth.updateMe({ full_name: profile.full_name });
       toast({ title: "Profile saved! ✅" });
     } catch { toast({ title: "Error saving", variant: "destructive" }); } finally { setSaving(false); }
   };
