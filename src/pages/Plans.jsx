@@ -6,7 +6,7 @@ import { Check, Zap, Clock, CreditCard } from "lucide-react";
 import { PLANS, PREPAID_PACKS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSearchParams } from "react-router-dom";
+import CheckoutModal from "@/components/checkout/CheckoutModal";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -16,46 +16,10 @@ export default function Plans() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [searchParams] = useSearchParams();
+  const [loading, setLoading] = useState(false);
+  const [checkoutItem, setCheckoutItem] = useState(null); // item to pay
 
   useEffect(() => { loadProfile(); }, [user]);
-
-  // Confirma pagamento ao voltar do MP
-  useEffect(() => {
-    const status = searchParams.get("status");
-    const paymentId = searchParams.get("payment_id");
-    const externalRef = searchParams.get("external_reference");
-
-    if (status === "success" && paymentId) {
-      confirmPayment(paymentId, externalRef);
-    } else if (status === "failure") {
-      toast({ title: "Pagamento não aprovado", description: "Tente novamente.", variant: "destructive" });
-    } else if (status === "pending") {
-      toast({ title: "Pagamento pendente", description: "Assim que confirmado, seus créditos serão adicionados." });
-    }
-  }, []);
-
-  const confirmPayment = async (paymentId, externalRef) => {
-    try {
-      const res = await base44.functions.invoke("mpConfirmPayment", {
-        payment_id: paymentId,
-        external_reference: externalRef,
-      });
-      if (res.data?.success) {
-        const parts = (externalRef || "").split(":");
-        const type = parts[0];
-        const minutes = parseInt(parts[2] || "0", 10);
-        if (type === "plan") {
-          toast({ title: "Plano ativado! 🎉", description: `+${minutes} minutos adicionados à sua conta.` });
-        } else {
-          toast({ title: `+${minutes} minutos adicionados! ⏱️` });
-        }
-        loadProfile();
-      }
-    } catch {}
-  };
 
   const loadProfile = async () => {
     try {
@@ -64,48 +28,31 @@ export default function Plans() {
     } catch {} finally { setLoading(false); }
   };
 
-  const getBaseUrl = () => window.location.origin + "/plans";
-
-  const selectPlan = async (plan) => {
-    if (!profile || processing || plan.price_brl === 0) return;
-    setProcessing(true);
-    try {
-      toast({ title: "Redirecionando para o Mercado Pago…" });
-      const res = await base44.functions.invoke("mpCreatePreference", {
-        title: `One Talky — Plano ${plan.name} (${plan.minutes} min/mês)`,
-        unit_price: plan.price_monthly,
-        external_reference: `plan:${plan.id}:${plan.minutes}`,
-        success_url: `${getBaseUrl()}?status=success`,
-        failure_url: `${getBaseUrl()}?status=failure`,
-        pending_url: `${getBaseUrl()}?status=pending`,
-      });
-      const url = res.data?.sandbox_init_point || res.data?.init_point;
-      if (url) window.location.href = url;
-      else throw new Error("URL não retornada");
-    } catch (e) {
-      toast({ title: "Erro ao iniciar pagamento", description: e.message, variant: "destructive" });
-    } finally { setProcessing(false); }
+  const handleSuccess = (status) => {
+    if (status === "pending") {
+      toast({ title: "Pagamento pendente", description: "Assim que confirmado, seus créditos serão adicionados." });
+    } else {
+      toast({ title: "Pagamento aprovado! 🎉", description: "Seus créditos foram adicionados." });
+    }
+    loadProfile();
   };
 
-  const buyPack = async (pack) => {
-    if (!profile || processing) return;
-    setProcessing(true);
-    try {
-      toast({ title: "Redirecionando para o Mercado Pago…" });
-      const res = await base44.functions.invoke("mpCreatePreference", {
-        title: `One Talky — ${pack.label}`,
-        unit_price: pack.price_brl,
-        external_reference: `pack:${pack.id}:${pack.minutes}`,
-        success_url: `${getBaseUrl()}?status=success`,
-        failure_url: `${getBaseUrl()}?status=failure`,
-        pending_url: `${getBaseUrl()}?status=pending`,
-      });
-      const url = res.data?.sandbox_init_point || res.data?.init_point;
-      if (url) window.location.href = url;
-      else throw new Error("URL não retornada");
-    } catch (e) {
-      toast({ title: "Erro ao iniciar pagamento", description: e.message, variant: "destructive" });
-    } finally { setProcessing(false); }
+  const selectPlan = (plan) => {
+    if (!profile || plan.price_monthly === 0) return;
+    setCheckoutItem({
+      title: `One Talky — Plano ${plan.name} (${plan.minutes} min/mês)`,
+      price: plan.price_monthly,
+      external_reference: `plan:${plan.id}:${plan.minutes}`,
+    });
+  };
+
+  const buyPack = (pack) => {
+    if (!profile) return;
+    setCheckoutItem({
+      title: `One Talky — ${pack.label}`,
+      price: pack.price_brl,
+      external_reference: `pack:${pack.id}:${pack.minutes}`,
+    });
   };
 
   if (loading) return (
@@ -116,6 +63,14 @@ export default function Plans() {
 
   return (
     <div>
+      {checkoutItem && (
+        <CheckoutModal
+          item={checkoutItem}
+          userEmail={user?.email}
+          onClose={() => setCheckoutItem(null)}
+          onSuccess={handleSuccess}
+        />
+      )}
       <div className="text-center mb-10">
         <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-2">Planos & Créditos</h1>
         <p className="theme-subtext text-gray-500 text-sm">R$ 66 por 30 minutos · Sem fidelidade obrigatória</p>
@@ -183,7 +138,7 @@ export default function Plans() {
                   </ul>
                   <Button
                     onClick={() => selectPlan(plan)}
-                    disabled={isCurrent || processing || plan.price_brl === 0}
+                    disabled={isCurrent || plan.price_monthly === 0}
                     className={`w-full border-0 transition-all hover:scale-105 ${
                       isCurrent ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-600" :
                       plan.popular ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20" :
@@ -191,7 +146,7 @@ export default function Plans() {
                     }`}
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    {isCurrent ? "✓ Plano atual" : plan.price_brl === 0 ? "Grátis" : processing ? "Redirecionando…" : "Pagar com Mercado Pago"}
+                    {isCurrent ? "✓ Plano atual" : plan.price_monthly === 0 ? "Grátis" : "Pagar com cartão"}
                   </Button>
                 </div>
               );
@@ -223,10 +178,10 @@ export default function Plans() {
                     <Button
                       size="sm"
                       onClick={() => buyPack(pack)}
-                      disabled={processing}
+                      disabled={!!checkoutItem}
                       className="mt-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all"
                     >
-                      {processing ? "…" : "Comprar"}
+                      Comprar
                     </Button>
                   </div>
                 </div>
