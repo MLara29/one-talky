@@ -105,9 +105,14 @@ export default function Classroom() {
     client.on("user-left", () => setRemoteUser(null));
 
     // Use role-based UIDs to guarantee no collision within the same channel
-    // tutor = 1, student = 2 — token must be null in testing mode (no-auth app)
+    // tutor = 1, student = 2
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
-    await client.join(AGORA_APP_ID, id, null, uid);
+    let agoraToken = null;
+    try {
+      const res = await base44.functions.invoke('agoraToken', { channelName: id, uid });
+      agoraToken = res.data?.token || null;
+    } catch {}
+    await client.join(AGORA_APP_ID, id, agoraToken, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;
@@ -151,14 +156,34 @@ export default function Classroom() {
 
   const endLesson = async () => {
     await leaveChannel();
+    const durationMinutes = Math.max(1, Math.round(elapsed / 60));
     try {
       await base44.entities.Lesson.update(id, {
         status: "completed",
         ended_at: new Date().toISOString(),
-        duration_minutes: Math.round(elapsed / 60),
+        duration_minutes: durationMinutes,
         is_recorded: isRecording,
       });
     } catch {}
+
+    // Deduct minutes from student credits
+    if (lesson?.student_id) {
+      try {
+        const profiles = await base44.entities.StudentProfile.filter({ user_id: lesson.student_id });
+        if (profiles.length > 0) {
+          const profile = profiles[0];
+          const currentCredits = profile.credits_minutes ?? 0;
+          const newCredits = Math.max(0, currentCredits - durationMinutes);
+          await base44.entities.StudentProfile.update(profile.id, {
+            credits_minutes: newCredits,
+            total_minutes: (profile.total_minutes ?? 0) + durationMinutes,
+            total_lessons: (profile.total_lessons ?? 0) + 1,
+            last_practice_date: new Date().toISOString().split("T")[0],
+          });
+        }
+      } catch {}
+    }
+
     setShowReview(true);
   };
 
