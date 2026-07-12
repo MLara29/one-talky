@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
-const AGORA_APP_ID = import.meta.env.VITE_AGORA_APP_ID || "cb91268f716240d289c3df39c7d69aaa";
+const AGORA_APP_ID = import.meta.env.VITE_AGORA_APP_ID;
 
 export default function Classroom() {
   const { id } = useParams();
@@ -108,13 +108,14 @@ export default function Classroom() {
     // tutor = 1, student = 2
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
     let agoraToken = null;
+    let appId = AGORA_APP_ID;
     try {
       const res = await base44.functions.invoke('agoraToken', { channelName: id, uid });
+      if (res.data?.appId) appId = res.data.appId;
       const t = res.data?.token;
-      // Only use token if it looks valid (starts with '007' and is long enough)
       if (t && t.startsWith('007') && t.length > 50) agoraToken = t;
     } catch {}
-    await client.join(AGORA_APP_ID, id, agoraToken, uid);
+    await client.join(appId, id, agoraToken, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;

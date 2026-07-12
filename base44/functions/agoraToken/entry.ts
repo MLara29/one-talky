@@ -88,17 +88,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'channelName and uid are required' }, { status: 400 });
     }
 
-    // VITE_AGORA_APP_ID secret may not be set correctly; use hardcoded fallback
-    const appId = 'cb91268f716240d289c3df39c7d69aaa';
+    const appId = Deno.env.get('VITE_AGORA_APP_ID') || '';
     const appCert = Deno.env.get('VITE_AGORA_APP_CERTIFICATE');
 
-    if (!appId || !appCert) {
-      // No certificate configured — return null so the client uses no-token mode
-      return Response.json({ token: null });
+    if (!appId) {
+      return Response.json({ error: 'VITE_AGORA_APP_ID not configured' }, { status: 500 });
+    }
+
+    if (!appCert) {
+      // No certificate — return appId only, client will join with null token
+      return Response.json({ appId, token: null });
     }
 
     const token = await buildRtcToken(appId, appCert, channelName, Number(uid), 3600);
-    return Response.json({ token });
+    return Response.json({ appId, token });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
