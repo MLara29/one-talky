@@ -110,7 +110,9 @@ export default function Classroom() {
     let agoraToken = null;
     try {
       const res = await base44.functions.invoke('agoraToken', { channelName: id, uid });
-      agoraToken = res.data?.token || null;
+      const t = res.data?.token;
+      // Only use token if it looks valid (starts with '007' and is long enough)
+      if (t && t.startsWith('007') && t.length > 50) agoraToken = t;
     } catch {}
     await client.join(AGORA_APP_ID, id, agoraToken, uid);
 
