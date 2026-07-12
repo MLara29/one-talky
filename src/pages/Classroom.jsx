@@ -85,15 +85,15 @@ export default function Classroom() {
 
     client.on("user-published", async (remoteAgoraUser, mediaType) => {
       await client.subscribe(remoteAgoraUser, mediaType);
-      if (mediaType === "video") {
+      if (mediaType === "video" && remoteAgoraUser.videoTrack) {
         setRemoteUser(remoteAgoraUser);
         setTimeout(() => {
           if (remoteVideoDiv.current) {
             remoteAgoraUser.videoTrack.play(remoteVideoDiv.current);
           }
-        }, 300);
+        }, 500);
       }
-      if (mediaType === "audio") {
+      if (mediaType === "audio" && remoteAgoraUser.audioTrack) {
         remoteAgoraUser.audioTrack.play();
       }
     });
@@ -105,10 +105,9 @@ export default function Classroom() {
     client.on("user-left", () => setRemoteUser(null));
 
     // Use role-based UIDs to guarantee no collision within the same channel
-    // tutor = 1, student = 2
+    // tutor = 1, student = 2 — token must be null in testing mode (no-auth app)
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
-    const agoraToken = import.meta.env.VITE_AGORA_TOKEN || null;
-    await client.join(AGORA_APP_ID, id, agoraToken, uid);
+    await client.join(AGORA_APP_ID, id, null, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;
