@@ -104,8 +104,9 @@ export default function Classroom() {
 
     client.on("user-left", () => setRemoteUser(null));
 
-    // Use lesson id as channel name; uid must be numeric for Agora
-    const uid = Math.abs(user?.id?.split("").reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0)) % 100000 || 1;
+    // Use role-based UIDs to guarantee no collision within the same channel
+    // tutor = 1, student = 2
+    const uid = (l.tutor_id === user?.id) ? 1 : 2;
     const agoraToken = import.meta.env.VITE_AGORA_TOKEN || null;
     await client.join(AGORA_APP_ID, id, agoraToken, uid);
 
