@@ -77,6 +77,12 @@ export default function Classroom() {
     }
   };
 
+  const fetchAgoraToken = async (channelName, uid) => {
+    const res = await base44.functions.invoke('agoraToken', { channelName, uid, role: 'publisher' });
+    if (!res.data?.token) throw new Error("Falha ao gerar token Agora");
+    return res.data;
+  };
+
   const joinChannel = async (l) => {
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     clientRef.current = client;
@@ -102,15 +108,24 @@ export default function Classroom() {
 
     client.on("user-left", () => setRemoteUser(null));
 
-    // Use role-based UIDs to guarantee no collision within the same channel
-    // tutor = 1, student = 2
+    // tutor = uid 1, student = uid 2 (sem colisão no mesmo canal)
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
-    const res = await base44.functions.invoke('agoraToken', { channelName: id, uid });
-    const appId = res.data?.appId;
-    const token = res.data?.token || null;
+    const channelName = id;
+
+    const { token, appId } = await fetchAgoraToken(channelName, uid);
     if (!appId) throw new Error("App ID do Agora não configurado");
-    console.log('[Agora] joining with appId:', appId, 'channel:', id, 'uid:', uid, 'token:', token ? 'yes' : 'null (testing)');
-    await client.join(appId, id, token, uid);
+
+    console.log('[Agora] joining — appId:', appId, '| channel:', channelName, '| uid:', uid, '| token:', token.substring(0, 20) + '...');
+
+    // Renovação automática de token antes de expirar
+    client.on("token-privilege-will-expire", async () => {
+      console.log('[Agora] token expirando, renovando...');
+      const { token: newToken } = await fetchAgoraToken(channelName, uid);
+      await client.renewToken(newToken);
+      console.log('[Agora] token renovado');
+    });
+
+    await client.join(appId, channelName, token, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;
