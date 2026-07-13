@@ -110,6 +110,7 @@ export default function Classroom() {
     const t = res.data?.token;
     const agoraToken = (t && t.startsWith('007') && t.length > 50) ? t : null;
     if (!appId) throw new Error("App ID do Agora não configurado");
+    console.log('[Agora] joining with appId:', appId, 'token:', agoraToken ? agoraToken.substring(0, 20) + '...' : null);
     await client.join(appId, id, agoraToken, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
