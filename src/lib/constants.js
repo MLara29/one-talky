@@ -59,30 +59,26 @@ export const COUNTRIES = [
   "New Zealand", "Netherlands", "Sweden", "Norway", "Denmark",
 ];
 
-// Preço base: R$ 66 por 30 minutos (R$ 2,20/min)
-// R$/min = 2.20
-export const PRICE_PER_MIN_BRL = 2.20;
+// Preço base: R$29,90 por 30 minutos (R$0,9967/min)
+export const PRICE_PER_MIN_BRL = 0.9967;
 
-// Básico: R$66/30min = R$2,20/min
-// Standard: 2x mais minutos que básico (60min), 10% off → R$66×2×0.9 = R$118,80
-// Premium: 4x mais minutos que básico (120min), 20% off → R$66×4×0.8 = R$211,20
-// Básico: 1 aula/semana de 30min → R$66/sem → R$264/mês
-// Standard: 2 aulas/semana de 30min → R$118,80/sem (10% off) → R$475,20/mês
-// Premium: 4 aulas/semana de 30min → R$211,20/sem (20% off) → R$844,80/mês
+// Básico:   1 aula/semana × 4 semanas = 4 × R$29,90 = R$119,60/mês
+// Standard: 2 aulas/semana × 4 = 8 × R$29,90 = R$239,20 → 5% off = R$227,24/mês
+// Premium:  4 aulas/semana × 4 = 16 × R$29,90 = R$478,40 → 10% off = R$430,56/mês
 export const PLANS = [
   { id: "free", name: "Teste Grátis", minutes: 15, price_brl: 0, price_weekly: 0, price_monthly: 0, description: "Experimente a plataforma", sessions_per_week: 0 },
-  { id: "basic", name: "Básico", minutes: 30, price_brl: 264, price_weekly: 66, price_monthly: 264, description: "1 aula por semana · 30 min", popular: false, sessions_per_week: 1 },
-  { id: "standard", name: "Standard", minutes: 60, price_brl: 475.20, price_weekly: 118.80, price_monthly: 475.20, description: "2 aulas por semana · 30 min", popular: true, sessions_per_week: 2 },
-  { id: "premium", name: "Premium", minutes: 120, price_brl: 844.80, price_weekly: 211.20, price_monthly: 844.80, description: "4 aulas por semana · 30 min", sessions_per_week: 4 },
+  { id: "basic", name: "Básico", minutes: 30, price_brl: 119.60, price_weekly: 29.90, price_monthly: 119.60, description: "1 aula por semana · 30 min", popular: false, sessions_per_week: 1 },
+  { id: "standard", name: "Standard", minutes: 60, price_brl: 227.24, price_weekly: 56.81, price_monthly: 227.24, description: "2 aulas por semana · 30 min", popular: true, sessions_per_week: 2 },
+  { id: "premium", name: "Premium", minutes: 120, price_brl: 430.56, price_weekly: 107.64, price_monthly: 430.56, description: "4 aulas por semana · 30 min", sessions_per_week: 4 },
 ];
 
-// Pacotes pré-pagos (sem mensalidade)
+// Pacotes pré-pagos (sem mensalidade) — base R$29,90/30min
 export const PREPAID_PACKS = [
-  { id: "pp_30", minutes: 30, price_brl: 66, label: "30 minutos" },
-  { id: "pp_60", minutes: 60, price_brl: 126, label: "60 minutos", badge: "5% off" },
-  { id: "pp_120", minutes: 120, price_brl: 237.60, label: "2 horas", badge: "10% off" },
-  { id: "pp_300", minutes: 300, price_brl: 561, label: "5 horas", badge: "15% off" },
-  { id: "pp_600", minutes: 600, price_brl: 1056, label: "10 horas", badge: "20% off" },
+  { id: "pp_30", minutes: 30, price_brl: 29.90, label: "30 minutos" },
+  { id: "pp_60", minutes: 60, price_brl: 56.81, label: "60 minutos", badge: "5% off" },
+  { id: "pp_120", minutes: 120, price_brl: 107.64, label: "2 horas", badge: "10% off" },
+  { id: "pp_300", minutes: 300, price_brl: 254.15, label: "5 horas", badge: "15% off" },
+  { id: "pp_600", minutes: 600, price_brl: 478.40, label: "10 horas", badge: "20% off" },
 ];
 
 export function getLanguageLabel(value) {
