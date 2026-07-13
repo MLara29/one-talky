@@ -9,8 +9,6 @@ import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
-const AGORA_APP_ID = import.meta.env.VITE_AGORA_APP_ID;
-
 export default function Classroom() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -107,14 +105,11 @@ export default function Classroom() {
     // Use role-based UIDs to guarantee no collision within the same channel
     // tutor = 1, student = 2
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
-    let agoraToken = null;
-    let appId = AGORA_APP_ID;
-    try {
-      const res = await base44.functions.invoke('agoraToken', { channelName: id, uid });
-      if (res.data?.appId) appId = res.data.appId;
-      const t = res.data?.token;
-      if (t && t.startsWith('007') && t.length > 50) agoraToken = t;
-    } catch {}
+    const res = await base44.functions.invoke('agoraToken', { channelName: id, uid });
+    const appId = res.data?.appId;
+    const t = res.data?.token;
+    const agoraToken = (t && t.startsWith('007') && t.length > 50) ? t : null;
+    if (!appId) throw new Error("App ID do Agora não configurado");
     await client.join(appId, id, agoraToken, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
