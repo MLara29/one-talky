@@ -73,7 +73,7 @@ export default function Plans() {
       )}
       <div className="text-center mb-10">
         <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-2">Planos & Créditos</h1>
-        <p className="theme-subtext text-gray-500 text-sm">R$ 66 por 30 minutos · Sem fidelidade obrigatória</p>
+        <p className="theme-subtext text-gray-500 text-sm">R$ 29,90 por 30 minutos · Sem fidelidade obrigatória</p>
         {profile && (
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-sm font-semibold">
             <Clock className="w-4 h-4" /> {profile.credits_minutes || 0} minutos disponíveis
