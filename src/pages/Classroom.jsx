@@ -197,6 +197,23 @@ export default function Classroom() {
       } catch {}
     }
 
+    // Update tutor earnings and stats
+    if (lesson?.tutor_id) {
+      try {
+        const tutorProfiles = await base44.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
+        if (tutorProfiles.length > 0) {
+          const tp = tutorProfiles[0];
+          const rate = tp.price_per_minute ?? 0.9967;
+          const earned = durationMinutes * rate;
+          await base44.entities.TutorProfile.update(tp.id, {
+            total_earnings: (tp.total_earnings ?? 0) + earned,
+            total_minutes: (tp.total_minutes ?? 0) + durationMinutes,
+            total_lessons: (tp.total_lessons ?? 0) + 1,
+          });
+        }
+      } catch {}
+    }
+
     setShowReview(true);
   };
 

@@ -1,22 +1,61 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Trash2, Ban, CheckCircle } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function AdminUsers() {
   const [tutors, setTutors] = useState([]);
   const [students, setStudents] = useState([]);
+  const [users, setUsers] = useState({});
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     try {
-      const [t, s] = await Promise.all([
+      const [t, s, allUsers] = await Promise.all([
         base44.entities.TutorProfile.list("-created_date", 50),
         base44.entities.StudentProfile.list("-created_date", 50),
+        base44.entities.User.list("-created_date", 200),
       ]);
-      setTutors(t); setStudents(s);
+      // map userId → user
+      const userMap = {};
+      allUsers.forEach(u => { userMap[u.id] = u; });
+      setTutors(t);
+      setStudents(s);
+      setUsers(userMap);
     } catch {} finally { setLoading(false); }
+  };
+
+  const blockTutor = async (t) => {
+    const newStatus = t.status === "rejected" ? "approved" : "rejected";
+    await base44.entities.TutorProfile.update(t.id, { status: newStatus });
+    setTutors(prev => prev.map(x => x.id === t.id ? { ...x, status: newStatus } : x));
+    toast({ title: newStatus === "rejected" ? "Tutor bloqueado" : "Tutor desbloqueado" });
+  };
+
+  const deleteTutor = async (t) => {
+    if (!confirm(`Deletar ${t.full_name}? Esta ação não pode ser desfeita.`)) return;
+    await base44.entities.TutorProfile.delete(t.id);
+    setTutors(prev => prev.filter(x => x.id !== t.id));
+    toast({ title: "Tutor deletado" });
+  };
+
+  const blockStudent = async (s) => {
+    const newPlan = s.plan === "blocked" ? "free" : "blocked";
+    await base44.entities.StudentProfile.update(s.id, { plan: newPlan });
+    setStudents(prev => prev.map(x => x.id === s.id ? { ...x, plan: newPlan } : x));
+    toast({ title: newPlan === "blocked" ? "Aluno bloqueado" : "Aluno desbloqueado" });
+  };
+
+  const deleteStudent = async (s) => {
+    if (!confirm(`Deletar ${s.full_name}? Esta ação não pode ser desfeita.`)) return;
+    await base44.entities.StudentProfile.delete(s.id);
+    setStudents(prev => prev.filter(x => x.id !== s.id));
+    toast({ title: "Aluno deletado" });
   };
 
   if (loading) return (
@@ -43,19 +82,41 @@ export default function AdminUsers() {
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
             <div className="divide-y divide-white/5">
               {tutors.map(t => (
-                <div key={t.id} className="p-4 flex items-center justify-between hover:bg-white/3 transition-all">
-                  <div className="flex items-center gap-3">
-                    <img src={t.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover" alt="" />
-                    <div>
-                      <p className="theme-heading font-medium text-sm text-white">{t.full_name}</p>
-                      <p className="theme-subtext text-xs text-gray-500">{t.country}</p>
+                <div key={t.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/3 transition-all">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img src={t.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
+                    <div className="min-w-0">
+                      <p className="theme-heading font-medium text-sm text-white truncate">{t.full_name}</p>
+                      <p className="theme-subtext text-xs text-gray-500 truncate">
+                        {users[t.user_id]?.email || t.country || "—"}
+                      </p>
                     </div>
                   </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
-                    t.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" :
-                    t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
-                    "bg-red-500/10 border-red-500/20 text-red-600"
-                  }`}>{t.status}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
+                      t.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" :
+                      t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
+                      "bg-red-500/10 border-red-500/20 text-red-600"
+                    }`}>{t.status}</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => blockTutor(t)}
+                      className={`px-2 h-8 ${t.status === "rejected" ? "text-emerald-500 hover:text-emerald-400" : "text-amber-500 hover:text-amber-400"}`}
+                      title={t.status === "rejected" ? "Desbloquear" : "Bloquear"}
+                    >
+                      {t.status === "rejected" ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => deleteTutor(t)}
+                      className="px-2 h-8 text-red-500 hover:text-red-400"
+                      title="Deletar"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
               {tutors.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">No tutors yet</p>}
@@ -67,15 +128,39 @@ export default function AdminUsers() {
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
             <div className="divide-y divide-white/5">
               {students.map(s => (
-                <div key={s.id} className="p-4 flex items-center justify-between hover:bg-white/3 transition-all">
-                  <div className="flex items-center gap-3">
-                    <img src={s.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover" alt="" />
-                    <div>
-                      <p className="theme-heading font-medium text-sm text-white">{s.full_name}</p>
-                      <p className="theme-subtext text-xs text-gray-500 capitalize">{s.target_language} · {s.level}</p>
+                <div key={s.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/3 transition-all">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img src={s.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
+                    <div className="min-w-0">
+                      <p className="theme-heading font-medium text-sm text-white truncate">{s.full_name}</p>
+                      <p className="theme-subtext text-xs text-gray-500 truncate">
+                        {users[s.user_id]?.email || `${s.target_language} · ${s.level}` || "—"}
+                      </p>
                     </div>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-blue-500/10 border border-blue-500/20 text-blue-600 capitalize">{s.plan || "free"}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
+                      s.plan === "blocked" ? "bg-red-500/10 border-red-500/20 text-red-600" : "bg-blue-500/10 border-blue-500/20 text-blue-600"
+                    } capitalize`}>{s.plan || "free"}</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => blockStudent(s)}
+                      className={`px-2 h-8 ${s.plan === "blocked" ? "text-emerald-500 hover:text-emerald-400" : "text-amber-500 hover:text-amber-400"}`}
+                      title={s.plan === "blocked" ? "Desbloquear" : "Bloquear"}
+                    >
+                      {s.plan === "blocked" ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => deleteStudent(s)}
+                      className="px-2 h-8 text-red-500 hover:text-red-400"
+                      title="Deletar"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
               {students.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">No students yet</p>}
