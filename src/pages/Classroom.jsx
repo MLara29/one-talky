@@ -107,9 +107,10 @@ export default function Classroom() {
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
     const res = await base44.functions.invoke('agoraToken', { channelName: id, uid });
     const appId = res.data?.appId;
+    const token = res.data?.token || null;
     if (!appId) throw new Error("App ID do Agora não configurado");
-    console.log('[Agora] joining with appId:', appId, 'channel:', id, 'uid:', uid, '(no token - testing mode)');
-    await client.join(appId, id, null, uid);
+    console.log('[Agora] joining with appId:', appId, 'channel:', id, 'uid:', uid, 'token:', token ? 'yes' : 'null (testing)');
+    await client.join(appId, id, token, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;
