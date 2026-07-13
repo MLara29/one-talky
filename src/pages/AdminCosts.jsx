@@ -3,9 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 import {
   DollarSign, TrendingUp, TrendingDown, Users, CreditCard,
-  Percent, BarChart3, PieChart, Download, Edit2, Check, X
+  Percent, BarChart3, PieChart, Download, Edit2, Check, X, Save
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RPieChart, Pie, Cell, Legend } from "recharts";
 import { PLANS } from "@/lib/constants";
@@ -93,9 +94,11 @@ function EditableField({ label, value, onChange, prefix = "R$", suffix = "", typ
 }
 
 export default function AdminCosts() {
+  const { toast } = useToast();
   // ── Tutor rates (fetched from DB) ──
   const [tutors, setTutors] = useState([]);
   const [tutorRates, setTutorRates] = useState({}); // { tutor_id: price_per_minute }
+  const [savingRates, setSavingRates] = useState(false);
 
   // ── Transaction costs ──
   const [txCosts, setTxCosts] = useState({
@@ -125,6 +128,20 @@ export default function AdminCosts() {
       })
       .catch(() => {});
   }, []);
+
+  const saveTutorRates = async () => {
+    setSavingRates(true);
+    try {
+      await Promise.all(
+        tutors.map(t => base44.entities.TutorProfile.update(t.id, { price_per_minute: tutorRates[t.id] ?? globals.default_tutor_rate }))
+      );
+      toast({ title: "Taxas salvas com sucesso!" });
+    } catch {
+      toast({ title: "Erro ao salvar taxas", variant: "destructive" });
+    } finally {
+      setSavingRates(false);
+    }
+  };
 
   // ── Calculations ─────────────────────────────────────────
   // For each plan: receita, custo tutor, taxas, lucro
@@ -310,9 +327,15 @@ export default function AdminCosts() {
         {/* ── TUTORES ── */}
         <TabsContent value="tutors">
           <div className="theme-card bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/5">
-              <h2 className="theme-heading font-display font-bold text-white">Remuneração dos Tutores</h2>
-              <p className="theme-subtext text-xs text-gray-500 mt-0.5">Valor por hora calculado automaticamente (R$/min × 60)</p>
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <h2 className="theme-heading font-display font-bold text-white">Remuneração dos Tutores</h2>
+                <p className="theme-subtext text-xs text-gray-500 mt-0.5">Edite os valores e clique em Salvar para persistir no banco</p>
+              </div>
+              <Button onClick={saveTutorRates} disabled={savingRates || tutors.length === 0} className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20">
+                <Save className="w-4 h-4 mr-2" />
+                {savingRates ? "Salvando..." : "Salvar alterações"}
+              </Button>
             </div>
             {tutors.length === 0 ? (
               <div className="text-center py-12">

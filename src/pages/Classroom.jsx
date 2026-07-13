@@ -27,6 +27,7 @@ export default function Classroom() {
   const [isRecording, setIsRecording] = useState(false);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
   const [joined, setJoined] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const clientRef = useRef(null);
   const localAudioTrackRef = useRef(null);
@@ -65,10 +66,16 @@ export default function Classroom() {
       if (event.data?.lesson_id !== id) return;
       if (event.type === "create") {
         setMessages(prev => {
-          // avoid duplicates
           if (prev.find(m => m.id === event.data.id)) return prev;
           return [...prev, event.data];
         });
+        // increment unread only for messages from others when chat is closed
+        if (event.data.sender_id !== user?.id) {
+          setChatOpen(open => {
+            if (!open) setUnreadCount(c => c + 1);
+            return open;
+          });
+        }
       }
     });
     // Load existing messages
@@ -402,13 +409,18 @@ export default function Classroom() {
           {cameraOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
         </button>
         <button
-          onClick={() => setChatOpen(!chatOpen)}
-          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
+          onClick={() => { setChatOpen(o => !o); setUnreadCount(0); }}
+          className={`relative rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
             chatOpen ? "bg-violet-500/20 border border-violet-500/40 text-violet-400 shadow-violet-500/20" : "bg-white/10 hover:bg-white/15 text-white border border-white/10"
           }`}
           style={{ width: 52, height: 52 }}
         >
           <MessageCircle className="w-5 h-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </button>
         <button
           onClick={endLesson}
