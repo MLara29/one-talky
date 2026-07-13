@@ -1,24 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 
-// Agora AccessToken2 (RTC) — pure WebCrypto implementation
-// Reference: https://docs.agora.io/en/video-calling/get-started/authentication-workflow
+// Agora AccessToken2 (RTC) — per official spec
+// https://github.com/AgoraIO/Tools/tree/master/DynamicKey/AgoraDynamicKey
 
-async function hmacSha256(keyBytes: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  );
+async function hmacSha256(key: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
+  const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return new Uint8Array(await crypto.subtle.sign('HMAC', cryptoKey, data));
 }
 
 function packUint16LE(v: number): Uint8Array {
-  const b = new Uint8Array(2);
-  b[0] = v & 0xff; b[1] = (v >> 8) & 0xff;
-  return b;
+  return new Uint8Array([v & 0xff, (v >> 8) & 0xff]);
 }
 function packUint32LE(v: number): Uint8Array {
-  const b = new Uint8Array(4);
-  b[0] = v & 0xff; b[1] = (v >> 8) & 0xff; b[2] = (v >> 16) & 0xff; b[3] = (v >> 24) & 0xff;
-  return b;
+  return new Uint8Array([v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >> 24) & 0xff]);
 }
 function packString(s: string): Uint8Array {
   const enc = new TextEncoder().encode(s);
@@ -27,8 +21,8 @@ function packString(s: string): Uint8Array {
 function concat(...arrays: Uint8Array[]): Uint8Array {
   const total = arrays.reduce((s, a) => s + a.length, 0);
   const out = new Uint8Array(total);
-  let offset = 0;
-  for (const a of arrays) { out.set(a, offset); offset += a.length; }
+  let off = 0;
+  for (const a of arrays) { out.set(a, off); off += a.length; }
   return out;
 }
 function toBase64(b: Uint8Array): string {
@@ -37,44 +31,55 @@ function toBase64(b: Uint8Array): string {
   return btoa(s);
 }
 
-async function buildRtcToken(appId: string, appCert: string, channelName: string, uid: number, expireSeconds: number): Promise<string> {
+// AccessToken2 format
+async function buildAccessToken2(appId: string, appCert: string, channelName: string, uid: number, expireSeconds: number): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
-  const expireTs = now + expireSeconds;
+  const expire = now + expireSeconds;
+  const issueTs = now;
   const salt = (Math.random() * 0xffffffff) >>> 0;
+
+  // Service RTC (service type = 1)
   const uidStr = uid === 0 ? '' : String(uid >>> 0);
 
-  // Privileges: joinChannel=1, publishAudio=2, publishVideo=3, publishDataStream=4
-  const privs: [number, number][] = [[1, expireTs], [2, expireTs], [3, expireTs], [4, expireTs]];
-  const privMap = concat(
-    packUint16LE(privs.length),
-    ...privs.flatMap(([k, v]) => [packUint16LE(k), packUint32LE(v)])
+  // Privileges for RTC service: joinChannel=1, publishAudio=2, publishVideo=3, publishDataStream=4
+  const privileges: [number, number][] = [[1, expire], [2, expire], [3, expire], [4, expire]];
+  const privBytes = concat(
+    packUint16LE(privileges.length),
+    ...privileges.flatMap(([k, v]) => [packUint16LE(k), packUint32LE(v)])
   );
 
-  // Message to sign
-  const msg = concat(
-    packUint32LE(now),
-    packUint32LE(salt),
+  // Service body: type(1) + num_services(1) + service_type(2) + channel(string) + uid(string) + privs
+  const serviceBody = concat(
+    packUint16LE(1),        // num services
+    packUint16LE(1),        // service type: RTC = 1
     packString(channelName),
     packString(uidStr),
-    privMap
+    privBytes
   );
 
+  // Header to sign: appId + issueTs + expire + salt + serviceBody
   const appIdBytes = new TextEncoder().encode(appId);
   const certBytes = new TextEncoder().encode(appCert);
 
-  const signature = await hmacSha256(certBytes, concat(appIdBytes, msg));
-
-  // Pack the full token content
-  const content = concat(
-    packUint16LE(signature.length), signature,
-    packUint32LE(now),
+  const signing = await hmacSha256(certBytes, concat(
+    appIdBytes,
+    packUint32LE(issueTs),
+    packUint32LE(expire),
     packUint32LE(salt),
-    packString(channelName),
-    packString(uidStr),
-    privMap
+    serviceBody
+  ));
+
+  // Token content: version(3) + appId(32) + issueTs(4) + expire(4) + salt(4) + sig_len(2) + sig + serviceBody
+  const tokenContent = concat(
+    packUint32LE(issueTs),
+    packUint32LE(expire),
+    packUint32LE(salt),
+    packUint16LE(signing.length),
+    signing,
+    serviceBody
   );
 
-  return '007' + appId + toBase64(content);
+  return '007' + appId + toBase64(tokenContent);
 }
 
 Deno.serve(async (req) => {
@@ -96,11 +101,10 @@ Deno.serve(async (req) => {
     }
 
     if (!appCert) {
-      // No certificate — return appId only, client will join with null token
       return Response.json({ appId, token: null });
     }
 
-    const token = await buildRtcToken(appId, appCert, channelName, Number(uid), 3600);
+    const token = await buildAccessToken2(appId, appCert, channelName, Number(uid), 3600);
     return Response.json({ appId, token });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
