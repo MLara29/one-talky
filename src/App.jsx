@@ -26,6 +26,7 @@ import Classroom from '@/pages/Classroom';
 import TutorSchedule from '@/pages/TutorSchedule';
 import TutorEarnings from '@/pages/TutorEarnings';
 import TutorReviews from '@/pages/TutorReviews';
+import TutorBankInfo from '@/pages/TutorBankInfo';
 import AdminApprovals from '@/pages/AdminApprovals';
 import AdminUsers from '@/pages/AdminUsers';
 import AdminCosts from '@/pages/AdminCosts';
@@ -77,6 +78,7 @@ const AuthenticatedApp = () => {
           <Route path="/schedule" element={<TutorSchedule />} />
           <Route path="/earnings" element={<TutorEarnings />} />
           <Route path="/reviews" element={<TutorReviews />} />
+          <Route path="/tutor-bank-info" element={<TutorBankInfo />} />
           <Route path="/admin/approvals" element={<AdminApprovals />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/costs" element={<AdminCosts />} />

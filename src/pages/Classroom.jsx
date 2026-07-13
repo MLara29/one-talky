@@ -35,6 +35,13 @@ export default function Classroom() {
   const localVideoDiv = useRef(null);
   const remoteVideoDiv = useRef(null);
 
+  // Play local video as soon as the PiP div mounts
+  useEffect(() => {
+    if (localVideoDiv.current && localVideoTrackRef.current) {
+      localVideoTrackRef.current.play(localVideoDiv.current);
+    }
+  }, [cameraOn, joined]);
+
   useEffect(() => {
     loadLesson();
     return () => leaveChannel();
@@ -133,11 +140,17 @@ export default function Classroom() {
 
     await client.publish([audioTrack, videoTrack]);
 
-    if (localVideoDiv.current) {
-      videoTrack.play(localVideoDiv.current);
-    }
-
     setJoined(true);
+
+    // Play local video — retry with small delay in case the ref isn't mounted yet
+    const playLocal = () => {
+      if (localVideoDiv.current) {
+        videoTrack.play(localVideoDiv.current);
+      } else {
+        setTimeout(playLocal, 200);
+      }
+    };
+    playLocal();
   };
 
   const leaveChannel = async () => {

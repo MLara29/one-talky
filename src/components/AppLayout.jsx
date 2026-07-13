@@ -22,6 +22,7 @@ const TUTOR_NAV = [
   { label: "My Lessons", path: "/my-lessons", icon: BookOpen },
   { label: "Earnings", path: "/earnings", icon: DollarSign },
   { label: "Reviews", path: "/reviews", icon: Star },
+  { label: "Personal Info", path: "/tutor-bank-info", icon: User },
 ];
 
 const ADMIN_NAV = [
