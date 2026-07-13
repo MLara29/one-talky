@@ -5,12 +5,18 @@ import { RtcTokenBuilder, RtcRole } from 'npm:agora-token@2.0.3';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const isAuth = await base44.auth.isAuthenticated();
-    if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { channelName, uid, role } = await req.json();
     if (!channelName || uid === undefined) {
       return Response.json({ error: 'channelName and uid are required' }, { status: 400 });
+    }
+
+    // Verifica se o usuário é participante da aula (tutor ou aluno)
+    const lesson = await base44.asServiceRole.entities.Lesson.get(channelName);
+    if (!lesson || (lesson.tutor_id !== user.id && lesson.student_id !== user.id)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const appId = (Deno.env.get('VITE_AGORA_APP_ID') || '').trim();
