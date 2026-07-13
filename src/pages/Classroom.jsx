@@ -207,7 +207,7 @@ export default function Classroom() {
     await base44.entities.ClassroomMessage.create({
       lesson_id: id,
       sender_id: user.id,
-      sender_name: user.full_name || "You",
+      sender_name: user.full_name || user.email || "You",
       text,
     });
   };
@@ -359,7 +359,7 @@ export default function Classroom() {
                         ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white"
                         : "bg-white/10 text-white"
                     }`}>
-                      {!isMe && <p className="text-xs text-gray-400 mb-0.5">{m.sender_name}</p>}
+                      {!isMe && <p className="text-xs text-gray-400 mb-0.5">{m.sender_name?.split("@")[0]}</p>}
                       {m.text}
                     </div>
                   </div>

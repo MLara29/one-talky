@@ -30,6 +30,7 @@ const ADMIN_NAV = [
   { label: "Approvals", path: "/admin/approvals", icon: GraduationCap },
   { label: "Users", path: "/admin/users", icon: User },
   { label: "Custos & Lucro", path: "/admin/costs", icon: TrendingUp },
+  { label: "Suporte", path: "/admin/support", icon: MessageCircle },
 ];
 
 export default function AppLayout() {

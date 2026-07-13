@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Clock, DollarSign, Star, Users, AlertCircle, X, Bell } from "lucide-react";
+import { Clock, DollarSign, Star, Users, AlertCircle, X, Bell, MessageSquare } from "lucide-react";
+import SupportModal from "@/components/support/SupportModal";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,6 +17,7 @@ export default function TutorDashboard() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liveAlert, setLiveAlert] = useState(null);
+  const [showSupport, setShowSupport] = useState(false);
   const prevLessonsRef = useRef([]);
 
   useEffect(() => { loadData(); }, [user]);
@@ -144,10 +146,18 @@ export default function TutorDashboard() {
           </h1>
           <p className="theme-subtext text-gray-500 text-sm mt-1">Here's your teaching overview</p>
         </div>
-        <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
-          <div className={`w-2.5 h-2.5 rounded-full ${profile.is_available_now ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`} />
-          <Label className="theme-subtext text-sm font-medium text-gray-500">Available now</Label>
-          <Switch checked={profile.is_available_now} onCheckedChange={toggleAvailability} />
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => setShowSupport(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
+          >
+            <MessageSquare className="w-4 h-4" /> Falar com suporte
+          </button>
+          <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
+            <div className={`w-2.5 h-2.5 rounded-full ${profile.is_available_now ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`} />
+            <Label className="theme-subtext text-sm font-medium text-gray-500">Available now</Label>
+            <Switch checked={profile.is_available_now} onCheckedChange={toggleAvailability} />
+          </div>
         </div>
       </div>
 
@@ -162,6 +172,8 @@ export default function TutorDashboard() {
           </div>
         ))}
       </div>
+
+      {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
 
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
         <h2 className="theme-heading font-display font-bold text-white mb-5">Upcoming lessons</h2>

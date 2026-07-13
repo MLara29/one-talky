@@ -3,11 +3,13 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, X } from "lucide-react";
+import { Search, X, MessageSquare, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LANGUAGES } from "@/lib/constants";
 import TutorCard from "@/components/tutors/TutorCard";
 import CreditsBanner from "@/components/student/CreditsBanner";
+import SupportModal from "@/components/support/SupportModal";
+import PlanManageModal from "@/components/student/PlanManageModal";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -17,6 +19,8 @@ export default function StudentDashboard() {
   const [search, setSearch] = useState("");
   const [langFilter, setLangFilter] = useState("all");
   const [availableNow, setAvailableNow] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
+  const [showPlanModal, setShowPlanModal] = useState(false);
 
   useEffect(() => { loadData(); }, [user]);
 
@@ -49,10 +53,37 @@ export default function StudentDashboard() {
 
   return (
     <div>
+      {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
+      {showPlanModal && profile && (
+        <PlanManageModal
+          profile={profile}
+          onClose={() => setShowPlanModal(false)}
+          onUpdated={p => { setProfile(p); setShowPlanModal(false); }}
+        />
+      )}
       {profile && <CreditsBanner profile={profile} onUpdate={setProfile} />}
-      <div className="mb-8">
-        <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Find your tutor</h1>
-        <p className="theme-subtext text-gray-500 text-sm mt-1">Browse native speakers ready to help you practice</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Find your tutor</h1>
+          <p className="theme-subtext text-gray-500 text-sm mt-1">Browse native speakers ready to help you practice</p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          {profile && (
+            <button
+              onClick={() => setShowPlanModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20 transition-all text-sm font-medium"
+            >
+              <Zap className="w-4 h-4" />
+              <span className="capitalize">{profile.plan || "free"}</span>
+            </button>
+          )}
+          <button
+            onClick={() => setShowSupport(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
+          >
+            <MessageSquare className="w-4 h-4" /> Suporte
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-8">
