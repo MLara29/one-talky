@@ -25,22 +25,29 @@ export default function Classroom() {
   const [elapsed, setElapsed] = useState(0);
   const [showReview, setShowReview] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [remoteUser, setRemoteUser] = useState(null);
+  const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
   const [joined, setJoined] = useState(false);
 
-  // Agora refs
   const clientRef = useRef(null);
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
   const localVideoDiv = useRef(null);
   const remoteVideoDiv = useRef(null);
+  const chatBottomRef = useRef(null);
 
-  // Play local video as soon as the PiP div mounts
+  // Play remote video whenever the track or the div becomes available
   useEffect(() => {
-    if (localVideoDiv.current && localVideoTrackRef.current) {
+    if (remoteVideoTrack && remoteVideoDiv.current) {
+      remoteVideoTrack.play(remoteVideoDiv.current);
+    }
+  }, [remoteVideoTrack]);
+
+  // Play local video whenever joined or camera toggles back on
+  useEffect(() => {
+    if (joined && cameraOn && localVideoTrackRef.current && localVideoDiv.current) {
       localVideoTrackRef.current.play(localVideoDiv.current);
     }
-  }, [cameraOn, joined]);
+  }, [joined, cameraOn]);
 
   useEffect(() => {
     loadLesson();
@@ -52,9 +59,32 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, []);
 
+  // Real-time chat via entity subscription
+  useEffect(() => {
+    const unsubscribe = base44.entities.ClassroomMessage.subscribe((event) => {
+      if (event.data?.lesson_id !== id) return;
+      if (event.type === "create") {
+        setMessages(prev => {
+          // avoid duplicates
+          if (prev.find(m => m.id === event.data.id)) return prev;
+          return [...prev, event.data];
+        });
+      }
+    });
+    // Load existing messages
+    base44.entities.ClassroomMessage.filter({ lesson_id: id }, "created_date", 100)
+      .then(msgs => setMessages(msgs))
+      .catch(() => {});
+    return unsubscribe;
+  }, [id]);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const notifyTutor = async (l) => {
     try {
-      // Only notify if student is joining (not the tutor themselves)
       if (user?.role !== "tutor") {
         await base44.entities.Notification.create({
           user_id: l.tutor_id,
@@ -64,7 +94,6 @@ export default function Classroom() {
           link: `/classroom/${l.id}`,
           is_read: false,
         });
-        // Also update lesson to in_progress
         await base44.entities.Lesson.update(l.id, { status: "in_progress", started_at: new Date().toISOString() });
       }
     } catch {}
@@ -78,7 +107,7 @@ export default function Classroom() {
       await joinChannel(l);
     } catch (e) {
       console.error("Classroom error:", e);
-      toast({ title: "Erro ao carregar aula", description: String(e?.message || e || "Erro desconhecido"), variant: "destructive" });
+      toast({ title: "Erro ao carregar aula", description: String(e?.message || e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -97,39 +126,31 @@ export default function Classroom() {
     client.on("user-published", async (remoteAgoraUser, mediaType) => {
       await client.subscribe(remoteAgoraUser, mediaType);
       if (mediaType === "video" && remoteAgoraUser.videoTrack) {
-        setRemoteUser(remoteAgoraUser);
-        setTimeout(() => {
-          if (remoteVideoDiv.current) {
-            remoteAgoraUser.videoTrack.play(remoteVideoDiv.current);
-          }
-        }, 500);
+        setRemoteVideoTrack(remoteAgoraUser.videoTrack);
       }
       if (mediaType === "audio" && remoteAgoraUser.audioTrack) {
         remoteAgoraUser.audioTrack.play();
       }
     });
 
-    client.on("user-unpublished", (remoteAgoraUser, mediaType) => {
-      if (mediaType === "video") setRemoteUser(null);
+    client.on("user-unpublished", (_, mediaType) => {
+      if (mediaType === "video") setRemoteVideoTrack(null);
     });
 
-    client.on("user-left", () => setRemoteUser(null));
+    client.on("user-left", () => setRemoteVideoTrack(null));
 
-    // tutor = uid 1, student = uid 2 (sem colisão no mesmo canal)
+    // tutor = uid 1, student = uid 2
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
     const channelName = id;
 
     const { token, appId } = await fetchAgoraToken(channelName, uid);
     if (!appId) throw new Error("App ID do Agora não configurado");
 
-    console.log('[Agora] joining — appId:', appId, '| channel:', channelName, '| uid:', uid, '| token:', token.substring(0, 20) + '...');
+    console.log('[Agora] joining — channel:', channelName, '| uid:', uid);
 
-    // Renovação automática de token antes de expirar
     client.on("token-privilege-will-expire", async () => {
-      console.log('[Agora] token expirando, renovando...');
       const { token: newToken } = await fetchAgoraToken(channelName, uid);
       await client.renewToken(newToken);
-      console.log('[Agora] token renovado');
     });
 
     await client.join(appId, channelName, token, uid);
@@ -139,10 +160,9 @@ export default function Classroom() {
     localVideoTrackRef.current = videoTrack;
 
     await client.publish([audioTrack, videoTrack]);
-
     setJoined(true);
 
-    // Play local video — retry with small delay in case the ref isn't mounted yet
+    // Play local with retry
     const playLocal = () => {
       if (localVideoDiv.current) {
         videoTrack.play(localVideoDiv.current);
@@ -162,22 +182,27 @@ export default function Classroom() {
   const toggleCamera = async () => {
     if (localVideoTrackRef.current) {
       await localVideoTrackRef.current.setEnabled(!cameraOn);
-      setCameraOn(!cameraOn);
+      setCameraOn(prev => !prev);
     }
   };
 
   const toggleMic = async () => {
     if (localAudioTrackRef.current) {
       await localAudioTrackRef.current.setEnabled(!micOn);
-      setMicOn(!micOn);
+      setMicOn(prev => !prev);
     }
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!msgInput.trim()) return;
-    const msg = { text: msgInput, sender: "me", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
-    setMessages(prev => [...prev, msg]);
+    const text = msgInput.trim();
     setMsgInput("");
+    await base44.entities.ClassroomMessage.create({
+      lesson_id: id,
+      sender_id: user.id,
+      sender_name: user.full_name || "You",
+      text,
+    });
   };
 
   const endLesson = async () => {
@@ -192,14 +217,12 @@ export default function Classroom() {
       });
     } catch {}
 
-    // Deduct minutes from student credits
     if (lesson?.student_id) {
       try {
         const profiles = await base44.entities.StudentProfile.filter({ user_id: lesson.student_id });
         if (profiles.length > 0) {
           const profile = profiles[0];
-          const currentCredits = profile.credits_minutes ?? 0;
-          const newCredits = Math.max(0, currentCredits - durationMinutes);
+          const newCredits = Math.max(0, (profile.credits_minutes ?? 0) - durationMinutes);
           await base44.entities.StudentProfile.update(profile.id, {
             credits_minutes: newCredits,
             total_minutes: (profile.total_minutes ?? 0) + durationMinutes,
@@ -210,16 +233,14 @@ export default function Classroom() {
       } catch {}
     }
 
-    // Update tutor earnings and stats
     if (lesson?.tutor_id) {
       try {
         const tutorProfiles = await base44.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
         if (tutorProfiles.length > 0) {
           const tp = tutorProfiles[0];
           const rate = tp.price_per_minute ?? 0.9967;
-          const earned = durationMinutes * rate;
           await base44.entities.TutorProfile.update(tp.id, {
-            total_earnings: (tp.total_earnings ?? 0) + earned,
+            total_earnings: (tp.total_earnings ?? 0) + durationMinutes * rate,
             total_minutes: (tp.total_minutes ?? 0) + durationMinutes,
             total_lessons: (tp.total_lessons ?? 0) + 1,
           });
@@ -274,9 +295,13 @@ export default function Classroom() {
       <div className="flex-1 flex relative overflow-hidden">
         {/* Remote video (main) */}
         <div className="flex-1 relative bg-black">
-          {remoteUser ? (
-            <div ref={remoteVideoDiv} className="w-full h-full" />
-          ) : (
+          {/* always render the div so the ref stays mounted */}
+          <div
+            ref={remoteVideoDiv}
+            className="w-full h-full"
+            style={{ display: remoteVideoTrack ? "block" : "none" }}
+          />
+          {!remoteVideoTrack && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-violet-600/5 blur-3xl pointer-events-none" />
               <div className="text-center relative z-10">
@@ -294,9 +319,12 @@ export default function Classroom() {
 
         {/* Local video (PiP) */}
         <div className="absolute bottom-4 right-4 w-36 sm:w-48 aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
-          {cameraOn ? (
-            <div ref={localVideoDiv} className="w-full h-full" />
-          ) : (
+          <div
+            ref={localVideoDiv}
+            className="w-full h-full"
+            style={{ display: cameraOn ? "block" : "none" }}
+          />
+          {!cameraOn && (
             <div className="w-full h-full bg-gray-900 flex items-center justify-center">
               <VideoOff className="w-8 h-8 text-gray-700" />
             </div>
@@ -305,7 +333,7 @@ export default function Classroom() {
 
         {/* Chat sidebar */}
         {chatOpen && (
-          <div className="w-80 bg-black/60 backdrop-blur-xl border-l border-white/5 flex flex-col">
+          <div className="absolute top-0 right-0 bottom-0 w-72 sm:w-80 bg-black/80 backdrop-blur-xl border-l border-white/5 flex flex-col z-10">
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
               <div className="flex items-center gap-2 text-white text-sm font-semibold">
                 <Globe className="w-4 h-4 text-emerald-400" /> Chat
@@ -315,20 +343,25 @@ export default function Classroom() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {messages.map((m, i) => (
-                <div key={i} className={m.sender === "me" ? "flex justify-end" : "flex justify-start"}>
-                  <div className={`px-3 py-2 rounded-2xl text-sm max-w-[85%] ${
-                    m.sender === "me"
-                      ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white"
-                      : "bg-white/10 text-white"
-                  }`}>
-                    {m.text}
+              {messages.map((m, i) => {
+                const isMe = m.sender_id === user?.id;
+                return (
+                  <div key={m.id || i} className={isMe ? "flex justify-end" : "flex justify-start"}>
+                    <div className={`px-3 py-2 rounded-2xl text-sm max-w-[85%] ${
+                      isMe
+                        ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white"
+                        : "bg-white/10 text-white"
+                    }`}>
+                      {!isMe && <p className="text-xs text-gray-400 mb-0.5">{m.sender_name}</p>}
+                      {m.text}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {messages.length === 0 && (
                 <p className="text-gray-700 text-xs text-center mt-4">No messages yet</p>
               )}
+              <div ref={chatBottomRef} />
             </div>
             <div className="p-3 border-t border-white/5">
               <div className="flex gap-2">
