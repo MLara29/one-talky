@@ -31,6 +31,7 @@ import AdminApprovals from '@/pages/AdminApprovals';
 import AdminUsers from '@/pages/AdminUsers';
 import AdminCosts from '@/pages/AdminCosts';
 import AdminSupport from '@/pages/AdminSupport';
+import AdminEarnings from '@/pages/AdminEarnings';
 import Notifications from '@/pages/Notifications';
 import Profile from '@/pages/Profile';
 import AppLayout from '@/components/AppLayout';
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/costs" element={<AdminCosts />} />
           <Route path="/admin/support" element={<AdminSupport />} />
+          <Route path="/admin/earnings" element={<AdminEarnings />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/profile" element={<Profile />} />
         </Route>

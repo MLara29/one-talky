@@ -8,6 +8,7 @@ import {
   MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
   GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon, TrendingUp
 } from "lucide-react";
+// DollarSign already imported above
 
 const STUDENT_NAV = [
   { label: "Find Tutors", path: "/dashboard", icon: Search },
@@ -30,6 +31,7 @@ const ADMIN_NAV = [
   { label: "Approvals", path: "/admin/approvals", icon: GraduationCap },
   { label: "Users", path: "/admin/users", icon: User },
   { label: "Custos & Lucro", path: "/admin/costs", icon: TrendingUp },
+  { label: "Pagamentos", path: "/admin/earnings", icon: DollarSign },
   { label: "Suporte", path: "/admin/support", icon: MessageCircle },
 ];
 
