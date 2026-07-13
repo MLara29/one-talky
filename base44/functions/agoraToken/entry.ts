@@ -1,23 +1,37 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 
-// Agora AccessToken2 (RTC) — per official spec
-// https://github.com/AgoraIO/Tools/tree/master/DynamicKey/AgoraDynamicKey
+// Agora AccessToken2 — official implementation based on:
+// https://github.com/AgoraIO/Tools/blob/master/DynamicKey/AgoraDynamicKey/nodejs/src/AccessToken2.js
 
-async function hmacSha256(key: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
-  const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  return new Uint8Array(await crypto.subtle.sign('HMAC', cryptoKey, data));
+const VERSION = "007";
+const SERVICE_TYPE_RTC = 1;
+
+const PRIVILEGE_JOIN_CHANNEL = 1;
+const PRIVILEGE_PUBLISH_AUDIO = 2;
+const PRIVILEGE_PUBLISH_VIDEO = 3;
+const PRIVILEGE_PUBLISH_DATA = 4;
+
+function packUint16(v: number): Uint8Array {
+  const b = new Uint8Array(2);
+  b[0] = v & 0xff;
+  b[1] = (v >> 8) & 0xff;
+  return b;
 }
 
-function packUint16LE(v: number): Uint8Array {
-  return new Uint8Array([v & 0xff, (v >> 8) & 0xff]);
+function packUint32(v: number): Uint8Array {
+  const b = new Uint8Array(4);
+  b[0] = v & 0xff;
+  b[1] = (v >> 8) & 0xff;
+  b[2] = (v >> 16) & 0xff;
+  b[3] = (v >> 24) & 0xff;
+  return b;
 }
-function packUint32LE(v: number): Uint8Array {
-  return new Uint8Array([v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >> 24) & 0xff]);
-}
+
 function packString(s: string): Uint8Array {
   const enc = new TextEncoder().encode(s);
-  return concat(packUint16LE(enc.length), enc);
+  return concat(packUint16(enc.length), enc);
 }
+
 function concat(...arrays: Uint8Array[]): Uint8Array {
   const total = arrays.reduce((s, a) => s + a.length, 0);
   const out = new Uint8Array(total);
@@ -25,61 +39,73 @@ function concat(...arrays: Uint8Array[]): Uint8Array {
   for (const a of arrays) { out.set(a, off); off += a.length; }
   return out;
 }
+
 function toBase64(b: Uint8Array): string {
   let s = '';
   for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
   return btoa(s);
 }
 
-// AccessToken2 format
-async function buildAccessToken2(appId: string, appCert: string, channelName: string, uid: number, expireSeconds: number): Promise<string> {
+async function hmacSha256(key: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  return new Uint8Array(await crypto.subtle.sign('HMAC', cryptoKey, data));
+}
+
+async function buildToken(appId: string, appCert: string, channelName: string, uid: number, expireSeconds: number): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const expire = now + expireSeconds;
-  const issueTs = now;
-  const salt = (Math.random() * 0xffffffff) >>> 0;
-
-  // Service RTC (service type = 1)
+  const salt = Math.floor(Math.random() * 0xffffffff) + 1;
   const uidStr = uid === 0 ? '' : String(uid >>> 0);
 
-  // Privileges for RTC service: joinChannel=1, publishAudio=2, publishVideo=3, publishDataStream=4
-  const privileges: [number, number][] = [[1, expire], [2, expire], [3, expire], [4, expire]];
-  const privBytes = concat(
-    packUint16LE(privileges.length),
-    ...privileges.flatMap(([k, v]) => [packUint16LE(k), packUint32LE(v)])
+  // Pack privileges
+  const privileges = [
+    [PRIVILEGE_JOIN_CHANNEL, expire],
+    [PRIVILEGE_PUBLISH_AUDIO, expire],
+    [PRIVILEGE_PUBLISH_VIDEO, expire],
+    [PRIVILEGE_PUBLISH_DATA, expire],
+  ];
+
+  const privPacked = concat(
+    packUint16(privileges.length),
+    ...privileges.flatMap(([k, v]) => [packUint16(k), packUint32(v)])
   );
 
-  // Service body: type(1) + num_services(1) + service_type(2) + channel(string) + uid(string) + privs
+  // Service body for RTC
   const serviceBody = concat(
-    packUint16LE(1),        // num services
-    packUint16LE(1),        // service type: RTC = 1
+    packUint16(1),             // num services
+    packUint16(SERVICE_TYPE_RTC),
     packString(channelName),
     packString(uidStr),
-    privBytes
+    privPacked
   );
 
-  // Header to sign: appId + issueTs + expire + salt + serviceBody
+  // Build message to sign: appId bytes + timestamps + salt + serviceBody
   const appIdBytes = new TextEncoder().encode(appId);
   const certBytes = new TextEncoder().encode(appCert);
 
-  const signing = await hmacSha256(certBytes, concat(
+  const message = concat(
     appIdBytes,
-    packUint32LE(issueTs),
-    packUint32LE(expire),
-    packUint32LE(salt),
-    serviceBody
-  ));
-
-  // Token content: version(3) + appId(32) + issueTs(4) + expire(4) + salt(4) + sig_len(2) + sig + serviceBody
-  const tokenContent = concat(
-    packUint32LE(issueTs),
-    packUint32LE(expire),
-    packUint32LE(salt),
-    packUint16LE(signing.length),
-    signing,
+    packUint32(now),
+    packUint32(expire),
+    packUint32(salt),
     serviceBody
   );
 
-  return '007' + appId + toBase64(tokenContent);
+  const signature = await hmacSha256(certBytes, message);
+
+  // Final token content
+  const content = concat(
+    packUint32(now),
+    packUint32(expire),
+    packUint32(salt),
+    packUint16(signature.length),
+    signature,
+    serviceBody
+  );
+
+  return VERSION + appId + toBase64(content);
 }
 
 Deno.serve(async (req) => {
@@ -93,20 +119,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'channelName and uid are required' }, { status: 400 });
     }
 
-    const appId = Deno.env.get('VITE_AGORA_APP_ID') || '';
-    const appCert = Deno.env.get('VITE_AGORA_APP_CERTIFICATE');
+    const appId = (Deno.env.get('VITE_AGORA_APP_ID') || '').trim();
+    const appCert = (Deno.env.get('VITE_AGORA_APP_CERTIFICATE') || '').trim();
 
-    if (!appId) {
-      return Response.json({ error: 'VITE_AGORA_APP_ID not configured' }, { status: 500 });
-    }
+    console.log(`[agoraToken] appId length=${appId.length}, cert length=${appCert.length}`);
 
-    if (!appCert) {
-      return Response.json({ appId, token: null });
-    }
+    if (!appId) return Response.json({ error: 'VITE_AGORA_APP_ID not set' }, { status: 500 });
+    if (!appCert) return Response.json({ error: 'VITE_AGORA_APP_CERTIFICATE not set' }, { status: 500 });
 
-    const token = await buildAccessToken2(appId, appCert, channelName, Number(uid), 3600);
+    const token = await buildToken(appId, appCert, channelName, Number(uid), 3600);
+
+    console.log(`[agoraToken] appId=${appId} channel=${channelName} uid=${uid} tokenPrefix=${token.substring(0, 25)}`);
+
     return Response.json({ appId, token });
   } catch (error) {
+    console.error('[agoraToken] error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
