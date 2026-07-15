@@ -290,16 +290,27 @@ export default function Classroom() {
       });
 
       await rtmClient.login({ uid: rtmUserId, token: rtmToken });
+      console.log("[RTM] login OK, uid:", rtmUserId);
 
       const rtmChannel = rtmClient.createChannel(channelName);
       rtmChannelRef.current = rtmChannel;
 
+      // memberId is the RTM uid string ("1" or "2") — map to a stable non-user id
       rtmChannel.on("ChannelMessage", (message, memberId) => {
+        console.log("[RTM] ChannelMessage from", memberId, ":", message.text);
+        let parsedText = message.text;
+        let senderName = memberId;
+        // Messages are sent as JSON with name embedded
+        try {
+          const parsed = JSON.parse(message.text);
+          parsedText = parsed.text;
+          senderName = parsed.senderName || memberId;
+        } catch {}
         setMessages(prev => [...prev, {
           id: `rtm-${Date.now()}-${memberId}`,
-          sender_id: memberId,
-          sender_name: memberId,
-          text: message.text,
+          sender_id: `rtm-${memberId}`, // never matches local user.id → always shown as "other"
+          sender_name: senderName,
+          text: parsedText,
           ts: Date.now(),
         }]);
         if (!chatOpenRef.current) setUnreadCount(c => c + 1);
@@ -340,30 +351,51 @@ export default function Classroom() {
     if (!msgInput.trim()) return;
     const text = msgInput.trim();
     setMsgInput("");
-    const localMsg = {
-      id: `local-${Date.now()}`,
-      sender_id: user.id,
-      sender_name: user.full_name || user.email || "You",
-      text,
-      ts: Date.now(),
-    };
-    setMessages(prev => [...prev, localMsg]);
 
-    // Try RTM first, fall back to DB
+    const senderName = user.full_name || user.email || "You";
+
+    // Try RTM first
     if (rtmChannelRef.current) {
       try {
-        await rtmChannelRef.current.sendMessage({ text });
+        // Embed sender name in the message payload so the receiver can display it
+        const payload = JSON.stringify({ text, senderName });
+        await rtmChannelRef.current.sendMessage({ text: payload });
+        console.log("[RTM] sendMessage OK");
+        // Add to local UI only after confirmed sent
+        setMessages(prev => [...prev, {
+          id: `local-${Date.now()}`,
+          sender_id: user.id,
+          sender_name: senderName,
+          text,
+          ts: Date.now(),
+        }]);
+        // Also persist to DB for history
+        base44.entities.ClassroomMessage.create({
+          lesson_id: id,
+          sender_id: user.id,
+          sender_name: senderName,
+          text,
+        }).catch(() => {});
         return;
       } catch (e) {
         console.error("[RTM] sendMessage error:", e);
       }
     }
-    // Fallback: save to DB so other party sees it via subscription
+
+    // Fallback: DB only (RTM not connected)
+    console.warn("[Chat] RTM not available, sending via DB");
+    setMessages(prev => [...prev, {
+      id: `local-${Date.now()}`,
+      sender_id: user.id,
+      sender_name: senderName,
+      text,
+      ts: Date.now(),
+    }]);
     try {
       await base44.entities.ClassroomMessage.create({
         lesson_id: id,
         sender_id: user.id,
-        sender_name: user.full_name || user.email || "You",
+        sender_name: senderName,
         text,
       });
     } catch (e) {
