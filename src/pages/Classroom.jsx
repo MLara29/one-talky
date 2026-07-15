@@ -123,7 +123,15 @@ export default function Classroom() {
       if (event.data?.lesson_id !== id) return;
       if (event.type === "create") {
         setMessages(prev => {
+          // Skip if exact id already present
           if (prev.find(m => m.id === event.data.id)) return prev;
+          // Replace temp optimistic entry from the same sender with same text
+          const tempIdx = prev.findIndex(m => m._temp && m.sender_id === event.data.sender_id && m.text === event.data.text);
+          if (tempIdx !== -1) {
+            const next = [...prev];
+            next[tempIdx] = event.data;
+            return next;
+          }
           return [...prev, event.data];
         });
         if (event.data.sender_id !== user?.id && !chatOpenRef.current) {
@@ -257,12 +265,24 @@ export default function Classroom() {
     if (!msgInput.trim()) return;
     const text = msgInput.trim();
     setMsgInput("");
-    await base44.entities.ClassroomMessage.create({
+    // Optimistic update — subscription will dedup when the server event arrives
+    const tempId = `temp-${Date.now()}`;
+    setMessages(prev => [...prev, {
+      id: tempId,
+      lesson_id: id,
+      sender_id: user.id,
+      sender_name: user.full_name || user.email || "You",
+      text,
+      _temp: true,
+    }]);
+    const created = await base44.entities.ClassroomMessage.create({
       lesson_id: id,
       sender_id: user.id,
       sender_name: user.full_name || user.email || "You",
       text,
     });
+    // Replace temp with real record
+    setMessages(prev => prev.map(m => m.id === tempId ? { ...created, _temp: false } : m));
   };
 
   const endLesson = async () => {
@@ -271,7 +291,8 @@ export default function Classroom() {
     setLessonEnding(true);
 
     await leaveChannel();
-    const durationMinutes = Math.max(1, Math.round(elapsed / 60));
+    const durationSeconds = Math.max(1, elapsed);
+    const durationMinutes = durationSeconds / 60; // proportional, not rounded
     const currentLesson = lessonRef.current;
 
     try {
@@ -279,7 +300,7 @@ export default function Classroom() {
       await base44.entities.Lesson.update(id, {
         status: "completed",
         ended_at: new Date().toISOString(),
-        duration_minutes: durationMinutes,
+        duration_minutes: Math.round(durationMinutes),
         is_recorded: isRecording,
       });
     } catch {}
@@ -291,8 +312,8 @@ export default function Classroom() {
           const profile = profiles[0];
           const newCredits = Math.max(0, (profile.credits_minutes ?? 0) - durationMinutes);
           await base44.entities.StudentProfile.update(profile.id, {
-            credits_minutes: newCredits,
-            total_minutes: (profile.total_minutes ?? 0) + durationMinutes,
+            credits_minutes: Math.round(newCredits * 100) / 100,
+            total_minutes: Math.round(((profile.total_minutes ?? 0) + durationMinutes) * 100) / 100,
             total_lessons: (profile.total_lessons ?? 0) + 1,
             last_practice_date: new Date().toISOString().split("T")[0],
           });
@@ -306,9 +327,10 @@ export default function Classroom() {
         if (tutorProfiles.length > 0) {
           const tp = tutorProfiles[0];
           const rate = tp.price_per_minute ?? 0.9967;
+          const earningsSecs = durationSeconds * (rate / 60); // rate per second
           await base44.entities.TutorProfile.update(tp.id, {
-            total_earnings: (tp.total_earnings ?? 0) + durationMinutes * rate,
-            total_minutes: (tp.total_minutes ?? 0) + durationMinutes,
+            total_earnings: Math.round(((tp.total_earnings ?? 0) + earningsSecs) * 100) / 100,
+            total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
             total_lessons: (tp.total_lessons ?? 0) + 1,
           });
         }

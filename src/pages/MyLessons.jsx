@@ -21,11 +21,9 @@ export default function MyLessons() {
     try {
       let data;
       if (user?.role === "tutor") {
-        const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) data = await base44.entities.Lesson.filter({ tutor_id: profiles[0].id }, "-created_date");
+        data = await base44.entities.Lesson.filter({ tutor_id: user.id }, "-created_date");
       } else {
-        const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) data = await base44.entities.Lesson.filter({ student_id: profiles[0].id }, "-created_date");
+        data = await base44.entities.Lesson.filter({ student_id: user.id }, "-created_date");
       }
       setLessons(data || []);
     } catch {} finally { setLoading(false); }
