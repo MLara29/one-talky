@@ -115,9 +115,22 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, [user?.role]);
 
-  // RTM chat initialization — runs after joinChannel sets rtmClientRef/rtmChannelRef
-  // (joined into RTM inside joinChannel, so nothing to do here for setup)
-  // Just keep a no-op effect to satisfy any future dependency tracking
+  // DB fallback: subscribe to ClassroomMessage for when RTM is unavailable
+  useEffect(() => {
+    const unsub = base44.entities.ClassroomMessage.subscribe((event) => {
+      if (event.type === 'create' && event.data?.lesson_id === id && event.data?.sender_id !== user?.id) {
+        setMessages(prev => [...prev, {
+          id: event.data.id,
+          sender_id: event.data.sender_id,
+          sender_name: event.data.sender_name,
+          text: event.data.text,
+          ts: Date.now(),
+        }]);
+        if (!chatOpenRef.current) setUnreadCount(c => c + 1);
+      }
+    });
+    return unsub;
+  }, [id, user?.id]);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -280,21 +293,37 @@ export default function Classroom() {
   };
 
   const sendMessage = async () => {
-    if (!msgInput.trim() || !rtmChannelRef.current) return;
+    if (!msgInput.trim()) return;
     const text = msgInput.trim();
     setMsgInput("");
-    // Add own message immediately to UI
-    setMessages(prev => [...prev, {
+    const localMsg = {
       id: `local-${Date.now()}`,
       sender_id: user.id,
       sender_name: user.full_name || user.email || "You",
       text,
       ts: Date.now(),
-    }]);
+    };
+    setMessages(prev => [...prev, localMsg]);
+
+    // Try RTM first, fall back to DB
+    if (rtmChannelRef.current) {
+      try {
+        await rtmChannelRef.current.sendMessage({ text });
+        return;
+      } catch (e) {
+        console.error("[RTM] sendMessage error:", e);
+      }
+    }
+    // Fallback: save to DB so other party sees it via subscription
     try {
-      await rtmChannelRef.current.sendMessage({ text });
+      await base44.entities.ClassroomMessage.create({
+        lesson_id: id,
+        sender_id: user.id,
+        sender_name: user.full_name || user.email || "You",
+        text,
+      });
     } catch (e) {
-      console.error("[RTM] sendMessage error:", e);
+      console.error("[DB] sendMessage error:", e);
     }
   };
 
