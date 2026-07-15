@@ -115,21 +115,32 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, [user?.role]);
 
-  // DB fallback: subscribe to ClassroomMessage for when RTM is unavailable
+  // DB polling: load all messages for this lesson every 2s (fallback when RTM unavailable)
+  const seenMsgIds = useRef(new Set());
   useEffect(() => {
-    const unsub = base44.entities.ClassroomMessage.subscribe((event) => {
-      if (event.type === 'create' && event.data?.lesson_id === id && event.data?.sender_id !== user?.id) {
-        setMessages(prev => [...prev, {
-          id: event.data.id,
-          sender_id: event.data.sender_id,
-          sender_name: event.data.sender_name,
-          text: event.data.text,
-          ts: Date.now(),
-        }]);
-        if (!chatOpenRef.current) setUnreadCount(c => c + 1);
-      }
-    });
-    return unsub;
+    const poll = async () => {
+      try {
+        const msgs = await base44.entities.ClassroomMessage.filter({ lesson_id: id });
+        msgs.forEach(m => {
+          if (!seenMsgIds.current.has(m.id)) {
+            seenMsgIds.current.add(m.id);
+            if (m.sender_id !== user?.id) {
+              setMessages(prev => [...prev, {
+                id: m.id,
+                sender_id: m.sender_id,
+                sender_name: m.sender_name,
+                text: m.text,
+                ts: new Date(m.created_date).getTime(),
+              }]);
+              if (!chatOpenRef.current) setUnreadCount(c => c + 1);
+            }
+          }
+        });
+      } catch {}
+    };
+    poll();
+    const interval = setInterval(poll, 2000);
+    return () => clearInterval(interval);
   }, [id, user?.id]);
 
   // Auto-scroll chat
