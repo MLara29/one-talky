@@ -61,7 +61,7 @@ export default function OnboardingStudent() {
         user_id: userId,
       });
       await base44.auth.updateMe({ profile_completed: true });
-      await base44.entities.User.update(userId, { role: "student" });
+      await base44.functions.invoke('setUserRole', { role: 'student' });
       toast({ title: t(uiLang, "welcomeTitle"), description: t(uiLang, "welcomeDesc") });
       window.location.href = "/";
     } catch (e) {
@@ -124,33 +124,33 @@ export default function OnboardingStudent() {
               <div>
                 <Label className="text-gray-300">{t(uiLang, "nationality")}</Label>
                 <Select value={form.nationality} onValueChange={v => set("nationality", v)}>
-                  <SelectTrigger className="mt-1.5 bg-white/5 border-white/10 text-white">
-                    <SelectValue placeholder={t(uiLang, "selectCountry")} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10 text-white max-h-60">
-                    {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                    <SelectTrigger className="mt-1.5 bg-[#1e1e35] border-white/10 text-white">
+                      <SelectValue placeholder={t(uiLang, "selectCountry")} />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1e1e35] border-[#333355] text-white max-h-60 z-50">
+                      {COUNTRIES.map(c => <SelectItem key={c} value={c} className="text-white focus:bg-violet-600/30 focus:text-white">{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
               </div>
               <div>
                 <Label className="text-gray-300">{t(uiLang, "nativeLanguage")}</Label>
                 <Select value={form.native_language} onValueChange={v => set("native_language", v)}>
-                  <SelectTrigger className="mt-1.5 bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="mt-1.5 bg-[#1e1e35] border-white/10 text-white">
                     <SelectValue placeholder={t(uiLang, "selectLanguage")} />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10 text-white">
-                    {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value}>{l.flag} {l.label}</SelectItem>)}
+                  <SelectContent className="bg-[#1e1e35] border-[#333355] text-white z-50">
+                    {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value} className="text-white focus:bg-violet-600/30 focus:text-white">{l.flag} {l.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-gray-300">{t(uiLang, "targetLanguage")}</Label>
                 <Select value={form.target_language} onValueChange={v => set("target_language", v)}>
-                  <SelectTrigger className="mt-1.5 bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="mt-1.5 bg-[#1e1e35] border-white/10 text-white">
                     <SelectValue placeholder={t(uiLang, "selectLanguage")} />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10 text-white">
-                    {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value}>{l.flag} {l.label}</SelectItem>)}
+                  <SelectContent className="bg-[#1e1e35] border-[#333355] text-white z-50">
+                    {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value} className="text-white focus:bg-violet-600/30 focus:text-white">{l.flag} {l.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -169,12 +169,12 @@ export default function OnboardingStudent() {
               <div>
                 <Label className="text-gray-300">{t(uiLang, "level")}</Label>
                 <Select value={form.level} onValueChange={v => set("level", v)}>
-                  <SelectTrigger className="mt-1.5 bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="mt-1.5 bg-[#1e1e35] border-white/10 text-white">
                     <SelectValue placeholder={t(uiLang, "selectLevel")} />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10 text-white">
+                  <SelectContent className="bg-[#1e1e35] border-[#333355] text-white z-50">
                     {LEVELS.map(l => (
-                      <SelectItem key={l.value} value={l.value}>{levelLabels[l.value] || l.label}</SelectItem>
+                      <SelectItem key={l.value} value={l.value} className="text-white focus:bg-violet-600/30 focus:text-white">{levelLabels[l.value] || l.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -182,11 +182,11 @@ export default function OnboardingStudent() {
               <div>
                 <Label className="text-gray-300">{t(uiLang, "goal")}</Label>
                 <Select value={form.objective} onValueChange={v => set("objective", v)}>
-                  <SelectTrigger className="mt-1.5 bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="mt-1.5 bg-[#1e1e35] border-white/10 text-white">
                     <SelectValue placeholder={t(uiLang, "selectGoal")} />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10 text-white">
-                    {OBJECTIVES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  <SelectContent className="bg-[#1e1e35] border-[#333355] text-white z-50">
+                    {OBJECTIVES.map(o => <SelectItem key={o.value} value={o.value} className="text-white focus:bg-violet-600/30 focus:text-white">{o.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -194,11 +194,11 @@ export default function OnboardingStudent() {
                 <div>
                   <Label className="text-gray-300">{t(uiLang, "accentPref")}</Label>
                   <Select value={form.accent_preference} onValueChange={v => set("accent_preference", v)}>
-                    <SelectTrigger className="mt-1.5 bg-white/5 border-white/10 text-white">
+                    <SelectTrigger className="mt-1.5 bg-[#1e1e35] border-white/10 text-white">
                       <SelectValue placeholder={t(uiLang, "accentPlaceholder")} />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-white/10 text-white">
-                      {accents.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                    <SelectContent className="bg-[#1e1e35] border-[#333355] text-white z-50">
+                      {accents.map(a => <SelectItem key={a} value={a} className="text-white focus:bg-violet-600/30 focus:text-white">{a}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
