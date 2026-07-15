@@ -224,7 +224,7 @@ export default function Classroom() {
       if (!window.AgoraRTM) {
         await new Promise((resolve, reject) => {
           const s = document.createElement("script");
-          s.src = "https://download.agora.io/sdk/release/AgoraRTM-1.5.1.js";
+          s.src = "https://unpkg.com/agora-rtm-sdk@1.5.1/index.js";
           s.onload = resolve;
           s.onerror = reject;
           document.head.appendChild(s);
