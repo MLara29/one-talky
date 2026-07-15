@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
+
 export default function Classroom() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -42,6 +43,8 @@ export default function Classroom() {
   const lessonRef = useRef(null);
   const creditsLeftRef = useRef(null);
   const endingRef = useRef(false);
+  const rtmClientRef = useRef(null);
+  const rtmChannelRef = useRef(null);
 
   // Keep refs in sync
   useEffect(() => { lessonRef.current = lesson; }, [lesson]);
@@ -112,27 +115,9 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, [user?.role]);
 
-  // Real-time chat via entity subscription
-  useEffect(() => {
-    // Load existing messages
-    base44.entities.ClassroomMessage.filter({ lesson_id: id }, "created_date", 100)
-      .then(msgs => setMessages(msgs))
-      .catch(() => {});
-
-    const unsubscribe = base44.entities.ClassroomMessage.subscribe((event) => {
-      if (event.data?.lesson_id !== id) return;
-      if (event.type === "create") {
-        setMessages(prev => {
-          if (prev.find(m => m.id === event.data.id)) return prev;
-          return [...prev, event.data];
-        });
-        if (event.data.sender_id !== user?.id && !chatOpenRef.current) {
-          setUnreadCount(c => c + 1);
-        }
-      }
-    });
-    return unsubscribe;
-  }, [id, user?.id]);
+  // RTM chat initialization — runs after joinChannel sets rtmClientRef/rtmChannelRef
+  // (joined into RTM inside joinChannel, so nothing to do here for setup)
+  // Just keep a no-op effect to satisfy any future dependency tracking
 
   // Auto-scroll chat
   useEffect(() => {
@@ -184,6 +169,7 @@ export default function Classroom() {
   };
 
   const joinChannel = async (l) => {
+    // --- RTC ---
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     clientRef.current = client;
 
@@ -206,7 +192,7 @@ export default function Classroom() {
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
     const channelName = id;
 
-    const { token, appId } = await fetchAgoraToken(channelName, uid);
+    const { token, rtmToken, rtmUserId, appId } = await fetchAgoraToken(channelName, uid);
     if (!appId) throw new Error("App ID do Agora não configurado");
 
     client.on("token-privilege-will-expire", async () => {
@@ -231,12 +217,52 @@ export default function Classroom() {
       }
     };
     playLocal();
+
+    // --- RTM ---
+    try {
+      // Load RTM SDK dynamically if not already loaded
+      if (!window.AgoraRTM) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = "https://download.agora.io/sdk/release/AgoraRTM-1.5.1.js";
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      const AgoraRTM = window.AgoraRTM;
+      const rtmClient = AgoraRTM.createInstance(appId);
+      rtmClientRef.current = rtmClient;
+
+      await rtmClient.login({ uid: rtmUserId, token: rtmToken });
+
+      const rtmChannel = rtmClient.createChannel(channelName);
+      rtmChannelRef.current = rtmChannel;
+
+      rtmChannel.on("ChannelMessage", (message, memberId) => {
+        const msg = { id: `rtm-${Date.now()}-${memberId}`, sender_id: memberId, sender_name: memberId, text: message.text, ts: Date.now() };
+        setMessages(prev => [...prev, msg]);
+        if (!chatOpenRef.current) {
+          setUnreadCount(c => c + 1);
+          // subtle pulse animation via state (badge already pulses via CSS)
+        }
+      });
+
+      await rtmChannel.join();
+      console.log("[RTM] joined channel", channelName);
+    } catch (rtmErr) {
+      console.error("[RTM] init error:", rtmErr);
+    }
   };
 
   const leaveChannel = async () => {
     localAudioTrackRef.current?.close();
     localVideoTrackRef.current?.close();
     await clientRef.current?.leave();
+    try {
+      await rtmChannelRef.current?.leave();
+      await rtmClientRef.current?.logout();
+    } catch {}
   };
 
   const toggleCamera = async () => {
@@ -254,15 +280,22 @@ export default function Classroom() {
   };
 
   const sendMessage = async () => {
-    if (!msgInput.trim()) return;
+    if (!msgInput.trim() || !rtmChannelRef.current) return;
     const text = msgInput.trim();
     setMsgInput("");
-    await base44.entities.ClassroomMessage.create({
-      lesson_id: id,
+    // Add own message immediately to UI
+    setMessages(prev => [...prev, {
+      id: `local-${Date.now()}`,
       sender_id: user.id,
       sender_name: user.full_name || user.email || "You",
       text,
-    });
+      ts: Date.now(),
+    }]);
+    try {
+      await rtmChannelRef.current.sendMessage({ text });
+    } catch (e) {
+      console.error("[RTM] sendMessage error:", e);
+    }
   };
 
   const endLesson = async () => {

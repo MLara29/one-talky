@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 // Official Agora token library
-import { RtcTokenBuilder, RtcRole } from 'npm:agora-token@2.0.3';
+import { RtcTokenBuilder, RtcRole, RtmTokenBuilder, RtmRole } from 'npm:agora-token@2.0.3';
 
 Deno.serve(async (req) => {
   try {
@@ -39,9 +39,19 @@ Deno.serve(async (req) => {
       privilegeExpiredTs
     );
 
-    console.log(`[agoraToken] appId=${appId} channel=${channelName} uid=${uid} role=${role || 'publisher'} token=${token.substring(0, 20)}...`);
+    // RTM token — uid must be a string
+    const rtmUserId = String(uid);
+    const rtmToken = RtmTokenBuilder.buildToken(
+      appId,
+      appCertificate,
+      rtmUserId,
+      RtmRole.Rtm_User,
+      privilegeExpiredTs
+    );
 
-    return Response.json({ token, appId, channelName, uid: Number(uid) });
+    console.log(`[agoraToken] appId=${appId} channel=${channelName} uid=${uid} role=${role || 'publisher'}`);
+
+    return Response.json({ token, rtmToken, appId, channelName, uid: Number(uid), rtmUserId });
   } catch (error) {
     console.error('[agoraToken] error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
