@@ -115,10 +115,17 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, [user?.role]);
 
-  // DB polling: load all messages for this lesson every 2s (fallback when RTM unavailable)
+  // DB fallback: poll only when RTM is not connected
   const seenMsgIds = useRef(new Set());
+  const rtmConnected = useRef(false);
   useEffect(() => {
+    // Mark RTM as connected after a short delay (enough time for RTM login to succeed/fail)
+    const timer = setTimeout(() => {
+      rtmConnected.current = !!rtmChannelRef.current;
+    }, 4000);
+
     const poll = async () => {
+      if (rtmConnected.current) return; // RTM is working, skip DB poll
       try {
         const msgs = await base44.entities.ClassroomMessage.filter({ lesson_id: id });
         msgs.forEach(m => {
@@ -138,9 +145,9 @@ export default function Classroom() {
         });
       } catch {}
     };
-    poll();
+
     const interval = setInterval(poll, 2000);
-    return () => clearInterval(interval);
+    return () => { clearTimeout(timer); clearInterval(interval); };
   }, [id, user?.id]);
 
   // Auto-scroll chat
@@ -244,19 +251,43 @@ export default function Classroom() {
 
     // --- RTM ---
     try {
-      // Load RTM SDK dynamically if not already loaded
       if (!window.AgoraRTM) {
         await new Promise((resolve, reject) => {
-          const s = document.createElement("script");
-          s.src = "https://unpkg.com/agora-rtm-sdk@1.5.1/index.js";
-          s.onload = resolve;
-          s.onerror = reject;
-          document.head.appendChild(s);
+          // Try multiple CDN sources
+          const urls = [
+            "https://cdn.jsdelivr.net/npm/agora-rtm-sdk@1.5.1/index.js",
+            "https://unpkg.com/agora-rtm-sdk@1.5.1/index.js",
+          ];
+          let tried = 0;
+          const tryNext = () => {
+            if (tried >= urls.length) { reject(new Error("All CDNs failed")); return; }
+            const s = document.createElement("script");
+            s.src = urls[tried++];
+            s.onload = resolve;
+            s.onerror = tryNext;
+            document.head.appendChild(s);
+          };
+          tryNext();
         });
       }
+
       const AgoraRTM = window.AgoraRTM;
       const rtmClient = AgoraRTM.createInstance(appId);
       rtmClientRef.current = rtmClient;
+
+      // Token renewal
+      rtmClient.on("TokenExpired", async () => {
+        console.log("[RTM] token expired, renewing...");
+        try {
+          const res = await base44.functions.invoke('agoraToken', { channelName, uid, role: 'publisher' });
+          if (res.data?.rtmToken) {
+            await rtmClient.renewToken(res.data.rtmToken);
+            console.log("[RTM] token renewed");
+          }
+        } catch (e) {
+          console.error("[RTM] token renewal failed:", e);
+        }
+      });
 
       await rtmClient.login({ uid: rtmUserId, token: rtmToken });
 
@@ -264,12 +295,14 @@ export default function Classroom() {
       rtmChannelRef.current = rtmChannel;
 
       rtmChannel.on("ChannelMessage", (message, memberId) => {
-        const msg = { id: `rtm-${Date.now()}-${memberId}`, sender_id: memberId, sender_name: memberId, text: message.text, ts: Date.now() };
-        setMessages(prev => [...prev, msg]);
-        if (!chatOpenRef.current) {
-          setUnreadCount(c => c + 1);
-          // subtle pulse animation via state (badge already pulses via CSS)
-        }
+        setMessages(prev => [...prev, {
+          id: `rtm-${Date.now()}-${memberId}`,
+          sender_id: memberId,
+          sender_name: memberId,
+          text: message.text,
+          ts: Date.now(),
+        }]);
+        if (!chatOpenRef.current) setUnreadCount(c => c + 1);
       });
 
       await rtmChannel.join();
