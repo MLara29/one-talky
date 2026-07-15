@@ -11,8 +11,8 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RPieChart, Pie, Cell, Legend } from "recharts";
 import { PLANS } from "@/lib/constants";
 
-function fmtBRL(v) {
-  return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+function fmtUSD(v) {
+  return (v || 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 function fmtPct(v) {
   return `${(v || 0).toFixed(1)}%`;
@@ -95,27 +95,27 @@ function EditableField({ label, value, onChange, prefix = "R$", suffix = "", typ
 
 export default function AdminCosts() {
   const { toast } = useToast();
-  // ── Tutor rates (fetched from DB) ──
+  // ── Tutor rates (fetched from DB) — stored as $/hour, converted to $/min internally ──
   const [tutors, setTutors] = useState([]);
-  const [tutorRates, setTutorRates] = useState({}); // { tutor_id: price_per_minute }
+  const [tutorRatesHour, setTutorRatesHour] = useState({}); // { tutor_id: price_per_hour in USD }
   const [savingRates, setSavingRates] = useState(false);
 
   // ── Transaction costs ──
   const [txCosts, setTxCosts] = useState({
-    card_pct: 4,        // % da receita
-    card_fixed: 0.39,   // R$ fixo por transação
-    pix_pct: 0.99,      // % PIX
-    boleto: 3.49,       // R$ por boleto
-    gateway_pct: 0.5,   // % gateway
-    other_pct: 0,       // outras taxas %
+    card_pct: 4,
+    card_fixed: 0.39,
+    pix_pct: 0.99,
+    boleto: 3.49,
+    gateway_pct: 0.5,
+    other_pct: 0,
   });
 
-  // ── Global settings ──
+  // ── Global settings — default_tutor_rate stored as $/hour ──
   const [globals, setGlobals] = useState({
-    default_tutor_rate: 0.60,   // R$/min padrão pago ao tutor
-    platform_commission: 0,     // % comissão adicional
-    tax_pct: 0,                 // impostos %
-    operational: 0,             // despesas operacionais R$/mês
+    default_tutor_rate_hour: 36.0,  // USD/hora padrão pago ao tutor
+    platform_commission: 0,
+    tax_pct: 0,
+    operational: 0,
   });
 
   useEffect(() => {
@@ -123,8 +123,8 @@ export default function AdminCosts() {
       .then(data => {
         setTutors(data);
         const rates = {};
-        data.forEach(t => { rates[t.id] = t.price_per_minute || globals.default_tutor_rate; });
-        setTutorRates(rates);
+        data.forEach(t => { rates[t.id] = (t.price_per_minute || globals.default_tutor_rate_hour / 60) * 60; });
+        setTutorRatesHour(rates);
       })
       .catch(() => {});
   }, []);
@@ -133,7 +133,10 @@ export default function AdminCosts() {
     setSavingRates(true);
     try {
       await Promise.all(
-        tutors.map(t => base44.entities.TutorProfile.update(t.id, { price_per_minute: tutorRates[t.id] ?? globals.default_tutor_rate }))
+        tutors.map(t => {
+          const perHour = tutorRatesHour[t.id] ?? globals.default_tutor_rate_hour;
+          return base44.entities.TutorProfile.update(t.id, { price_per_minute: perHour / 60 });
+        })
       );
       toast({ title: "Taxas salvas com sucesso!" });
     } catch {
@@ -144,15 +147,12 @@ export default function AdminCosts() {
   };
 
   // ── Calculations ─────────────────────────────────────────
-  // For each plan: receita, custo tutor, taxas, lucro
   const planResults = useMemo(() => {
+    const defaultRatePerMin = globals.default_tutor_rate_hour / 60;
     return PLANS.filter(p => p.price_monthly > 0).map(plan => {
-      // Receita = valor mensal pago pelo aluno
       const receita = plan.price_monthly;
-      // Minutos totais no plano
-      const minutes = plan.minutes * 4; // 4 semanas/mês
-      // Pagamento ao tutor = rate/min × minutos
-      const tutor_cost = globals.default_tutor_rate * minutes;
+      const minutes = plan.minutes * 4;
+      const tutor_cost = defaultRatePerMin * minutes;
       // Taxa cartão = % sobre receita + fixo
       const card_fee = (receita * txCosts.card_pct / 100) + txCosts.card_fixed;
       // Taxa gateway = % sobre receita
@@ -250,14 +250,14 @@ export default function AdminCosts() {
 
       {/* ── Dashboard cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        <MetricCard label="Receita Total" value={fmtBRL(totals.receita)} icon={DollarSign} color="violet" />
-        <MetricCard label="Pago aos Tutores" value={fmtBRL(totals.tutor_cost)} icon={Users} color="blue" />
-        <MetricCard label="Total de Taxas" value={fmtBRL((totals.total_costs || 0) - (totals.tutor_cost || 0))} icon={CreditCard} color="amber" />
-        <MetricCard label="Lucro Bruto" value={fmtBRL(totals.lucro_bruto)} icon={TrendingUp} color="emerald" />
-        <MetricCard label="Lucro Líquido" value={fmtBRL(totals.lucro_liquido)} icon={TrendingUp} color="emerald" trend={totals.margem_media} />
+        <MetricCard label="Receita Total" value={fmtUSD(totals.receita)} icon={DollarSign} color="violet" />
+        <MetricCard label="Pago aos Tutores" value={fmtUSD(totals.tutor_cost)} icon={Users} color="blue" />
+        <MetricCard label="Total de Taxas" value={fmtUSD((totals.total_costs || 0) - (totals.tutor_cost || 0))} icon={CreditCard} color="amber" />
+        <MetricCard label="Lucro Bruto" value={fmtUSD(totals.lucro_bruto)} icon={TrendingUp} color="emerald" />
+        <MetricCard label="Lucro Líquido" value={fmtUSD(totals.lucro_liquido)} icon={TrendingUp} color="emerald" trend={totals.margem_media} />
         <MetricCard label="Margem Média" value={fmtPct(totals.margem_media)} icon={Percent} color="violet" />
-        <MetricCard label="Lucro/hora médio" value={fmtBRL(totals.lucro_hora)} icon={BarChart3} color="blue" />
-        <MetricCard label="Lucro/minuto médio" value={fmtBRL(totals.lucro_min)} icon={BarChart3} color="amber" />
+        <MetricCard label="Lucro/hora médio" value={fmtUSD(totals.lucro_hora)} icon={BarChart3} color="blue" />
+        <MetricCard label="Lucro/minuto médio" value={fmtUSD(totals.lucro_min)} icon={BarChart3} color="amber" />
       </div>
 
       <Tabs defaultValue="simulator">
@@ -289,14 +289,14 @@ export default function AdminCosts() {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { label: "Receita", value: fmtBRL(p.receita), color: "text-white" },
-                      { label: "Custo Tutor", value: fmtBRL(p.tutor_cost), color: "text-blue-400" },
-                      { label: "Taxas totais", value: fmtBRL(p.card_fee + p.gateway_fee + p.other_fee + p.tax_fee), color: "text-amber-400" },
-                      { label: "Lucro Líquido", value: fmtBRL(p.lucro_liquido), color: marginColor },
-                      { label: "Lucro Bruto", value: fmtBRL(p.lucro_bruto), color: "text-emerald-400" },
-                      { label: "Lucro/hora", value: fmtBRL(p.lucro_hora), color: "text-violet-400" },
-                      { label: "Lucro/min", value: fmtBRL(p.lucro_min), color: "text-violet-400" },
-                      { label: "Taxa cartão", value: fmtBRL(p.card_fee), color: "text-gray-400" },
+                      { label: "Receita", value: fmtUSD(p.receita), color: "text-white" },
+                      { label: "Custo Tutor", value: fmtUSD(p.tutor_cost), color: "text-blue-400" },
+                      { label: "Taxas totais", value: fmtUSD(p.card_fee + p.gateway_fee + p.other_fee + p.tax_fee), color: "text-amber-400" },
+                      { label: "Lucro Líquido", value: fmtUSD(p.lucro_liquido), color: marginColor },
+                      { label: "Lucro Bruto", value: fmtUSD(p.lucro_bruto), color: "text-emerald-400" },
+                      { label: "Lucro/hora", value: fmtUSD(p.lucro_hora), color: "text-violet-400" },
+                      { label: "Lucro/min", value: fmtUSD(p.lucro_min), color: "text-violet-400" },
+                      { label: "Taxa cartão", value: fmtUSD(p.card_fee), color: "text-gray-400" },
                     ].map(item => (
                       <div key={item.label} className="bg-white/3 border border-white/5 rounded-xl p-3">
                         <p className="theme-subtext text-[10px] text-gray-500 uppercase tracking-wide mb-1">{item.label}</p>
@@ -347,14 +347,14 @@ export default function AdminCosts() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-white/5">
-                      {["Tutor", "R$/minuto", "R$/hora (auto)", "Status"].map(h => (
+                      {["Tutor", "USD/hora", "USD/minuto (auto)", "Status"].map(h => (
                         <th key={h} className="text-left px-6 py-3 text-xs text-gray-500 font-medium uppercase tracking-wide">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {tutors.map(t => {
-                      const rate = tutorRates[t.id] ?? globals.default_tutor_rate;
+                      const rateHour = tutorRatesHour[t.id] ?? globals.default_tutor_rate_hour;
                       return (
                         <tr key={t.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
                           <td className="px-6 py-4">
@@ -368,15 +368,15 @@ export default function AdminCosts() {
                             <div className="flex items-center gap-2">
                               <Input
                                 type="number" step="0.01" min="0"
-                                value={rate}
-                                onChange={e => setTutorRates(prev => ({ ...prev, [t.id]: parseFloat(e.target.value) || 0 }))}
+                                value={rateHour}
+                                onChange={e => setTutorRatesHour(prev => ({ ...prev, [t.id]: parseFloat(e.target.value) || 0 }))}
                                 className="w-24 h-7 text-xs bg-white/10 border-white/10 text-white text-right"
                               />
-                              <span className="text-xs text-gray-500">R$/min</span>
+                              <span className="text-xs text-gray-500">$/h</span>
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="theme-heading font-medium text-emerald-400">{fmtBRL(rate * 60)}/h</span>
+                            <span className="theme-heading font-medium text-emerald-400">{fmtUSD(rateHour / 60)}/min</span>
                           </td>
                           <td className="px-6 py-4">
                             <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 font-medium">Ativo</span>
@@ -413,11 +413,11 @@ export default function AdminCosts() {
                     return (
                       <tr key={p.id} className="border-b border-white/5 hover:bg-white/3">
                         <td className="px-5 py-4 font-medium text-white">{p.name}</td>
-                        <td className="px-5 py-4 text-emerald-400 font-medium">{fmtBRL(p.price_monthly)}</td>
+                        <td className="px-5 py-4 text-emerald-400 font-medium">{fmtUSD(p.price_monthly)}</td>
                         <td className="px-5 py-4 text-gray-300">{hrs.toFixed(1)}h</td>
                         <td className="px-5 py-4 text-gray-300">{mins} min</td>
-                        <td className="px-5 py-4 text-violet-400">{fmtBRL(p.price_monthly / hrs)}</td>
-                        <td className="px-5 py-4 text-violet-400">{fmtBRL(p.price_monthly / mins)}</td>
+                        <td className="px-5 py-4 text-violet-400">{fmtUSD(p.price_monthly / hrs)}</td>
+                        <td className="px-5 py-4 text-violet-400">{fmtUSD(p.price_monthly / mins)}</td>
                       </tr>
                     );
                   })}
@@ -457,7 +457,7 @@ export default function AdminCosts() {
                   <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v}`} />
                   <Tooltip
                     contentStyle={{ background: "#0f0f1f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff" }}
-                    formatter={v => fmtBRL(v)}
+                    formatter={v => fmtUSD(v)}
                   />
                   <Legend wrapperStyle={{ color: "#6b7280", fontSize: 11 }} />
                   <Bar dataKey="Receita" fill="#7c3aed" radius={[4, 4, 0, 0]} />
@@ -475,7 +475,7 @@ export default function AdminCosts() {
                   <Pie data={pieData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
                     {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: "#0f0f1f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff" }} formatter={v => fmtBRL(v)} />
+                  <Tooltip contentStyle={{ background: "#0f0f1f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff" }} formatter={v => fmtUSD(v)} />
                 </RPieChart>
               </ResponsiveContainer>
             </div>
@@ -488,16 +488,16 @@ export default function AdminCosts() {
             <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-6">
               <h2 className="theme-heading font-display font-bold text-white mb-1">Configurações Globais</h2>
               <p className="theme-subtext text-xs text-gray-500 mb-5">Afetam todos os cálculos em tempo real</p>
-              <EditableField label="Taxa padrão dos tutores (R$/min)" value={globals.default_tutor_rate} onChange={v => setGlobals(p => ({ ...p, default_tutor_rate: v }))} step="0.01" />
+              <EditableField label="Taxa padrão dos tutores (USD/hora)" value={globals.default_tutor_rate_hour} onChange={v => setGlobals(p => ({ ...p, default_tutor_rate_hour: v }))} prefix="$" step="0.01" />
               <EditableField label="Comissão da plataforma (%)" value={globals.platform_commission} onChange={v => setGlobals(p => ({ ...p, platform_commission: v }))} prefix="" suffix="%" />
               <EditableField label="Impostos (%)" value={globals.tax_pct} onChange={v => setGlobals(p => ({ ...p, tax_pct: v }))} prefix="" suffix="%" />
-              <EditableField label="Despesas operacionais (R$/mês)" value={globals.operational} onChange={v => setGlobals(p => ({ ...p, operational: v }))} />
+              <EditableField label="Despesas operacionais (USD/mês)" value={globals.operational} onChange={v => setGlobals(p => ({ ...p, operational: v }))} prefix="$" />
             </div>
             <div className="theme-card bg-white/3 border border-white/5 rounded-2xl p-5 mt-4">
               <p className="theme-subtext text-xs text-gray-500 leading-relaxed">
                 <strong className="text-gray-300">Fórmulas aplicadas:</strong><br />
                 Receita = Valor mensal do plano<br />
-                Custo tutor = R$/min × minutos do plano × 4 semanas<br />
+                Custo tutor = (USD/hora ÷ 60) × minutos do plano × 4 semanas<br />
                 Taxa cartão = Receita × % + fixo<br />
                 Lucro líquido = Receita − (tutor + taxas + impostos + operacional)<br />
                 Margem % = Lucro líquido ÷ Receita × 100

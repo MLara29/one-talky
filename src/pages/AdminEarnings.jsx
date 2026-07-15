@@ -36,7 +36,7 @@ export default function AdminEarnings() {
         await base44.entities.TutorProfile.update(profiles[0].id, { total_earnings: 0 });
       }
 
-      toast({ title: "Pagamento confirmado ✅", description: `${withdrawal.tutor_name} — $${withdrawal.amount?.toFixed(2)} marcado como pago e ganhos zerados.` });
+      toast({ title: "Pagamento confirmado ✅", description: `${withdrawal.tutor_name} — $${withdrawal.amount?.toFixed(2)} USD marcado como pago e ganhos zerados.` });
       loadData();
     } catch {
       toast({ title: "Erro ao processar", variant: "destructive" });

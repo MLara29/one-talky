@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, Globe, X, User } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, Globe, X, User, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import AgoraRTC from "agora-rtc-sdk-ng";
@@ -28,6 +28,9 @@ export default function Classroom() {
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
   const [joined, setJoined] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [creditsLeft, setCreditsLeft] = useState(null); // minutes remaining for student
+  const [showCreditWarning, setShowCreditWarning] = useState(false);
+  const [lessonEnding, setLessonEnding] = useState(false);
 
   const clientRef = useRef(null);
   const localAudioTrackRef = useRef(null);
@@ -35,15 +38,22 @@ export default function Classroom() {
   const localVideoDiv = useRef(null);
   const remoteVideoDiv = useRef(null);
   const chatBottomRef = useRef(null);
+  const lessonRef = useRef(null);
+  const creditsLeftRef = useRef(null);
+  const endingRef = useRef(false);
 
-  // Play remote video whenever the track or the div becomes available
+  // Keep refs in sync
+  useEffect(() => { lessonRef.current = lesson; }, [lesson]);
+  useEffect(() => { creditsLeftRef.current = creditsLeft; }, [creditsLeft]);
+
+  // Play remote video
   useEffect(() => {
     if (remoteVideoTrack && remoteVideoDiv.current) {
       remoteVideoTrack.play(remoteVideoDiv.current);
     }
   }, [remoteVideoTrack]);
 
-  // Play local video whenever joined or camera toggles back on
+  // Play local video
   useEffect(() => {
     if (joined && cameraOn && localVideoTrackRef.current && localVideoDiv.current) {
       localVideoTrackRef.current.play(localVideoDiv.current);
@@ -55,13 +65,59 @@ export default function Classroom() {
     return () => leaveChannel();
   }, [id]);
 
+  // Timer
   useEffect(() => {
     const interval = setInterval(() => setElapsed(e => e + 1), 1000);
     return () => clearInterval(interval);
   }, []);
 
+  // Poll for remote lesson end (when the other party ends the call)
+  useEffect(() => {
+    const poll = setInterval(async () => {
+      if (endingRef.current) return;
+      try {
+        const l = await base44.entities.Lesson.get(id);
+        if (l.status === "completed") {
+          endingRef.current = true;
+          clearInterval(poll);
+          await leaveChannel();
+          setShowReview(true);
+        }
+      } catch {}
+    }, 3000);
+    return () => clearInterval(poll);
+  }, [id]);
+
+  // Credit warning & auto-end for student
+  useEffect(() => {
+    if (user?.role !== "student" || creditsLeft === null) return;
+    if (creditsLeft <= 2 && creditsLeft > 0) {
+      setShowCreditWarning(true);
+    }
+    if (creditsLeft <= 0 && !endingRef.current) {
+      endLesson();
+    }
+  }, [creditsLeft]);
+
+  // Decrement student credits every minute
+  useEffect(() => {
+    if (user?.role !== "student") return;
+    const interval = setInterval(() => {
+      setCreditsLeft(prev => {
+        if (prev === null) return null;
+        return Math.max(0, prev - 1);
+      });
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [user?.role]);
+
   // Real-time chat via entity subscription
   useEffect(() => {
+    // Load existing messages
+    base44.entities.ClassroomMessage.filter({ lesson_id: id }, "created_date", 100)
+      .then(msgs => setMessages(msgs))
+      .catch(() => {});
+
     const unsubscribe = base44.entities.ClassroomMessage.subscribe((event) => {
       if (event.data?.lesson_id !== id) return;
       if (event.type === "create") {
@@ -69,7 +125,6 @@ export default function Classroom() {
           if (prev.find(m => m.id === event.data.id)) return prev;
           return [...prev, event.data];
         });
-        // increment unread only for messages from others when chat is closed
         if (event.data.sender_id !== user?.id) {
           setChatOpen(open => {
             if (!open) setUnreadCount(c => c + 1);
@@ -78,12 +133,8 @@ export default function Classroom() {
         }
       }
     });
-    // Load existing messages
-    base44.entities.ClassroomMessage.filter({ lesson_id: id }, "created_date", 100)
-      .then(msgs => setMessages(msgs))
-      .catch(() => {});
     return unsubscribe;
-  }, [id]);
+  }, [id, user?.id]);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -112,6 +163,14 @@ export default function Classroom() {
       setLesson(l);
       await notifyTutor(l);
       await joinChannel(l);
+
+      // Load student credits
+      if (user?.role === "student") {
+        const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+        if (profiles.length > 0) {
+          setCreditsLeft(profiles[0].credits_minutes ?? 0);
+        }
+      }
     } catch (e) {
       console.error("Classroom error:", e);
       toast({ title: "Erro ao carregar aula", description: String(e?.message || e), variant: "destructive" });
@@ -146,14 +205,11 @@ export default function Classroom() {
 
     client.on("user-left", () => setRemoteVideoTrack(null));
 
-    // tutor = uid 1, student = uid 2
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
     const channelName = id;
 
     const { token, appId } = await fetchAgoraToken(channelName, uid);
     if (!appId) throw new Error("App ID do Agora não configurado");
-
-    console.log('[Agora] joining — channel:', channelName, '| uid:', uid);
 
     client.on("token-privilege-will-expire", async () => {
       const { token: newToken } = await fetchAgoraToken(channelName, uid);
@@ -169,7 +225,6 @@ export default function Classroom() {
     await client.publish([audioTrack, videoTrack]);
     setJoined(true);
 
-    // Play local with retry
     const playLocal = () => {
       if (localVideoDiv.current) {
         videoTrack.play(localVideoDiv.current);
@@ -213,9 +268,16 @@ export default function Classroom() {
   };
 
   const endLesson = async () => {
+    if (endingRef.current || lessonEnding) return;
+    endingRef.current = true;
+    setLessonEnding(true);
+
     await leaveChannel();
     const durationMinutes = Math.max(1, Math.round(elapsed / 60));
+    const currentLesson = lessonRef.current;
+
     try {
+      // Mark lesson completed — this signals the other party to also leave
       await base44.entities.Lesson.update(id, {
         status: "completed",
         ended_at: new Date().toISOString(),
@@ -224,9 +286,9 @@ export default function Classroom() {
       });
     } catch {}
 
-    if (lesson?.student_id) {
+    if (currentLesson?.student_id) {
       try {
-        const profiles = await base44.entities.StudentProfile.filter({ user_id: lesson.student_id });
+        const profiles = await base44.entities.StudentProfile.filter({ user_id: currentLesson.student_id });
         if (profiles.length > 0) {
           const profile = profiles[0];
           const newCredits = Math.max(0, (profile.credits_minutes ?? 0) - durationMinutes);
@@ -240,9 +302,9 @@ export default function Classroom() {
       } catch {}
     }
 
-    if (lesson?.tutor_id) {
+    if (currentLesson?.tutor_id) {
       try {
-        const tutorProfiles = await base44.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
+        const tutorProfiles = await base44.entities.TutorProfile.filter({ user_id: currentLesson.tutor_id });
         if (tutorProfiles.length > 0) {
           const tp = tutorProfiles[0];
           const rate = tp.price_per_minute ?? 0.9967;
@@ -268,6 +330,19 @@ export default function Classroom() {
 
   return (
     <div className="fixed inset-0 bg-[#05050f] flex flex-col z-50">
+      {/* Credit warning banner */}
+      {showCreditWarning && creditsLeft !== null && creditsLeft > 0 && (
+        <div className="flex items-center justify-between gap-3 px-5 py-3 bg-amber-500/20 border-b border-amber-500/30">
+          <div className="flex items-center gap-2 text-amber-400 text-sm font-semibold">
+            <AlertTriangle className="w-4 h-4" />
+            Atenção: apenas {creditsLeft} minuto{creditsLeft !== 1 ? "s" : ""} restante{creditsLeft !== 1 ? "s" : ""} no seu plano!
+          </div>
+          <button onClick={() => setShowCreditWarning(false)} className="text-amber-400/70 hover:text-amber-400">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-black/40 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-3">
@@ -286,6 +361,14 @@ export default function Classroom() {
             <Clock className="w-3.5 h-3.5 text-violet-400" />
             <span className="text-violet-300">{formatTime(elapsed)}</span>
           </div>
+          {user?.role === "student" && creditsLeft !== null && (
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border ${
+              creditsLeft <= 2 ? "bg-red-500/15 border-red-500/30 text-red-400" : "bg-white/5 border-white/10 text-gray-400"
+            }`}>
+              <Clock className="w-3 h-3" />
+              {creditsLeft} min
+            </div>
+          )}
           <button
             onClick={() => setIsRecording(!isRecording)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
@@ -302,7 +385,6 @@ export default function Classroom() {
       <div className="flex-1 flex relative overflow-hidden">
         {/* Remote video (main) */}
         <div className="flex-1 relative bg-black">
-          {/* always render the div so the ref stays mounted */}
           <div
             ref={remoteVideoDiv}
             className="w-full h-full"
@@ -424,7 +506,8 @@ export default function Classroom() {
         </button>
         <button
           onClick={endLesson}
-          className="bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-xl shadow-red-500/30"
+          disabled={lessonEnding}
+          className="bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-xl shadow-red-500/30 disabled:opacity-50"
           style={{ width: 56, height: 52 }}
         >
           <PhoneOff className="w-5 h-5" />
