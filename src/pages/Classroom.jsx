@@ -29,6 +29,7 @@ export default function Classroom() {
   const [joined, setJoined] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [creditsLeft, setCreditsLeft] = useState(null); // minutes remaining for student
+  const chatOpenRef = useRef(false);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
   const [lessonEnding, setLessonEnding] = useState(false);
 
@@ -125,11 +126,8 @@ export default function Classroom() {
           if (prev.find(m => m.id === event.data.id)) return prev;
           return [...prev, event.data];
         });
-        if (event.data.sender_id !== user?.id) {
-          setChatOpen(open => {
-            if (!open) setUnreadCount(c => c + 1);
-            return open;
-          });
+        if (event.data.sender_id !== user?.id && !chatOpenRef.current) {
+          setUnreadCount(c => c + 1);
         }
       }
     });
@@ -427,7 +425,7 @@ export default function Classroom() {
               <div className="flex items-center gap-2 text-white text-sm font-semibold">
                 <Globe className="w-4 h-4 text-emerald-400" /> Chat
               </div>
-              <button onClick={() => setChatOpen(false)} className="text-gray-600 hover:text-gray-300 transition-colors">
+              <button onClick={() => { chatOpenRef.current = false; setChatOpen(false); }} className="text-gray-600 hover:text-gray-300 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -491,7 +489,7 @@ export default function Classroom() {
           {cameraOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
         </button>
         <button
-          onClick={() => { setChatOpen(o => !o); setUnreadCount(0); }}
+          onClick={() => { const next = !chatOpenRef.current; chatOpenRef.current = next; setChatOpen(next); if (next) setUnreadCount(0); }}
           className={`relative rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
             chatOpen ? "bg-violet-500/20 border border-violet-500/40 text-violet-400 shadow-violet-500/20" : "bg-white/10 hover:bg-white/15 text-white border border-white/10"
           }`}
