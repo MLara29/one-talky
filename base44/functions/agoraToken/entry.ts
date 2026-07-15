@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     if (!appCertificate) return Response.json({ error: 'VITE_AGORA_APP_CERTIFICATE not set' }, { status: 500 });
 
     const agoraRole = role === 'subscriber' ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
-    const tokenExpirationInSeconds = 3600;
+    const tokenExpirationInSeconds = 86400; // 24h
     const privilegeExpiredTs = Math.floor(Date.now() / 1000) + tokenExpirationInSeconds;
 
     const token = RtcTokenBuilder.buildTokenWithUid(
