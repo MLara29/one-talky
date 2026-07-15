@@ -60,7 +60,8 @@ export default function OnboardingStudent() {
         accent_preference: form.accent_preference || "",
         user_id: userId,
       });
-      await base44.auth.updateMe({ profile_completed: true, role: "student" });
+      await base44.auth.updateMe({ profile_completed: true });
+      await base44.entities.User.update(userId, { role: "student" });
       toast({ title: t(uiLang, "welcomeTitle"), description: t(uiLang, "welcomeDesc") });
       window.location.href = "/";
     } catch (e) {
