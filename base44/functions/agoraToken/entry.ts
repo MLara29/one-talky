@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 // Official Agora token library
-import { RtcTokenBuilder, RtcRole, RtmTokenBuilder, RtmRole } from 'npm:agora-token@2.0.3';
+import { RtcTokenBuilder, RtcRole, RtmTokenBuilder } from 'npm:agora-token@2.0.3';
 
 Deno.serve(async (req) => {
   try {
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       appId,
       appCertificate,
       rtmUserId,
-      RtmRole.Rtm_User,
+      1, // Rtm_User role
       privilegeExpiredTs
     );
 
