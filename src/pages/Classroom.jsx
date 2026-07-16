@@ -24,16 +24,16 @@ export default function Classroom() {
   const [messages, setMessages] = useState([]);
   const [msgInput, setMsgInput] = useState("");
   const [elapsed, setElapsed] = useState(0);
-  const [initialCredits, setInitialCredits] = useState(null); // minutos iniciais do aluno para countdown
   const [showReview, setShowReview] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
   const [joined, setJoined] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [creditsLeft, setCreditsLeft] = useState(null); // minutes remaining for student
-  const chatOpenRef = useRef(false);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
   const [lessonEnding, setLessonEnding] = useState(false);
+  // totalDurationMins: effective lesson duration = min(student_credits, scheduled_duration)
+  const [totalDurationMins, setTotalDurationMins] = useState(null);
+  const chatOpenRef = useRef(false);
 
   const clientRef = useRef(null);
   const localAudioTrackRef = useRef(null);
@@ -42,12 +42,15 @@ export default function Classroom() {
   const remoteVideoDiv = useRef(null);
   const chatBottomRef = useRef(null);
   const lessonRef = useRef(null);
-  const creditsLeftRef = useRef(null);
+  const totalDurationRef = useRef(null); // seconds
   const endingRef = useRef(false);
+  const elapsedRef = useRef(0);
 
   // Keep refs in sync
   useEffect(() => { lessonRef.current = lesson; }, [lesson]);
-  useEffect(() => { creditsLeftRef.current = creditsLeft; }, [creditsLeft]);
+  useEffect(() => {
+    if (totalDurationMins !== null) totalDurationRef.current = totalDurationMins * 60;
+  }, [totalDurationMins]);
 
   // Play remote video
   useEffect(() => {
@@ -68,13 +71,14 @@ export default function Classroom() {
     return () => leaveChannel();
   }, [id]);
 
-  // Timer crescente (usado para calcular duração e earnings)
+  // Main countdown timer — counts elapsed seconds and auto-ends when totalDuration is reached
   useEffect(() => {
     const interval = setInterval(() => {
       setElapsed(e => {
         const next = e + 1;
-        // Limite máximo de 60 minutos — encerra automaticamente
-        if (next >= 3600 && !endingRef.current) {
+        elapsedRef.current = next;
+        // Auto-end when the effective lesson duration expires
+        if (totalDurationRef.current !== null && next >= totalDurationRef.current && !endingRef.current) {
           endLesson();
         }
         return next;
@@ -99,29 +103,6 @@ export default function Classroom() {
     }, 3000);
     return () => clearInterval(poll);
   }, [id]);
-
-  // Credit warning & auto-end for student (creditsLeft em minutos)
-  useEffect(() => {
-    if (user?.role !== "student" || creditsLeft === null) return;
-    if (creditsLeft <= 2 && creditsLeft > 0) {
-      setShowCreditWarning(true);
-    }
-    if (creditsLeft <= 0 && !endingRef.current) {
-      endLesson();
-    }
-  }, [Math.floor(creditsLeft)]);
-
-  // Decrement student credits every second (exibição em segundos → convertido para minutos)
-  useEffect(() => {
-    if (user?.role !== "student") return;
-    const interval = setInterval(() => {
-      setCreditsLeft(prev => {
-        if (prev === null) return null;
-        return Math.max(0, prev - (1 / 60));
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [user?.role]);
 
   // Poll every 2s using service-role backend function to bypass RLS
   const seenMsgIds = useRef(new Set());
@@ -178,15 +159,57 @@ export default function Classroom() {
       await notifyTutor(l);
       await joinChannel(l);
 
-      // Load student credits — usado para countdown e limite de 60min
-      if (user?.role === "student") {
-        const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) {
-          const mins = Math.min(profiles[0].credits_minutes ?? 0, 60); // máximo 60 min por chamada
-          setCreditsLeft(mins);
-          setInitialCredits(mins);
+      // --- Determine effective lesson duration ---
+      // 1. Fetch all scheduled lessons for this student+tutor pair to detect consecutive bookings
+      // 2. Sum consecutive durations starting from this lesson's scheduled_at
+      // 3. Effective duration = min(student_credits, total_scheduled_minutes)
+
+      let scheduledMins = l.duration_minutes || 30; // default 30 if not set
+
+      // Check for consecutive bookings (same tutor+student, scheduled back-to-back)
+      try {
+        const allLessons = await base44.entities.Lesson.filter({
+          tutor_id: l.tutor_id,
+          student_id: l.student_id,
+          status: "scheduled",
+        });
+        if (allLessons.length > 1 && l.scheduled_at) {
+          // Sort by scheduled_at
+          const sorted = [...allLessons].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
+          // Find this lesson's index
+          const idx = sorted.findIndex(x => x.id === l.id);
+          if (idx !== -1) {
+            let total = sorted[idx].duration_minutes || 30;
+            // Look forward: add consecutive lessons (gap ≤ 1 min)
+            for (let i = idx + 1; i < sorted.length; i++) {
+              const prev = sorted[i - 1];
+              const curr = sorted[i];
+              const prevEnd = new Date(prev.scheduled_at).getTime() + (prev.duration_minutes || 30) * 60000;
+              const gap = new Date(curr.scheduled_at).getTime() - prevEnd;
+              if (gap <= 60000) { // ≤ 1 minute gap = consecutive
+                total += curr.duration_minutes || 30;
+              } else break;
+            }
+            scheduledMins = total;
+          }
         }
-      }
+      } catch {}
+
+      // Fetch student credits
+      let studentCredits = scheduledMins; // default: assume enough credits
+      try {
+        const studentId = user?.role === "student" ? user.id : l.student_id;
+        const profiles = await base44.entities.StudentProfile.filter({ user_id: studentId });
+        if (profiles.length > 0) {
+          studentCredits = profiles[0].credits_minutes ?? 0;
+        }
+      } catch {}
+
+      // Effective duration: if student has enough credits, use full scheduled time; else use what's available
+      const effectiveMins = Math.min(scheduledMins, studentCredits);
+      setTotalDurationMins(effectiveMins);
+      totalDurationRef.current = effectiveMins * 60;
+
     } catch (e) {
       console.error("Classroom error:", e);
       toast({ title: "Erro ao carregar aula", description: String(e?.message || e), variant: "destructive" });
@@ -320,7 +343,7 @@ export default function Classroom() {
     setLessonEnding(true);
 
     await leaveChannel();
-    const durationSeconds = Math.max(1, elapsed);
+    const durationSeconds = Math.max(1, elapsedRef.current);
     const durationMinutes = durationSeconds / 60; // proportional, not rounded
     const currentLesson = lessonRef.current;
 
@@ -374,11 +397,27 @@ export default function Classroom() {
     return `${Math.floor(totalSecs / 60).toString().padStart(2, "0")}:${(totalSecs % 60).toString().padStart(2, "0")}`;
   };
 
-  // Para aluno: countdown baseado nos créditos restantes (em segundos)
-  // Para tutor: elapsed crescente
-  const displaySeconds = user?.role === "student" && creditsLeft !== null
-    ? creditsLeft * 60  // creditsLeft em minutos → segundos
-    : elapsed;
+  // Countdown remaining seconds for both student and tutor
+  const remainingSeconds = totalDurationMins !== null
+    ? Math.max(0, totalDurationMins * 60 - elapsed)
+    : null;
+
+  // Minutes remaining (for warning and display)
+  const minsRemaining = remainingSeconds !== null ? remainingSeconds / 60 : null;
+
+  // Show warning when ≤ 2 minutes left
+  useEffect(() => {
+    if (remainingSeconds === null) return;
+    if (remainingSeconds <= 120 && remainingSeconds > 0 && !showCreditWarning) {
+      setShowCreditWarning(true);
+    }
+    if (remainingSeconds <= 0 && !endingRef.current) {
+      endLesson();
+    }
+  }, [Math.floor(remainingSeconds ?? 999)]);
+
+  // Display: always countdown (for both student and tutor)
+  const displaySeconds = remainingSeconds !== null ? remainingSeconds : elapsed;
 
   if (loading) return (
     <div className="fixed inset-0 flex items-center justify-center bg-white">
@@ -389,11 +428,11 @@ export default function Classroom() {
   return (
     <div className="fixed inset-0 bg-white flex flex-col z-50">
       {/* Credit warning banner */}
-      {showCreditWarning && creditsLeft !== null && creditsLeft > 0 && (
+      {showCreditWarning && minsRemaining !== null && minsRemaining > 0 && (
         <div className="flex items-center justify-between gap-3 px-5 py-3 bg-amber-500/20 border-b border-amber-500/30">
           <div className="flex items-center gap-2 text-amber-400 text-sm font-semibold">
             <AlertTriangle className="w-4 h-4" />
-            Atenção: apenas {Math.ceil(creditsLeft)} minuto{Math.ceil(creditsLeft) !== 1 ? "s" : ""} restante{Math.ceil(creditsLeft) !== 1 ? "s" : ""} na sua aula!
+            Atenção: apenas {Math.ceil(minsRemaining)} minuto{Math.ceil(minsRemaining) !== 1 ? "s" : ""} restante{Math.ceil(minsRemaining) !== 1 ? "s" : ""} na aula!
           </div>
           <button onClick={() => setShowCreditWarning(false)} className="text-amber-400/70 hover:text-amber-400">
             <X className="w-4 h-4" />
@@ -416,13 +455,13 @@ export default function Classroom() {
         </div>
         <div className="flex items-center gap-3">
           <div className={`flex items-center gap-2 font-mono text-sm px-3 py-1.5 rounded-xl border ${
-            user?.role === "student" && creditsLeft !== null && creditsLeft <= 2
+            minsRemaining !== null && minsRemaining <= 2
               ? "bg-red-100 border-red-300 text-red-600"
               : "bg-gray-100 border-gray-200 text-gray-700"
           }`}>
             <Clock className="w-3.5 h-3.5 text-violet-500" />
             <span className="font-semibold">{formatTime(displaySeconds)}</span>
-            {user?.role === "student" && <span className="text-xs text-gray-400 ml-1">restante</span>}
+            <span className="text-xs text-gray-400 ml-1">restante</span>
           </div>
           <button
             onClick={() => setIsRecording(!isRecording)}
