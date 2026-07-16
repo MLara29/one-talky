@@ -115,7 +115,7 @@ export default function TutorEarnings() {
   const stats = [
     { label: "Total earned", value: `$${totalEarned.toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
     { label: "Minutes taught", value: profile?.total_minutes || 0, icon: Clock, gradient: "from-violet-500 to-indigo-500" },
-    { label: "Rate/minute", value: `$${rate.toFixed(2)}`, icon: TrendingUp, gradient: "from-blue-500 to-cyan-500" },
+    { label: "Rate/hour", value: `$${(rate * 60).toFixed(2)}`, icon: TrendingUp, gradient: "from-blue-500 to-cyan-500" },
     { label: "Total lessons", value: profile?.total_lessons || 0, icon: Calendar, gradient: "from-amber-500 to-orange-500" },
   ];
 

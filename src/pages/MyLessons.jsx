@@ -8,6 +8,7 @@ import { Video, Calendar, Clock, CheckCircle, Settings2 } from "lucide-react";
 import { getLanguageLabel } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import CancelRescheduleModal from "@/components/lessons/CancelRescheduleModal";
+import StudentCancelModal from "@/components/lessons/StudentCancelModal";
 
 export default function MyLessons() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export default function MyLessons() {
   const [managingLesson, setManagingLesson] = useState(null); // lesson being managed
   const [tutorProfile, setTutorProfile] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [cancellingLesson, setCancellingLesson] = useState(null); // for student cancel
 
   useEffect(() => { loadData(); }, [user]);
 
@@ -34,17 +36,58 @@ export default function MyLessons() {
     } catch {} finally { setLoading(false); }
   };
 
+  // Student cancels their own lesson
+  const handleStudentCancel = async (message) => {
+    if (!cancellingLesson) return;
+    setActionLoading(true);
+    try {
+      await base44.entities.Lesson.update(cancellingLesson.id, { status: "cancelled" });
+
+      // Release the booked slot via backend function (student can't update TutorProfile directly)
+      if (cancellingLesson.scheduled_at) {
+        const tutorProfiles = await base44.entities.TutorProfile.filter({ user_id: cancellingLesson.tutor_id });
+        if (tutorProfiles.length > 0) {
+          await base44.functions.invoke('bookSlot', {
+            tutor_profile_id: tutorProfiles[0].id,
+            scheduled_at: cancellingLesson.scheduled_at,
+            action: 'release',
+          });
+        }
+      }
+
+      if (cancellingLesson.tutor_id) {
+        await base44.entities.Notification.create({
+          user_id: cancellingLesson.tutor_id,
+          title: "Lesson cancelled by student",
+          message: message
+            ? `${cancellingLesson.student_name} cancelled the lesson. Message: "${message}"`
+            : `${cancellingLesson.student_name} cancelled the scheduled lesson.`,
+          type: "general",
+          is_read: false,
+        });
+      }
+
+      setLessons(prev => prev.map(l => l.id === cancellingLesson.id ? { ...l, status: "cancelled" } : l));
+      setCancellingLesson(null);
+      toast({ title: "Lesson cancelled", description: message ? "Message sent to tutor." : "" });
+    } catch {
+      toast({ title: "Error cancelling", variant: "destructive" });
+    } finally { setActionLoading(false); }
+  };
+
   const handleCancel = async (message) => {
     if (!managingLesson) return;
     setActionLoading(true);
     try {
       await base44.entities.Lesson.update(managingLesson.id, { status: "cancelled" });
 
-      // Release the booked slot on tutor profile
-      if (managingLesson.scheduled_at && tutorProfile) {
-        const updated = (tutorProfile.booked_slots || []).filter(s => s !== managingLesson.scheduled_at);
-        await base44.entities.TutorProfile.update(tutorProfile.id, { booked_slots: updated });
-        setTutorProfile(prev => ({ ...prev, booked_slots: updated }));
+      // Release the booked slot via backend function
+      if (managingLesson.scheduled_at) {
+        await base44.functions.invoke('bookSlot', {
+          tutor_profile_id: tutorProfile?.id,
+          scheduled_at: managingLesson.scheduled_at,
+          action: 'release',
+        });
       }
 
       // Send notification + message to student
@@ -72,12 +115,20 @@ export default function MyLessons() {
     if (!managingLesson) return;
     setActionLoading(true);
     try {
-      // Release old slot, add new one
+      // Release old slot, add new one via backend function
+      if (tutorProfile && managingLesson.scheduled_at) {
+        await base44.functions.invoke('bookSlot', {
+          tutor_profile_id: tutorProfile.id,
+          scheduled_at: managingLesson.scheduled_at,
+          action: 'release',
+        });
+      }
       if (tutorProfile) {
-        const withoutOld = (tutorProfile.booked_slots || []).filter(s => s !== managingLesson.scheduled_at);
-        const updated = [...withoutOld, newScheduledAt];
-        await base44.entities.TutorProfile.update(tutorProfile.id, { booked_slots: updated });
-        setTutorProfile(prev => ({ ...prev, booked_slots: updated }));
+        await base44.functions.invoke('bookSlot', {
+          tutor_profile_id: tutorProfile.id,
+          scheduled_at: newScheduledAt,
+          action: 'book',
+        });
       }
 
       await base44.entities.Lesson.update(managingLesson.id, { scheduled_at: newScheduledAt });
@@ -179,6 +230,16 @@ export default function MyLessons() {
                         <Settings2 className="w-4 h-4" />
                       </Button>
                     )}
+                    {user?.role === "student" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCancellingLesson(l)}
+                        className="border-red-500/20 text-red-400 hover:text-red-300 hover:border-red-500/40 bg-transparent text-xs"
+                      >
+                        Cancel
+                      </Button>
+                    )}
                     <Link to={`/classroom/${l.id}`}>
                       <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:opacity-90">Join</Button>
                     </Link>
@@ -216,6 +277,15 @@ export default function MyLessons() {
           )}
         </TabsContent>
       </Tabs>
+
+      {cancellingLesson && (
+        <StudentCancelModal
+          lesson={cancellingLesson}
+          onClose={() => setCancellingLesson(null)}
+          onCancel={handleStudentCancel}
+          loading={actionLoading}
+        />
+      )}
 
       {managingLesson && (
         <CancelRescheduleModal
