@@ -113,25 +113,30 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, [user?.role]);
 
-  // Realtime subscribe: receive messages from the other party instantly via DB push
+  // Poll DB every 2s for new messages from the other party
   const seenMsgIds = useRef(new Set());
   useEffect(() => {
-    const unsubscribe = base44.entities.ClassroomMessage.subscribe((event) => {
-      if (event.type !== 'create') return;
-      const m = event.data;
-      if (!m || m.lesson_id !== id || m.sender_id === user?.id) return;
-      if (seenMsgIds.current.has(m.id)) return;
-      seenMsgIds.current.add(m.id);
-      setMessages(prev => [...prev, {
-        id: m.id,
-        sender_id: m.sender_id,
-        sender_name: m.sender_name,
-        text: m.text,
-        ts: new Date(m.created_date).getTime(),
-      }]);
-      if (!chatOpenRef.current) setUnreadCount(c => c + 1);
-    });
-    return unsubscribe;
+    const poll = async () => {
+      try {
+        const msgs = await base44.entities.ClassroomMessage.filter({ lesson_id: id });
+        msgs.forEach(m => {
+          if (seenMsgIds.current.has(m.id)) return;
+          seenMsgIds.current.add(m.id);
+          if (m.sender_id === user?.id) return; // skip own messages (already shown optimistically)
+          setMessages(prev => [...prev, {
+            id: m.id,
+            sender_id: m.sender_id,
+            sender_name: m.sender_name,
+            text: m.text,
+            ts: new Date(m.created_date).getTime(),
+          }]);
+          if (!chatOpenRef.current) setUnreadCount(c => c + 1);
+        });
+      } catch {}
+    };
+    poll(); // run immediately on mount
+    const interval = setInterval(poll, 2000);
+    return () => clearInterval(interval);
   }, [id, user?.id]);
 
   // Auto-scroll chat
