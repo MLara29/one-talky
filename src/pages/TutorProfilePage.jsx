@@ -60,11 +60,15 @@ export default function TutorProfilePage() {
         scheduled_at: scheduledAt,
       });
       // Mark the slot as booked via backend function (bypasses RLS for student)
-      await base44.functions.invoke('bookSlot', {
+      const bookRes = await base44.functions.invoke('bookSlot', {
         tutor_profile_id: tutor.id,
         scheduled_at: scheduledAt,
         action: 'book',
       });
+      // Refresh tutor with updated booked_slots so modal stays accurate
+      if (bookRes.data?.booked_slots) {
+        setTutor(prev => ({ ...prev, booked_slots: bookRes.data.booked_slots }));
+      }
       setShowSchedule(false);
       toast({ title: "Lesson scheduled! 📅", description: "Check 'My Lessons' to see your booking." });
     } catch {

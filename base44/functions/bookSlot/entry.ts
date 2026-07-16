@@ -15,15 +15,25 @@ Deno.serve(async (req) => {
 
     const currentBooked = tutorProfile.booked_slots || [];
 
+    // Normalize to "YYYY-MM-DDTHH:MM" (minute precision, no seconds/ms/tz) for reliable comparison
+    const normalize = (iso) => {
+      const d = new Date(iso);
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}T${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
+    };
+
+    const normalizedNew = normalize(scheduled_at);
+    const normalizedBooked = currentBooked.map(normalize);
+
     let updatedSlots;
     if (action === 'release') {
-      updatedSlots = currentBooked.filter(s => s !== scheduled_at);
+      updatedSlots = currentBooked.filter((s, i) => normalizedBooked[i] !== normalizedNew);
     } else {
-      // Check if already booked
-      if (currentBooked.includes(scheduled_at)) {
+      // Check if already booked (normalized comparison)
+      if (normalizedBooked.includes(normalizedNew)) {
         return Response.json({ error: 'Slot already booked' }, { status: 409 });
       }
-      updatedSlots = [...currentBooked, scheduled_at];
+      // Store as normalized ISO (minute precision UTC) for consistent future comparisons
+      updatedSlots = [...currentBooked, normalizedNew + ':00Z'];
     }
 
     await base44.asServiceRole.entities.TutorProfile.update(tutor_profile_id, { booked_slots: updatedSlots });

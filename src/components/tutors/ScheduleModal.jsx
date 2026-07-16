@@ -26,17 +26,20 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
   const availability = tutor.availability || {};
   const bookedSlots = tutor.booked_slots || [];
 
-  // Convert booked ISO strings to "YYYY-MM-DD HH:MM" for easy lookup
+  // Normalize booked ISO strings to "YYYY-MM-DDTHH:MM" using UTC (matches backend storage)
   const bookedSet = new Set(
     bookedSlots.map(iso => {
       const d = new Date(iso);
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}T${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`;
     })
   );
 
   const isSlotBooked = (date, slot) => {
     if (!date) return false;
-    const key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")} ${slot}`;
+    // Build an ISO datetime in UTC from the local date + slot time "HH:MM"
+    const [h, m] = slot.split(":").map(Number);
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), h, m));
+    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}T${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`;
     return bookedSet.has(key);
   };
 
@@ -75,9 +78,9 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
   const handleConfirm = () => {
     if (!selectedDate || !selectedSlot) return;
     const [hours, minutes] = selectedSlot.split(":").map(Number);
-    const scheduled = new Date(selectedDate);
-    scheduled.setHours(hours, minutes, 0, 0);
-    onConfirm(scheduled.toISOString());
+    // Build UTC ISO at minute precision (no seconds/ms) — must match backend normalize()
+    const utc = new Date(Date.UTC(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), hours, minutes));
+    onConfirm(`${utc.getUTCFullYear()}-${String(utc.getUTCMonth()+1).padStart(2,"0")}-${String(utc.getUTCDate()).padStart(2,"0")}T${String(utc.getUTCHours()).padStart(2,"0")}:${String(utc.getUTCMinutes()).padStart(2,"0")}:00Z`);
   };
 
   const calendarDays = buildCalendarDays(viewYear, viewMonth);
