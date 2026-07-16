@@ -1,6 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-// Official Agora token library
-import { RtcTokenBuilder, RtcRole, RtmTokenBuilder } from 'npm:agora-token@2.0.3';
+import { RtcTokenBuilder, RtcRole } from 'npm:agora-token@2.0.3';
+
+// Build RTM token manually using the same AccessToken2 approach but for RTM
+// agora-token@2.0.3 RtmTokenBuilder has a known issue where it uses wrong salt — use RtcTokenBuilder with uid=0 as RTM workaround
+// Actually use the correct RtmTokenBuilder but log everything for debugging
+
+import { RtmTokenBuilder } from 'npm:agora-token@2.0.3';
 
 Deno.serve(async (req) => {
   try {
@@ -25,9 +30,13 @@ Deno.serve(async (req) => {
     if (!appId) return Response.json({ error: 'VITE_AGORA_APP_ID not set' }, { status: 500 });
     if (!appCertificate) return Response.json({ error: 'VITE_AGORA_APP_CERTIFICATE not set' }, { status: 500 });
 
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const expirationSeconds = 86400; // 24h
+    const privilegeExpiredTs = nowSeconds + expirationSeconds;
+
+    console.log(`[agoraToken] serverTime=${new Date().toISOString()} nowSeconds=${nowSeconds} privilegeExpiredTs=${privilegeExpiredTs} diff=${expirationSeconds}s`);
+
     const agoraRole = role === 'subscriber' ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
-    const tokenExpirationInSeconds = 86400; // 24h
-    const privilegeExpiredTs = Math.floor(Date.now() / 1000) + tokenExpirationInSeconds;
 
     const token = RtcTokenBuilder.buildTokenWithUid(
       appId,
@@ -35,7 +44,7 @@ Deno.serve(async (req) => {
       channelName,
       Number(uid),
       agoraRole,
-      tokenExpirationInSeconds,
+      expirationSeconds,
       privilegeExpiredTs
     );
 
@@ -49,9 +58,9 @@ Deno.serve(async (req) => {
       privilegeExpiredTs
     );
 
-    console.log(`[agoraToken] appId=${appId} channel=${channelName} uid=${uid} role=${role || 'publisher'}`);
+    console.log(`[agoraToken] uid=${uid} rtmUserId=${rtmUserId} rtmToken_prefix=${rtmToken?.substring(0, 20)} privilegeExpiredTs=${privilegeExpiredTs}`);
 
-    return Response.json({ token, rtmToken, appId, channelName, uid: Number(uid), rtmUserId });
+    return Response.json({ token, rtmToken, appId, channelName, uid: Number(uid), rtmUserId, privilegeExpiredTs, nowSeconds });
   } catch (error) {
     console.error('[agoraToken] error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });

@@ -43,8 +43,6 @@ export default function Classroom() {
   const lessonRef = useRef(null);
   const creditsLeftRef = useRef(null);
   const endingRef = useRef(false);
-  const rtmClientRef = useRef(null);
-  const rtmChannelRef = useRef(null);
 
   // Keep refs in sync
   useEffect(() => { lessonRef.current = lesson; }, [lesson]);
@@ -115,39 +113,25 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, [user?.role]);
 
-  // DB fallback: poll only when RTM is not connected
+  // Realtime subscribe: receive messages from the other party instantly via DB push
   const seenMsgIds = useRef(new Set());
-  const rtmConnected = useRef(false);
   useEffect(() => {
-    // Mark RTM as connected after a short delay (enough time for RTM login to succeed/fail)
-    const timer = setTimeout(() => {
-      rtmConnected.current = !!rtmChannelRef.current;
-    }, 4000);
-
-    const poll = async () => {
-      if (rtmConnected.current) return; // RTM is working, skip DB poll
-      try {
-        const msgs = await base44.entities.ClassroomMessage.filter({ lesson_id: id });
-        msgs.forEach(m => {
-          if (!seenMsgIds.current.has(m.id)) {
-            seenMsgIds.current.add(m.id);
-            if (m.sender_id !== user?.id) {
-              setMessages(prev => [...prev, {
-                id: m.id,
-                sender_id: m.sender_id,
-                sender_name: m.sender_name,
-                text: m.text,
-                ts: new Date(m.created_date).getTime(),
-              }]);
-              if (!chatOpenRef.current) setUnreadCount(c => c + 1);
-            }
-          }
-        });
-      } catch {}
-    };
-
-    const interval = setInterval(poll, 2000);
-    return () => { clearTimeout(timer); clearInterval(interval); };
+    const unsubscribe = base44.entities.ClassroomMessage.subscribe((event) => {
+      if (event.type !== 'create') return;
+      const m = event.data;
+      if (!m || m.lesson_id !== id || m.sender_id === user?.id) return;
+      if (seenMsgIds.current.has(m.id)) return;
+      seenMsgIds.current.add(m.id);
+      setMessages(prev => [...prev, {
+        id: m.id,
+        sender_id: m.sender_id,
+        sender_name: m.sender_name,
+        text: m.text,
+        ts: new Date(m.created_date).getTime(),
+      }]);
+      if (!chatOpenRef.current) setUnreadCount(c => c + 1);
+    });
+    return unsubscribe;
   }, [id, user?.id]);
 
   // Auto-scroll chat
@@ -249,88 +233,15 @@ export default function Classroom() {
     };
     playLocal();
 
-    // --- RTM ---
-    try {
-      if (!window.AgoraRTM) {
-        await new Promise((resolve, reject) => {
-          // Try multiple CDN sources
-          const urls = [
-            "https://cdn.jsdelivr.net/npm/agora-rtm-sdk@1.5.1/index.js",
-            "https://unpkg.com/agora-rtm-sdk@1.5.1/index.js",
-          ];
-          let tried = 0;
-          const tryNext = () => {
-            if (tried >= urls.length) { reject(new Error("All CDNs failed")); return; }
-            const s = document.createElement("script");
-            s.src = urls[tried++];
-            s.onload = resolve;
-            s.onerror = tryNext;
-            document.head.appendChild(s);
-          };
-          tryNext();
-        });
-      }
-
-      const AgoraRTM = window.AgoraRTM;
-      const rtmClient = AgoraRTM.createInstance(appId);
-      rtmClientRef.current = rtmClient;
-
-      // Token renewal
-      rtmClient.on("TokenExpired", async () => {
-        console.log("[RTM] token expired, renewing...");
-        try {
-          const res = await base44.functions.invoke('agoraToken', { channelName, uid, role: 'publisher' });
-          if (res.data?.rtmToken) {
-            await rtmClient.renewToken(res.data.rtmToken);
-            console.log("[RTM] token renewed");
-          }
-        } catch (e) {
-          console.error("[RTM] token renewal failed:", e);
-        }
-      });
-
-      await rtmClient.login({ uid: rtmUserId, token: rtmToken });
-      console.log("[RTM] login OK, uid:", rtmUserId);
-
-      const rtmChannel = rtmClient.createChannel(channelName);
-      rtmChannelRef.current = rtmChannel;
-
-      // memberId is the RTM uid string ("1" or "2") — map to a stable non-user id
-      rtmChannel.on("ChannelMessage", (message, memberId) => {
-        console.log("[RTM] ChannelMessage from", memberId, ":", message.text);
-        let parsedText = message.text;
-        let senderName = memberId;
-        // Messages are sent as JSON with name embedded
-        try {
-          const parsed = JSON.parse(message.text);
-          parsedText = parsed.text;
-          senderName = parsed.senderName || memberId;
-        } catch {}
-        setMessages(prev => [...prev, {
-          id: `rtm-${Date.now()}-${memberId}`,
-          sender_id: `rtm-${memberId}`, // never matches local user.id → always shown as "other"
-          sender_name: senderName,
-          text: parsedText,
-          ts: Date.now(),
-        }]);
-        if (!chatOpenRef.current) setUnreadCount(c => c + 1);
-      });
-
-      await rtmChannel.join();
-      console.log("[RTM] joined channel", channelName);
-    } catch (rtmErr) {
-      console.error("[RTM] init error:", rtmErr);
-    }
+    // RTM is unreliable (clock skew causes Error Code 6 on Deno runtime).
+    // Chat uses DB + realtime subscribe as primary channel — fast and reliable.
+    console.log("[Chat] using DB realtime as primary chat channel");
   };
 
   const leaveChannel = async () => {
     localAudioTrackRef.current?.close();
     localVideoTrackRef.current?.close();
     await clientRef.current?.leave();
-    try {
-      await rtmChannelRef.current?.leave();
-      await rtmClientRef.current?.logout();
-    } catch {}
   };
 
   const toggleCamera = async () => {
@@ -351,39 +262,9 @@ export default function Classroom() {
     if (!msgInput.trim()) return;
     const text = msgInput.trim();
     setMsgInput("");
-
     const senderName = user.full_name || user.email || "You";
 
-    // Try RTM first
-    if (rtmChannelRef.current) {
-      try {
-        // Embed sender name in the message payload so the receiver can display it
-        const payload = JSON.stringify({ text, senderName });
-        await rtmChannelRef.current.sendMessage({ text: payload });
-        console.log("[RTM] sendMessage OK");
-        // Add to local UI only after confirmed sent
-        setMessages(prev => [...prev, {
-          id: `local-${Date.now()}`,
-          sender_id: user.id,
-          sender_name: senderName,
-          text,
-          ts: Date.now(),
-        }]);
-        // Also persist to DB for history
-        base44.entities.ClassroomMessage.create({
-          lesson_id: id,
-          sender_id: user.id,
-          sender_name: senderName,
-          text,
-        }).catch(() => {});
-        return;
-      } catch (e) {
-        console.error("[RTM] sendMessage error:", e);
-      }
-    }
-
-    // Fallback: DB only (RTM not connected)
-    console.warn("[Chat] RTM not available, sending via DB");
+    // Optimistic local update
     setMessages(prev => [...prev, {
       id: `local-${Date.now()}`,
       sender_id: user.id,
@@ -391,6 +272,8 @@ export default function Classroom() {
       text,
       ts: Date.now(),
     }]);
+
+    // Save to DB — the other party receives it via realtime subscribe
     try {
       await base44.entities.ClassroomMessage.create({
         lesson_id: id,
@@ -399,7 +282,7 @@ export default function Classroom() {
         text,
       });
     } catch (e) {
-      console.error("[DB] sendMessage error:", e);
+      console.error("[Chat] sendMessage error:", e);
     }
   };
 
