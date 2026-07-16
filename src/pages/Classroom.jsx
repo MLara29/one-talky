@@ -113,16 +113,17 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, [user?.role]);
 
-  // Poll DB every 2s for new messages from the other party
+  // Poll every 2s using service-role backend function to bypass RLS
   const seenMsgIds = useRef(new Set());
   useEffect(() => {
     const poll = async () => {
       try {
-        const msgs = await base44.entities.ClassroomMessage.filter({ lesson_id: id });
+        const res = await base44.functions.invoke('getClassroomMessages', { lesson_id: id });
+        const msgs = res.data?.messages || [];
         msgs.forEach(m => {
           if (seenMsgIds.current.has(m.id)) return;
           seenMsgIds.current.add(m.id);
-          if (m.sender_id === user?.id) return; // skip own messages (already shown optimistically)
+          if (m.sender_id === user?.id) return; // skip own (already shown optimistically)
           setMessages(prev => [...prev, {
             id: m.id,
             sender_id: m.sender_id,
@@ -134,7 +135,7 @@ export default function Classroom() {
         });
       } catch {}
     };
-    poll(); // run immediately on mount
+    poll();
     const interval = setInterval(poll, 2000);
     return () => clearInterval(interval);
   }, [id, user?.id]);
