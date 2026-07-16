@@ -612,7 +612,10 @@ export default function Classroom() {
         <ReviewModal
           lesson={lesson}
           userRole={user?.role}
-          onClose={() => { setShowReview(false); navigate("/my-lessons"); }}
+          onClose={() => {
+            setShowReview(false);
+            navigate(user?.role === "student" ? "/" : "/my-lessons");
+          }}
         />
       )}
     </div>

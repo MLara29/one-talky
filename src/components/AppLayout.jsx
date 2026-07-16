@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import {
   MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon, TrendingUp, Inbox
+  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon, TrendingUp, Inbox, Tag
 } from "lucide-react";
 // DollarSign already imported above
 
@@ -36,6 +36,7 @@ const ADMIN_NAV = [
   { label: "Custos & Lucro", path: "/admin/costs", icon: TrendingUp },
   { label: "Pagamentos", path: "/admin/earnings", icon: DollarSign },
   { label: "Suporte", path: "/admin/support", icon: MessageCircle },
+  { label: "Cupons", path: "/admin/coupons", icon: Tag },
 ];
 
 export default function AppLayout() {

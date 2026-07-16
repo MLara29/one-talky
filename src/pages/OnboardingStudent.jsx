@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LANGUAGES, OBJECTIVES, LEVELS, ACCENTS, COUNTRIES, UI_LANGUAGES } from "@/lib/constants";
-import { MessageCircle, ChevronRight, ChevronLeft, Globe } from "lucide-react";
+import { MessageCircle, ChevronRight, ChevronLeft, Globe, Tag, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { t, detectLanguage } from "@/lib/i18n";
 
@@ -36,12 +36,36 @@ export default function OnboardingStudent() {
     objective: "",
     accent_preference: "",
   });
+  const [couponCode, setCouponCode] = useState("");
+  const [couponStatus, setCouponStatus] = useState(null); // null | "valid" | "invalid"
+  const [couponData, setCouponData] = useState(null);
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(me => setUserId(me.id)).catch(() => {});
   }, []);
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
+
+  const checkCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) return;
+    setCheckingCoupon(true);
+    setCouponStatus(null);
+    try {
+      const results = await base44.entities.Coupon.filter({ code, is_active: true });
+      const c = results[0];
+      if (c && (c.used_count || 0) < c.max_uses) {
+        setCouponStatus("valid");
+        setCouponData(c);
+      } else {
+        setCouponStatus("invalid");
+        setCouponData(null);
+      }
+    } catch {
+      setCouponStatus("invalid");
+    } finally { setCheckingCoupon(false); }
+  };
 
   const handleSubmit = async () => {
     if (!userId) {
@@ -50,6 +74,7 @@ export default function OnboardingStudent() {
     }
     setSaving(true);
     try {
+      const freeCredits = couponStatus === "valid" && couponData ? couponData.credits_minutes : 0;
       await base44.entities.StudentProfile.create({
         full_name: form.full_name,
         nationality: form.nationality,
@@ -59,7 +84,12 @@ export default function OnboardingStudent() {
         objective: form.objective,
         accent_preference: form.accent_preference || "",
         user_id: userId,
+        credits_minutes: freeCredits,
       });
+      // Increment coupon used_count
+      if (couponStatus === "valid" && couponData) {
+        await base44.entities.Coupon.update(couponData.id, { used_count: (couponData.used_count || 0) + 1 }).catch(() => {});
+      }
       await base44.auth.updateMe({ profile_completed: true });
       await base44.functions.invoke('setUserRole', { role: 'student' });
       toast({ title: t(uiLang, "welcomeTitle"), description: t(uiLang, "welcomeDesc") });
@@ -203,6 +233,35 @@ export default function OnboardingStudent() {
                   </Select>
                 </div>
               )}
+              {/* Coupon field */}
+              <div>
+                <Label className="text-gray-300 flex items-center gap-1.5 mb-1.5">
+                  <Tag className="w-3.5 h-3.5" /> Cupom promocional <span className="text-gray-600 font-normal">(opcional)</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={couponCode}
+                    onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponStatus(null); setCouponData(null); }}
+                    placeholder="Ex: BEMVINDO10"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50 font-mono uppercase"
+                  />
+                  <Button type="button" onClick={checkCoupon} disabled={!couponCode.trim() || checkingCoupon}
+                    variant="outline" className="shrink-0 border-white/10 text-gray-300 hover:bg-white/10 bg-transparent px-4">
+                    {checkingCoupon ? "..." : "Aplicar"}
+                  </Button>
+                </div>
+                {couponStatus === "valid" && couponData && (
+                  <p className="flex items-center gap-1.5 text-emerald-400 text-xs mt-1.5">
+                    <CheckCircle className="w-3.5 h-3.5" /> Cupom válido! Você ganha {couponData.credits_minutes} minutos grátis 🎉
+                  </p>
+                )}
+                {couponStatus === "invalid" && (
+                  <p className="flex items-center gap-1.5 text-red-400 text-xs mt-1.5">
+                    <XCircle className="w-3.5 h-3.5" /> Cupom inválido ou expirado.
+                  </p>
+                )}
+              </div>
+
               <div className="flex gap-3 mt-2">
                 <Button
                   variant="outline"

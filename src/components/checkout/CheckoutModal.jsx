@@ -130,35 +130,35 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
     }
   };
 
-  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-violet-500 transition-colors";
+  const inputCls = "w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 transition-colors theme-input";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-[#0f0f1a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-3xl shadow-2xl overflow-hidden" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-gradient-to-r from-violet-600/20 to-indigo-600/10">
+        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-violet-600/20 to-indigo-600/10" style={{ borderBottom: "1px solid var(--app-border)" }}>
           <div className="flex items-center gap-2">
             <Lock className="w-4 h-4 text-violet-400" />
-            <span className="text-white font-semibold text-sm">Pagamento Seguro</span>
-            <span className="text-xs text-gray-500">· Mercado Pago</span>
+            <span className="theme-heading font-semibold text-sm">Pagamento Seguro</span>
+            <span className="theme-subtext text-xs" style={{ color: "var(--app-text-muted)" }}>· Mercado Pago</span>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+          <button onClick={onClose} className="theme-subtext hover:opacity-70 transition-opacity">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Item summary */}
-        <div className="px-6 py-4 bg-white/3 border-b border-white/10">
-          <p className="text-gray-400 text-xs">{item.title}</p>
-          <p className="text-white font-display font-bold text-2xl">{fmtBRL(item.price)}</p>
+        <div className="px-6 py-4" style={{ background: "var(--app-nav-hover-bg)", borderBottom: "1px solid var(--app-border)" }}>
+          <p className="theme-subtext text-xs" style={{ color: "var(--app-text-secondary)" }}>{item.title}</p>
+          <p className="theme-heading font-display font-bold text-2xl">{fmtBRL(item.price)}</p>
         </div>
 
         {/* Loading */}
         {step === "loading" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
-            <p className="text-gray-400 text-sm">Carregando...</p>
+            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Carregando...</p>
           </div>
         )}
 
@@ -166,8 +166,8 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
         {step === "processing" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <Loader2 className="w-10 h-10 text-violet-400 animate-spin" />
-            <p className="text-white font-semibold">Processando pagamento…</p>
-            <p className="text-gray-500 text-sm">Aguarde alguns segundos</p>
+            <p className="theme-heading font-semibold">Processando pagamento…</p>
+            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Aguarde alguns segundos</p>
           </div>
         )}
 
@@ -175,8 +175,8 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
         {step === "success" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <CheckCircle className="w-12 h-12 text-emerald-400" />
-            <p className="text-white font-semibold text-lg">Pagamento aprovado! 🎉</p>
-            <p className="text-gray-500 text-sm">Seus créditos foram adicionados</p>
+            <p className="theme-heading font-semibold text-lg">Pagamento aprovado! 🎉</p>
+            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Seus créditos foram adicionados</p>
           </div>
         )}
 
@@ -184,7 +184,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
         {step === "error" && (
           <div className="flex flex-col items-center py-10 px-6 gap-4">
             <AlertCircle className="w-10 h-10 text-red-400" />
-            <p className="text-white font-semibold">Pagamento não processado</p>
+            <p className="theme-heading font-semibold">Pagamento não processado</p>
             <p className="text-red-400 text-sm text-center">{errorMsg}</p>
             <Button onClick={() => setStep("form")} className="bg-violet-600 hover:bg-violet-700 text-white border-0 w-full">
               Tentar novamente
@@ -197,7 +197,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
           <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
 
             <div>
-              <Label className="text-gray-400 text-xs mb-1 block">Número do cartão</Label>
+              <Label className="theme-subtext text-xs mb-1 block">Número do cartão</Label>
               <div className="relative">
                 <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
@@ -215,7 +215,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-gray-400 text-xs mb-1 block">Validade</Label>
+                <Label className="theme-subtext text-xs mb-1 block">Validade</Label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -228,7 +228,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
                 />
               </div>
               <div>
-                <Label className="text-gray-400 text-xs mb-1 block">CVV</Label>
+                <Label className="theme-subtext text-xs mb-1 block">CVV</Label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -243,7 +243,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
             </div>
 
             <div>
-              <Label className="text-gray-400 text-xs mb-1 block">Nome no cartão</Label>
+              <Label className="theme-subtext text-xs mb-1 block">Nome no cartão</Label>
               <input
                 type="text"
                 placeholder="NOME SOBRENOME"
@@ -255,7 +255,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
             </div>
 
             <div>
-              <Label className="text-gray-400 text-xs mb-1 block">CPF do titular</Label>
+              <Label className="theme-subtext text-xs mb-1 block">CPF do titular</Label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -269,14 +269,14 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
             </div>
 
             <div>
-              <Label className="text-gray-400 text-xs mb-1 block">Parcelas</Label>
+              <Label className="theme-subtext text-xs mb-1 block">Parcelas</Label>
               <select
                 value={form.installments}
                 onChange={e => setForm(f => ({ ...f, installments: e.target.value }))}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#1a1a2e] border border-white/10 text-white text-sm focus:outline-none focus:border-violet-500 transition-colors"
+                className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 transition-colors theme-input"
               >
                 {[1, 2, 3, 6, 12].map(n => (
-                  <option key={n} value={n} className="bg-[#0f0f1a]">
+                  <option key={n} value={n}>
                     {n}x {fmtBRL(item.price / n)}{n === 1 ? " (sem juros)" : ""}
                   </option>
                 ))}
