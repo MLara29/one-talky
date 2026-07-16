@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import {
   MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon, TrendingUp
+  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon, TrendingUp, Inbox
 } from "lucide-react";
 // DollarSign already imported above
 
@@ -16,6 +16,7 @@ const STUDENT_NAV = [
   { label: "My Lessons", path: "/my-lessons", icon: BookOpen },
   { label: "Progress", path: "/progress", icon: BarChart3 },
   { label: "Plans", path: "/plans", icon: DollarSign },
+  { label: "Suporte", path: "/my-messages", icon: Inbox },
 ];
 
 const TUTOR_NAV = [
@@ -25,6 +26,7 @@ const TUTOR_NAV = [
   { label: "Earnings", path: "/earnings", icon: DollarSign },
   { label: "Reviews", path: "/reviews", icon: Star },
   { label: "Personal Info", path: "/tutor-bank-info", icon: User },
+  { label: "Suporte", path: "/my-messages", icon: Inbox },
 ];
 
 const ADMIN_NAV = [

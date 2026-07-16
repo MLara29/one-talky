@@ -28,29 +28,29 @@ export default function SupportModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-      <div className="bg-[#0d0d1a] border border-white/10 rounded-3xl w-full max-w-md p-6 shadow-2xl">
+      <div className="rounded-3xl w-full max-w-md p-6 shadow-2xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-violet-400" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
+              <MessageSquare className="w-4 h-4 text-violet-500" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-white text-base">Falar com o suporte</h2>
-              <p className="text-gray-500 text-xs">Nossa equipe responderá em breve</p>
+              <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>Falar com o suporte</h2>
+              <p className="text-xs" style={{ color: "var(--app-text-secondary)" }}>Nossa equipe responderá em breve</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-600 hover:text-gray-300 transition-colors">
+          <button onClick={onClose} className="transition-colors" style={{ color: "var(--app-text-muted)" }}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {sent ? (
           <div className="text-center py-8">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-7 h-7 text-emerald-400" />
+            <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-7 h-7 text-emerald-500" />
             </div>
-            <h3 className="font-display font-bold text-white mb-2">Mensagem enviada!</h3>
-            <p className="text-gray-500 text-sm mb-6">Entraremos em contato em breve.</p>
+            <h3 className="font-display font-bold mb-2" style={{ color: "var(--app-text-primary)" }}>Mensagem enviada!</h3>
+            <p className="text-sm mb-6" style={{ color: "var(--app-text-secondary)" }}>Entraremos em contato em breve.</p>
             <Button onClick={onClose} className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0">
               Fechar
             </Button>
@@ -58,22 +58,24 @@ export default function SupportModal({ onClose }) {
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="text-gray-400 text-xs font-medium mb-1.5 block">Assunto</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Assunto</label>
               <Input
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
                 placeholder="Ex: Problema com pagamento"
-                className="bg-white/5 border-white/10 text-white placeholder:text-gray-600"
+                className="theme-input"
+                style={{ background: "var(--app-nav-hover-bg)", borderColor: "var(--app-border)", color: "var(--app-text-primary)" }}
               />
             </div>
             <div>
-              <label className="text-gray-400 text-xs font-medium mb-1.5 block">Mensagem</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Mensagem</label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Descreva seu problema ou dúvida..."
                 rows={5}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-violet-500/50 resize-none"
+                className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-500/50 resize-none"
+                style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
               />
             </div>
             <Button
