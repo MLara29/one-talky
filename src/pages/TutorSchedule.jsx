@@ -21,7 +21,17 @@ export default function TutorSchedule() {
   const loadProfile = async () => {
     try {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
-      if (profiles.length > 0) { setProfile(profiles[0]); setAvailability(profiles[0].availability || {}); }
+      if (profiles.length > 0) {
+        const p = profiles[0];
+        // Auto-save tutor's timezone if not set yet
+        if (!p.timezone) {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          await base44.entities.TutorProfile.update(p.id, { timezone: tz });
+          p.timezone = tz;
+        }
+        setProfile(p);
+        setAvailability(p.availability || {});
+      }
     } catch {} finally { setLoading(false); }
   };
 

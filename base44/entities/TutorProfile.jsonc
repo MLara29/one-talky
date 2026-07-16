@@ -18,6 +18,10 @@
     "nationality": {
       "type": "string"
     },
+    "timezone": {
+      "type": "string",
+      "description": "IANA timezone of the tutor (e.g. Africa/Johannesburg, America/Sao_Paulo). Detected automatically from browser."
+    },
     "native_languages": {
       "type": "array",
       "items": {
@@ -63,14 +67,14 @@
     },
     "availability": {
       "type": "object",
-      "description": "Weekly availability schedule"
+      "description": "Weekly availability schedule \u2014 times are in tutor's local timezone"
     },
     "booked_slots": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "List of ISO datetime strings already booked (to prevent double-booking)",
+      "description": "List of ISO datetime strings already booked (UTC, minute precision)",
       "default": []
     },
     "is_available_now": {

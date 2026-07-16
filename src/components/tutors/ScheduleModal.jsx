@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Calendar, Clock, ChevronLeft, ChevronRight, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -16,37 +16,144 @@ function buildCalendarDays(year, month) {
   return cells;
 }
 
+/**
+ * Convert a tutor's local slot (day + "HH:MM" string) to a UTC Date object.
+ * tutorTz: IANA timezone string (e.g. "Africa/Johannesburg")
+ * date: JS Date representing the calendar day (in student's local time — we only use y/m/d)
+ * slot: "HH:MM" string in tutor's local time
+ */
+function slotToUTC(date, slot, tutorTz) {
+  const [h, m] = slot.split(":").map(Number);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+
+  if (!tutorTz) {
+    // Fallback: treat as UTC (old behaviour)
+    return new Date(Date.UTC(year, month, day, h, m));
+  }
+
+  // Build a string "YYYY-MM-DD HH:MM" in the tutor's tz, then find UTC equivalent
+  // We use Intl to detect what UTC offset the tutor's timezone has on that specific date+time
+  const isoString = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:00`;
+
+  // Parse as if it's in tutor's timezone using Intl trick
+  // Create a date in UTC, then compute what time it would be in tutorTz, find the offset
+  const utcGuess = new Date(isoString + "Z"); // treat as UTC first
+
+  // Format the UTC guess back in tutorTz to find offset
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: tutorTz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(utcGuess);
+  const getPart = (type) => parseInt(parts.find(p => p.type === type)?.value || "0");
+  const tzYear = getPart("year");
+  const tzMonth = getPart("month") - 1;
+  const tzDay = getPart("day");
+  const tzHour = getPart("hour") % 24;
+  const tzMin = getPart("minute");
+
+  // Diff between what UTC reads in tutorTz vs what we wanted
+  const tzDateMs = Date.UTC(tzYear, tzMonth, tzDay, tzHour, tzMin);
+  const wantedMs = Date.UTC(year, month, day, h, m);
+  const offsetMs = tzDateMs - wantedMs; // positive = tz is ahead of UTC
+
+  return new Date(utcGuess.getTime() - offsetMs);
+}
+
+/**
+ * Format a UTC Date to student's local time string "HH:MM"
+ */
+function utcToLocalTimeStr(utcDate) {
+  return utcDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
 export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null); // { tutorSlot: "HH:MM", utcDate: Date, displayLabel: "HH:MM" }
 
+  const tutorTz = tutor.timezone || null;
   const availability = tutor.availability || {};
   const bookedSlots = tutor.booked_slots || [];
 
-  // Normalize booked ISO strings to "YYYY-MM-DDTHH:MM" using UTC (matches backend storage)
-  const bookedSet = new Set(
+  // Normalize booked ISO strings to UTC minute-precision keys
+  const bookedSet = useMemo(() => new Set(
     bookedSlots.map(iso => {
       const d = new Date(iso);
       return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}T${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`;
     })
-  );
+  ), [bookedSlots]);
 
-  const isSlotBooked = (date, slot) => {
-    if (!date) return false;
-    // Build an ISO datetime in UTC from the local date + slot time "HH:MM"
-    const [h, m] = slot.split(":").map(Number);
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), h, m));
-    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}T${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`;
-    return bookedSet.has(key);
+  const utcKey = (utcDate) => {
+    return `${utcDate.getUTCFullYear()}-${String(utcDate.getUTCMonth()+1).padStart(2,"0")}-${String(utcDate.getUTCDate()).padStart(2,"0")}T${String(utcDate.getUTCHours()).padStart(2,"0")}:${String(utcDate.getUTCMinutes()).padStart(2,"0")}`;
   };
 
+  /**
+   * Get available slots for a calendar day (student's local date).
+   * 
+   * The tutor's availability is keyed by DAY NAME in the tutor's local timezone.
+   * So for each slot on that calendar date, we must figure out what day it is
+   * in the TUTOR's timezone to look up the right availability key.
+   * 
+   * Returns array of { tutorSlot, utcDate, displayLabel }
+   */
   const getSlotsForDate = (date) => {
     if (!date) return [];
-    const dayName = DAYS_OF_WEEK[date.getDay()];
-    return (availability[dayName] || []).filter(slot => !isSlotBooked(date, slot));
+    const slots = [];
+
+    // Check tutor's availability for the tutor-local day corresponding to each possible slot time
+    // We iterate over all available tutor days/slots and find ones that map to this student calendar date
+    for (const [dayName, daySlots] of Object.entries(availability)) {
+      for (const slot of daySlots) {
+        const utcDate = slotToUTC(date, slot, tutorTz);
+
+        // Verify the student-local date still matches the calendar date clicked
+        const studentLocalDate = new Date(utcDate);
+        const sameDay =
+          studentLocalDate.getFullYear() === date.getFullYear() &&
+          studentLocalDate.getMonth() === date.getMonth() &&
+          studentLocalDate.getDate() === date.getDate();
+        if (!sameDay) continue;
+
+        // Verify the tutor's day name matches what we have in availability
+        if (tutorTz) {
+          const tutorDayName = new Intl.DateTimeFormat("en-US", { timeZone: tutorTz, weekday: "long" }).format(utcDate);
+          if (tutorDayName !== dayName) continue;
+        } else {
+          // No tz: use UTC day
+          if (DAYS_OF_WEEK[utcDate.getUTCDay()] !== dayName) continue;
+        }
+
+        // Check not already booked
+        if (bookedSet.has(utcKey(utcDate))) continue;
+
+        // Check not in the past
+        if (utcDate < new Date()) continue;
+
+        slots.push({
+          tutorSlot: slot,
+          utcDate,
+          displayLabel: utcToLocalTimeStr(utcDate), // shown in student's local time
+        });
+      }
+    }
+
+    // Sort by time
+    slots.sort((a, b) => a.utcDate - b.utcDate);
+    // Remove duplicates by utcKey
+    const seen = new Set();
+    return slots.filter(s => {
+      const k = utcKey(s.utcDate);
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
   };
 
   const isDateAvailable = (date) => {
@@ -77,15 +184,19 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
 
   const handleConfirm = () => {
     if (!selectedDate || !selectedSlot) return;
-    const [hours, minutes] = selectedSlot.split(":").map(Number);
-    // Build UTC ISO at minute precision (no seconds/ms) — must match backend normalize()
-    const utc = new Date(Date.UTC(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), hours, minutes));
-    onConfirm(`${utc.getUTCFullYear()}-${String(utc.getUTCMonth()+1).padStart(2,"0")}-${String(utc.getUTCDate()).padStart(2,"0")}T${String(utc.getUTCHours()).padStart(2,"0")}:${String(utc.getUTCMinutes()).padStart(2,"0")}:00Z`);
+    const utc = selectedSlot.utcDate;
+    // Send UTC ISO at minute precision — matches backend normalize()
+    const iso = `${utc.getUTCFullYear()}-${String(utc.getUTCMonth()+1).padStart(2,"0")}-${String(utc.getUTCDate()).padStart(2,"0")}T${String(utc.getUTCHours()).padStart(2,"0")}:${String(utc.getUTCMinutes()).padStart(2,"0")}:00Z`;
+    onConfirm(iso);
   };
 
   const calendarDays = buildCalendarDays(viewYear, viewMonth);
-  const slots = getSlotsForDate(selectedDate);
+  const slots = selectedDate ? getSlotsForDate(selectedDate) : [];
   const canGoPrev = viewYear > today.getFullYear() || viewMonth > today.getMonth();
+
+  // Determine if tutor tz differs from student tz (to show a note)
+  const studentTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const tzDiffers = tutorTz && tutorTz !== studentTz;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -105,6 +216,13 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
         </div>
 
         <div className="p-6 space-y-5">
+          {/* Timezone note */}
+          {tzDiffers && (
+            <div className="px-3 py-2 rounded-xl text-xs" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)", color: "var(--app-text-secondary)" }}>
+              🌍 Times shown in <strong>your local timezone</strong> ({studentTz.replace("_", " ")})
+            </div>
+          )}
+
           {/* Calendar */}
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -156,7 +274,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
             </div>
             <p className="text-[11px] mt-3 flex items-center gap-1.5" style={{ color: "var(--app-text-muted)" }}>
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-500" />
-              Days with available slots (already booked slots are hidden)
+              Days with available slots (booked slots are hidden)
             </p>
           </div>
 
@@ -173,19 +291,19 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
                 <p className="theme-subtext text-sm text-center py-3" style={{ color: "var(--app-text-muted)" }}>No slots available</p>
               ) : (
                 <div className="grid grid-cols-4 gap-2">
-                  {slots.map(slot => (
-                    <button key={slot} onClick={() => setSelectedSlot(slot)}
+                  {slots.map((s, i) => (
+                    <button key={i} onClick={() => setSelectedSlot(s)}
                       className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                        selectedSlot === slot
+                        selectedSlot?.displayLabel === s.displayLabel && selectedSlot?.tutorSlot === s.tutorSlot
                           ? "bg-violet-600 text-white shadow-md shadow-violet-500/30 scale-105"
                           : "hover:border-violet-500/40 hover:text-violet-500"
                       }`}
-                      style={selectedSlot !== slot ? {
+                      style={!(selectedSlot?.tutorSlot === s.tutorSlot) ? {
                         background: "var(--app-nav-hover-bg)",
                         border: "1px solid var(--app-border)",
                         color: "var(--app-text-secondary)"
                       } : {}}>
-                      {slot}
+                      {s.displayLabel}
                     </button>
                   ))}
                 </div>
