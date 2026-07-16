@@ -268,7 +268,17 @@ export default function Classroom() {
     if (!msgInput.trim()) return;
     const text = msgInput.trim();
     setMsgInput("");
-    const senderName = user.full_name || user.email || "You";
+    // Use display name from StudentProfile/TutorProfile if available, else full_name from auth, else email
+    let senderName = user.full_name || user.email || "You";
+    try {
+      if (user.role === "student") {
+        const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+        if (profiles.length > 0 && profiles[0].full_name) senderName = profiles[0].full_name;
+      } else if (user.role === "tutor") {
+        const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
+        if (profiles.length > 0 && profiles[0].full_name) senderName = profiles[0].full_name;
+      }
+    } catch {}
 
     // Optimistic local update
     setMessages(prev => [...prev, {
@@ -350,13 +360,13 @@ export default function Classroom() {
   const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   if (loading) return (
-    <div className="fixed inset-0 flex items-center justify-center bg-[#05050f]">
+    <div className="fixed inset-0 flex items-center justify-center bg-white">
       <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="fixed inset-0 bg-[#05050f] flex flex-col z-50">
+    <div className="fixed inset-0 bg-white flex flex-col z-50">
       {/* Credit warning banner */}
       {showCreditWarning && creditsLeft !== null && creditsLeft > 0 && (
         <div className="flex items-center justify-between gap-3 px-5 py-3 bg-amber-500/20 border-b border-amber-500/30">
@@ -371,22 +381,22 @@ export default function Classroom() {
       )}
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3 bg-black/40 backdrop-blur-xl border-b border-white/5">
+      <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
             <MessageCircle className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-white text-sm font-semibold">
+            <p className="text-gray-900 text-sm font-semibold">
               {user?.role === "tutor" ? lesson?.student_name : lesson?.tutor_name}
             </p>
             <p className="text-gray-500 text-xs capitalize">{lesson?.language} session</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-white font-mono text-sm bg-white/8 border border-white/10 px-3 py-1.5 rounded-xl backdrop-blur">
-            <Clock className="w-3.5 h-3.5 text-violet-400" />
-            <span className="text-violet-300">{formatTime(elapsed)}</span>
+          <div className="flex items-center gap-2 text-gray-700 font-mono text-sm bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-xl">
+            <Clock className="w-3.5 h-3.5 text-violet-500" />
+            <span className="text-violet-600 font-semibold">{formatTime(elapsed)}</span>
           </div>
           {user?.role === "student" && creditsLeft !== null && (
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border ${
@@ -399,7 +409,7 @@ export default function Classroom() {
           <button
             onClick={() => setIsRecording(!isRecording)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-              isRecording ? "bg-red-500/15 border-red-500/30 text-red-400" : "bg-white/5 border-white/10 text-gray-500 hover:text-gray-300"
+              isRecording ? "bg-red-100 border-red-300 text-red-600" : "bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-700"
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${isRecording ? "bg-red-400 animate-pulse" : "bg-gray-600"}`} />
@@ -449,16 +459,16 @@ export default function Classroom() {
 
         {/* Chat sidebar */}
         {chatOpen && (
-          <div className="absolute top-0 right-0 bottom-0 w-72 sm:w-80 bg-black/80 backdrop-blur-xl border-l border-white/5 flex flex-col z-10">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-              <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                <Globe className="w-4 h-4 text-emerald-400" /> Chat
+          <div className="absolute top-0 right-0 bottom-0 w-72 sm:w-80 bg-white border-l border-gray-200 flex flex-col z-10 shadow-xl">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <div className="flex items-center gap-2 text-gray-800 text-sm font-semibold">
+                <Globe className="w-4 h-4 text-emerald-500" /> Chat
               </div>
-              <button onClick={() => { chatOpenRef.current = false; setChatOpen(false); }} className="text-gray-600 hover:text-gray-300 transition-colors">
+              <button onClick={() => { chatOpenRef.current = false; setChatOpen(false); }} className="text-gray-400 hover:text-gray-700 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50">
               {messages.map((m, i) => {
                 const isMe = m.sender_id === user?.id;
                 return (
@@ -466,7 +476,7 @@ export default function Classroom() {
                     <div className={`px-3 py-2 rounded-2xl text-sm max-w-[85%] ${
                       isMe
                         ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white"
-                        : "bg-white/10 text-white"
+                        : "bg-white border border-gray-200 text-gray-800"
                     }`}>
                       {!isMe && <p className="text-xs text-gray-400 mb-0.5">{m.sender_name?.split("@")[0]}</p>}
                       {m.text}
@@ -475,20 +485,20 @@ export default function Classroom() {
                 );
               })}
               {messages.length === 0 && (
-                <p className="text-gray-700 text-xs text-center mt-4">No messages yet</p>
+                <p className="text-gray-400 text-xs text-center mt-4">No messages yet</p>
               )}
               <div ref={chatBottomRef} />
             </div>
-            <div className="p-3 border-t border-white/5">
+            <div className="p-3 border-t border-gray-100 bg-white">
               <div className="flex gap-2">
                 <Input
                   value={msgInput}
                   onChange={e => setMsgInput(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && sendMessage()}
                   placeholder="Type a message..."
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 text-sm"
+                  className="bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-400 text-sm"
                 />
-                <Button size="icon" onClick={sendMessage} className="bg-gradient-to-br from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 shrink-0">
+                <Button size="icon" onClick={sendMessage} className="bg-gradient-to-br from-violet-600 to-indigo-600 text-white border-0 shrink-0">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
@@ -498,11 +508,11 @@ export default function Classroom() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-4 py-5 px-4 bg-black/40 backdrop-blur-xl border-t border-white/5">
+      <div className="flex items-center justify-center gap-4 py-5 px-4 bg-white border-t border-gray-200">
         <button
           onClick={toggleMic}
-          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
-            micOn ? "bg-white/10 hover:bg-white/15 text-white border border-white/10" : "bg-red-500/20 border border-red-500/40 text-red-400 shadow-red-500/20"
+          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow ${
+            micOn ? "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200" : "bg-red-100 border border-red-300 text-red-600"
           }`}
           style={{ width: 52, height: 52 }}
         >
@@ -510,8 +520,8 @@ export default function Classroom() {
         </button>
         <button
           onClick={toggleCamera}
-          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
-            cameraOn ? "bg-white/10 hover:bg-white/15 text-white border border-white/10" : "bg-red-500/20 border border-red-500/40 text-red-400 shadow-red-500/20"
+          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow ${
+            cameraOn ? "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200" : "bg-red-100 border border-red-300 text-red-600"
           }`}
           style={{ width: 52, height: 52 }}
         >
@@ -519,8 +529,8 @@ export default function Classroom() {
         </button>
         <button
           onClick={() => { const next = !chatOpenRef.current; chatOpenRef.current = next; setChatOpen(next); if (next) setUnreadCount(0); }}
-          className={`relative rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg ${
-            chatOpen ? "bg-violet-500/20 border border-violet-500/40 text-violet-400 shadow-violet-500/20" : "bg-white/10 hover:bg-white/15 text-white border border-white/10"
+          className={`relative rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow ${
+            chatOpen ? "bg-violet-100 border border-violet-300 text-violet-600" : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
           }`}
           style={{ width: 52, height: 52 }}
         >
