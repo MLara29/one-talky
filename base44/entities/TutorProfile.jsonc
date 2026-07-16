@@ -65,6 +65,14 @@
       "type": "object",
       "description": "Weekly availability schedule"
     },
+    "booked_slots": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of ISO datetime strings already booked (to prevent double-booking)",
+      "default": []
+    },
     "is_available_now": {
       "type": "boolean",
       "default": false
@@ -80,6 +88,15 @@
         "rejected"
       ],
       "default": "pending"
+    },
+    "contract_type": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "upwork"
+      ],
+      "default": "direct",
+      "description": "direct = tutor contratado direto (precisa de email Payoneer); upwork = contratado via Upwork"
     },
     "total_lessons": {
       "type": "number",
@@ -103,7 +120,7 @@
     },
     "bank_info": {
       "type": "string",
-      "description": "Simulated bank info"
+      "description": "Simulated bank info (Payoneer email for direct contracts)"
     }
   },
   "required": [

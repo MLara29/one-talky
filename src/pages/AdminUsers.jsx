@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Trash2, Ban, CheckCircle } from "lucide-react";
+import { Trash2, Ban, CheckCircle, Briefcase } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function AdminUsers() {
@@ -21,7 +21,6 @@ export default function AdminUsers() {
         base44.entities.StudentProfile.list("-created_date", 50),
         base44.entities.User.list("-created_date", 200),
       ]);
-      // map userId → user
       const userMap = {};
       allUsers.forEach(u => { userMap[u.id] = u; });
       setTutors(t);
@@ -42,6 +41,13 @@ export default function AdminUsers() {
     await base44.entities.TutorProfile.delete(t.id);
     setTutors(prev => prev.filter(x => x.id !== t.id));
     toast({ title: "Tutor deletado" });
+  };
+
+  const toggleContractType = async (t) => {
+    const newType = t.contract_type === "upwork" ? "direct" : "upwork";
+    await base44.entities.TutorProfile.update(t.id, { contract_type: newType });
+    setTutors(prev => prev.map(x => x.id === t.id ? { ...x, contract_type: newType } : x));
+    toast({ title: `Contrato alterado para ${newType === "upwork" ? "Upwork" : "Direto"}` });
   };
 
   const blockStudent = async (s) => {
@@ -93,14 +99,25 @@ export default function AdminUsers() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    {/* Contract type badge + toggle */}
+                    <button
+                      onClick={() => toggleContractType(t)}
+                      title={`Contrato: ${t.contract_type === "upwork" ? "Upwork" : "Direto"} — clique para alterar`}
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium border transition-colors cursor-pointer hidden sm:inline ${
+                        t.contract_type === "upwork"
+                          ? "bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20"
+                          : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"
+                      }`}
+                    >
+                      {t.contract_type === "upwork" ? "Upwork" : "Direto"}
+                    </button>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
                       t.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" :
                       t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
                       "bg-red-500/10 border-red-500/20 text-red-600"
                     }`}>{t.status}</span>
                     <Button
-                      size="sm"
-                      variant="ghost"
+                      size="sm" variant="ghost"
                       onClick={() => blockTutor(t)}
                       className={`px-2 h-8 ${t.status === "rejected" ? "text-emerald-500 hover:text-emerald-400" : "text-amber-500 hover:text-amber-400"}`}
                       title={t.status === "rejected" ? "Desbloquear" : "Bloquear"}
@@ -108,8 +125,7 @@ export default function AdminUsers() {
                       {t.status === "rejected" ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
                     </Button>
                     <Button
-                      size="sm"
-                      variant="ghost"
+                      size="sm" variant="ghost"
                       onClick={() => deleteTutor(t)}
                       className="px-2 h-8 text-red-500 hover:text-red-400"
                       title="Deletar"
@@ -143,8 +159,7 @@ export default function AdminUsers() {
                       s.plan === "blocked" ? "bg-red-500/10 border-red-500/20 text-red-600" : "bg-blue-500/10 border-blue-500/20 text-blue-600"
                     } capitalize`}>{s.plan || "free"}</span>
                     <Button
-                      size="sm"
-                      variant="ghost"
+                      size="sm" variant="ghost"
                       onClick={() => blockStudent(s)}
                       className={`px-2 h-8 ${s.plan === "blocked" ? "text-emerald-500 hover:text-emerald-400" : "text-amber-500 hover:text-amber-400"}`}
                       title={s.plan === "blocked" ? "Desbloquear" : "Bloquear"}
@@ -152,8 +167,7 @@ export default function AdminUsers() {
                       {s.plan === "blocked" ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
                     </Button>
                     <Button
-                      size="sm"
-                      variant="ghost"
+                      size="sm" variant="ghost"
                       onClick={() => deleteStudent(s)}
                       className="px-2 h-8 text-red-500 hover:text-red-400"
                       title="Deletar"

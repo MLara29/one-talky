@@ -4,29 +4,104 @@ import { useAuth } from "@/lib/AuthContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Video, Calendar, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Video, Calendar, Clock, CheckCircle, Settings2 } from "lucide-react";
 import { getLanguageLabel } from "@/lib/constants";
-import { useTheme } from "@/lib/ThemeContext";
+import { useToast } from "@/components/ui/use-toast";
+import CancelRescheduleModal from "@/components/lessons/CancelRescheduleModal";
 
 export default function MyLessons() {
   const { user } = useAuth();
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { toast } = useToast();
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [managingLesson, setManagingLesson] = useState(null); // lesson being managed
+  const [tutorProfile, setTutorProfile] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => { loadLessons(); }, [user]);
+  useEffect(() => { loadData(); }, [user]);
 
-  const loadLessons = async () => {
+  const loadData = async () => {
     try {
       let data;
       if (user?.role === "tutor") {
         data = await base44.entities.Lesson.filter({ tutor_id: user.id }, "-created_date");
+        const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
+        if (profiles.length > 0) setTutorProfile(profiles[0]);
       } else {
         data = await base44.entities.Lesson.filter({ student_id: user.id }, "-created_date");
       }
       setLessons(data || []);
     } catch {} finally { setLoading(false); }
+  };
+
+  const handleCancel = async (message) => {
+    if (!managingLesson) return;
+    setActionLoading(true);
+    try {
+      await base44.entities.Lesson.update(managingLesson.id, { status: "cancelled" });
+
+      // Release the booked slot on tutor profile
+      if (managingLesson.scheduled_at && tutorProfile) {
+        const updated = (tutorProfile.booked_slots || []).filter(s => s !== managingLesson.scheduled_at);
+        await base44.entities.TutorProfile.update(tutorProfile.id, { booked_slots: updated });
+        setTutorProfile(prev => ({ ...prev, booked_slots: updated }));
+      }
+
+      // Send notification + message to student
+      if (managingLesson.student_id) {
+        await base44.entities.Notification.create({
+          user_id: managingLesson.student_id,
+          title: "Lesson cancelled by tutor",
+          message: message
+            ? `Your lesson was cancelled. Message from tutor: "${message}"`
+            : "Your scheduled lesson was cancelled by the tutor.",
+          type: "general",
+          is_read: false,
+        });
+      }
+
+      setLessons(prev => prev.map(l => l.id === managingLesson.id ? { ...l, status: "cancelled" } : l));
+      setManagingLesson(null);
+      toast({ title: "Lesson cancelled", description: message ? "Message sent to student." : "" });
+    } catch {
+      toast({ title: "Error cancelling", variant: "destructive" });
+    } finally { setActionLoading(false); }
+  };
+
+  const handleReschedule = async (newScheduledAt, message) => {
+    if (!managingLesson) return;
+    setActionLoading(true);
+    try {
+      // Release old slot, add new one
+      if (tutorProfile) {
+        const withoutOld = (tutorProfile.booked_slots || []).filter(s => s !== managingLesson.scheduled_at);
+        const updated = [...withoutOld, newScheduledAt];
+        await base44.entities.TutorProfile.update(tutorProfile.id, { booked_slots: updated });
+        setTutorProfile(prev => ({ ...prev, booked_slots: updated }));
+      }
+
+      await base44.entities.Lesson.update(managingLesson.id, { scheduled_at: newScheduledAt });
+
+      // Notify student
+      if (managingLesson.student_id) {
+        const newDate = new Date(newScheduledAt).toLocaleString();
+        await base44.entities.Notification.create({
+          user_id: managingLesson.student_id,
+          title: "Lesson rescheduled",
+          message: message
+            ? `Your lesson was moved to ${newDate}. Note from tutor: "${message}"`
+            : `Your lesson was rescheduled to ${newDate}.`,
+          type: "lesson_reminder",
+          is_read: false,
+        });
+      }
+
+      setLessons(prev => prev.map(l => l.id === managingLesson.id ? { ...l, scheduled_at: newScheduledAt } : l));
+      setManagingLesson(null);
+      toast({ title: "Lesson rescheduled! 📅", description: message ? "Message sent to student." : "" });
+    } catch {
+      toast({ title: "Error rescheduling", variant: "destructive" });
+    } finally { setActionLoading(false); }
   };
 
   const upcoming = lessons.filter(l => l.status === "scheduled");
@@ -92,9 +167,22 @@ export default function MyLessons() {
                       <p className="theme-subtext text-sm text-gray-500">{getLanguageLabel(l.language)} · {l.scheduled_at ? new Date(l.scheduled_at).toLocaleString() : "Instant"}</p>
                     </div>
                   </div>
-                  <Link to={`/classroom/${l.id}`}>
-                    <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:opacity-90">Join</Button>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    {user?.role === "tutor" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setManagingLesson(l)}
+                        className="border-white/10 text-gray-400 hover:text-white hover:border-white/20 bg-transparent"
+                        title="Manage lesson"
+                      >
+                        <Settings2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <Link to={`/classroom/${l.id}`}>
+                      <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:opacity-90">Join</Button>
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -128,6 +216,18 @@ export default function MyLessons() {
           )}
         </TabsContent>
       </Tabs>
+
+      {managingLesson && (
+        <CancelRescheduleModal
+          lesson={managingLesson}
+          tutorAvailability={tutorProfile?.availability}
+          bookedSlots={tutorProfile?.booked_slots}
+          onClose={() => setManagingLesson(null)}
+          onCancel={handleCancel}
+          onReschedule={handleReschedule}
+          loading={actionLoading}
+        />
+      )}
     </div>
   );
 }

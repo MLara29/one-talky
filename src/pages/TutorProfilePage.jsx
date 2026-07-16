@@ -59,6 +59,11 @@ export default function TutorProfilePage() {
         status: "scheduled", type: "scheduled",
         scheduled_at: scheduledAt,
       });
+      // Mark the slot as booked on the tutor profile to prevent double-booking
+      const currentBooked = tutor.booked_slots || [];
+      await base44.entities.TutorProfile.update(tutor.id, {
+        booked_slots: [...currentBooked, scheduledAt],
+      });
       setShowSchedule(false);
       toast({ title: "Lesson scheduled! 📅", description: "Check 'My Lessons' to see your booking." });
     } catch {

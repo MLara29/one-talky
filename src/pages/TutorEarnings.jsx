@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { DollarSign, Clock, TrendingUp, Calendar, AlertCircle, CheckCircle } from "lucide-react";
+import { DollarSign, Clock, TrendingUp, Calendar, AlertCircle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"];
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function buildCalendarDays(year, month) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return cells;
+}
 
 export default function TutorEarnings() {
   const { user } = useAuth();
@@ -14,6 +27,11 @@ export default function TutorEarnings() {
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
 
+  const today = new Date();
+  const [calYear, setCalYear] = useState(today.getFullYear());
+  const [calMonth, setCalMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState(null);
+
   useEffect(() => { loadData(); }, [user]);
 
   const loadData = async () => {
@@ -23,7 +41,7 @@ export default function TutorEarnings() {
         const p = profiles[0];
         setProfile(p);
         const [l, w] = await Promise.all([
-          base44.entities.Lesson.filter({ tutor_id: p.user_id, status: "completed" }, "-created_date", 20),
+          base44.entities.Lesson.filter({ tutor_id: p.user_id, status: "completed" }, "-created_date", 100),
           base44.entities.WithdrawalRequest.filter({ tutor_id: p.user_id }, "-created_date", 10),
         ]);
         setLessons(l);
@@ -32,13 +50,8 @@ export default function TutorEarnings() {
     } catch {} finally { setLoading(false); }
   };
 
-  const isWithdrawalDay = () => {
-    const day = new Date().getDate();
-    return day === 15 || day === 30;
-  };
-
+  const isWithdrawalDay = () => { const day = new Date().getDate(); return day === 15 || day === 30; };
   const hasPendingWithdrawal = withdrawals.some(w => w.status === "pending");
-
   const getPioneerEmail = () => {
     try { return JSON.parse(profile?.bank_info || "{}").pioneer_email || null; } catch { return null; }
   };
@@ -53,16 +66,44 @@ export default function TutorEarnings() {
     const today = new Date();
     const period = `${today.toLocaleString("en-US", { month: "long" })} ${today.getDate()}`;
     await base44.entities.WithdrawalRequest.create({
-      tutor_id: profile.user_id,
-      tutor_name: profile.full_name,
-      amount: profile.total_earnings || 0,
-      period,
-      pioneer_email: pioneerEmail,
-      status: "pending",
+      tutor_id: profile.user_id, tutor_name: profile.full_name,
+      amount: profile.total_earnings || 0, period,
+      pioneer_email: pioneerEmail, status: "pending",
     });
     toast({ title: "Withdrawal requested!", description: "We'll process your payment within 2 business days." });
     setRequesting(false);
     loadData();
+  };
+
+  const rate = profile?.price_per_minute || 0.9967;
+  const totalEarned = profile?.total_earnings || 0;
+
+  // Build per-day map for the calendar
+  const dayDataMap = {};
+  lessons.forEach(l => {
+    const date = new Date(l.ended_at || l.created_date);
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    if (!dayDataMap[key]) dayDataMap[key] = { earnings: 0, lessons: 0, lessonList: [] };
+    dayDataMap[key].earnings += (l.duration_minutes || 0) * rate;
+    dayDataMap[key].lessons += 1;
+    dayDataMap[key].lessonList.push(l);
+  });
+
+  const getDayKey = (d) => `${calYear}-${calMonth}-${d}`;
+  const getDayData = (d) => dayDataMap[getDayKey(d)];
+
+  const calendarDays = buildCalendarDays(calYear, calMonth);
+  const selectedDayData = selectedDay ? getDayData(selectedDay) : null;
+
+  const prevMonth = () => {
+    if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
+    else setCalMonth(m => m - 1);
+    setSelectedDay(null);
+  };
+  const nextMonth = () => {
+    if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
+    else setCalMonth(m => m + 1);
+    setSelectedDay(null);
   };
 
   if (loading) return (
@@ -70,9 +111,6 @@ export default function TutorEarnings() {
       <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
     </div>
   );
-
-  const rate = profile?.price_per_minute || 0.9967;
-  const totalEarned = profile?.total_earnings || 0;
 
   const stats = [
     { label: "Total earned", value: `$${totalEarned.toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
@@ -87,6 +125,7 @@ export default function TutorEarnings() {
     <div>
       <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">Earnings</h1>
 
+      {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         {stats.map(s => (
           <div key={s.label} className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/8 transition-all">
@@ -99,7 +138,7 @@ export default function TutorEarnings() {
         ))}
       </div>
 
-      {/* Withdrawal info / action */}
+      {/* Withdrawal */}
       {hasPendingWithdrawal ? (
         <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 mb-6">
           <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
@@ -110,7 +149,7 @@ export default function TutorEarnings() {
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <p className="text-sm font-semibold text-emerald-400">🎉 Withdrawal available today!</p>
-              <p className="text-xs text-gray-500 mt-0.5">Request your earnings of <strong className="text-white">${totalEarned.toFixed(2)}</strong> to be sent via Payoneer.</p>
+              <p className="text-xs text-gray-500 mt-0.5">Request your earnings of <strong className="text-white">${totalEarned.toFixed(2)}</strong> via Payoneer.</p>
             </div>
             <Button onClick={requestWithdrawal} disabled={requesting} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0 shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all shrink-0">
               {requesting ? "Requesting..." : "Request withdrawal"}
@@ -127,22 +166,81 @@ export default function TutorEarnings() {
         </div>
       )}
 
-      {/* Recent lessons */}
+      {/* Earnings Calendar */}
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 mb-5">
-        <h3 className="theme-heading font-display font-bold text-white mb-5">Recent lessons</h3>
-        {lessons.length === 0 ? (
-          <p className="theme-subtext text-center text-sm text-gray-600 py-6">No completed lessons yet</p>
-        ) : (
-          <div className="space-y-3">
-            {lessons.map(l => (
-              <div key={l.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
-                <div>
-                  <p className="theme-heading font-medium text-sm text-white">{l.student_name}</p>
-                  <p className="theme-subtext text-xs text-gray-600">{l.duration_minutes || 0} min · {new Date(l.ended_at || l.created_date).toLocaleDateString()}</p>
-                </div>
-                <span className="text-sm font-bold text-emerald-500">+${((l.duration_minutes || 0) * rate).toFixed(2)}</span>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="theme-heading font-display font-bold text-white">Earnings Calendar</h3>
+          <div className="flex items-center gap-2">
+            <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+              <ChevronLeft className="w-4 h-4 text-gray-400" />
+            </button>
+            <span className="text-sm font-semibold text-gray-300 min-w-[110px] text-center">{MONTH_NAMES[calMonth]} {calYear}</span>
+            <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+
+        {/* Day headers */}
+        <div className="grid grid-cols-7 mb-2">
+          {DAY_LABELS.map(d => (
+            <div key={d} className="text-center text-[10px] font-semibold uppercase tracking-wide py-1 text-gray-500">{d}</div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div className="grid grid-cols-7 gap-1">
+          {calendarDays.map((day, idx) => {
+            if (!day) return <div key={`e-${idx}`} />;
+            const data = getDayData(day);
+            const isSelected = selectedDay === day;
+            const isToday = calYear === today.getFullYear() && calMonth === today.getMonth() && day === today.getDate();
+
+            return (
+              <button
+                key={idx}
+                onClick={() => setSelectedDay(isSelected ? null : day)}
+                className={`relative flex flex-col items-center justify-start rounded-xl p-1 transition-all min-h-[52px] border
+                  ${isSelected ? "bg-violet-600/20 border-violet-500/40" : data ? "bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/15 cursor-pointer" : "border-transparent hover:bg-white/5 cursor-default"}
+                `}
+              >
+                <span className={`text-xs font-bold mt-0.5 ${isToday ? "text-violet-400" : data ? "text-emerald-400" : "text-gray-500"}`}>
+                  {day}
+                </span>
+                {data && (
+                  <div className="mt-0.5 text-center">
+                    <p className="text-[9px] font-bold text-emerald-400">${data.earnings.toFixed(0)}</p>
+                    <p className="text-[8px] text-gray-500">{data.lessons} cls</p>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Selected day detail */}
+        {selectedDay && (
+          <div className="mt-5 pt-5 border-t border-white/10">
+            <h4 className="theme-heading font-semibold text-white mb-3 text-sm">
+              {MONTH_NAMES[calMonth]} {selectedDay} — {selectedDayData ? `$${selectedDayData.earnings.toFixed(2)} · ${selectedDayData.lessons} lesson${selectedDayData.lessons !== 1 ? "s" : ""}` : "No lessons"}
+            </h4>
+            {selectedDayData ? (
+              <div className="space-y-2">
+                {selectedDayData.lessonList.map(l => (
+                  <div key={l.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <div>
+                      <p className="theme-heading font-medium text-sm text-white">{l.student_name}</p>
+                      <p className="theme-subtext text-xs text-gray-500">
+                        {l.duration_minutes || 0} min · {new Date(l.ended_at || l.created_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-emerald-500">+${((l.duration_minutes || 0) * rate).toFixed(2)}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <p className="text-sm text-gray-600 text-center py-2">No lessons on this day</p>
+            )}
           </div>
         )}
       </div>
