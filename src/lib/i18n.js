@@ -170,6 +170,21 @@ export const TRANSLATIONS = {
   },
 };
 
+/**
+ * Detect the best UI language from the browser locale automatically.
+ * Maps navigator.language (e.g. "pt-BR", "pt", "es-MX", "fr-FR") to our keys.
+ */
+export function detectLanguage() {
+  const locale = (navigator.language || navigator.languages?.[0] || "en").toLowerCase();
+  if (locale.startsWith("pt-br") || locale === "pt_br") return "pt_br";
+  if (locale.startsWith("pt")) return "pt_pt";
+  if (locale.startsWith("es")) return "es";
+  if (locale.startsWith("fr")) return "fr";
+  if (locale.startsWith("de")) return "de";
+  if (locale.startsWith("it")) return "it";
+  return "en";
+}
+
 export function t(lang, key) {
   return TRANSLATIONS[lang]?.[key] || TRANSLATIONS["en"][key] || key;
 }

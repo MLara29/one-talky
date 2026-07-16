@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { Button } from "@/components/ui/button";
+import LiveNotificationToast from "@/components/LiveNotificationToast";
 import {
   MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
   GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon, TrendingUp
@@ -190,6 +191,8 @@ export default function AppLayout() {
           </div>
         </main>
       </div>
+
+      <LiveNotificationToast />
 
       {/* Mobile bottom nav */}
       <nav

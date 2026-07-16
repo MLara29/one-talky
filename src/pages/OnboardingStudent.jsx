@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LANGUAGES, OBJECTIVES, LEVELS, ACCENTS, COUNTRIES, UI_LANGUAGES } from "@/lib/constants";
 import { MessageCircle, ChevronRight, ChevronLeft, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { t } from "@/lib/i18n";
+import { t, detectLanguage } from "@/lib/i18n";
 
 const LEVELS_LABELS = {
   en: { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" },
@@ -23,7 +23,7 @@ const LEVELS_LABELS = {
 export default function OnboardingStudent() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [uiLang, setUiLang] = useState("en");
+  const [uiLang, setUiLang] = useState(() => detectLanguage());
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState(null);

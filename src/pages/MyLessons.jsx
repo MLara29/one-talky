@@ -22,6 +22,23 @@ export default function MyLessons() {
 
   useEffect(() => { loadData(); }, [user]);
 
+  // Real-time refresh for tutors — when a student books, the lesson appears immediately
+  useEffect(() => {
+    if (user?.role !== "tutor") return;
+    const unsubscribe = base44.entities.Lesson.subscribe((event) => {
+      if (event.type === "create" && event.data?.tutor_id === user.id) {
+        setLessons(prev => {
+          if (prev.find(l => l.id === event.data.id)) return prev;
+          return [event.data, ...prev];
+        });
+      }
+      if ((event.type === "update" || event.type === "delete") && event.data?.tutor_id === user.id) {
+        setLessons(prev => prev.map(l => l.id === event.data.id ? { ...l, ...event.data } : l));
+      }
+    });
+    return unsubscribe;
+  }, [user?.id, user?.role]);
+
   const loadData = async () => {
     try {
       let data;
