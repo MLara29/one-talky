@@ -76,7 +76,8 @@ export default function TutorEarnings() {
   };
 
   const rate = profile?.price_per_minute || 0.9967;
-  const totalEarned = profile?.total_earnings || 0;
+  // Calculate total earned directly from completed lessons (source of truth)
+  const totalEarned = lessons.reduce((sum, l) => sum + (l.duration_minutes || 0) * rate, 0);
 
   // Build per-day map for the calendar
   const dayDataMap = {};
