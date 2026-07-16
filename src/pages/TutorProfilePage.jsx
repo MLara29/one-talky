@@ -30,9 +30,22 @@ export default function TutorProfilePage() {
     } catch {} finally { setLoading(false); }
   };
 
+  const checkCredits = async () => {
+    if (user?.role !== "student") return true; // tutors/admins bypass
+    const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+    const credits = profiles[0]?.credits_minutes ?? 0;
+    if (credits <= 0) {
+      navigate("/plans");
+      toast({ title: "Sem minutos disponíveis", description: "Adicione créditos para continuar.", variant: "destructive" });
+      return false;
+    }
+    return true;
+  };
+
   const startInstantLesson = async () => {
     setBooking(true);
     try {
+      if (!(await checkCredits())) { setBooking(false); return; }
       const studentProfiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
       const sp = studentProfiles[0];
       const lesson = await base44.entities.Lesson.create({
@@ -177,7 +190,7 @@ export default function TutorProfilePage() {
             </Button>
           )}
           <Button
-            onClick={() => setShowSchedule(true)} disabled={booking}
+            onClick={async () => { if (await checkCredits()) setShowSchedule(true); }} disabled={booking}
             className={`flex-1 h-12 rounded-2xl border-0 transition-all hover:scale-105 shadow-lg ${
               tutor.is_available_now
                 ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
