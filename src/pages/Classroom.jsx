@@ -24,6 +24,7 @@ export default function Classroom() {
   const [messages, setMessages] = useState([]);
   const [msgInput, setMsgInput] = useState("");
   const [elapsed, setElapsed] = useState(0);
+  const [initialCredits, setInitialCredits] = useState(null); // minutos iniciais do aluno para countdown
   const [showReview, setShowReview] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
@@ -67,9 +68,18 @@ export default function Classroom() {
     return () => leaveChannel();
   }, [id]);
 
-  // Timer
+  // Timer crescente (usado para calcular duração e earnings)
   useEffect(() => {
-    const interval = setInterval(() => setElapsed(e => e + 1), 1000);
+    const interval = setInterval(() => {
+      setElapsed(e => {
+        const next = e + 1;
+        // Limite máximo de 60 minutos — encerra automaticamente
+        if (next >= 3600 && !endingRef.current) {
+          endLesson();
+        }
+        return next;
+      });
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -90,7 +100,7 @@ export default function Classroom() {
     return () => clearInterval(poll);
   }, [id]);
 
-  // Credit warning & auto-end for student
+  // Credit warning & auto-end for student (creditsLeft em minutos)
   useEffect(() => {
     if (user?.role !== "student" || creditsLeft === null) return;
     if (creditsLeft <= 2 && creditsLeft > 0) {
@@ -99,17 +109,17 @@ export default function Classroom() {
     if (creditsLeft <= 0 && !endingRef.current) {
       endLesson();
     }
-  }, [creditsLeft]);
+  }, [Math.floor(creditsLeft)]);
 
-  // Decrement student credits every minute
+  // Decrement student credits every second (exibição em segundos → convertido para minutos)
   useEffect(() => {
     if (user?.role !== "student") return;
     const interval = setInterval(() => {
       setCreditsLeft(prev => {
         if (prev === null) return null;
-        return Math.max(0, prev - 1);
+        return Math.max(0, prev - (1 / 60));
       });
-    }, 60000);
+    }, 1000);
     return () => clearInterval(interval);
   }, [user?.role]);
 
@@ -168,11 +178,13 @@ export default function Classroom() {
       await notifyTutor(l);
       await joinChannel(l);
 
-      // Load student credits
+      // Load student credits — usado para countdown e limite de 60min
       if (user?.role === "student") {
         const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
-          setCreditsLeft(profiles[0].credits_minutes ?? 0);
+          const mins = Math.min(profiles[0].credits_minutes ?? 0, 60); // máximo 60 min por chamada
+          setCreditsLeft(mins);
+          setInitialCredits(mins);
         }
       }
     } catch (e) {
@@ -357,7 +369,16 @@ export default function Classroom() {
     setShowReview(true);
   };
 
-  const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+  const formatTime = (s) => {
+    const totalSecs = Math.max(0, Math.round(s));
+    return `${Math.floor(totalSecs / 60).toString().padStart(2, "0")}:${(totalSecs % 60).toString().padStart(2, "0")}`;
+  };
+
+  // Para aluno: countdown baseado nos créditos restantes (em segundos)
+  // Para tutor: elapsed crescente
+  const displaySeconds = user?.role === "student" && creditsLeft !== null
+    ? creditsLeft * 60  // creditsLeft em minutos → segundos
+    : elapsed;
 
   if (loading) return (
     <div className="fixed inset-0 flex items-center justify-center bg-white">
@@ -372,7 +393,7 @@ export default function Classroom() {
         <div className="flex items-center justify-between gap-3 px-5 py-3 bg-amber-500/20 border-b border-amber-500/30">
           <div className="flex items-center gap-2 text-amber-400 text-sm font-semibold">
             <AlertTriangle className="w-4 h-4" />
-            Atenção: apenas {Math.ceil(creditsLeft)} minuto{Math.ceil(creditsLeft) !== 1 ? "s" : ""} restante{Math.ceil(creditsLeft) !== 1 ? "s" : ""} no seu plano!
+            Atenção: apenas {Math.ceil(creditsLeft)} minuto{Math.ceil(creditsLeft) !== 1 ? "s" : ""} restante{Math.ceil(creditsLeft) !== 1 ? "s" : ""} na sua aula!
           </div>
           <button onClick={() => setShowCreditWarning(false)} className="text-amber-400/70 hover:text-amber-400">
             <X className="w-4 h-4" />
@@ -394,18 +415,15 @@ export default function Classroom() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-gray-700 font-mono text-sm bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-xl">
+          <div className={`flex items-center gap-2 font-mono text-sm px-3 py-1.5 rounded-xl border ${
+            user?.role === "student" && creditsLeft !== null && creditsLeft <= 2
+              ? "bg-red-100 border-red-300 text-red-600"
+              : "bg-gray-100 border-gray-200 text-gray-700"
+          }`}>
             <Clock className="w-3.5 h-3.5 text-violet-500" />
-            <span className="text-violet-600 font-semibold">{formatTime(elapsed)}</span>
+            <span className="font-semibold">{formatTime(displaySeconds)}</span>
+            {user?.role === "student" && <span className="text-xs text-gray-400 ml-1">restante</span>}
           </div>
-          {user?.role === "student" && creditsLeft !== null && (
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-              creditsLeft <= 2 ? "bg-red-500/15 border-red-500/30 text-red-400" : "bg-white/5 border-white/10 text-gray-400"
-            }`}>
-              <Clock className="w-3 h-3" />
-              {Number(creditsLeft).toFixed(1)} min
-            </div>
-          )}
           <button
             onClick={() => setIsRecording(!isRecording)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
