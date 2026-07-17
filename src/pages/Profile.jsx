@@ -112,27 +112,34 @@ export default function Profile() {
               <p className="theme-subtext text-xs text-gray-500 mt-1">{(profile?.bio || "").length}/300</p>
             </div>
 
-            {/* Payment email — only for direct contract tutors */}
-            {!isUpwork ? (
-              <div>
-                <Label className="theme-subtext text-gray-500 text-sm">Payoneer email (for receiving payments)</Label>
-                <Input
-                  type="email"
-                  value={pioneerEmail}
-                  onChange={e => setPioneerEmail(e.target.value)}
-                  placeholder="your@payoneer.com"
-                  className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-violet-500/50"
-                />
-                <p className="theme-subtext text-xs text-gray-500 mt-1">Required for withdrawal requests on the 15th and 30th.</p>
+            {/* Contact email — for both contract types */}
+            <div>
+              <Label className="theme-subtext text-gray-500 text-sm">Contact email (for reminders & admin messages)</Label>
+              <Input
+                type="email"
+                value={pioneerEmail}
+                onChange={e => setPioneerEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-violet-500/50"
+              />
+              <p className="theme-subtext text-xs text-gray-500 mt-1">Used to receive lesson reminders and messages from the admin.</p>
+            </div>
+
+            {/* Payoneer — only for direct contract tutors */}
+            {isUpwork ? (
+              <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                <p className="text-xs text-blue-400 font-medium">💼 Upwork contract — payments are processed directly through Upwork. No Payoneer details needed.</p>
               </div>
             ) : (
-              <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-                <p className="text-xs text-blue-400 font-medium">💼 Upwork contract — payments are processed directly through Upwork. No Payoneer email needed.</p>
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <p className="text-xs text-emerald-600 font-medium">💳 Direct contract — make sure your contact email above matches your Payoneer account for withdrawals on the 15th and 30th.</p>
               </div>
             )}
 
             <div className="p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20">
-              <p className="theme-subtext text-xs text-violet-600 font-medium">💡 A precificação das aulas é definida pelo administrador da plataforma. R$ 2,20/min (R$ 66/30min).</p>
+              <p className="theme-subtext text-xs text-violet-600 font-medium">
+                💡 Your lesson rate is set by the platform administrator: <strong>${(profile?.price_per_minute || 0.5).toFixed(2)}/min</strong> (${((profile?.price_per_minute || 0.5) * 30).toFixed(2)} per 30-min session).
+              </p>
             </div>
           </>
         )}

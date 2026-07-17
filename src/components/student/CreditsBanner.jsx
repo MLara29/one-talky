@@ -48,7 +48,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
         </div>
         <div>
           <p className="theme-heading font-display font-bold text-white">
-            {mins} min disponíveis
+            {Math.floor(mins)} min disponíveis
             {isLow && <span className="ml-2 text-xs text-amber-500 font-normal">⚠ Créditos baixos</span>}
           </p>
           <p className="theme-subtext text-xs text-gray-500">

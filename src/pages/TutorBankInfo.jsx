@@ -40,10 +40,6 @@ export default function TutorBankInfo() {
   };
 
   const handleSave = async () => {
-    if (!form.pioneer_email) {
-      toast({ title: "Pioneer email is required", variant: "destructive" });
-      return;
-    }
     setSaving(true);
     const extra = JSON.stringify({
       phone: form.phone,
@@ -70,7 +66,7 @@ export default function TutorBankInfo() {
   return (
     <div className="max-w-lg">
       <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-2">Personal Info</h1>
-      <p className="theme-subtext text-gray-500 text-sm mb-8">This information is used for payment transfers via Payoneer.</p>
+      <p className="theme-subtext text-gray-500 text-sm mb-8">Update your contact details and payment information.</p>
 
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-5">
         <div>
@@ -98,21 +94,28 @@ export default function TutorBankInfo() {
         </div>
 
         <div className="border-t border-white/10 pt-5">
-          <p className="theme-heading text-sm font-semibold text-white mb-4">Payoneer Payment Details</p>
-
           <div className="mb-4">
-            <label className="theme-subtext text-xs text-gray-500 mb-1.5 block">Payoneer registered email <span className="text-red-400">*</span></label>
+            <label className="theme-subtext text-xs text-gray-500 mb-1.5 block">Contact email (for reminders & admin messages)</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
-              <Input value={form.pioneer_email} onChange={set("pioneer_email")} type="email" placeholder="your@payoneer.com" className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-600" />
+              <Input value={form.pioneer_email} onChange={set("pioneer_email")} type="email" placeholder="your@email.com" className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-600" />
             </div>
-            <p className="text-xs text-gray-600 mt-1">Earnings will be sent to this Payoneer account on withdrawal dates.</p>
+            <p className="text-xs text-gray-600 mt-1">Used for lesson reminders and messages from the platform.</p>
           </div>
 
-          <div>
-            <label className="theme-subtext text-xs text-gray-500 mb-1.5 block">Additional bank info (optional)</label>
-            <Input value={form.bank_info} onChange={set("bank_info")} placeholder="e.g. Payoneer ID, bank name..." className="bg-white/5 border-white/10 text-white placeholder:text-gray-600" />
-          </div>
+          {profile.contract_type !== "upwork" && (
+            <div>
+              <p className="theme-heading text-sm font-semibold text-white mb-3">Payoneer Payment Details</p>
+              <label className="theme-subtext text-xs text-gray-500 mb-1.5 block">Additional bank info (optional)</label>
+              <Input value={form.bank_info} onChange={set("bank_info")} placeholder="e.g. Payoneer ID, bank name..." className="bg-white/5 border-white/10 text-white placeholder:text-gray-600" />
+              <p className="text-xs text-gray-600 mt-1">Earnings will be sent to your contact email via Payoneer on withdrawal dates.</p>
+            </div>
+          )}
+          {profile.contract_type === "upwork" && (
+            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+              <p className="text-xs text-blue-400 font-medium">💼 Upwork contract — payments processed via Upwork. No Payoneer details needed.</p>
+            </div>
+          )}
         </div>
 
         <Button onClick={handleSave} disabled={saving} className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all">

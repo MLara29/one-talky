@@ -38,18 +38,18 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-      <div className="bg-[#0d0d1a] border border-white/10 rounded-3xl w-full max-w-lg p-6 shadow-2xl">
+      <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-violet-400" />
+              <Zap className="w-4 h-4 text-violet-600" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-white text-base">Gerenciar plano</h2>
-              <p className="text-gray-500 text-xs">Plano atual: <span className="text-violet-400 font-semibold capitalize">{profile.plan || "free"}</span></p>
+              <h2 className="font-display font-bold text-slate-800 text-base">Gerenciar plano</h2>
+              <p className="text-slate-500 text-xs">Plano atual: <span className="text-violet-600 font-semibold capitalize">{profile.plan || "free"}</span></p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-600 hover:text-gray-300 transition-colors">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -57,10 +57,10 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
         {done ? (
           <div className="text-center py-8">
             <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-7 h-7 text-emerald-400" />
+              <CheckCircle className="w-7 h-7 text-emerald-500" />
             </div>
-            <h3 className="font-display font-bold text-white mb-2">Plano atualizado!</h3>
-            <p className="text-gray-500 text-sm mb-6">Seu plano foi alterado com sucesso.</p>
+            <h3 className="font-display font-bold text-slate-800 mb-2">Plano atualizado!</h3>
+            <p className="text-slate-500 text-sm mb-6">Seu plano foi alterado com sucesso.</p>
             <Button onClick={onClose} className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0">Fechar</Button>
           </div>
         ) : (
@@ -75,16 +75,16 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
                     onClick={() => setSelected(plan.id)}
                     className={`text-left p-4 rounded-2xl border transition-all ${
                       isActive
-                        ? "border-violet-500/60 bg-violet-500/10"
-                        : "border-white/10 bg-white/3 hover:border-white/20"
+                        ? "border-violet-500 bg-violet-50"
+                        : "border-gray-200 bg-gray-50 hover:border-gray-300"
                     }`}
                   >
                     <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold text-white bg-gradient-to-r ${plan.color} mb-2`}>
                       {plan.label}
                       {isCurrent && <span className="ml-1 opacity-80">(atual)</span>}
                     </div>
-                    <p className="text-white font-semibold text-sm">{plan.minutes} min</p>
-                    <p className="text-gray-500 text-xs">{plan.price}</p>
+                    <p className="text-slate-800 font-semibold text-sm">{plan.minutes} min</p>
+                    <p className="text-slate-500 text-xs">{plan.price}</p>
                   </button>
                 );
               })}
@@ -92,8 +92,8 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
 
             {!isSame && (
               <div className={`flex items-center gap-2 text-xs px-3 py-2 rounded-xl mb-4 ${
-                isUpgrade ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" :
-                isDowngrade ? "bg-amber-500/10 border border-amber-500/20 text-amber-400" : ""
+                isUpgrade ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-600" :
+                isDowngrade ? "bg-amber-500/10 border border-amber-500/20 text-amber-600" : ""
               }`}>
                 {isUpgrade ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
                 {isUpgrade ? `Upgrade para ${selected} — você ganhará mais minutos` : `Downgrade para ${selected} — seus minutos serão ajustados`}
@@ -105,7 +105,7 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
                 <Button
                   variant="ghost"
                   onClick={() => setSelected("free")}
-                  className="flex-1 border border-red-500/20 text-red-400 hover:bg-red-500/10"
+                  className="flex-1 border border-red-200 text-red-500 hover:bg-red-50"
                 >
                   <XCircle className="w-4 h-4 mr-2" />
                   Cancelar plano
