@@ -15,6 +15,8 @@ export default function TutorDashboard() {
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [lessons, setLessons] = useState([]);
+  const [completedLessons, setCompletedLessons] = useState([]);
+  const [studentProfiles, setStudentProfiles] = useState({});
   const [loading, setLoading] = useState(true);
   const [liveAlert, setLiveAlert] = useState(null);
   const [showSupport, setShowSupport] = useState(false);
@@ -47,11 +49,24 @@ export default function TutorDashboard() {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
         setProfile(profiles[0]);
-        const live = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "in_progress" });
-        const sched = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" });
+        const [live, sched, completed] = await Promise.all([
+          base44.entities.Lesson.filter({ tutor_id: user.id, status: "in_progress" }),
+          base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" }),
+          base44.entities.Lesson.filter({ tutor_id: user.id, status: "completed" }, "-created_date", 100),
+        ]);
         const allLessons = [...live, ...sched];
         prevLessonsRef.current = allLessons;
         setLessons(allLessons);
+        setCompletedLessons(completed);
+
+        // Load student profiles for upcoming lessons
+        const studentIds = [...new Set(allLessons.map(l => l.student_id).filter(Boolean))];
+        if (studentIds.length > 0) {
+          const studentProfs = await base44.entities.StudentProfile.filter({});
+          const map = {};
+          studentProfs.forEach(sp => { map[sp.user_id] = sp; });
+          setStudentProfiles(map);
+        }
       }
     } catch {} finally { setLoading(false); }
   };
@@ -110,7 +125,7 @@ export default function TutorDashboard() {
     { label: "Total lessons", value: profile.total_lessons || 0, icon: Users, gradient: "from-violet-500 to-indigo-500" },
     { label: "Minutes taught", value: profile.total_minutes || 0, icon: Clock, gradient: "from-blue-500 to-cyan-500" },
     { label: "Rating", value: profile.average_rating?.toFixed(1) || "N/A", icon: Star, gradient: "from-amber-400 to-orange-500" },
-    { label: "Earnings", value: `$${(profile.total_earnings || 0).toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
+    { label: "Earnings", value: `$${completedLessons.reduce((s, l) => s + (l.duration_minutes || 0) * (profile.price_per_minute || 0.9967), 0).toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
   ];
 
   return (
@@ -181,30 +196,47 @@ export default function TutorDashboard() {
           <p className="theme-subtext text-sm text-gray-500 py-6 text-center">No upcoming lessons scheduled</p>
         ) : (
           <div className="space-y-3">
-            {lessons.map(l => (
-              <div key={l.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
-                <div>
-                  <p className="theme-heading font-medium text-white">{l.student_name}</p>
-                  <p className="theme-subtext text-sm text-gray-500">
-                    {l.language} · {l.status === "in_progress" ? "🔴 Live now" : new Date(l.scheduled_at).toLocaleString()}
-                  </p>
+            {lessons.map(l => {
+              const sp = studentProfiles[l.student_id];
+              return (
+                <div key={l.id} className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="theme-heading font-semibold text-white">{l.student_name}</p>
+                      <p className="theme-subtext text-sm text-gray-500 mt-0.5">
+                        {l.language} · {l.status === "in_progress" ? "🔴 Live now" : new Date(l.scheduled_at).toLocaleString()}
+                      </p>
+                      {sp && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium capitalize">
+                            {sp.level}
+                          </span>
+                          {sp.conversation_topics?.slice(0, 3).map(topic => (
+                            <span key={topic} className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                              {topic}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link to={`/classroom/${l.id}`}>
+                        <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-violet-600 to-indigo-600 shadow-violet-500/20"}`}>
+                          {l.status === "in_progress" ? "Join now" : "Join"}
+                        </Button>
+                      </Link>
+                      <button
+                        onClick={() => rejectLesson(l.id)}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 border border-red-500/20 transition-all hover:scale-105"
+                        title="Cancel lesson"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Link to={`/classroom/${l.id}`}>
-                    <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-violet-600 to-indigo-600 shadow-violet-500/20"}`}>
-                      {l.status === "in_progress" ? "Join now" : "Join"}
-                    </Button>
-                  </Link>
-                  <button
-                    onClick={() => rejectLesson(l.id)}
-                    className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 border border-red-500/20 transition-all hover:scale-105"
-                    title="Cancel lesson"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

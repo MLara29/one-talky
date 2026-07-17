@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Trash2, Ban, CheckCircle, Briefcase } from "lucide-react";
+import { Trash2, Ban, CheckCircle, Link2, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function AdminUsers() {
@@ -64,6 +64,15 @@ export default function AdminUsers() {
     toast({ title: "Aluno deletado" });
   };
 
+  const [copied, setCopied] = useState(false);
+  const tutorInviteLink = `${window.location.origin}/register?role=tutor`;
+  const copyInviteLink = () => {
+    navigator.clipboard.writeText(tutorInviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({ title: "Link copiado!", description: "Envie este link para o tutor se cadastrar." });
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center py-24">
       <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
@@ -72,7 +81,23 @@ export default function AdminUsers() {
 
   return (
     <div>
-      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">Users</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Users</h1>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 min-w-0">
+            <Link2 className="w-4 h-4 text-violet-400 shrink-0" />
+            <span className="text-xs text-gray-400 truncate max-w-[180px]">{tutorInviteLink}</span>
+          </div>
+          <Button
+            onClick={copyInviteLink}
+            size="sm"
+            className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 shrink-0 hover:scale-105 transition-all"
+          >
+            <Copy className="w-3.5 h-3.5 mr-1.5" />
+            {copied ? "Copiado!" : "Copiar link de convite"}
+          </Button>
+        </div>
+      </div>
 
       <Tabs defaultValue="tutors">
         <TabsList className="mb-6 bg-white/5 border border-white/10">

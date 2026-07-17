@@ -22,8 +22,9 @@ export default function TutorCard({ tutor }) {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="theme-heading font-display font-bold text-white group-hover:text-violet-600 transition-colors truncate">{tutor.full_name}</h3>
-            <p className="theme-subtext text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-              {getCountryFlag(tutor.country)} {tutor.country}
+            <p className="theme-subtext text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
+              <span className="text-lg leading-none">{getCountryFlag(tutor.country)}</span>
+              <span>{tutor.country}</span>
             </p>
             <div className="flex items-center gap-3 mt-1.5">
               <span className="flex items-center gap-1 text-sm text-amber-500 font-semibold">

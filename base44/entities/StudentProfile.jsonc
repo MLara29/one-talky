@@ -34,6 +34,14 @@
     "accent_preference": {
       "type": "string"
     },
+    "conversation_topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favorite conversation topics selected by student",
+      "default": []
+    },
     "total_minutes": {
       "type": "number",
       "default": 0

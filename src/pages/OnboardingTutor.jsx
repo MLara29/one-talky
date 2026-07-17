@@ -26,7 +26,6 @@ export default function OnboardingTutor() {
     price_per_minute: 2.20,
   });
 
-  // Fetch user id once on mount — before submit to avoid race condition
   useEffect(() => {
     base44.auth.me().then(me => setUserId(me.id)).catch(() => {});
   }, []);
@@ -72,59 +71,65 @@ export default function OnboardingTutor() {
       toast({ title: "Candidatura enviada! 🎉", description: "Vamos revisar o seu perfil e entraremos em contato em breve." });
       window.location.href = "/";
     } catch (e) {
-      console.error("TutorProfile create error:", e);
       toast({ title: "Erro ao finalizar cadastro", description: String(e?.message || "Tente novamente."), variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
+  const inputCls = "mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 shadow-sm";
+  const selectTriggerCls = "mt-1.5 bg-white border-gray-300 text-gray-900 shadow-sm";
+  const selectContentCls = "bg-white border-gray-200 text-gray-900 shadow-xl z-50";
+  const selectItemCls = "text-gray-900 focus:bg-emerald-50 focus:text-emerald-700";
+  const labelCls = "text-gray-700 font-medium";
+
   return (
-    <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-              <MessageCircle className="w-4 h-4 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+              <MessageCircle className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display text-xl font-bold text-white">One Talky</span>
+            <span className="font-display text-xl font-bold text-gray-900">One Talky</span>
           </div>
-          <h1 className="font-display text-2xl font-bold text-white">Torne-se um tutor</h1>
+          <h1 className="font-display text-2xl font-bold text-gray-900">Torne-se um tutor</h1>
+          <p className="text-gray-500 text-sm mt-1">Passo {step} de 3</p>
           <div className="flex justify-center gap-2 mt-4">
             {[1, 2, 3].map(s => (
-              <div key={s} className={`h-1.5 w-12 rounded-full transition-colors ${s <= step ? "bg-emerald-500" : "bg-white/10"}`} />
+              <div key={s} className={`h-1.5 w-12 rounded-full transition-colors ${s <= step ? "bg-emerald-500" : "bg-gray-200"}`} />
             ))}
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-xl backdrop-blur">
+        <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-xl">
 
           {/* Step 1 — Basic info */}
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <Label className="text-gray-300">Nome completo</Label>
+                <Label className={labelCls}>Nome completo</Label>
                 <Input
                   value={form.full_name}
                   onChange={e => set("full_name", e.target.value)}
                   placeholder="Seu nome completo"
-                  className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-emerald-500/50"
+                  className={inputCls}
                 />
               </div>
               <div>
-                <Label className="text-gray-300">País de residência</Label>
+                <Label className={labelCls}>País de residência</Label>
                 <Select value={form.country} onValueChange={v => { set("country", v); set("nationality", v); }}>
-                  <SelectTrigger className="mt-1.5 bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className={selectTriggerCls}>
                     <SelectValue placeholder="Selecione o país" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10 text-white max-h-60">
-                    {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  <SelectContent className={selectContentCls}>
+                    {COUNTRIES.map(c => <SelectItem key={c} value={c} className={selectItemCls}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-gray-300 mb-2 block">Idioma(s) nativo(s)</Label>
+                <Label className={`${labelCls} mb-2 block`}>Idioma(s) nativo(s)</Label>
                 <div className="flex flex-wrap gap-2 mt-1.5">
                   {LANGUAGES.map(l => (
                     <button
@@ -133,8 +138,8 @@ export default function OnboardingTutor() {
                       onClick={() => toggleLang(l.value)}
                       className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
                         form.native_languages.includes(l.value)
-                          ? "bg-emerald-500 text-white border-emerald-500"
-                          : "bg-white/5 text-gray-400 border-white/10 hover:border-emerald-500/50"
+                          ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-emerald-400 hover:text-emerald-600"
                       }`}
                     >
                       {l.flag} {l.label}
@@ -157,14 +162,14 @@ export default function OnboardingTutor() {
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <Label className="text-gray-300">Bio (até 300 caracteres)</Label>
+                <Label className={labelCls}>Bio (até 300 caracteres)</Label>
                 <Textarea
                   value={form.bio}
                   onChange={e => set("bio", e.target.value.slice(0, 300))}
                   placeholder="Fale sobre você para os alunos..."
-                  className="mt-1.5 h-24 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-emerald-500/50"
+                  className={`mt-1.5 h-24 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 shadow-sm`}
                 />
-                <p className="text-xs text-gray-500 mt-1">{form.bio.length}/300</p>
+                <p className="text-xs text-gray-400 mt-1">{form.bio.length}/300</p>
               </div>
 
               <VideoRecorder
@@ -172,25 +177,15 @@ export default function OnboardingTutor() {
                 onVideoRemoved={() => set("intro_video_url", "")}
               />
 
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                <p className="text-xs text-emerald-400 font-medium">💡 Remuneração definida pela plataforma: R$ 2,20/min. O aluno paga R$ 66 a cada 30 minutos.</p>
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                <p className="text-xs text-emerald-700 font-medium">💡 Remuneração definida pela plataforma: R$ 2,20/min. O aluno paga R$ 66 a cada 30 minutos.</p>
               </div>
 
               <div className="flex gap-3 mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(1)}
-                  className="flex-1 border-white/10 text-gray-300 hover:bg-white/10 bg-transparent"
-                >
+                <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
                   <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
                 </Button>
-                <Button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  disabled={!form.bio}
-                  className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0"
-                >
+                <Button type="button" onClick={() => setStep(3)} disabled={!form.bio} className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 shadow-lg shadow-emerald-500/20">
                   Continuar <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
@@ -201,7 +196,8 @@ export default function OnboardingTutor() {
           {step === 3 && (
             <div className="space-y-5">
               <div>
-                <Label className="text-gray-300 mb-2 block">Tópicos de conversa que você gosta</Label>
+                <Label className={`${labelCls} mb-1 block`}>Tópicos de conversa que você gosta</Label>
+                <p className="text-xs text-gray-500 mb-3">Selecione os assuntos que você se sente mais confortável em discutir</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {INTERESTS.map(i => (
                     <button
@@ -210,8 +206,8 @@ export default function OnboardingTutor() {
                       onClick={() => toggleInterest(i)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                         form.interests.includes(i)
-                          ? "bg-emerald-500 text-white border-emerald-500"
-                          : "bg-white/5 text-gray-400 border-white/10 hover:border-emerald-500/50"
+                          ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-emerald-400 hover:text-emerald-600"
                       }`}
                     >
                       {i}
@@ -220,12 +216,7 @@ export default function OnboardingTutor() {
                 </div>
               </div>
               <div className="flex gap-3 mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(2)}
-                  className="flex-1 border-white/10 text-gray-300 hover:bg-white/10 bg-transparent"
-                >
+                <Button type="button" variant="outline" onClick={() => setStep(2)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
                   <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
                 </Button>
                 <Button
