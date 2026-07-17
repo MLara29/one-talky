@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { User, Mail, Globe, Phone, Save } from "lucide-react";
+import { User, Mail, Globe, Phone, Save, Bell, BellOff } from "lucide-react";
 
 export default function TutorBankInfo() {
   const { user } = useAuth();
@@ -17,6 +17,7 @@ export default function TutorBankInfo() {
     phone: "",
     bank_info: "",
     pioneer_email: "",
+    reminder_enabled: true,
   });
 
   useEffect(() => { loadProfile(); }, [user]);
@@ -35,6 +36,7 @@ export default function TutorBankInfo() {
         phone: extra.phone || "",
         bank_info: extra.bank_info || "",
         pioneer_email: extra.pioneer_email || "",
+        reminder_enabled: extra.reminder_enabled !== false, // default true
       });
     }
   };
@@ -45,6 +47,7 @@ export default function TutorBankInfo() {
       phone: form.phone,
       bank_info: form.bank_info,
       pioneer_email: form.pioneer_email,
+      reminder_enabled: form.reminder_enabled,
     });
     await base44.entities.TutorProfile.update(profile.id, {
       full_name: form.full_name,
@@ -102,6 +105,35 @@ export default function TutorBankInfo() {
             </div>
             <p className="text-xs text-gray-600 mt-1">Used for lesson reminders and messages from the platform.</p>
           </div>
+
+          {/* Reminder toggle */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="flex items-center gap-2.5">
+              {form.reminder_enabled
+                ? <Bell className="w-4 h-4 text-violet-400" />
+                : <BellOff className="w-4 h-4 text-gray-500" />}
+              <div>
+                <p className="text-sm font-medium text-white theme-heading">Lembretes por e-mail</p>
+                <p className="text-xs text-gray-500">
+                  {form.reminder_enabled ? "Você receberá lembretes antes das aulas" : "Lembretes desativados"}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm(f => ({ ...f, reminder_enabled: !f.reminder_enabled }))}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                form.reminder_enabled ? "bg-violet-600" : "bg-white/20"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                  form.reminder_enabled ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+        
 
           {profile.contract_type !== "upwork" && (
             <div>
