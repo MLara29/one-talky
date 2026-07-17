@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, X, MessageSquare, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LANGUAGES } from "@/lib/constants";
 import TutorCard from "@/components/tutors/TutorCard";
 import CreditsBanner from "@/components/student/CreditsBanner";
 import SupportModal from "@/components/support/SupportModal";
@@ -17,12 +15,25 @@ export default function StudentDashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [langFilter, setLangFilter] = useState("all");
   const [availableNow, setAvailableNow] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
 
   useEffect(() => { loadData(); }, [user]);
+
+  // Realtime: update tutor cards when availability changes
+  useEffect(() => {
+    const unsubscribe = base44.entities.TutorProfile.subscribe((event) => {
+      if (event.type === 'update') {
+        setTutors(prev => prev.map(t => t.id === event.data.id ? { ...t, ...event.data } : t));
+      } else if (event.type === 'create') {
+        setTutors(prev => [...prev, event.data]);
+      } else if (event.type === 'delete') {
+        setTutors(prev => prev.filter(t => t.id !== event.data.id));
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -52,7 +63,6 @@ export default function StudentDashboard() {
 
   const filtered = tutors.filter(t => {
     if (search && !t.full_name?.toLowerCase().includes(search.toLowerCase())) return false;
-    if (langFilter !== "all" && !t.native_languages?.includes(langFilter)) return false;
     if (availableNow && !(t.is_available_now && isOnline(t))) return false;
     return true;
   });
@@ -102,15 +112,6 @@ export default function StudentDashboard() {
             className="theme-input pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
           />
         </div>
-        <Select value={langFilter} onValueChange={setLangFilter}>
-          <SelectTrigger className="theme-input w-full sm:w-44 bg-white/5 border-white/10 text-white">
-            <SelectValue placeholder="Language" />
-          </SelectTrigger>
-          <SelectContent className="bg-slate-900 border-white/10 text-white">
-            <SelectItem value="all">All languages</SelectItem>
-            {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value}>{l.flag} {l.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
         <Button
           onClick={() => setAvailableNow(!availableNow)}
           className={`transition-all ${availableNow
