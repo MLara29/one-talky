@@ -44,10 +44,16 @@ export default function StudentDashboard() {
     } catch { setTutors([]); } finally { setLoading(false); }
   };
 
+  const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+  const isOnline = (t) => {
+    if (!t.last_seen) return false;
+    return (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
+  };
+
   const filtered = tutors.filter(t => {
     if (search && !t.full_name?.toLowerCase().includes(search.toLowerCase())) return false;
     if (langFilter !== "all" && !t.native_languages?.includes(langFilter)) return false;
-    if (availableNow && !t.is_available_now) return false;
+    if (availableNow && !(t.is_available_now && isOnline(t))) return false;
     return true;
   });
 

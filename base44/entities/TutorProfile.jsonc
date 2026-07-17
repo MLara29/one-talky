@@ -20,14 +20,13 @@
     },
     "timezone": {
       "type": "string",
-      "description": "IANA timezone of the tutor (e.g. Africa/Johannesburg, America/Sao_Paulo). Detected automatically from browser."
+      "description": "IANA timezone of the tutor"
     },
     "native_languages": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Native languages"
+      }
     },
     "other_languages": {
       "type": "array",
@@ -67,19 +66,23 @@
     },
     "availability": {
       "type": "object",
-      "description": "Weekly availability schedule \u2014 times are in tutor's local timezone"
+      "description": "Weekly availability schedule"
     },
     "booked_slots": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "List of ISO datetime strings already booked (UTC, minute precision)",
       "default": []
     },
     "is_available_now": {
       "type": "boolean",
       "default": false
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last heartbeat timestamp \u2014 updated while tutor is logged in"
     },
     "accent": {
       "type": "string"
@@ -99,8 +102,7 @@
         "direct",
         "upwork"
       ],
-      "default": "direct",
-      "description": "direct = tutor contratado direto (precisa de email Payoneer); upwork = contratado via Upwork"
+      "default": "direct"
     },
     "total_lessons": {
       "type": "number",
@@ -123,8 +125,7 @@
       "default": 0
     },
     "bank_info": {
-      "type": "string",
-      "description": "Simulated bank info (Payoneer email for direct contracts)"
+      "type": "string"
     }
   },
   "required": [
