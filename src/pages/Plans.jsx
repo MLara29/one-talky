@@ -66,8 +66,7 @@ export default function Plans() {
     });
   };
 
-  // TESTE — remover após validação da fatura
-  const TEST_PACK = { id: "teste", minutes: 1, price_brl: 2.00, label: "🧪 Teste de Cobrança (R$2)" };
+
 
   if (loading) return (
     <div className="flex items-center justify-center py-24">
@@ -234,27 +233,7 @@ export default function Plans() {
                 </div>
               ))}
             </div>
-            {/* TESTE — remover após validação da fatura */}
-            <div className="mt-6 p-4 rounded-2xl border border-dashed border-amber-400/40 bg-amber-500/5">
-              <p className="text-xs text-amber-500 font-semibold mb-2 text-center">⚠ Cobrança de teste — remover após validar fatura</p>
-              <div className="flex items-center justify-between gap-4 bg-white border border-amber-300/30 rounded-xl px-4 py-3">
-                <div>
-                  <p className="font-display font-bold text-gray-900 text-sm">{TEST_PACK.label}</p>
-                  <p className="text-xs text-gray-500">Apenas para validar descrição na fatura</p>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => buyPack(TEST_PACK)}
-                  disabled={!!checkoutItem}
-                  className="bg-amber-500 hover:bg-amber-600 text-white border-0"
-                >
-                  R$ 2,00
-                </Button>
-              </div>
-            </div>
-            {/* FIM TESTE */}
-
-            <p className="text-center text-xs text-gray-400 mt-4">
+            <p className="text-center text-xs text-gray-400 mt-6">
               Pagamento seguro via Mercado Pago · Cartão de crédito · Créditos não expiram
             </p>
           </div>
