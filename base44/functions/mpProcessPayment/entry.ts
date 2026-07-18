@@ -1,5 +1,17 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 
+// Server-side catalog — prices and minutes are NEVER trusted from the client
+const CATALOG = {
+  "plan:basic":    { minutes: 120, price: 119.60, plan: "basic" },
+  "plan:standard": { minutes: 240, price: 227.24, plan: "standard" },
+  "plan:premium":  { minutes: 480, price: 430.56, plan: "premium" },
+  "pack:pp_30":    { minutes: 30,  price: 29.90 },
+  "pack:pp_60":    { minutes: 60,  price: 56.81 },
+  "pack:pp_120":   { minutes: 120, price: 107.64 },
+  "pack:pp_300":   { minutes: 300, price: 254.15 },
+  "pack:pp_600":   { minutes: 600, price: 478.40 },
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -7,22 +19,26 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const {
-      token,           // card token from MP SDK
+      token,
       payment_method_id,
       installments,
-      external_reference, // "plan:standard:120" or "pack:pp_60:60"
+      external_reference, // "plan:standard" or "pack:pp_60"
       payer_email,
-      description,
-      transaction_amount,
     } = await req.json();
+
+    // Validate the reference against the server-side catalog
+    const item = CATALOG[external_reference];
+    if (!item) {
+      return Response.json({ error: "Referência de produto inválida" }, { status: 400 });
+    }
 
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     if (!accessToken) return Response.json({ error: "MP token não configurado" }, { status: 500 });
 
     const paymentBody = {
-      transaction_amount: Number(transaction_amount),
+      transaction_amount: item.price, // server-side price, never from client
       token,
-      description,
+      description: external_reference,
       installments: Number(installments) || 1,
       payment_method_id,
       payer: { email: payer_email },
@@ -46,19 +62,13 @@ Deno.serve(async (req) => {
     }
 
     if (payment.status === "approved") {
-      // Atualiza perfil do aluno imediatamente
-      const parts = (external_reference || "").split(":");
-      const type = parts[0];
-      const itemId = parts[1];
-      const minutes = parseInt(parts[2] || "0", 10);
-
       const profiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
         const profile = profiles[0];
         const updateData: Record<string, unknown> = {
-          credits_minutes: (profile.credits_minutes ?? 0) + minutes,
+          credits_minutes: (profile.credits_minutes ?? 0) + item.minutes,
         };
-        if (type === "plan") updateData.plan = itemId;
+        if (item.plan) updateData.plan = item.plan;
         await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
       }
     }

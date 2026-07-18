@@ -6,16 +6,29 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { tutor_profile_id, scheduled_at, action } = await req.json();
+    const { tutor_profile_id, scheduled_at, action, lesson_id } = await req.json();
     if (!tutor_profile_id || !scheduled_at) return Response.json({ error: 'Missing params' }, { status: 400 });
 
-    // Use service role to bypass RLS — student can't update TutorProfile directly
+    // For 'release' action, verify the lesson belongs to the calling user
+    if (action === 'release') {
+      if (!lesson_id) return Response.json({ error: 'lesson_id required to release a slot' }, { status: 400 });
+      const lesson = await base44.asServiceRole.entities.Lesson.get(lesson_id);
+      if (!lesson) return Response.json({ error: 'Lesson not found' }, { status: 404 });
+      if (lesson.student_id !== user.id && lesson.tutor_id !== user.id && user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else {
+      // For booking, verify the caller is a student (only students book slots)
+      if (user.role !== 'student' && user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
     const tutorProfile = await base44.asServiceRole.entities.TutorProfile.get(tutor_profile_id);
     if (!tutorProfile) return Response.json({ error: 'Tutor not found' }, { status: 404 });
 
     const currentBooked = tutorProfile.booked_slots || [];
 
-    // Normalize to "YYYY-MM-DDTHH:MM" (minute precision, no seconds/ms/tz) for reliable comparison
     const normalize = (iso) => {
       const d = new Date(iso);
       return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}T${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
@@ -26,13 +39,11 @@ Deno.serve(async (req) => {
 
     let updatedSlots;
     if (action === 'release') {
-      updatedSlots = currentBooked.filter((s, i) => normalizedBooked[i] !== normalizedNew);
+      updatedSlots = currentBooked.filter((_, i) => normalizedBooked[i] !== normalizedNew);
     } else {
-      // Check if already booked (normalized comparison)
       if (normalizedBooked.includes(normalizedNew)) {
         return Response.json({ error: 'Slot already booked' }, { status: 409 });
       }
-      // Store as normalized ISO (minute precision UTC) for consistent future comparisons
       updatedSlots = [...currentBooked, normalizedNew + ':00Z'];
     }
 

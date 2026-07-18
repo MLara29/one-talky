@@ -7,6 +7,11 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
+    // Only admins can use this generic email endpoint
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { to, subject, html, text } = await req.json();
     if (!to || !subject || (!html && !text)) {
       return Response.json({ error: 'Missing required fields: to, subject, html or text' }, { status: 400 });
