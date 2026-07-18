@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-
+import { useLang } from "@/lib/LanguageContext";
 import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import {
@@ -40,8 +40,8 @@ const ADMIN_NAV = [
 ];
 
 const LANGUAGES = [
-  { code: "pt", label: "Português" },
   { code: "en", label: "English" },
+  { code: "pt", label: "Português" },
   { code: "es", label: "Español" },
   { code: "fr", label: "Français" },
   { code: "de", label: "Deutsch" },
@@ -53,19 +53,12 @@ const LANGUAGES = [
 
 export default function AppLayout() {
   const { user } = useAuth();
+  const { lang, changeLang } = useLang();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [uiLang, setUiLang] = useState(() => localStorage.getItem("ui_lang") || "en");
   const role = user?.role || "student";
   const nav = role === "admin" ? ADMIN_NAV : role === "tutor" ? TUTOR_NAV : STUDENT_NAV;
-  const isLight = false; // dark theme only now
-
-  const selectLang = (code) => {
-    setUiLang(code);
-    localStorage.setItem("ui_lang", code);
-    setShowLangMenu(false);
-  };
 
   const handleLogout = () => {
     base44.auth.logout("/");
@@ -73,19 +66,19 @@ export default function AppLayout() {
 
   return (
     <div
-      className="min-h-screen transition-colors duration-300"
-      style={{ background: "linear-gradient(135deg, #030309, #0f0f1f, #030309)" }}
+      className="min-h-screen"
+      style={{ background: "var(--app-bg)" }}
       onClick={() => showLangMenu && setShowLangMenu(false)}
     >
       {/* Top bar */}
       <header
-        className="fixed top-0 left-0 right-0 backdrop-blur-xl z-40 h-14 transition-colors duration-300"
+        className="fixed top-0 left-0 right-0 backdrop-blur-xl z-40 h-14"
         style={{ background: "var(--app-header-bg)", borderBottom: "1px solid var(--app-border)" }}
       >
         <div className="h-full px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              className="lg:hidden p-1 transition-colors"
+              className="lg:hidden p-1"
               style={{ color: "var(--app-text-secondary)" }}
               onClick={() => setMobileOpen(!mobileOpen)}
             >
@@ -102,9 +95,9 @@ export default function AppLayout() {
             <span
               className="text-xs font-medium px-2.5 py-1 rounded-full capitalize hidden sm:block"
               style={{
-                background: isLight ? "rgba(124,58,237,0.1)" : "rgba(139,92,246,0.15)",
+                background: "rgba(124,58,237,0.1)",
                 border: "1px solid rgba(124,58,237,0.25)",
-                color: isLight ? "#7c3aed" : "#c4b5fd"
+                color: "#7c3aed"
               }}
             >
               {role}
@@ -112,27 +105,27 @@ export default function AppLayout() {
           </div>
           <div className="flex items-center gap-1">
             {/* Language selector */}
-            <div className="relative">
+            <div className="relative" onClick={e => e.stopPropagation()}>
               <button
                 onClick={() => setShowLangMenu(v => !v)}
                 className="p-2 rounded-lg transition-all hover:scale-110 flex items-center gap-1"
-                style={{ background: "rgba(255,255,255,0.08)", color: "#a78bfa" }}
+                style={{ background: "rgba(124,58,237,0.1)", color: "#7c3aed" }}
                 title="Change language"
               >
                 <Globe className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase hidden sm:block">{uiLang}</span>
+                <span className="text-xs font-semibold uppercase hidden sm:block">{lang}</span>
               </button>
               {showLangMenu && (
                 <div
-                  className="absolute right-0 top-10 w-40 rounded-2xl shadow-2xl z-50 overflow-hidden py-1"
-                  style={{ background: "#0f0f1f", border: "1px solid rgba(255,255,255,0.1)" }}
+                  className="absolute right-0 top-10 w-44 rounded-2xl shadow-2xl z-50 overflow-hidden py-1"
+                  style={{ background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}
                 >
                   {LANGUAGES.map(l => (
                     <button
                       key={l.code}
-                      onClick={() => selectLang(l.code)}
-                      className="w-full text-left px-4 py-2 text-sm transition-colors hover:bg-violet-500/20"
-                      style={{ color: uiLang === l.code ? "#a78bfa" : "#9ca3af", fontWeight: uiLang === l.code ? 600 : 400 }}
+                      onClick={() => changeLang(l.code)}
+                      className="w-full text-left px-4 py-2 text-sm transition-colors hover:bg-violet-50"
+                      style={{ color: lang === l.code ? "#7c3aed" : "#374151", fontWeight: lang === l.code ? 600 : 400 }}
                     >
                       {l.label}
                     </button>
@@ -160,7 +153,7 @@ export default function AppLayout() {
       <div className="flex pt-14">
         {/* Sidebar - desktop */}
         <aside
-          className="hidden lg:flex flex-col w-56 fixed top-14 left-0 bottom-0 backdrop-blur-xl p-4 transition-colors duration-300"
+          className="hidden lg:flex flex-col w-56 fixed top-14 left-0 bottom-0 backdrop-blur-xl p-4"
           style={{ background: "var(--app-sidebar-bg)", borderRight: "1px solid var(--app-border)" }}
         >
           <nav className="space-y-1 flex-1">
@@ -173,7 +166,7 @@ export default function AppLayout() {
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                   style={{
                     background: active ? "var(--app-nav-active-bg)" : "transparent",
-                    color: active ? (isLight ? "#7c3aed" : "#ffffff") : "var(--app-text-secondary)",
+                    color: active ? "#7c3aed" : "var(--app-text-secondary)",
                     border: active ? "1px solid rgba(124,58,237,0.25)" : "1px solid transparent"
                   }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.background = "var(--app-nav-hover-bg)"; }}
@@ -193,10 +186,10 @@ export default function AppLayout() {
         {/* Mobile nav overlay */}
         {mobileOpen && (
           <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setMobileOpen(false)}>
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
             <aside
-              className="absolute top-14 left-0 bottom-0 w-64 p-4 transition-colors duration-300"
-              style={{ background: isLight ? "#ffffff" : "#030309", borderRight: "1px solid var(--app-border)" }}
+              className="absolute top-14 left-0 bottom-0 w-64 p-4"
+              style={{ background: "var(--app-sidebar-bg)", borderRight: "1px solid var(--app-border)" }}
               onClick={e => e.stopPropagation()}
             >
               <nav className="space-y-1">
@@ -210,7 +203,7 @@ export default function AppLayout() {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                       style={{
                         background: active ? "var(--app-nav-active-bg)" : "transparent",
-                        color: active ? (isLight ? "#7c3aed" : "#ffffff") : "var(--app-text-secondary)",
+                        color: active ? "#7c3aed" : "var(--app-text-secondary)",
                         border: active ? "1px solid rgba(124,58,237,0.25)" : "1px solid transparent"
                       }}
                     >
@@ -236,16 +229,16 @@ export default function AppLayout() {
 
       {/* Mobile bottom nav */}
       <nav
-        className="fixed bottom-0 left-0 right-0 backdrop-blur-xl lg:hidden z-40 transition-colors duration-300"
-        style={{ background: isLight ? "rgba(255,255,255,0.9)" : "rgba(3,3,9,0.9)", borderTop: "1px solid var(--app-border)" }}
+        className="fixed bottom-0 left-0 right-0 backdrop-blur-xl lg:hidden z-40"
+        style={{ background: "var(--app-header-bg)", borderTop: "1px solid var(--app-border)" }}
       >
         <div className="flex justify-around py-2">
           {nav.slice(0, 4).map(item => {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path} className="flex flex-col items-center gap-0.5 p-2">
-                <item.icon className="w-5 h-5 transition-colors" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)" }} />
-                <span className="text-[10px] transition-colors" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)", fontWeight: active ? 600 : 400 }}>
+                <item.icon className="w-5 h-5" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)" }} />
+                <span className="text-[10px]" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)", fontWeight: active ? 600 : 400 }}>
                   {item.label}
                 </span>
               </Link>
