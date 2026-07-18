@@ -10,7 +10,12 @@ import { ChevronLeft, ChevronRight, Clock, Info } from "lucide-react";
 // Availability is stored as { "Monday": ["08:00","09:00",...], ... }
 // This is the format ScheduleModal reads to convert tutor-tz → student-tz
 const DAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const HOURS = Array.from({ length: 18 }, (_, i) => `${(i + 6).toString().padStart(2, "0")}:00`);
+// 30-minute slots from 06:00 to 23:30
+const HOURS = [];
+for (let h = 6; h < 24; h++) {
+  HOURS.push(`${String(h).padStart(2, "0")}:00`);
+  HOURS.push(`${String(h).padStart(2, "0")}:30`);
+}
 
 const WEEKDAY_SHORT_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const MONTH_NAMES_PT = [
@@ -217,7 +222,7 @@ export default function TutorSchedule() {
                 >
                   <span>{day}</span>
                   {hasSlots && (
-                    <span className="text-[9px] font-normal opacity-80">{hours.length}h</span>
+                   <span className="text-[9px] font-normal opacity-80">{hours.length}×</span>
                   )}
                 </button>
               );
@@ -262,11 +267,11 @@ export default function TutorSchedule() {
                 <p className="text-xs text-gray-500 mt-0.5">
                   Disponibilidade para toda <strong className="text-violet-400">{
                     new Intl.DateTimeFormat("pt-BR", { timeZone: tutorTz, weekday: "long" }).format(selectedDate)
-                  }s</strong> · {selectedSlots.length === 0 ? "Nenhum horário" : `${selectedSlots.length} horário${selectedSlots.length > 1 ? "s" : ""}`}
+                  }s</strong> · {selectedSlots.length === 0 ? "Nenhum horário" : `${selectedSlots.length} slot${selectedSlots.length > 1 ? "s" : ""} de 30min`}
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 max-h-[380px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-4 gap-2 max-h-[380px] overflow-y-auto pr-1">
                 {HOURS.map(hour => {
                   const active = selectedSlots.includes(hour);
                   return (
