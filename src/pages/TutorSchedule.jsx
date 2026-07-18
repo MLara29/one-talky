@@ -5,28 +5,31 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Info } from "lucide-react";
 
-// Hours shown in the day detail panel
+// Availability is stored as { "Monday": ["08:00","09:00",...], ... }
+// This is the format ScheduleModal reads to convert tutor-tz → student-tz
+const DAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const HOURS = Array.from({ length: 18 }, (_, i) => `${(i + 6).toString().padStart(2, "0")}:00`);
 
-const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-const MONTH_NAMES = [
+const WEEKDAY_SHORT_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const MONTH_NAMES_PT = [
   "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
   "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
 ];
 
-// key format used to store availability: "YYYY-MM-DD"
-function dateKey(year, month, day) {
-  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
-
 function getFirstWeekday(year, month) {
   return new Date(year, month, 1).getDay(); // 0=Sun
+}
+
+// Given a JS Date, return the English weekday name in the tutor's OWN timezone
+// (because availability is keyed by the tutor's local weekday)
+function getDayNameInTz(date, tz) {
+  if (!tz) return DAYS_EN[date.getDay()];
+  return new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long" }).format(date);
 }
 
 export default function TutorSchedule() {
@@ -36,13 +39,13 @@ export default function TutorSchedule() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // availability: { "YYYY-MM-DD": ["06:00", "07:00", ...], ... }
+  // { "Monday": ["06:00",...], "Tuesday": [...], ... }
   const [availability, setAvailability] = useState({});
 
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [selectedDate, setSelectedDate] = useState(null); // "YYYY-MM-DD" or null
+  const [selectedDate, setSelectedDate] = useState(null); // JS Date
 
   useEffect(() => { loadProfile(); }, [user]);
 
@@ -62,15 +65,28 @@ export default function TutorSchedule() {
     } catch {} finally { setLoading(false); }
   };
 
+  // The tutor's timezone (saved on profile)
+  const tutorTz = profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // For a given JS Date, get the weekday name AS SEEN IN THE TUTOR'S TIMEZONE
+  const getDayKey = (date) => getDayNameInTz(date, tutorTz);
+
   const toggleHour = (hour) => {
     if (!selectedDate) return;
+    const dayKey = getDayKey(selectedDate);
     setAvailability(prev => {
-      const slots = prev[selectedDate] || [];
+      const slots = prev[dayKey] || [];
       const updated = slots.includes(hour)
         ? slots.filter(h => h !== hour)
         : [...slots, hour].sort();
-      return { ...prev, [selectedDate]: updated };
+      return { ...prev, [dayKey]: updated };
     });
+  };
+
+  // How many hours configured for a given calendar date
+  const getHoursForDate = (date) => {
+    const dayKey = getDayKey(date);
+    return availability[dayKey] || [];
   };
 
   const saveSchedule = async () => {
@@ -89,6 +105,19 @@ export default function TutorSchedule() {
     setProfile({ ...profile, is_available_now: !profile.is_available_now });
   };
 
+  if (loading) return (
+    <div className="flex items-center justify-center py-24">
+      <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+    </div>
+  );
+
+  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+  const firstWeekday = getFirstWeekday(viewYear, viewMonth);
+  const todayStr = today.toDateString();
+
+  const selectedDayKey = selectedDate ? getDayKey(selectedDate) : null;
+  const selectedSlots = selectedDayKey ? (availability[selectedDayKey] || []) : [];
+
   const prevMonth = () => {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
     else setViewMonth(m => m - 1);
@@ -100,21 +129,10 @@ export default function TutorSchedule() {
     setSelectedDate(null);
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-24">
-      <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
-    </div>
-  );
+  const canGoPrev = viewYear > today.getFullYear() || viewMonth > today.getMonth();
 
-  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
-  const firstWeekday = getFirstWeekday(viewYear, viewMonth);
-  const todayKey = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
-
-  const selectedSlots = selectedDate ? (availability[selectedDate] || []) : [];
-
-  // Count total available hours this month
-  const monthKeys = Object.keys(availability).filter(k => k.startsWith(`${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`));
-  const totalHoursThisMonth = monthKeys.reduce((sum, k) => sum + (availability[k]?.length || 0), 0);
+  // Total hours configured this month (unique days × hours, but since it's weekly, show total unique slots)
+  const totalSlots = Object.values(availability).reduce((sum, arr) => sum + (arr?.length || 0), 0);
 
   return (
     <div>
@@ -123,7 +141,7 @@ export default function TutorSchedule() {
         <div>
           <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Minha Agenda</h1>
           <p className="theme-subtext text-gray-500 text-sm mt-1">
-            Selecione os dias e horários em que você está disponível
+            Defina sua disponibilidade semanal
           </p>
         </div>
         <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
@@ -133,22 +151,28 @@ export default function TutorSchedule() {
         </div>
       </div>
 
+      {/* Timezone info banner */}
+      <div className="mb-5 flex items-start gap-2 px-4 py-3 rounded-2xl bg-violet-500/10 border border-violet-500/20">
+        <Info className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+        <p className="text-xs text-violet-300">
+          Seus horários são salvos no seu fuso horário:{" "}
+          <strong className="text-violet-200">{tutorTz}</strong>. Os alunos verão os horários convertidos automaticamente para o fuso deles.
+          {totalSlots > 0 && <span className="ml-2 text-violet-400">· {totalSlots} horário{totalSlots > 1 ? "s" : ""} configurado{totalSlots > 1 ? "s" : ""} na semana</span>}
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calendar */}
         <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5">
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-5">
-            <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-white/10 transition-colors text-gray-400 hover:text-white">
+            <button onClick={prevMonth} disabled={!canGoPrev}
+              className="p-2 rounded-xl hover:bg-white/10 transition-colors text-gray-400 hover:text-white disabled:opacity-30">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="text-center">
-              <p className="theme-heading font-semibold text-white text-lg">
-                {MONTH_NAMES[viewMonth]} {viewYear}
-              </p>
-              {totalHoursThisMonth > 0 && (
-                <p className="text-xs text-violet-400 mt-0.5">{totalHoursThisMonth}h disponíveis este mês</p>
-              )}
-            </div>
+            <p className="theme-heading font-semibold text-white text-lg">
+              {MONTH_NAMES_PT[viewMonth]} {viewYear}
+            </p>
             <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-white/10 transition-colors text-gray-400 hover:text-white">
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -156,36 +180,34 @@ export default function TutorSchedule() {
 
           {/* Weekday headers */}
           <div className="grid grid-cols-7 mb-2">
-            {WEEKDAY_LABELS.map(d => (
+            {WEEKDAY_SHORT_PT.map(d => (
               <div key={d} className="text-center text-xs font-semibold text-gray-500 py-1">{d}</div>
             ))}
           </div>
 
           {/* Day cells */}
           <div className="grid grid-cols-7 gap-1">
-            {/* Empty cells for offset */}
-            {Array.from({ length: firstWeekday }).map((_, i) => <div key={`empty-${i}`} />)}
-
+            {Array.from({ length: firstWeekday }).map((_, i) => <div key={`e-${i}`} />)}
             {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-              const key = dateKey(viewYear, viewMonth, day);
-              const slots = availability[key] || [];
-              const hasSlots = slots.length > 0;
-              const isToday = key === todayKey;
-              const isSelected = key === selectedDate;
-              const isPast = key < todayKey;
+              const date = new Date(viewYear, viewMonth, day);
+              const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              const isToday = date.toDateString() === todayStr;
+              const isSelected = selectedDate?.toDateString() === date.toDateString();
+              const hours = getHoursForDate(date);
+              const hasSlots = hours.length > 0;
 
               return (
                 <button
                   key={day}
-                  onClick={() => !isPast && setSelectedDate(isSelected ? null : key)}
+                  onClick={() => !isPast && setSelectedDate(isSelected ? null : date)}
                   disabled={isPast}
                   className={`
                     relative aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-semibold transition-all
-                    ${isPast ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}
+                    ${isPast ? "opacity-25 cursor-not-allowed" : "cursor-pointer"}
                     ${isSelected
-                      ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                      ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30 scale-105"
                       : isToday
-                        ? "bg-violet-500/20 border border-violet-500/40 text-violet-300"
+                        ? "bg-violet-500/20 border border-violet-500/40 text-violet-300 hover:bg-violet-500/30"
                         : hasSlots
                           ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
                           : "bg-white/5 border border-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
@@ -193,11 +215,8 @@ export default function TutorSchedule() {
                   `}
                 >
                   <span>{day}</span>
-                  {hasSlots && !isSelected && (
-                    <span className="text-[9px] font-normal mt-0.5 opacity-80">{slots.length}h</span>
-                  )}
-                  {isSelected && hasSlots && (
-                    <span className="text-[9px] font-normal mt-0.5 opacity-80">{slots.length}h</span>
+                  {hasSlots && (
+                    <span className="text-[9px] font-normal opacity-80">{hours.length}h</span>
                   )}
                 </button>
               );
@@ -205,7 +224,7 @@ export default function TutorSchedule() {
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-4 mt-5 pt-4 border-t border-white/5">
+          <div className="flex items-center gap-4 mt-5 pt-4 border-t border-white/5 flex-wrap">
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <div className="w-3 h-3 rounded-sm bg-emerald-500/20 border border-emerald-500/30" />
               Com horários
@@ -216,7 +235,7 @@ export default function TutorSchedule() {
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <div className="w-3 h-3 rounded-sm bg-white/5 border border-white/10" />
-              Livre
+              Sem horários
             </div>
           </div>
         </div>
@@ -230,23 +249,23 @@ export default function TutorSchedule() {
               </div>
               <p className="theme-heading font-semibold text-white">Selecione um dia</p>
               <p className="theme-subtext text-sm text-gray-500 max-w-[220px]">
-                Clique em um dia no calendário para definir seus horários disponíveis
+                Clique em um dia para definir os horários disponíveis. Dias da mesma semana compartilham a mesma configuração.
               </p>
             </div>
           ) : (
             <>
-              <div className="mb-5">
+              <div className="mb-4">
                 <p className="theme-heading font-semibold text-white text-lg">
-                  {new Date(selectedDate + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+                  {selectedDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {selectedSlots.length === 0
-                    ? "Nenhum horário selecionado"
-                    : `${selectedSlots.length} horário${selectedSlots.length > 1 ? "s" : ""} selecionado${selectedSlots.length > 1 ? "s" : ""}`}
+                  Disponibilidade para toda <strong className="text-violet-400">{
+                    new Intl.DateTimeFormat("pt-BR", { timeZone: tutorTz, weekday: "long" }).format(selectedDate)
+                  }s</strong> · {selectedSlots.length === 0 ? "Nenhum horário" : `${selectedSlots.length} horário${selectedSlots.length > 1 ? "s" : ""}`}
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 max-h-[420px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-3 gap-2 max-h-[380px] overflow-y-auto pr-1">
                 {HOURS.map(hour => {
                   const active = selectedSlots.includes(hour);
                   return (
@@ -267,7 +286,7 @@ export default function TutorSchedule() {
 
               {selectedSlots.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <p className="text-xs text-gray-500 mb-2">Horários confirmados:</p>
+                  <p className="text-xs text-gray-500 mb-2">Horários selecionados (no seu fuso):</p>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedSlots.map(h => (
                       <span key={h} className="text-xs bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 px-2 py-0.5 rounded-lg">
