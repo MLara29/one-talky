@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { useLang } from "@/lib/LanguageContext";
+
 import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import {
   MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, Globe
+  GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail
 } from "lucide-react";
 
 const STUDENT_NAV = [
@@ -15,7 +15,7 @@ const STUDENT_NAV = [
   { label: "My Lessons", path: "/my-lessons", icon: BookOpen },
   { label: "Progress", path: "/progress", icon: BarChart3 },
   { label: "Plans", path: "/plans", icon: DollarSign },
-  { label: "Suporte", path: "/my-messages", icon: Inbox },
+  { label: "Support", path: "/my-messages", icon: Inbox },
 ];
 
 const TUTOR_NAV = [
@@ -25,38 +25,24 @@ const TUTOR_NAV = [
   { label: "Earnings", path: "/earnings", icon: DollarSign },
   { label: "Reviews", path: "/reviews", icon: Star },
   { label: "Personal Info", path: "/tutor-bank-info", icon: User },
-  { label: "Suporte", path: "/my-messages", icon: Inbox },
+  { label: "Support", path: "/my-messages", icon: Inbox },
 ];
 
 const ADMIN_NAV = [
   { label: "Dashboard", path: "/dashboard", icon: Home },
   { label: "Approvals", path: "/admin/approvals", icon: GraduationCap },
   { label: "Users", path: "/admin/users", icon: User },
-  { label: "Custos & Lucro", path: "/admin/costs", icon: TrendingUp },
-  { label: "Pagamentos", path: "/admin/earnings", icon: DollarSign },
-  { label: "Suporte", path: "/admin/support", icon: MessageCircle },
-  { label: "Cupons", path: "/admin/coupons", icon: Tag },
+  { label: "Costs & Profit", path: "/admin/costs", icon: TrendingUp },
+  { label: "Earnings", path: "/admin/earnings", icon: DollarSign },
+  { label: "Support", path: "/admin/support", icon: MessageCircle },
+  { label: "Coupons", path: "/admin/coupons", icon: Tag },
   { label: "E-mail", path: "/admin/email", icon: Mail },
-];
-
-const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "pt", label: "Português" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "it", label: "Italiano" },
-  { code: "ja", label: "日本語" },
-  { code: "ko", label: "한국어" },
-  { code: "zh", label: "中文" },
 ];
 
 export default function AppLayout() {
   const { user } = useAuth();
-  const { lang, changeLang } = useLang();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showLangMenu, setShowLangMenu] = useState(false);
   const role = user?.role || "student";
   const nav = role === "admin" ? ADMIN_NAV : role === "tutor" ? TUTOR_NAV : STUDENT_NAV;
 
@@ -86,7 +72,6 @@ export default function AppLayout() {
     <div
       className="min-h-screen"
       style={{ background: "var(--app-bg)" }}
-      onClick={() => showLangMenu && setShowLangMenu(false)}
     >
       {/* Top bar */}
       <header
@@ -122,35 +107,6 @@ export default function AppLayout() {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            {/* Language selector */}
-            <div className="relative" onClick={e => e.stopPropagation()}>
-              <button
-                onClick={() => setShowLangMenu(v => !v)}
-                className="p-2 rounded-lg transition-all hover:scale-110 flex items-center gap-1"
-                style={{ background: "rgba(124,58,237,0.1)", color: "#7c3aed" }}
-                title="Change language"
-              >
-                <Globe className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase hidden sm:block">{lang}</span>
-              </button>
-              {showLangMenu && (
-                <div
-                  className="absolute right-0 top-10 w-44 rounded-2xl shadow-2xl z-50 overflow-hidden py-1"
-                  style={{ background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}
-                >
-                  {LANGUAGES.map(l => (
-                    <button
-                      key={l.code}
-                      onClick={() => changeLang(l.code)}
-                      className="w-full text-left px-4 py-2 text-sm transition-colors hover:bg-violet-50"
-                      style={{ color: lang === l.code ? "#7c3aed" : "#374151", fontWeight: lang === l.code ? 600 : 400 }}
-                    >
-                      {l.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
             <Link to="/notifications">
               <Button variant="ghost" size="icon" style={{ color: "var(--app-text-secondary)" }}>
                 <Bell className="w-4 h-4" />
