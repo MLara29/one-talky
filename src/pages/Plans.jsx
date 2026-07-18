@@ -51,7 +51,7 @@ export default function Plans() {
     setCheckoutItem({
       title: `One Talky — Plano ${plan.name} (${minutes} min/mês)`,
       price,
-      external_reference: `plan:${plan.id}:${minutes}`,
+      external_reference: `plan:${plan.id}`,
     });
   };
 
@@ -60,7 +60,7 @@ export default function Plans() {
     setCheckoutItem({
       title: `One Talky — ${pack.label}`,
       price: pack.price_brl,
-      external_reference: `pack:${pack.id}:${pack.minutes}`,
+      external_reference: `pack:${pack.id}`,
     });
   };
 
