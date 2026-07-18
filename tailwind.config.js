@@ -10,62 +10,64 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-  			background: 'hsl(var(--background))',
-  			foreground: 'hsl(var(--foreground))',
+  			background: 'var(--background)',
+  			foreground: 'var(--foreground)',
   			card: {
-  				DEFAULT: 'hsl(var(--card))',
-  				foreground: 'hsl(var(--card-foreground))'
+  				DEFAULT: 'var(--card)',
+  				foreground: 'var(--card-foreground)'
   			},
   			popover: {
-  				DEFAULT: 'hsl(var(--popover))',
-  				foreground: 'hsl(var(--popover-foreground))'
+  				DEFAULT: 'var(--popover)',
+  				foreground: 'var(--popover-foreground)'
   			},
   			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				DEFAULT: 'var(--primary)',
+  				foreground: 'var(--primary-foreground)'
   			},
   			secondary: {
-  				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
+  				DEFAULT: 'var(--secondary)',
+  				foreground: 'var(--secondary-foreground)'
   			},
   			muted: {
-  				DEFAULT: 'hsl(var(--muted))',
-  				foreground: 'hsl(var(--muted-foreground))'
+  				DEFAULT: 'var(--muted)',
+  				foreground: 'var(--muted-foreground)'
   			},
   			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
+  				DEFAULT: 'var(--accent)',
+  				foreground: 'var(--accent-foreground)'
   			},
   			destructive: {
-  				DEFAULT: 'hsl(var(--destructive))',
-  				foreground: 'hsl(var(--destructive-foreground))'
+  				DEFAULT: 'var(--destructive)',
+  				foreground: 'var(--destructive-foreground)'
   			},
-  			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
-  			ring: 'hsl(var(--ring))',
+  			border: 'var(--border)',
+  			input: 'var(--input)',
+  			ring: 'var(--ring)',
   			chart: {
-  				'1': 'hsl(var(--chart-1))',
-  				'2': 'hsl(var(--chart-2))',
-  				'3': 'hsl(var(--chart-3))',
-  				'4': 'hsl(var(--chart-4))',
-  				'5': 'hsl(var(--chart-5))'
+  				'1': 'var(--chart-1)',
+  				'2': 'var(--chart-2)',
+  				'3': 'var(--chart-3)',
+  				'4': 'var(--chart-4)',
+  				'5': 'var(--chart-5)'
   			},
   			sidebar: {
-  				DEFAULT: 'hsl(var(--sidebar-background))',
-  				foreground: 'hsl(var(--sidebar-foreground))',
-  				primary: 'hsl(var(--sidebar-primary))',
-  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-  				accent: 'hsl(var(--sidebar-accent))',
-  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-  				border: 'hsl(var(--sidebar-border))',
-  				ring: 'hsl(var(--sidebar-ring))'
+  				DEFAULT: 'var(--sidebar)',
+  				foreground: 'var(--sidebar-foreground)',
+  				primary: 'var(--sidebar-primary)',
+  				'primary-foreground': 'var(--sidebar-primary-foreground)',
+  				accent: 'var(--sidebar-accent)',
+  				'accent-foreground': 'var(--sidebar-accent-foreground)',
+  				border: 'var(--sidebar-border)',
+  				ring: 'var(--sidebar-ring)'
   			}
   		},
   		fontFamily: {
-  			heading: ['var(--font-heading)', 'Plus Jakarta Sans', 'ui-sans-serif'],
-  			body: ['var(--font-body)', 'Inter', 'ui-sans-serif'],
-  			display: ['var(--font-display)', 'Plus Jakarta Sans', 'ui-sans-serif'],
-  			mono: ['var(--font-mono)']
+  			sans: ['var(--font-sans)', 'Open Sans', 'ui-sans-serif'],
+  			serif: ['var(--font-serif)', 'Georgia', 'ui-serif'],
+  			mono: ['var(--font-mono)', 'Menlo', 'ui-monospace'],
+  			heading: ['var(--font-sans)', 'Open Sans', 'ui-sans-serif'],
+  			body: ['var(--font-sans)', 'Open Sans', 'ui-sans-serif'],
+  			display: ['var(--font-sans)', 'Open Sans', 'ui-sans-serif'],
   		},
   		keyframes: {
   			'float': {
@@ -73,8 +75,8 @@ module.exports = {
   				'50%': { transform: 'translateY(-12px)' },
   			},
   			'pulse-glow': {
-  				'0%, 100%': { boxShadow: '0 0 0 0 rgba(139,92,246,0.4)' },
-  				'50%': { boxShadow: '0 0 0 12px rgba(139,92,246,0)' },
+  				'0%, 100%': { boxShadow: '0 0 0 0 rgba(103,114,229,0.4)' },
+  				'50%': { boxShadow: '0 0 0 12px rgba(103,114,229,0)' },
   			},
   			'shimmer': {
   				'0%': { backgroundPosition: '-200% 0' },
@@ -85,20 +87,12 @@ module.exports = {
   				'100%': { opacity: '1', transform: 'translateY(0)' },
   			},
   			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
+  				from: { height: '0' },
+  				to: { height: 'var(--radix-accordion-content-height)' }
   			},
   			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
+  				from: { height: 'var(--radix-accordion-content-height)' },
+  				to: { height: '0' }
   			}
   		},
   		animation: {
