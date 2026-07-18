@@ -62,9 +62,9 @@ module.exports = {
   			}
   		},
   		fontFamily: {
-  			heading: ['var(--font-heading)'],
-  			body: ['var(--font-body)'],
-  			display: ['var(--font-display)'],
+  			heading: ['var(--font-heading)', 'Plus Jakarta Sans', 'ui-sans-serif'],
+  			body: ['var(--font-body)', 'Inter', 'ui-sans-serif'],
+  			display: ['var(--font-display)', 'Plus Jakarta Sans', 'ui-sans-serif'],
   			mono: ['var(--font-mono)']
   		},
   		keyframes: {
