@@ -143,10 +143,7 @@ export default function TutorProfilePage() {
                 ))}
               </div>
             </div>
-            <div className="text-right shrink-0">
-              <p className="theme-heading font-display text-xl font-bold text-white">R$ 66<span className="text-sm font-normal text-gray-500">/30min</span></p>
-              <p className="theme-subtext text-xs text-gray-500 mt-0.5">R$ 2,20 por minuto</p>
-            </div>
+
           </div>
         </div>
 
