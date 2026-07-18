@@ -17,7 +17,7 @@ function formatExpiry(v) {
 }
 
 export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
-  const [tab, setTab] = useState("card"); // "card" | "pix"
+  const [tab, setTab] = useState("card"); // "card" | "pix" — pix temporarily disabled
   const [step, setStep] = useState("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const mpRef = useRef(null);
@@ -299,13 +299,14 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
               >
                 <CreditCard className="w-4 h-4" /> Cartão de crédito
               </button>
-              <button
+              {/* PIX DISABLED — remove the comment below to re-enable */}
+              {/* <button
                 onClick={() => setTab("pix")}
                 className={`flex-1 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${tab === "pix" ? "text-violet-400 border-b-2 border-violet-500" : "theme-subtext"}`}
                 style={{ color: tab === "pix" ? undefined : "var(--app-text-secondary)" }}
               >
                 <QrCode className="w-4 h-4" /> Pix
-              </button>
+              </button> */}
             </div>
 
             {/* Card form */}

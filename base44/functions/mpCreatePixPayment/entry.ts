@@ -6,6 +6,7 @@ const CATALOG = {
   "plan:basic":    { price: 119.60, title: "Plano Básico",   minutes: 120, plan: "basic" },
   "plan:standard": { price: 227.24, title: "Plano Standard", minutes: 240, plan: "standard" },
   "plan:premium":  { price: 430.56, title: "Plano Premium",  minutes: 480, plan: "premium" },
+  "pack:teste":    { price: 2.00,   title: "One Talky - Teste de Cobrança", minutes: 1 },
   "pack:pp_30":    { price: 29.90,  title: "Pack 30 min",    minutes: 30 },
   "pack:pp_60":    { price: 56.81,  title: "Pack 60 min",    minutes: 60 },
   "pack:pp_120":   { price: 107.64, title: "Pack 2 horas",   minutes: 120 },

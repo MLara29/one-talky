@@ -7,6 +7,7 @@ const CATALOG = {
   "plan:basic":    { minutes: 120, price: 119.60, plan: "basic" },
   "plan:standard": { minutes: 240, price: 227.24, plan: "standard" },
   "plan:premium":  { minutes: 480, price: 430.56, plan: "premium" },
+  "pack:teste":    { minutes: 1,   price: 2.00 },
   "pack:pp_30":    { minutes: 30,  price: 29.90 },
   "pack:pp_60":    { minutes: 60,  price: 56.81 },
   "pack:pp_120":   { minutes: 120, price: 107.64 },
