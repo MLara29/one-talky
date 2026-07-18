@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { useTheme } from "@/lib/ThemeContext";
+
 import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import {
   MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, Clock, DollarSign, Star, Bell, Menu, X, Home, Sun, Moon, TrendingUp, Inbox, Tag, Mail
+  GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, Globe
 } from "lucide-react";
-// DollarSign already imported above
 
 const STUDENT_NAV = [
   { label: "Find Tutors", path: "/dashboard", icon: Search },
@@ -40,14 +39,33 @@ const ADMIN_NAV = [
   { label: "E-mail", path: "/admin/email", icon: Mail },
 ];
 
+const LANGUAGES = [
+  { code: "pt", label: "Português" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "de", label: "Deutsch" },
+  { code: "it", label: "Italiano" },
+  { code: "ja", label: "日本語" },
+  { code: "ko", label: "한국어" },
+  { code: "zh", label: "中文" },
+];
+
 export default function AppLayout() {
   const { user } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const [uiLang, setUiLang] = useState(() => localStorage.getItem("ui_lang") || "en");
   const role = user?.role || "student";
   const nav = role === "admin" ? ADMIN_NAV : role === "tutor" ? TUTOR_NAV : STUDENT_NAV;
-  const isLight = theme === "light";
+  const isLight = false; // dark theme only now
+
+  const selectLang = (code) => {
+    setUiLang(code);
+    localStorage.setItem("ui_lang", code);
+    setShowLangMenu(false);
+  };
 
   const handleLogout = () => {
     base44.auth.logout("/");
@@ -56,7 +74,8 @@ export default function AppLayout() {
   return (
     <div
       className="min-h-screen transition-colors duration-300"
-      style={{ background: isLight ? "#f1f3f8" : "linear-gradient(135deg, #030309, #0f0f1f, #030309)" }}
+      style={{ background: "linear-gradient(135deg, #030309, #0f0f1f, #030309)" }}
+      onClick={() => showLangMenu && setShowLangMenu(false)}
     >
       {/* Top bar */}
       <header
@@ -92,18 +111,35 @@ export default function AppLayout() {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg transition-all hover:scale-110"
-              style={{
-                background: isLight ? "rgba(124,58,237,0.1)" : "rgba(255,255,255,0.08)",
-                color: isLight ? "#7c3aed" : "#a78bfa"
-              }}
-              title={isLight ? "Switch to dark mode" : "Switch to light mode"}
-            >
-              {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-            </button>
+            {/* Language selector */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLangMenu(v => !v)}
+                className="p-2 rounded-lg transition-all hover:scale-110 flex items-center gap-1"
+                style={{ background: "rgba(255,255,255,0.08)", color: "#a78bfa" }}
+                title="Change language"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="text-xs font-semibold uppercase hidden sm:block">{uiLang}</span>
+              </button>
+              {showLangMenu && (
+                <div
+                  className="absolute right-0 top-10 w-40 rounded-2xl shadow-2xl z-50 overflow-hidden py-1"
+                  style={{ background: "#0f0f1f", border: "1px solid rgba(255,255,255,0.1)" }}
+                >
+                  {LANGUAGES.map(l => (
+                    <button
+                      key={l.code}
+                      onClick={() => selectLang(l.code)}
+                      className="w-full text-left px-4 py-2 text-sm transition-colors hover:bg-violet-500/20"
+                      style={{ color: uiLang === l.code ? "#a78bfa" : "#9ca3af", fontWeight: uiLang === l.code ? 600 : 400 }}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <Link to="/notifications">
               <Button variant="ghost" size="icon" style={{ color: "var(--app-text-secondary)" }}>
                 <Bell className="w-4 h-4" />

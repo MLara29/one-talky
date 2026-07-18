@@ -94,9 +94,10 @@ export default function TutorSchedule() {
     setSaving(true);
     try {
       await base44.entities.TutorProfile.update(profile.id, { availability });
-      toast({ title: "Agenda salva! ✅" });
-    } catch { toast({ title: "Erro ao salvar", variant: "destructive" }); }
-    finally { setSaving(false); }
+      toast({ title: "Agenda salva! ✅", description: "Seus horários foram atualizados com sucesso." });
+    } catch (err) {
+      toast({ title: "Erro ao salvar", description: err?.message || "Tente novamente.", variant: "destructive" });
+    } finally { setSaving(false); }
   };
 
   const toggleAvailableNow = async () => {
