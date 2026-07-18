@@ -90,7 +90,9 @@ export function getLanguageFlag(value) {
 }
 
 export function getCountryFlag(country) {
+  if (!country) return "🌍";
   const flags = {
+    // Country names
     "United States": "🇺🇸", "United Kingdom": "🇬🇧", "Canada": "🇨🇦", "Australia": "🇦🇺",
     "Ireland": "🇮🇪", "Spain": "🇪🇸", "Mexico": "🇲🇽", "Argentina": "🇦🇷",
     "Colombia": "🇨🇴", "Chile": "🇨🇱", "France": "🇫🇷", "Belgium": "🇧🇪",
@@ -98,6 +100,23 @@ export function getCountryFlag(country) {
     "Brazil": "🇧🇷", "Portugal": "🇵🇹", "Japan": "🇯🇵", "South Korea": "🇰🇷",
     "China": "🇨🇳", "India": "🇮🇳", "South Africa": "🇿🇦", "New Zealand": "🇳🇿",
     "Netherlands": "🇳🇱", "Sweden": "🇸🇪", "Norway": "🇳🇴", "Denmark": "🇩🇰",
+    // Nationalities (adjective form)
+    "American": "🇺🇸", "British": "🇬🇧", "Canadian": "🇨🇦", "Australian": "🇦🇺",
+    "Irish": "🇮🇪", "Spanish": "🇪🇸", "Mexican": "🇲🇽", "Argentine": "🇦🇷", "Argentinian": "🇦🇷",
+    "Colombian": "🇨🇴", "Chilean": "🇨🇱", "French": "🇫🇷", "Belgian": "🇧🇪",
+    "Swiss": "🇨🇭", "Italian": "🇮🇹", "German": "🇩🇪", "Austrian": "🇦🇹",
+    "Brazilian": "🇧🇷", "Portuguese": "🇵🇹", "Japanese": "🇯🇵", "Korean": "🇰🇷", "South Korean": "🇰🇷",
+    "Chinese": "🇨🇳", "Indian": "🇮🇳", "South African": "🇿🇦", "New Zealander": "🇳🇿",
+    "Dutch": "🇳🇱", "Swedish": "🇸🇪", "Norwegian": "🇳🇴", "Danish": "🇩🇰",
+    "Venezuelan": "🇻🇪", "Peruvian": "🇵🇪", "Ecuadorian": "🇪🇨", "Bolivian": "🇧🇴",
+    "Uruguayan": "🇺🇾", "Paraguayan": "🇵🇾", "Filipino": "🇵🇭", "Thai": "🇹🇭",
+    "Vietnamese": "🇻🇳", "Indonesian": "🇮🇩", "Malaysian": "🇲🇾", "Pakistani": "🇵🇰",
+    "Turkish": "🇹🇷", "Polish": "🇵🇱", "Romanian": "🇷🇴", "Ukrainian": "🇺🇦",
+    "Greek": "🇬🇷", "Finnish": "🇫🇮", "Czech": "🇨🇿", "Hungarian": "🇭🇺",
+    "Moroccan": "🇲🇦", "Egyptian": "🇪🇬", "Nigerian": "🇳🇬", "Kenyan": "🇰🇪",
+    "Russian": "🇷🇺", "Israeli": "🇮🇱", "Saudi": "🇸🇦", "Emirati": "🇦🇪",
   };
-  return flags[country] || "🌍";
+  // Case-insensitive lookup
+  const key = Object.keys(flags).find(k => k.toLowerCase() === country.toLowerCase());
+  return key ? flags[key] : "🌍";
 }
