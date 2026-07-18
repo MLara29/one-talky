@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Clock, DollarSign, Star, Users, AlertCircle, X, Bell, MessageSquare } from "lucide-react";
@@ -11,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 export default function TutorDashboard() {
   const { user } = useAuth();
+  const { lang } = useLang();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
@@ -124,8 +127,8 @@ export default function TutorDashboard() {
       <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-6">
         <Clock className="w-8 h-8 text-amber-500" />
       </div>
-      <h2 className="theme-heading font-display text-2xl font-bold text-white mb-3">Application under review</h2>
-      <p className="theme-subtext text-gray-500 text-sm">Your tutor profile is being reviewed by our team. We'll notify you once it's approved. This usually takes 24–48 hours.</p>
+      <h2 className="theme-heading font-display text-2xl font-bold text-white mb-3">{t(lang, "appUnderReview")}</h2>
+      <p className="theme-subtext text-gray-500 text-sm">{t(lang, "appUnderReviewDesc")}</p>
     </div>
   );
 
@@ -134,16 +137,16 @@ export default function TutorDashboard() {
       <div className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
         <AlertCircle className="w-8 h-8 text-red-500" />
       </div>
-      <h2 className="theme-heading font-display text-2xl font-bold text-white mb-3">Application not approved</h2>
-      <p className="theme-subtext text-gray-500 text-sm">Unfortunately your application was not approved at this time. Please contact support for more information.</p>
+      <h2 className="theme-heading font-display text-2xl font-bold text-white mb-3">{t(lang, "appNotApproved")}</h2>
+      <p className="theme-subtext text-gray-500 text-sm">{t(lang, "appNotApprovedDesc")}</p>
     </div>
   );
 
   const stats = [
-    { label: "Total lessons", value: profile.total_lessons || 0, icon: Users, gradient: "from-violet-500 to-indigo-500" },
-    { label: "Minutes taught", value: profile.total_minutes || 0, icon: Clock, gradient: "from-blue-500 to-cyan-500" },
-    { label: "Rating", value: profile.average_rating?.toFixed(1) || "N/A", icon: Star, gradient: "from-amber-400 to-orange-500" },
-    { label: "Earnings", value: `$${completedLessons.reduce((s, l) => s + (l.duration_minutes || 0) * (profile.price_per_minute || 0.9967), 0).toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
+    { label: t(lang, "totalLessons"), value: profile.total_lessons || 0, icon: Users, gradient: "from-violet-500 to-indigo-500" },
+    { label: t(lang, "minutesTaught"), value: profile.total_minutes || 0, icon: Clock, gradient: "from-blue-500 to-cyan-500" },
+    { label: t(lang, "rating"), value: profile.average_rating?.toFixed(1) || "N/A", icon: Star, gradient: "from-amber-400 to-orange-500" },
+    { label: t(lang, "earnings"), value: `$${completedLessons.reduce((s, l) => s + (l.duration_minutes || 0) * (profile.price_per_minute || 0.9967), 0).toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
   ];
 
   return (
@@ -155,7 +158,7 @@ export default function TutorDashboard() {
               <Bell className="w-5 h-5 text-red-500" />
             </div>
             <div>
-              <p className="theme-heading font-semibold text-white text-sm">📞 {liveAlert.student_name} is waiting for you!</p>
+              <p className="theme-heading font-semibold text-white text-sm">📞 {liveAlert.student_name}!</p>
               <p className="theme-subtext text-xs text-red-500">Live lesson now</p>
             </div>
           </div>
@@ -175,20 +178,20 @@ export default function TutorDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">
-            Welcome back, {profile.full_name?.split(" ")[0]} 👋
+            {t(lang, "welcomeBack")}, {profile.full_name?.split(" ")[0]} 👋
           </h1>
-          <p className="theme-subtext text-gray-500 text-sm mt-1">Here's your teaching overview</p>
+          <p className="theme-subtext text-gray-500 text-sm mt-1">{t(lang, "teachingOverview")}</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={() => setShowSupport(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
           >
-            <MessageSquare className="w-4 h-4" /> Falar com suporte
+            <MessageSquare className="w-4 h-4" /> {t(lang, "speakWithSupport")}
           </button>
           <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
             <div className={`w-2.5 h-2.5 rounded-full ${profile.is_available_now ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`} />
-            <Label className="theme-subtext text-sm font-medium text-gray-500">Available now</Label>
+            <Label className="theme-subtext text-sm font-medium text-gray-500">{t(lang, "availableNowToggle")}</Label>
             <Switch checked={profile.is_available_now} onCheckedChange={toggleAvailability} />
           </div>
         </div>
@@ -209,9 +212,9 @@ export default function TutorDashboard() {
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
 
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
-        <h2 className="theme-heading font-display font-bold text-white mb-5">Upcoming lessons</h2>
+        <h2 className="theme-heading font-display font-bold text-white mb-5">{t(lang, "upcomingLessons")}</h2>
         {lessons.length === 0 ? (
-          <p className="theme-subtext text-sm text-gray-500 py-6 text-center">No upcoming lessons scheduled</p>
+          <p className="theme-subtext text-sm text-gray-500 py-6 text-center">{t(lang, "noUpcomingLessons")}</p>
         ) : (
           <div className="space-y-3">
             {lessons.map(l => {
@@ -222,7 +225,7 @@ export default function TutorDashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="theme-heading font-semibold text-white">{l.student_name}</p>
                       <p className="theme-subtext text-sm text-gray-500 mt-0.5">
-                        {l.language} · {l.status === "in_progress" ? "🔴 Live now" : new Date(l.scheduled_at).toLocaleString()}
+                        {l.language} · {l.status === "in_progress" ? t(lang, "liveNow") : new Date(l.scheduled_at).toLocaleString()}
                       </p>
                       {sp && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
@@ -240,7 +243,7 @@ export default function TutorDashboard() {
                     <div className="flex items-center gap-2 shrink-0">
                       <Link to={`/classroom/${l.id}`}>
                         <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-violet-600 to-indigo-600 shadow-violet-500/20"}`}>
-                          {l.status === "in_progress" ? "Join now" : "Join"}
+                          {l.status === "in_progress" ? t(lang, "joinNow") : t(lang, "join")}
                         </Button>
                       </Link>
                       <button

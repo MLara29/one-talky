@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import { Search, X, MessageSquare, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import PlanManageModal from "@/components/student/PlanManageModal";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+  const { lang } = useLang();
   const [tutors, setTutors] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,9 +24,9 @@ export default function StudentDashboard() {
 
   useEffect(() => { loadData(); }, [user]);
 
-  // Realtime: update tutor cards when availability changes
+  // Realtime: update tutor cards when availability or rating changes
   useEffect(() => {
-    const unsubscribe = base44.entities.TutorProfile.subscribe((event) => {
+    const unsubTutor = base44.entities.TutorProfile.subscribe((event) => {
       if (event.type === 'update') {
         setTutors(prev => prev.map(t => t.id === event.data.id ? { ...t, ...event.data } : t));
       } else if (event.type === 'create') {
@@ -32,7 +35,13 @@ export default function StudentDashboard() {
         setTutors(prev => prev.filter(t => t.id !== event.data.id));
       }
     });
-    return unsubscribe;
+    // When a new review is created, reload tutor list so ratings refresh
+    const unsubReview = base44.entities.Review.subscribe((event) => {
+      if (event.type === 'create' || event.type === 'update') {
+        base44.entities.TutorProfile.filter({ status: "approved" }).then(data => setTutors(data)).catch(() => {});
+      }
+    });
+    return () => { unsubTutor(); unsubReview(); };
   }, []);
 
   const loadData = async () => {
@@ -80,8 +89,8 @@ export default function StudentDashboard() {
       {profile && <CreditsBanner profile={profile} onUpdate={setProfile} />}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Find your tutor</h1>
-          <p className="theme-subtext text-gray-500 text-sm mt-1">Browse native speakers ready to help you practice</p>
+          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">{t(lang, "findTutor")}</h1>
+          <p className="theme-subtext text-gray-500 text-sm mt-1">{t(lang, "findTutorSub")}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {profile && (
@@ -97,7 +106,7 @@ export default function StudentDashboard() {
             onClick={() => setShowSupport(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
           >
-            <MessageSquare className="w-4 h-4" /> Suporte
+            <MessageSquare className="w-4 h-4" /> {t(lang, "support")}
           </button>
         </div>
       </div>
@@ -108,7 +117,7 @@ export default function StudentDashboard() {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name..."
+            placeholder={t(lang, "searchByName")}
             className="theme-input pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
           />
         </div>
@@ -123,7 +132,7 @@ export default function StudentDashboard() {
         >
           {availableNow && <X className="w-3 h-3 mr-1" />}
           <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${availableNow ? "bg-emerald-400" : "bg-gray-600"}`} />
-          Available now
+          {t(lang, "availableNow")}
         </Button>
       </div>
 
@@ -134,8 +143,8 @@ export default function StudentDashboard() {
       ) : filtered.length === 0 ? (
         <div className="theme-empty text-center py-24 rounded-3xl border border-white/5">
           <Search className="theme-muted-icon w-12 h-12 text-gray-700 mx-auto mb-4" />
-          <h3 className="theme-heading font-display font-bold text-white mb-1">No tutors found</h3>
-          <p className="theme-subtext text-sm text-gray-600">Try adjusting your filters or check back later</p>
+          <h3 className="theme-heading font-display font-bold text-white mb-1">{t(lang, "noTutorsFound")}</h3>
+          <p className="theme-subtext text-sm text-gray-600">{t(lang, "noTutorsSub")}</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
