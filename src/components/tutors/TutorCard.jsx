@@ -45,7 +45,7 @@ export default function TutorCard({ tutor }) {
           </div>
           <div className="text-right shrink-0">
             <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${live ? "bg-emerald-500/15 border border-emerald-500/20 text-emerald-400" : "bg-white/5 border border-white/10 text-gray-500"}`}>
-              {live ? "● Online" : "Agendável"}
+              {live ? "● Online" : "Offline"}
             </span>
           </div>
         </div>
