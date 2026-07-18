@@ -38,7 +38,7 @@ export default function TutorCard({ tutor }) {
             <div className="flex items-center gap-3 mt-1.5">
               <span className="flex items-center gap-1 text-sm text-amber-500 font-semibold">
                 <Star className="w-3.5 h-3.5 fill-amber-400" />
-                {tutor.average_rating?.toFixed(1) || "New"}
+                {tutor.total_reviews > 0 ? (tutor.average_rating || 0).toFixed(1) : "New"}
               </span>
               <span className="theme-subtext text-xs text-gray-600">{tutor.total_lessons || 0} lessons</span>
             </div>

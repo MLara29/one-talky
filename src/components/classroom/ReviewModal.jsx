@@ -22,6 +22,19 @@ export default function ReviewModal({ lesson, userRole, onClose }) {
         lesson_id: lesson.id, tutor_id: lesson.tutor_id, student_id: lesson.student_id,
         student_name: lesson.student_name || user?.full_name, rating, comment, language: lesson.language,
       });
+
+      // Recalculate tutor's average_rating and total_reviews
+      const allReviews = await base44.entities.Review.filter({ tutor_id: lesson.tutor_id });
+      const total = allReviews.length;
+      const avg = total > 0 ? allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / total : 0;
+      const tutorProfiles = await base44.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
+      if (tutorProfiles.length > 0) {
+        await base44.entities.TutorProfile.update(tutorProfiles[0].id, {
+          average_rating: Math.round(avg * 10) / 10,
+          total_reviews: total,
+        });
+      }
+
       toast({ title: "Review submitted! ⭐" });
       onClose();
     } catch { toast({ title: "Error", variant: "destructive" }); } finally { setSubmitting(false); }
