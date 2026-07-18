@@ -54,7 +54,9 @@ Deno.serve(async (req) => {
     const payment = await res.json();
 
     if (!res.ok) {
-      return Response.json({ error: payment.message || "Erro ao gerar Pix", detail: payment }, { status: 400 });
+      const causes = payment.cause?.map((c) => c.description).join(", ") || "";
+      const msg = causes || payment.message || "Erro ao gerar Pix";
+      return Response.json({ error: msg, detail: payment }, { status: 400 });
     }
 
     const qr = payment.point_of_interaction?.transaction_data;
