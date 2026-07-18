@@ -215,6 +215,18 @@ export default function Profile() {
               <p className="text-sm font-semibold text-violet-400">Esta informação é visível para os alunos na plataforma</p>
             </div>
 
+            {/* Nome público */}
+            <div className="mb-5">
+              <Label className="theme-subtext text-gray-500 text-sm block mb-1">Nome público</Label>
+              <p className="text-xs text-violet-400 mb-2">👤 Este é o nome que os alunos verão no seu card e perfil. Pode ser seu primeiro nome, apelido ou como preferir ser chamado.</p>
+              <Input
+                value={profile?.full_name || ""}
+                onChange={e => setProfile({ ...profile, full_name: e.target.value })}
+                placeholder="Ex: Helena, Prof. Carlos, Teacher Ana..."
+                className="theme-input bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
+              />
+            </div>
+
             <Label className="theme-subtext text-gray-500 text-sm block mb-3">Foto de perfil</Label>
             <div className="flex items-center gap-5">
               <div className="relative shrink-0">
@@ -230,25 +242,27 @@ export default function Profile() {
                 )}
               </div>
               <div className="flex flex-col gap-2 flex-1">
+                {/* Galeria */}
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={e => e.target.files[0] && handlePhotoUpload(e.target.files[0])}
+                  onChange={e => { if (e.target.files[0]) handlePhotoUpload(e.target.files[0]); e.target.value = ""; }}
                 />
+                {/* Câmera — capture="user" abre câmera frontal no mobile */}
                 <input
                   ref={cameraInputRef}
                   type="file"
                   accept="image/*"
                   capture="user"
                   className="hidden"
-                  onChange={e => e.target.files[0] && handlePhotoUpload(e.target.files[0])}
+                  onChange={e => { if (e.target.files[0]) handlePhotoUpload(e.target.files[0]); e.target.value = ""; }}
                 />
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => { fileInputRef.current.value = ""; fileInputRef.current.click(); }}
                   disabled={uploadingPhoto}
                   className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start"
                 >
@@ -257,7 +271,7 @@ export default function Profile() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => cameraInputRef.current?.click()}
+                  onClick={() => { cameraInputRef.current.value = ""; cameraInputRef.current.click(); }}
                   disabled={uploadingPhoto}
                   className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start"
                 >
