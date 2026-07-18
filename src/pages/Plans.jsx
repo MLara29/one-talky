@@ -48,10 +48,11 @@ export default function Plans() {
     if (!profile || (overrides.price_monthly ?? plan.price_monthly) === 0) return;
     const price = overrides.price_monthly ?? plan.price_monthly;
     const minutes = overrides.minutes ?? plan.minutes;
+    const ref = plan.id === "basic" ? `plan:basic:${basicSessions}` : `plan:${plan.id}`;
     setCheckoutItem({
       title: `One Talky — Plano ${plan.name} (${minutes} min/mês)`,
       price,
-      external_reference: `plan:${plan.id}`,
+      external_reference: ref,
     });
   };
 

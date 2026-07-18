@@ -1,6 +1,8 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 
 const CATALOG = {
+  "plan:basic:2":  { price: 59.80,  title: "Plano Básico (2 aulas)",  minutes: 60,  plan: "basic" },
+  "plan:basic:4":  { price: 119.60, title: "Plano Básico (4 aulas)",  minutes: 120, plan: "basic" },
   "plan:basic":    { price: 119.60, title: "Plano Básico",   minutes: 120, plan: "basic" },
   "plan:standard": { price: 227.24, title: "Plano Standard", minutes: 240, plan: "standard" },
   "plan:premium":  { price: 430.56, title: "Plano Premium",  minutes: 480, plan: "premium" },

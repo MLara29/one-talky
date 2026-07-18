@@ -2,6 +2,8 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 
 // Server-side catalog — prices and minutes are NEVER trusted from the client
 const CATALOG = {
+  "plan:basic:2":  { minutes: 60,  price: 59.80,  plan: "basic" },
+  "plan:basic:4":  { minutes: 120, price: 119.60, plan: "basic" },
   "plan:basic":    { minutes: 120, price: 119.60, plan: "basic" },
   "plan:standard": { minutes: 240, price: 227.24, plan: "standard" },
   "plan:premium":  { minutes: 480, price: 430.56, plan: "premium" },
