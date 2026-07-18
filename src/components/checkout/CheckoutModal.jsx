@@ -122,8 +122,13 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
   // Pix submit
   const handlePixSubmit = async (e) => {
     e.preventDefault();
-    setStep("processing");
+    const rawCpf = pixCpf.replace(/\D/g, "");
+    if (rawCpf.length !== 11) {
+      setErrorMsg("CPF inválido. Digite os 11 dígitos.");
+      return;
+    }
     setErrorMsg("");
+    setStep("processing");
     try {
       const nameParts = (userEmail || "Usuario Linguify").split("@")[0].split(".");
       const res = await base44.functions.invoke("mpCreatePixPayment", {
@@ -367,7 +372,8 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
                 <div>
                   <Label className="theme-subtext text-xs mb-1 block">CPF do pagador</Label>
                   <input type="text" inputMode="numeric" placeholder="000.000.000-00" required maxLength={14}
-                    value={pixCpf} onChange={setField("pixCpf")} className={inputCls} />
+                    value={pixCpf} onChange={e => { setErrorMsg(""); setField("pixCpf")(e); }} className={inputCls} />
+                  {errorMsg && <p className="text-red-400 text-xs mt-1">{errorMsg}</p>}
                 </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0 h-11 text-base font-semibold shadow-lg hover:scale-[1.02] transition-all">
                   Gerar QR Code · {fmtBRL(item.price)}
