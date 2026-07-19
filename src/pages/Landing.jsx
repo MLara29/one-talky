@@ -299,7 +299,23 @@ export default function Landing() {
         <div className="ot-hero-visual" style={{ position: "relative", minHeight: 480, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", inset: -10, background: "radial-gradient(120% 90% at 65% 25%,#FDEBDD 0%,rgba(253,235,221,0) 62%)" }} />
           <div style={{ position: "relative", width: 300, borderRadius: 26, overflow: "hidden", boxShadow: "0 34px 64px -24px rgba(23,24,28,.34)", border: "5px solid #fff", background: "#fff", zIndex: 2 }}>
-            <div style={{ aspectRatio: "1/1", background: "linear-gradient(135deg,#FDECE0,#F7E8D8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 80 }}>🎤</div>
+            {/* Photo */}
+            <div style={{ position: "relative", aspectRatio: "1/1", overflow: "hidden" }}>
+              <img
+                src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/7144b090a_lucid-origin_cira_a_fot_de_uma_pessoa_em_uma_video_chamada_um_tutor_que_ensina_ingles_uma_mul-0.jpg"
+                alt="English tutor"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+              {/* EN badge top-left */}
+              <div style={{ position: "absolute", top: 12, left: 12, display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", borderRadius: 999, padding: "5px 10px", fontSize: 12, fontWeight: 700, color: "#17181C" }}>
+                🇬🇧 EN
+              </div>
+              {/* Play button top-right */}
+              <div style={{ position: "absolute", top: 12, right: 12, width: 34, height: 34, borderRadius: "50%", background: "rgba(23,24,28,0.75)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <span style={{ color: "#fff", fontSize: 13, marginLeft: 2 }}>▶</span>
+              </div>
+            </div>
+            {/* Caption */}
             <div style={{ padding: "13px 15px", background: "#17181C", color: "#fff" }}>
               <div style={{ fontSize: 14, fontWeight: 600 }}>{c.capMain}</div>
               <div style={{ fontSize: 12, color: "#F7A76A", marginTop: 2 }}>{c.capSub}</div>
