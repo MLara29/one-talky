@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 export default function TutorDashboard() {
   const { user } = useAuth();
-  const { lang } = useLang();
+  const lang = "en"; // Tutors always see the interface in English
   const navigate = useNavigate();
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
