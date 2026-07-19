@@ -67,7 +67,8 @@ export default function OnboardingTutor() {
       if (form.intro_video_url) profileData.intro_video_url = form.intro_video_url;
 
       await base44.entities.TutorProfile.create(profileData);
-      await base44.auth.updateMe({ profile_completed: true, role: "tutor" });
+      await base44.auth.updateMe({ profile_completed: true });
+      await base44.functions.invoke('setUserRole', { role: 'tutor' });
 
       // Send admin signup notification if configured
       const settings = await base44.entities.AdminSettings.filter({ key: "signup_notification" }).catch(() => []);
