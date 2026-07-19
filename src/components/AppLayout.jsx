@@ -6,8 +6,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import {
-  MessageCircle, Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail
+  Search, Calendar, BarChart3, BookOpen, User, LogOut,
+  GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle
 } from "lucide-react";
 
 const STUDENT_NAV = [
@@ -89,8 +89,8 @@ export default function AppLayout() {
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <Link to="/dashboard" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-                <MessageCircle className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-lg font-black text-white text-lg" style={{ background: "#F26A1B", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", boxShadow: "0 4px 12px rgba(242,106,27,0.4)" }}>
+                O
               </div>
               <span className="font-display text-lg font-bold hidden sm:block" style={{ color: "var(--app-text-primary)" }}>
                 One Talky
@@ -99,9 +99,9 @@ export default function AppLayout() {
             <span
               className="text-xs font-medium px-2.5 py-1 rounded-full capitalize hidden sm:block"
               style={{
-                background: "rgba(124,58,237,0.1)",
-                border: "1px solid rgba(124,58,237,0.25)",
-                color: "#7c3aed"
+                background: "rgba(242,106,27,0.1)",
+                border: "1px solid rgba(242,106,27,0.25)",
+                color: "#F26A1B"
               }}
             >
               {role}
@@ -140,14 +140,14 @@ export default function AppLayout() {
                   to={item.path}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                   style={{
-                    background: active ? "var(--app-nav-active-bg)" : "transparent",
-                    color: active ? "#7c3aed" : "var(--app-text-secondary)",
-                    border: active ? "1px solid rgba(124,58,237,0.25)" : "1px solid transparent"
+                    background: active ? "rgba(242,106,27,0.10)" : "transparent",
+                    color: active ? "#F26A1B" : "var(--app-text-secondary)",
+                    border: active ? "1px solid rgba(242,106,27,0.25)" : "1px solid transparent"
                   }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.background = "var(--app-nav-hover-bg)"; }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
                 >
-                  <item.icon className="w-4 h-4" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)" }} />
+                  <item.icon className="w-4 h-4" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)" }} />
                   {item.label}
                 </Link>
               );
@@ -177,12 +177,12 @@ export default function AppLayout() {
                       onClick={() => setMobileOpen(false)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                       style={{
-                        background: active ? "var(--app-nav-active-bg)" : "transparent",
-                        color: active ? "#7c3aed" : "var(--app-text-secondary)",
-                        border: active ? "1px solid rgba(124,58,237,0.25)" : "1px solid transparent"
+                        background: active ? "rgba(242,106,27,0.10)" : "transparent",
+                        color: active ? "#F26A1B" : "var(--app-text-secondary)",
+                        border: active ? "1px solid rgba(242,106,27,0.25)" : "1px solid transparent"
                       }}
                     >
-                      <item.icon className="w-4 h-4" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)" }} />
+                      <item.icon className="w-4 h-4" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)" }} />
                       {item.label}
                     </Link>
                   );
@@ -212,8 +212,8 @@ export default function AppLayout() {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path} className="flex flex-col items-center gap-0.5 p-2">
-                <item.icon className="w-5 h-5" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)" }} />
-                <span className="text-[10px]" style={{ color: active ? "#7c3aed" : "var(--app-text-muted)", fontWeight: active ? 600 : 400 }}>
+                <item.icon className="w-5 h-5" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)" }} />
+                <span className="text-[10px]" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)", fontWeight: active ? 600 : 400 }}>
                   {item.label}
                 </span>
               </Link>
