@@ -68,6 +68,22 @@ export default function OnboardingTutor() {
 
       await base44.entities.TutorProfile.create(profileData);
       await base44.auth.updateMe({ profile_completed: true, role: "tutor" });
+
+      // Send admin signup notification if configured
+      const settings = await base44.entities.AdminSettings.filter({ key: "signup_notification" }).catch(() => []);
+      if (settings.length > 0) {
+        try {
+          const cfg = JSON.parse(settings[0].value || "{}");
+          if (cfg.enabled !== false && cfg.email) {
+            await base44.functions.invoke("sendEmail", {
+              to: cfg.email,
+              subject: "Novo tutor cadastrado — One Talky",
+              text: `Um novo tutor se cadastrou na plataforma.\n\nNome: ${form.full_name}\nPaís: ${form.country}\nIdiomas: ${form.native_languages.join(", ")}\n\nAcesse o painel para revisar a candidatura.`,
+              html: `<div style="font-family:sans-serif;padding:20px;"><h2>Novo tutor cadastrado 🎙️</h2><p><b>Nome:</b> ${form.full_name}</p><p><b>País:</b> ${form.country}</p><p><b>Idiomas:</b> ${form.native_languages.join(", ")}</p><p>Acesse o painel de administração para revisar e aprovar a candidatura.</p></div>`,
+            });
+          }
+        } catch {}
+      }
       toast({ title: "Candidatura enviada! 🎉", description: "Vamos revisar o seu perfil e entraremos em contato em breve." });
       window.location.href = "/";
     } catch (e) {

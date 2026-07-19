@@ -100,6 +100,22 @@ export default function OnboardingStudent() {
       }
       await base44.auth.updateMe({ profile_completed: true });
       await base44.functions.invoke('setUserRole', { role: 'student' });
+
+      // Send admin signup notification if configured
+      const settings = await base44.entities.AdminSettings.filter({ key: "signup_notification" }).catch(() => []);
+      if (settings.length > 0) {
+        try {
+          const cfg = JSON.parse(settings[0].value || "{}");
+          if (cfg.enabled !== false && cfg.email) {
+            await base44.functions.invoke("sendEmail", {
+              to: cfg.email,
+              subject: "Novo aluno cadastrado — One Talky",
+              text: `Um novo aluno se cadastrou na plataforma.\n\nNome: ${form.full_name}\nNacionalidade: ${form.nationality}\nIdioma alvo: ${form.target_language}\nNível: ${form.level}`,
+              html: `<div style="font-family:sans-serif;padding:20px;"><h2>Novo aluno cadastrado 💬</h2><p><b>Nome:</b> ${form.full_name}</p><p><b>Nacionalidade:</b> ${form.nationality}</p><p><b>Idioma que quer aprender:</b> ${form.target_language}</p><p><b>Nível:</b> ${form.level}</p></div>`,
+            });
+          }
+        } catch {}
+      }
       toast({ title: t(uiLang, "welcomeTitle"), description: t(uiLang, "welcomeDesc") });
       window.location.href = "/";
     } catch (e) {
