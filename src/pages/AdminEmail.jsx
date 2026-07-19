@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Bell, CheckCircle, AlertCircle, Clock, Eye, UserPlus, Save } from "lucide-react";
+import { Mail, Send, Bell, CheckCircle, AlertCircle, Clock, Eye } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 const TIME_OPTIONS = [
@@ -18,42 +18,6 @@ const TIME_OPTIONS = [
 ];
 
 export default function AdminEmail() {
-  const [signupNotifEmail, setSignupNotifEmail] = useState("");
-  const [signupNotifEnabled, setSignupNotifEnabled] = useState(false);
-  const [signupSettingId, setSignupSettingId] = useState(null);
-  const [savingSignup, setSavingSignup] = useState(false);
-
-  useEffect(() => {
-    base44.entities.AdminSettings.filter({ key: "signup_notification" }).then(results => {
-      if (results.length > 0) {
-        const s = results[0];
-        setSignupSettingId(s.id);
-        try {
-          const parsed = JSON.parse(s.value || "{}");
-          setSignupNotifEmail(parsed.email || "");
-          setSignupNotifEnabled(parsed.enabled !== false);
-        } catch {}
-      }
-    }).catch(() => {});
-  }, []);
-
-  const saveSignupNotif = async () => {
-    setSavingSignup(true);
-    const value = JSON.stringify({ email: signupNotifEmail, enabled: signupNotifEnabled });
-    try {
-      if (signupSettingId) {
-        await base44.entities.AdminSettings.update(signupSettingId, { value });
-      } else {
-        const created = await base44.entities.AdminSettings.create({ key: "signup_notification", value });
-        setSignupSettingId(created.id);
-      }
-      toast({ title: "Configuração salva!" });
-    } catch (e) {
-      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
-    }
-    setSavingSignup(false);
-  };
-
   const [testTo, setTestTo] = useState("");
   const [testSubject, setTestSubject] = useState("Teste de e-mail — OneTalky");
   const [testBody, setTestBody] = useState("Olá! Este é um e-mail de teste da plataforma OneTalky. 🎉");
@@ -220,52 +184,6 @@ export default function AdminEmail() {
             />
           </div>
         )}
-      </div>
-
-      {/* Signup Notifications */}
-      <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
-        <h2 className="font-semibold theme-heading text-white text-sm mb-1 flex items-center gap-2">
-          <UserPlus className="w-4 h-4 text-emerald-400" /> Notificações de Novo Cadastro
-        </h2>
-        <p className="text-xs text-gray-500 mb-4">Receba um e-mail sempre que um novo tutor ou aluno se cadastrar na plataforma.</p>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-            <div>
-              <p className="text-sm font-medium text-white">Ativar notificações de cadastro</p>
-              <p className="text-xs text-gray-500 mt-0.5">{signupNotifEnabled ? "Notificações ativas" : "Notificações desativadas"}</p>
-            </div>
-            <button
-              onClick={() => setSignupNotifEnabled(v => !v)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${signupNotifEnabled ? "bg-emerald-600" : "bg-white/20"}`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${signupNotifEnabled ? "translate-x-6" : "translate-x-1"}`} />
-            </button>
-          </div>
-
-          <div>
-            <label className="text-xs text-gray-500 mb-1.5 block">E-mail para receber as notificações</label>
-            <Input
-              value={signupNotifEmail}
-              onChange={e => setSignupNotifEmail(e.target.value)}
-              placeholder="admin@seudominio.com"
-              type="email"
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-600"
-            />
-          </div>
-
-          <Button onClick={saveSignupNotif} disabled={savingSignup || !signupNotifEmail} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border-0">
-            <Save className="w-4 h-4 mr-2" />
-            {savingSignup ? "Salvando..." : "Salvar configuração"}
-          </Button>
-
-          {signupNotifEnabled && signupNotifEmail && (
-            <div className="text-xs p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-2">
-              <CheckCircle className="w-3.5 h-3.5 shrink-0" />
-              Notificações ativas — e-mails serão enviados para <strong className="ml-1">{signupNotifEmail}</strong>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* SMTP Status */}

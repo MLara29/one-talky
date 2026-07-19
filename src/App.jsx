@@ -39,7 +39,6 @@ import Notifications from '@/pages/Notifications';
 import MyMessages from '@/pages/MyMessages';
 import Profile from '@/pages/Profile';
 import AppLayout from '@/components/AppLayout';
-import TutorPresentation from '@/pages/TutorPresentation';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -74,7 +73,6 @@ const AuthenticatedApp = () => {
         <Route path="/onboarding/student" element={<OnboardingStudent />} />
         <Route path="/onboarding/tutor" element={<OnboardingTutor />} />
         <Route path="/classroom/:id" element={<Classroom />} />
-        <Route path="/tutor-guide" element={<TutorPresentation />} />
 
         <Route element={<AppLayout />}>
           <Route path="/" element={<Home />} />

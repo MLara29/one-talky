@@ -1,176 +1,260 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 270 6% 10%;
-  --card: 0 0% 100%;
-  --card-foreground: 270 6% 10%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 270 6% 10%;
-  --primary: 262 83% 58%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 270 20% 96%;
-  --secondary-foreground: 270 6% 10%;
-  --muted: 270 20% 96%;
-  --muted-foreground: 270 5% 45%;
-  --accent: 270 20% 94%;
-  --accent-foreground: 262 83% 58%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 270 15% 91%;
-  --input: 270 15% 91%;
-  --ring: 262 83% 58%;
-  --chart-1: 262 83% 58%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 200 70% 50%;
-  --chart-5: 340 75% 55%;
-  --sidebar: 270 25% 98%;
-  --sidebar-foreground: 270 6% 10%;
-  --sidebar-primary: 262 83% 58%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 270 20% 94%;
-  --sidebar-accent-foreground: 262 83% 58%;
-  --sidebar-border: 270 15% 91%;
-  --sidebar-ring: 262 83% 58%;
-  --font-sans: 'Inter', sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --font-heading: 'Poppins', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-display: 'Poppins', sans-serif;
-  --radius: 0.75rem;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 252 85% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 252 30% 96%;
+    --secondary-foreground: 252 85% 40%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 168 76% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 252 85% 60%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
 
-  /* App-specific aliases */
-  --app-bg: #f5f3ff;
-  --app-sidebar-bg: #ffffff;
-  --app-header-bg: #ffffff;
-  --app-border: #ede9fe;
-  --app-card-bg: #ffffff;
-  --app-text-primary: #1e1b2e;
-  --app-text-secondary: #5b5676;
-  --app-text-muted: #9ca3af;
-  --app-nav-active-bg: #ede9fe;
-  --app-nav-hover-bg: #f5f3ff;
-  --app-primary: #7c3aed;
-  --app-primary-light: #ede9fe;
-  --app-yellow: #f59e0b;
-  --app-yellow-light: rgba(245,158,11,0.12);
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
 }
 
-.dark {
-  --background: 270 20% 7%;
-  --foreground: 270 10% 95%;
-  --card: 270 20% 10%;
-  --card-foreground: 270 10% 95%;
-  --popover: 270 20% 7%;
-  --popover-foreground: 270 10% 95%;
-  --primary: 262 83% 65%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 270 15% 18%;
-  --secondary-foreground: 270 10% 95%;
-  --muted: 270 15% 18%;
-  --muted-foreground: 270 5% 55%;
-  --accent: 270 15% 18%;
-  --accent-foreground: 270 10% 95%;
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 270 15% 20%;
-  --input: 270 15% 20%;
-  --ring: 262 83% 65%;
-  --chart-1: 262 83% 65%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 200 70% 50%;
-  --chart-5: 340 75% 55%;
-  --sidebar: 270 20% 10%;
-  --sidebar-foreground: 270 10% 95%;
-  --sidebar-primary: 262 83% 65%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 270 15% 18%;
-  --sidebar-accent-foreground: 262 83% 65%;
-  --sidebar-border: 270 15% 20%;
-  --sidebar-ring: 262 83% 65%;
 
-  /* App-specific aliases — dark */
-  --app-bg: #13111a;
-  --app-sidebar-bg: #1a1726;
-  --app-header-bg: #1a1726;
-  --app-border: #2d2a3e;
-  --app-card-bg: #1a1726;
-  --app-text-primary: #f0eeff;
-  --app-text-secondary: #a89ec0;
-  --app-text-muted: #6b6585;
-  --app-nav-active-bg: #2d2a4a;
-  --app-nav-hover-bg: #231f35;
-  --app-primary: #9f7aea;
-  --app-primary-light: #2d2a4a;
-  --app-yellow: #f59e0b;
-  --app-yellow-light: rgba(245,158,11,0.12);
-}
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-sans);
+    @apply bg-background text-foreground font-body;
   }
+}
+
+/* ── Light theme overrides ─────────────────────────────── */
+.light-theme {
+  --app-bg: #f1f3f8;
+  --app-sidebar-bg: rgba(255,255,255,0.98);
+  --app-header-bg: rgba(255,255,255,0.97);
+  --app-border: rgba(0,0,0,0.10);
+  --app-card-bg: #ffffff;
+  --app-text-primary: #0f172a;
+  --app-text-secondary: #475569;
+  --app-text-muted: #94a3b8;
+  --app-nav-active-bg: rgba(109,40,217,0.10);
+  --app-nav-hover-bg: rgba(109,40,217,0.05);
+
+  /* Force readable text on all "text-white" elements inside light theme */
+  color-scheme: light;
+}
+
+/* ── Dark theme (default) ──────────────────────────────── */
+.dark-theme, :root:not(.light-theme) {
+  --app-bg: #030309;
+  --app-sidebar-bg: rgba(2,2,15,0.6);
+  --app-header-bg: rgba(2,2,15,0.8);
+  --app-border: rgba(255,255,255,0.05);
+  --app-card-bg: rgba(255,255,255,0.05);
+  --app-text-primary: #ffffff;
+  --app-text-secondary: #6b7280;
+  --app-text-muted: #374151;
+  --app-nav-active-bg: rgba(139,92,246,0.15);
+  --app-nav-hover-bg: rgba(255,255,255,0.05);
 }
 
 /* ── Theme-aware utility classes ───────────────────────── */
-.theme-card {
-  background: var(--app-card-bg);
-  border: 1px solid var(--app-border);
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.05);
-  border-radius: var(--radius);
+.light-theme .theme-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.07), 0 1px 2px -1px rgba(0,0,0,0.07);
 }
-.theme-card:hover {
-  box-shadow: 0 4px 20px 0 rgba(124,58,237,0.08);
+.light-theme .theme-card:hover {
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10);
 }
-.theme-heading {
-  color: var(--app-text-primary);
+.light-theme .theme-heading {
+  color: #0f172a !important;
 }
-.theme-subtext {
-  color: var(--app-text-secondary);
+.light-theme .theme-subtext {
+  color: #64748b !important;
 }
-.theme-input {
-  background: var(--app-card-bg);
-  border: 1px solid var(--app-border);
-  color: var(--app-text-primary);
+.light-theme .theme-input {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
-.theme-input::placeholder {
-  color: var(--app-text-muted);
+.light-theme .theme-input::placeholder {
+  color: #94a3b8 !important;
 }
-.theme-muted-icon {
-  color: var(--app-text-muted);
+.light-theme .theme-muted-icon {
+  color: #94a3b8 !important;
 }
-.theme-empty {
-  background: var(--app-bg);
-  border: 1px solid var(--app-border);
+.light-theme .theme-empty {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
 }
-.theme-badge-primary {
-  background: var(--app-primary-light);
-  border: 1px solid rgba(124,58,237,0.2);
-  color: var(--app-primary);
+.light-theme .theme-badge-violet {
+  background: rgba(109,40,217,0.10) !important;
+  border-color: rgba(109,40,217,0.20) !important;
+  color: #6d28d9 !important;
 }
-.theme-badge-violet {
-  background: #f5f3ff;
-  border: 1px solid rgba(124,58,237,0.2);
-  color: #7c3aed;
+.light-theme .theme-btn-ghost {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
 }
-.theme-btn-ghost {
-  background: var(--app-bg);
-  border: 1px solid var(--app-border);
-  color: var(--app-text-secondary);
-}
-.theme-btn-ghost:hover {
-  background: var(--app-border);
+.light-theme .theme-btn-ghost:hover {
+  background: #e2e8f0 !important;
 }
 
-.light-theme { color-scheme: light; }
+/* ── Dark-theme nested inside light-theme: restore original dark colors ── */
+.light-theme .dark-theme * {
+  --tw-text-opacity: 1;
+}
+.light-theme .dark-theme .text-white { color: #ffffff !important; }
+.light-theme .dark-theme .text-gray-300 { color: #d1d5db !important; }
+.light-theme .dark-theme .text-gray-400 { color: #9ca3af !important; }
+.light-theme .dark-theme .text-gray-500 { color: #6b7280 !important; }
+.light-theme .dark-theme .text-gray-600 { color: #4b5563 !important; }
+.light-theme .dark-theme .text-gray-700 { color: #374151 !important; }
+.light-theme .dark-theme .bg-white\/5  { background-color: rgba(255,255,255,0.05) !important; }
+.light-theme .dark-theme .bg-white\/3  { background-color: rgba(255,255,255,0.03) !important; }
+.light-theme .dark-theme .bg-white\/8  { background-color: rgba(255,255,255,0.08) !important; }
+.light-theme .dark-theme .bg-white\/10 { background-color: rgba(255,255,255,0.10) !important; }
+.light-theme .dark-theme .border-white\/5  { border-color: rgba(255,255,255,0.05) !important; }
+.light-theme .dark-theme .border-white\/10 { border-color: rgba(255,255,255,0.10) !important; }
+.light-theme .dark-theme .border-white\/15 { border-color: rgba(255,255,255,0.15) !important; }
+.light-theme .dark-theme .border-white\/20 { border-color: rgba(255,255,255,0.20) !important; }
+.light-theme .dark-theme label,
+.light-theme .dark-theme .text-gray-400.text-sm { color: #9ca3af !important; }
+
+/* ── Light theme global text overrides ─────────────────── */
+/* Any element using text-white inside light-theme gets dark text */
+.light-theme .text-white {
+  color: #0f172a !important;
+}
+.light-theme .text-gray-300,
+.light-theme .text-gray-400 {
+  color: #475569 !important;
+}
+.light-theme .text-gray-500 {
+  color: #64748b !important;
+}
+.light-theme .text-gray-600 {
+  color: #94a3b8 !important;
+}
+.light-theme .text-gray-700 {
+  color: #94a3b8 !important;
+}
+
+/* Semi-transparent backgrounds become solid in light mode */
+.light-theme .bg-white\/5,
+.light-theme .bg-white\/3 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+.light-theme .bg-white\/10 {
+  background-color: #f1f5f9 !important;
+}
+.light-theme .bg-white\/8 {
+  background-color: #f8fafc !important;
+}
+
+/* Borders */
+.light-theme .border-white\/5,
+.light-theme .border-white\/10,
+.light-theme .border-white\/15 {
+  border-color: #e2e8f0 !important;
+}
+.light-theme .divide-white\/5 > * + * {
+  border-color: #e2e8f0 !important;
+}
+
+/* Tabs */
+.light-theme [data-state=active].data-\[state\=active\]\:text-violet-300 {
+  color: #6d28d9 !important;
+}
+.light-theme .text-violet-300 {
+  color: #6d28d9 !important;
+}
+.light-theme .text-violet-400 {
+  color: #7c3aed !important;
+}
+
+/* Buttons with transparent bg that would be invisible */
+.light-theme .bg-white\/10.text-white,
+.light-theme .hover\:bg-white\/15 {
+  color: #0f172a !important;
+}
+
+/* Schedule/calendar slot buttons */
+.light-theme .bg-white\/3 {
+  background-color: #f8fafc !important;
+}
+
+/* Label elements */
+.light-theme label,
+.light-theme .text-gray-400.text-sm {
+  color: #475569 !important;
+}

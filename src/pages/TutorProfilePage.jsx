@@ -25,8 +25,7 @@ export default function TutorProfilePage() {
     try {
       const t = await base44.entities.TutorProfile.get(id);
       setTutor(t);
-      // Reviews are stored with tutor's user_id, not profile id
-      const r = await base44.entities.Review.filter({ tutor_id: t.user_id, is_visible: true });
+      const r = await base44.entities.Review.filter({ tutor_id: id, is_visible: true });
       setReviews(r);
     } catch {} finally { setLoading(false); }
   };
