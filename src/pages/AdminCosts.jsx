@@ -48,7 +48,7 @@ function MetricCard({ label, value, sub, color = "violet", icon: IconComp, trend
       {trend !== undefined && (
         <div className={`flex items-center gap-1 text-xs font-medium ${trend >= 0 ? "text-emerald-500" : "text-red-400"}`}>
           {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-          Margem: {fmtPct(trend)}
+          Margin: {fmtPct(trend)}
         </div>
       )}
     </div>
@@ -138,9 +138,9 @@ export default function AdminCosts() {
           return base44.entities.TutorProfile.update(t.id, { price_per_minute: perHour / 60 });
         })
       );
-      toast({ title: "Taxas salvas com sucesso!" });
+      toast({ title: "Rates saved successfully!" });
     } catch {
-      toast({ title: "Erro ao salvar taxas", variant: "destructive" });
+      toast({ title: "Error saving rates", variant: "destructive" });
     } finally {
       setSavingRates(false);
     }
@@ -150,40 +150,28 @@ export default function AdminCosts() {
   const planResults = useMemo(() => {
     const defaultRatePerMin = globals.default_tutor_rate_hour / 60;
     return PLANS.filter(p => p.price_monthly > 0).map(plan => {
-      const receita = plan.price_monthly;
+      const revenue = plan.price_monthly;
       const minutes = plan.minutes * 4;
       const tutor_cost = defaultRatePerMin * minutes;
-      // Taxa cartão = % sobre receita + fixo
-      const card_fee = (receita * txCosts.card_pct / 100) + txCosts.card_fixed;
-      // Taxa gateway = % sobre receita
-      const gateway_fee = receita * txCosts.gateway_pct / 100;
-      // Outras taxas
-      const other_fee = receita * txCosts.other_pct / 100;
-      // Impostos
-      const tax_fee = receita * globals.tax_pct / 100;
-      // Comissão extra
-      const commission_fee = receita * globals.platform_commission / 100;
-      // Total custos
+      const card_fee = (revenue * txCosts.card_pct / 100) + txCosts.card_fixed;
+      const gateway_fee = revenue * txCosts.gateway_pct / 100;
+      const other_fee = revenue * txCosts.other_pct / 100;
+      const tax_fee = revenue * globals.tax_pct / 100;
+      const commission_fee = revenue * globals.platform_commission / 100;
       const total_costs = tutor_cost + card_fee + gateway_fee + other_fee + tax_fee + commission_fee + globals.operational;
-      // Lucro bruto = receita - tutor
-      const lucro_bruto = receita - tutor_cost;
-      // Lucro líquido = receita - todos os custos
-      const lucro_liquido = receita - total_costs;
-      // Horas totais
-      const horas = minutes / 60;
-      // Lucro por hora
-      const lucro_hora = horas > 0 ? lucro_liquido / horas : 0;
-      // Lucro por minuto
-      const lucro_min = minutes > 0 ? lucro_liquido / minutes : 0;
-      // Margem %
-      const margem = receita > 0 ? (lucro_liquido / receita) * 100 : 0;
+      const gross_profit = revenue - tutor_cost;
+      const net_profit = revenue - total_costs;
+      const hours = minutes / 60;
+      const profit_per_hour = hours > 0 ? net_profit / hours : 0;
+      const profit_per_min = minutes > 0 ? net_profit / minutes : 0;
+      const margin = revenue > 0 ? (net_profit / revenue) * 100 : 0;
 
       return {
         ...plan,
-        receita, minutes, horas, tutor_cost,
+        revenue, minutes, hours, tutor_cost,
         card_fee, gateway_fee, other_fee, tax_fee,
-        total_costs, lucro_bruto, lucro_liquido,
-        lucro_hora, lucro_min, margem
+        total_costs, gross_profit, net_profit,
+        profit_per_hour, profit_per_min, margin
       };
     });
   }, [PLANS, txCosts, globals]);
@@ -194,80 +182,80 @@ export default function AdminCosts() {
     const avg = (key) => planResults.reduce((s, p) => s + p[key], 0) / planResults.length;
     const sum = (key) => planResults.reduce((s, p) => s + p[key], 0);
     return {
-      receita: sum("receita"),
+      revenue: sum("revenue"),
       tutor_cost: sum("tutor_cost"),
       total_costs: sum("total_costs"),
-      lucro_bruto: sum("lucro_bruto"),
-      lucro_liquido: sum("lucro_liquido"),
-      margem_media: avg("margem"),
-      lucro_hora: avg("lucro_hora"),
-      lucro_min: avg("lucro_min"),
+      gross_profit: sum("gross_profit"),
+      net_profit: sum("net_profit"),
+      avg_margin: avg("margin"),
+      profit_per_hour: avg("profit_per_hour"),
+      profit_per_min: avg("profit_per_min"),
     };
   }, [planResults]);
 
   // ── Chart data ──
   const barData = planResults.map(p => ({
     name: p.name,
-    Receita: p.receita,
-    "Custo Tutor": p.tutor_cost,
-    Taxas: parseFloat((p.card_fee + p.gateway_fee + p.other_fee).toFixed(2)),
-    "Lucro Líquido": parseFloat(p.lucro_liquido.toFixed(2)),
+    Revenue: p.revenue,
+    "Tutor Cost": p.tutor_cost,
+    Fees: parseFloat((p.card_fee + p.gateway_fee + p.other_fee).toFixed(2)),
+    "Net Profit": parseFloat(p.net_profit.toFixed(2)),
   }));
 
   const pieData = planResults.length > 0 ? [
     { name: "Tutor", value: parseFloat(totals.tutor_cost?.toFixed(2)) },
-    { name: "Taxa Cartão", value: parseFloat(planResults.reduce((s, p) => s + p.card_fee, 0).toFixed(2)) },
+    { name: "Card Fee", value: parseFloat(planResults.reduce((s, p) => s + p.card_fee, 0).toFixed(2)) },
     { name: "Gateway", value: parseFloat(planResults.reduce((s, p) => s + p.gateway_fee, 0).toFixed(2)) },
-    { name: "Lucro", value: parseFloat(totals.lucro_liquido?.toFixed(2)) },
+    { name: "Profit", value: parseFloat(totals.net_profit?.toFixed(2)) },
   ].filter(d => d.value > 0) : [];
 
   // ── CSV Export ──
   const exportCSV = () => {
-    const headers = ["Plano","Receita","Minutos","Horas","Custo Tutor","Taxas","Lucro Bruto","Lucro Líquido","Lucro/hora","Lucro/min","Margem %"];
+    const headers = ["Plan","Revenue","Minutes","Hours","Tutor Cost","Fees","Gross Profit","Net Profit","Profit/hour","Profit/min","Margin %"];
     const rows = planResults.map(p => [
-      p.name, p.receita, p.minutes, p.horas.toFixed(1),
+      p.name, p.revenue, p.minutes, p.hours.toFixed(1),
       p.tutor_cost.toFixed(2), (p.card_fee + p.gateway_fee).toFixed(2),
-      p.lucro_bruto.toFixed(2), p.lucro_liquido.toFixed(2),
-      p.lucro_hora.toFixed(2), p.lucro_min.toFixed(4), p.margem.toFixed(1)
+      p.gross_profit.toFixed(2), p.net_profit.toFixed(2),
+      p.profit_per_hour.toFixed(2), p.profit_per_min.toFixed(4), p.margin.toFixed(1)
     ]);
     const csv = [headers, ...rows].map(r => r.join(";")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = "rentabilidade.csv"; a.click();
+    a.download = "profitability.csv"; a.click();
   };
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-1">Custos & Rentabilidade</h1>
-          <p className="theme-subtext text-gray-500 text-sm">Simulador financeiro em tempo real · atualiza automaticamente</p>
+          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-1">Costs & Profitability</h1>
+          <p className="theme-subtext text-gray-500 text-sm">Real-time financial simulator · updates automatically</p>
         </div>
         <Button onClick={exportCSV} size="sm" className="bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10">
-          <Download className="w-4 h-4 mr-2" /> Exportar CSV
+          <Download className="w-4 h-4 mr-2" /> Export CSV
         </Button>
       </div>
 
       {/* ── Dashboard cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        <MetricCard label="Receita Total" value={fmtUSD(totals.receita)} icon={DollarSign} color="violet" />
-        <MetricCard label="Pago aos Tutores" value={fmtUSD(totals.tutor_cost)} icon={Users} color="blue" />
-        <MetricCard label="Total de Taxas" value={fmtUSD((totals.total_costs || 0) - (totals.tutor_cost || 0))} icon={CreditCard} color="amber" />
-        <MetricCard label="Lucro Bruto" value={fmtUSD(totals.lucro_bruto)} icon={TrendingUp} color="emerald" />
-        <MetricCard label="Lucro Líquido" value={fmtUSD(totals.lucro_liquido)} icon={TrendingUp} color="emerald" trend={totals.margem_media} />
-        <MetricCard label="Margem Média" value={fmtPct(totals.margem_media)} icon={Percent} color="violet" />
-        <MetricCard label="Lucro/hora médio" value={fmtUSD(totals.lucro_hora)} icon={BarChart3} color="blue" />
-        <MetricCard label="Lucro/minuto médio" value={fmtUSD(totals.lucro_min)} icon={BarChart3} color="amber" />
+        <MetricCard label="Total Revenue" value={fmtUSD(totals.revenue)} icon={DollarSign} color="violet" />
+        <MetricCard label="Paid to Tutors" value={fmtUSD(totals.tutor_cost)} icon={Users} color="blue" />
+        <MetricCard label="Total Fees" value={fmtUSD((totals.total_costs || 0) - (totals.tutor_cost || 0))} icon={CreditCard} color="amber" />
+        <MetricCard label="Gross Profit" value={fmtUSD(totals.gross_profit)} icon={TrendingUp} color="emerald" />
+        <MetricCard label="Net Profit" value={fmtUSD(totals.net_profit)} icon={TrendingUp} color="emerald" trend={totals.avg_margin} />
+        <MetricCard label="Avg Margin" value={fmtPct(totals.avg_margin)} icon={Percent} color="violet" />
+        <MetricCard label="Avg Profit/hour" value={fmtUSD(totals.profit_per_hour)} icon={BarChart3} color="blue" />
+        <MetricCard label="Avg Profit/min" value={fmtUSD(totals.profit_per_min)} icon={BarChart3} color="amber" />
       </div>
 
       <Tabs defaultValue="simulator">
         <TabsList className="mb-6 bg-white/5 border border-white/10 flex w-full sm:w-auto flex-wrap">
-          <TabsTrigger value="simulator" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Simulador</TabsTrigger>
-          <TabsTrigger value="tutors" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Tutores</TabsTrigger>
-          <TabsTrigger value="plans" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Planos</TabsTrigger>
-          <TabsTrigger value="costs" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Taxas</TabsTrigger>
-          <TabsTrigger value="charts" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Gráficos</TabsTrigger>
-          <TabsTrigger value="settings" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Config. Globais</TabsTrigger>
+          <TabsTrigger value="simulator" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Simulator</TabsTrigger>
+          <TabsTrigger value="tutors" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Tutors</TabsTrigger>
+          <TabsTrigger value="plans" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Plans</TabsTrigger>
+          <TabsTrigger value="costs" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Fees</TabsTrigger>
+          <TabsTrigger value="charts" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Charts</TabsTrigger>
+          <TabsTrigger value="settings" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500 text-xs px-4">Global Settings</TabsTrigger>
         </TabsList>
 
         {/* ── SIMULADOR ── */}
@@ -280,23 +268,23 @@ export default function AdminCosts() {
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
                     <div>
                       <h3 className="theme-heading font-display font-bold text-white text-lg">{p.name}</h3>
-                      <p className="theme-subtext text-xs text-gray-500">{p.minutes} min/mês · {p.horas.toFixed(1)} horas</p>
+                      <p className="theme-subtext text-xs text-gray-500">{p.minutes} min/mo · {p.hours.toFixed(1)} hours</p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-display text-2xl font-bold ${marginColor}`}>{fmtPct(p.margem)}</p>
-                      <p className="theme-subtext text-xs text-gray-500">margem líquida</p>
+                      <p className={`font-display text-2xl font-bold ${marginColor}`}>{fmtPct(p.margin)}</p>
+                      <p className="theme-subtext text-xs text-gray-500">net margin</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { label: "Receita", value: fmtUSD(p.receita), color: "text-white" },
-                      { label: "Custo Tutor", value: fmtUSD(p.tutor_cost), color: "text-blue-400" },
-                      { label: "Taxas totais", value: fmtUSD(p.card_fee + p.gateway_fee + p.other_fee + p.tax_fee), color: "text-amber-400" },
-                      { label: "Lucro Líquido", value: fmtUSD(p.lucro_liquido), color: marginColor },
-                      { label: "Lucro Bruto", value: fmtUSD(p.lucro_bruto), color: "text-emerald-400" },
-                      { label: "Lucro/hora", value: fmtUSD(p.lucro_hora), color: "text-violet-400" },
-                      { label: "Lucro/min", value: fmtUSD(p.lucro_min), color: "text-violet-400" },
-                      { label: "Taxa cartão", value: fmtUSD(p.card_fee), color: "text-gray-400" },
+                      { label: "Revenue", value: fmtUSD(p.revenue), color: "text-white" },
+                      { label: "Tutor Cost", value: fmtUSD(p.tutor_cost), color: "text-blue-400" },
+                      { label: "Total Fees", value: fmtUSD(p.card_fee + p.gateway_fee + p.other_fee + p.tax_fee), color: "text-amber-400" },
+                      { label: "Net Profit", value: fmtUSD(p.net_profit), color: marginColor },
+                      { label: "Gross Profit", value: fmtUSD(p.gross_profit), color: "text-emerald-400" },
+                      { label: "Profit/hour", value: fmtUSD(p.profit_per_hour), color: "text-violet-400" },
+                      { label: "Profit/min", value: fmtUSD(p.profit_per_min), color: "text-violet-400" },
+                      { label: "Card Fee", value: fmtUSD(p.card_fee), color: "text-gray-400" },
                     ].map(item => (
                       <div key={item.label} className="bg-white/3 border border-white/5 rounded-xl p-3">
                         <p className="theme-subtext text-[10px] text-gray-500 uppercase tracking-wide mb-1">{item.label}</p>
@@ -306,16 +294,16 @@ export default function AdminCosts() {
                   </div>
                   {/* Cost breakdown bar */}
                   <div className="mt-5">
-                    <p className="theme-subtext text-xs text-gray-500 mb-2">Distribuição da receita</p>
+                    <p className="theme-subtext text-xs text-gray-500 mb-2">Revenue breakdown</p>
                     <div className="flex h-3 rounded-full overflow-hidden gap-px">
-                      <div className="bg-blue-500 transition-all" style={{ width: `${(p.tutor_cost / p.receita) * 100}%` }} title="Tutor" />
-                      <div className="bg-amber-500 transition-all" style={{ width: `${((p.card_fee + p.gateway_fee) / p.receita) * 100}%` }} title="Taxas" />
-                      <div className="bg-emerald-500 transition-all" style={{ width: `${Math.max(0, p.margem)}%` }} title="Lucro" />
+                      <div className="bg-blue-500 transition-all" style={{ width: `${(p.tutor_cost / p.revenue) * 100}%` }} title="Tutor" />
+                      <div className="bg-amber-500 transition-all" style={{ width: `${((p.card_fee + p.gateway_fee) / p.revenue) * 100}%` }} title="Fees" />
+                      <div className="bg-emerald-500 transition-all" style={{ width: `${Math.max(0, p.margin)}%` }} title="Profit" />
                     </div>
                     <div className="flex gap-4 mt-2 text-[10px] text-gray-500">
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Tutor {fmtPct((p.tutor_cost / p.receita) * 100)}</span>
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />Taxas {fmtPct(((p.card_fee + p.gateway_fee) / p.receita) * 100)}</span>
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />Lucro {fmtPct(p.margem)}</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Tutor {fmtPct((p.tutor_cost / p.revenue) * 100)}</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />Fees {fmtPct(((p.card_fee + p.gateway_fee) / p.revenue) * 100)}</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />Profit {fmtPct(p.margin)}</span>
                     </div>
                   </div>
                 </div>
@@ -329,25 +317,25 @@ export default function AdminCosts() {
           <div className="theme-card bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between gap-4 flex-wrap">
               <div>
-                <h2 className="theme-heading font-display font-bold text-white">Remuneração dos Tutores</h2>
-                <p className="theme-subtext text-xs text-gray-500 mt-0.5">Edite os valores e clique em Salvar para persistir no banco</p>
+                <h2 className="theme-heading font-display font-bold text-white">Tutor Rates</h2>
+                <p className="theme-subtext text-xs text-gray-500 mt-0.5">Edit values and click Save to persist to database</p>
               </div>
               <Button onClick={saveTutorRates} disabled={savingRates || tutors.length === 0} className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20">
                 <Save className="w-4 h-4 mr-2" />
-                {savingRates ? "Salvando..." : "Salvar alterações"}
+                {savingRates ? "Saving..." : "Save changes"}
               </Button>
             </div>
             {tutors.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-                <p className="theme-subtext text-sm text-gray-500">Nenhum tutor aprovado ainda</p>
+                <p className="theme-subtext text-sm text-gray-500">No approved tutors yet</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-white/5">
-                      {["Tutor", "USD/hora", "USD/minuto (auto)", "Status"].map(h => (
+                      {["Tutor", "USD/hour", "USD/min (auto)", "Status"].map(h => (
                         <th key={h} className="text-left px-6 py-3 text-xs text-gray-500 font-medium uppercase tracking-wide">{h}</th>
                       ))}
                     </tr>
@@ -379,7 +367,7 @@ export default function AdminCosts() {
                             <span className="theme-heading font-medium text-emerald-400">{fmtUSD(rateHour / 60)}/min</span>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 font-medium">Ativo</span>
+                            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 font-medium">Active</span>
                           </td>
                         </tr>
                       );
@@ -395,13 +383,13 @@ export default function AdminCosts() {
         <TabsContent value="plans">
           <div className="theme-card bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-white/5">
-              <h2 className="theme-heading font-display font-bold text-white">Planos Vendidos</h2>
+              <h2 className="theme-heading font-display font-bold text-white">Plans Overview</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/5">
-                    {["Plano", "Valor Aluno/mês", "Horas", "Minutos", "R$/hora", "R$/minuto"].map(h => (
+                    {["Plan", "Student Price/mo", "Hours", "Minutes", "$/hour", "$/minute"].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-xs text-gray-500 font-medium uppercase tracking-wide whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -431,14 +419,14 @@ export default function AdminCosts() {
         <TabsContent value="costs">
           <div className="max-w-lg">
             <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h2 className="theme-heading font-display font-bold text-white mb-1">Custos de Transação</h2>
-              <p className="theme-subtext text-xs text-gray-500 mb-5">Usados automaticamente nos cálculos de lucro</p>
-              <EditableField label="Taxa do cartão (%)" value={txCosts.card_pct} onChange={v => setTxCosts(p => ({ ...p, card_pct: v }))} prefix="" suffix="%" />
-              <EditableField label="Taxa fixa por transação (R$)" value={txCosts.card_fixed} onChange={v => setTxCosts(p => ({ ...p, card_fixed: v }))} />
-              <EditableField label="Taxa PIX (%)" value={txCosts.pix_pct} onChange={v => setTxCosts(p => ({ ...p, pix_pct: v }))} prefix="" suffix="%" />
-              <EditableField label="Taxa de boleto (R$)" value={txCosts.boleto} onChange={v => setTxCosts(p => ({ ...p, boleto: v }))} />
-              <EditableField label="Taxa do gateway (%)" value={txCosts.gateway_pct} onChange={v => setTxCosts(p => ({ ...p, gateway_pct: v }))} prefix="" suffix="%" />
-              <EditableField label="Outras taxas (%)" value={txCosts.other_pct} onChange={v => setTxCosts(p => ({ ...p, other_pct: v }))} prefix="" suffix="%" />
+              <h2 className="theme-heading font-display font-bold text-white mb-1">Transaction Costs</h2>
+              <p className="theme-subtext text-xs text-gray-500 mb-5">Used automatically in profit calculations</p>
+              <EditableField label="Card fee (%)" value={txCosts.card_pct} onChange={v => setTxCosts(p => ({ ...p, card_pct: v }))} prefix="" suffix="%" />
+              <EditableField label="Fixed fee per transaction ($)" value={txCosts.card_fixed} onChange={v => setTxCosts(p => ({ ...p, card_fixed: v }))} />
+              <EditableField label="PIX fee (%)" value={txCosts.pix_pct} onChange={v => setTxCosts(p => ({ ...p, pix_pct: v }))} prefix="" suffix="%" />
+              <EditableField label="Boleto fee ($)" value={txCosts.boleto} onChange={v => setTxCosts(p => ({ ...p, boleto: v }))} />
+              <EditableField label="Gateway fee (%)" value={txCosts.gateway_pct} onChange={v => setTxCosts(p => ({ ...p, gateway_pct: v }))} prefix="" suffix="%" />
+              <EditableField label="Other fees (%)" value={txCosts.other_pct} onChange={v => setTxCosts(p => ({ ...p, other_pct: v }))} prefix="" suffix="%" />
             </div>
           </div>
         </TabsContent>
@@ -448,7 +436,7 @@ export default function AdminCosts() {
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5">
               <h3 className="theme-heading font-display font-bold text-white mb-5 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-violet-400" /> Receita vs Custos por Plano
+                <BarChart3 className="w-4 h-4 text-violet-400" /> Revenue vs Costs by Plan
               </h3>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={barData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
@@ -460,15 +448,15 @@ export default function AdminCosts() {
                     formatter={v => fmtUSD(v)}
                   />
                   <Legend wrapperStyle={{ color: "#6b7280", fontSize: 11 }} />
-                  <Bar dataKey="Receita" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Custo Tutor" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Lucro Líquido" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Revenue" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Tutor Cost" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Net Profit" fill="#10b981" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5">
               <h3 className="theme-heading font-display font-bold text-white mb-5 flex items-center gap-2">
-                <PieChart className="w-4 h-4 text-violet-400" /> Distribuição de Custos
+                <PieChart className="w-4 h-4 text-violet-400" /> Cost Distribution
               </h3>
               <ResponsiveContainer width="100%" height={260}>
                 <RPieChart>
@@ -486,21 +474,21 @@ export default function AdminCosts() {
         <TabsContent value="settings">
           <div className="max-w-lg">
             <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h2 className="theme-heading font-display font-bold text-white mb-1">Configurações Globais</h2>
-              <p className="theme-subtext text-xs text-gray-500 mb-5">Afetam todos os cálculos em tempo real</p>
-              <EditableField label="Taxa padrão dos tutores (USD/hora)" value={globals.default_tutor_rate_hour} onChange={v => setGlobals(p => ({ ...p, default_tutor_rate_hour: v }))} prefix="$" step="0.01" />
-              <EditableField label="Comissão da plataforma (%)" value={globals.platform_commission} onChange={v => setGlobals(p => ({ ...p, platform_commission: v }))} prefix="" suffix="%" />
-              <EditableField label="Impostos (%)" value={globals.tax_pct} onChange={v => setGlobals(p => ({ ...p, tax_pct: v }))} prefix="" suffix="%" />
-              <EditableField label="Despesas operacionais (USD/mês)" value={globals.operational} onChange={v => setGlobals(p => ({ ...p, operational: v }))} prefix="$" />
+              <h2 className="theme-heading font-display font-bold text-white mb-1">Global Settings</h2>
+              <p className="theme-subtext text-xs text-gray-500 mb-5">Affects all calculations in real time</p>
+              <EditableField label="Default tutor rate (USD/hour)" value={globals.default_tutor_rate_hour} onChange={v => setGlobals(p => ({ ...p, default_tutor_rate_hour: v }))} prefix="$" step="0.01" />
+              <EditableField label="Platform commission (%)" value={globals.platform_commission} onChange={v => setGlobals(p => ({ ...p, platform_commission: v }))} prefix="" suffix="%" />
+              <EditableField label="Taxes (%)" value={globals.tax_pct} onChange={v => setGlobals(p => ({ ...p, tax_pct: v }))} prefix="" suffix="%" />
+              <EditableField label="Operational expenses (USD/mo)" value={globals.operational} onChange={v => setGlobals(p => ({ ...p, operational: v }))} prefix="$" />
             </div>
             <div className="theme-card bg-white/3 border border-white/5 rounded-2xl p-5 mt-4">
               <p className="theme-subtext text-xs text-gray-500 leading-relaxed">
-                <strong className="text-gray-300">Fórmulas aplicadas:</strong><br />
-                Receita = Valor mensal do plano<br />
-                Custo tutor = (USD/hora ÷ 60) × minutos do plano × 4 semanas<br />
-                Taxa cartão = Receita × % + fixo<br />
-                Lucro líquido = Receita − (tutor + taxas + impostos + operacional)<br />
-                Margem % = Lucro líquido ÷ Receita × 100
+                <strong className="text-gray-300">Formulas applied:</strong><br />
+                 Revenue = Plan monthly price<br />
+                 Tutor cost = (USD/hour ÷ 60) × plan minutes × 4 weeks<br />
+                 Card fee = Revenue × % + fixed<br />
+                 Net profit = Revenue − (tutor + fees + taxes + operational)<br />
+                 Margin % = Net profit ÷ Revenue × 100
               </p>
             </div>
           </div>

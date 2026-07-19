@@ -27,19 +27,17 @@ export default function AdminEarnings() {
   const markAsPaid = async (withdrawal) => {
     setProcessing(withdrawal.id);
     try {
-      // Marcar saque como pago
       await base44.entities.WithdrawalRequest.update(withdrawal.id, { status: "paid" });
 
-      // Zerar ganhos do tutor
       const profiles = await base44.entities.TutorProfile.filter({ user_id: withdrawal.tutor_id });
       if (profiles.length > 0) {
         await base44.entities.TutorProfile.update(profiles[0].id, { total_earnings: 0 });
       }
 
-      toast({ title: "Pagamento confirmado ✅", description: `${withdrawal.tutor_name} — $${withdrawal.amount?.toFixed(2)} USD marcado como pago e ganhos zerados.` });
+      toast({ title: "Payment confirmed ✅", description: `${withdrawal.tutor_name} — $${withdrawal.amount?.toFixed(2)} USD marked as paid and earnings reset.` });
       loadData();
     } catch {
-      toast({ title: "Erro ao processar", variant: "destructive" });
+      toast({ title: "Error processing", variant: "destructive" });
     } finally { setProcessing(null); }
   };
 
