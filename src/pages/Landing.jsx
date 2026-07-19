@@ -204,13 +204,39 @@ const CSS = `
 @keyframes ot-floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
 @keyframes ot-floaty2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(9px)} }
 @keyframes ot-floaty3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
-@media(max-width:860px){.ot-hero-grid{grid-template-columns:1fr!important}.ot-hero-visual{display:none!important}.ot-grid2{grid-template-columns:1fr!important}}
+
+/* Nav links: hide on small, show on large */
+.ot-nav-links { display:flex; gap:4px; justify-content:center; flex:1; }
+@media(max-width:860px){ .ot-nav-links { display:none!important; } }
+
+/* Nav mobile menu */
+.ot-mobile-menu { display:none; flex-direction:column; gap:4px; padding:12px 16px 16px; border-top:1px solid #EFEAE3; }
+.ot-mobile-menu.open { display:flex!important; }
+.ot-mobile-menu a { padding:10px 14px; border-radius:10px; color:#4B4C57; fontWeight:600; font-size:15px; text-decoration:none; background:#F7F2EB; }
+
+/* Hamburger: only on small */
+.ot-hamburger { display:none; cursor:pointer; background:none; border:1px solid #E4DED6; border-radius:8px; padding:7px 9px; color:#3A3B45; }
+@media(max-width:860px){ .ot-hamburger { display:flex!important; align-items:center; justify-content:center; } }
+
+/* Nav CTAs: hide login text on very small */
+@media(max-width:500px){ .ot-nav-login { display:none!important; } }
+
+/* Hero: stack on mobile, show image below text */
+@media(max-width:860px){
+  .ot-hero-grid { grid-template-columns:1fr!important; }
+  .ot-hero-visual { display:flex!important; justify-content:center; margin-top:32px; min-height:auto!important; }
+  .ot-hero-visual > div:first-child { display:none!important; } /* hide radial bg on mobile */
+  .ot-hero-card { width:min(280px,86vw)!important; }
+  .ot-float-card { display:none!important; }
+  .ot-grid2 { grid-template-columns:1fr!important; }
+}
 `;
 
 export default function Landing() {
   const [lang, setLang] = useState("pt");
   const [openFaq, setOpenFaq] = useState(0);
   const [spots, setSpots] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const founderSpotsLeft = 137;
   const c = CONTENT[lang];
   const navigate = useNavigate();
@@ -243,32 +269,46 @@ export default function Landing() {
       <style>{CSS}</style>
 
       {/* NAV */}
-      <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(253,251,249,.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid #EFEAE3" }}>
-        <nav style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", gap: 16 }}>
+      <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(253,251,249,.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid #EFEAE3" }}>
+        <nav style={{ maxWidth: 1180, margin: "0 auto", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           {/* Logo */}
           <a href="#top" style={{ display: "flex", alignItems: "center", gap: 9, color: "#17181C", textDecoration: "none", flexShrink: 0 }}>
-            <span style={{ width: 32, height: 32, borderRadius: 9, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 18, letterSpacing: "-.02em" }}>O</span>
-            <span style={{ fontWeight: 800, fontSize: 19, letterSpacing: "-.01em" }}>One Talky</span>
+            <span style={{ width: 32, height: 32, borderRadius: 9, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 18 }}>O</span>
+            <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-.01em" }}>One Talky</span>
           </a>
 
-          {/* Links */}
-          <div style={{ flex: 1, display: "flex", gap: 4, justifyContent: "center", flexWrap: "wrap" }}>
+          {/* Links — hidden on mobile */}
+          <div className="ot-nav-links">
             {[["#como", c.navHow], ["#tutores", c.navTutors], ["#planos", c.navPlans], ["#garantia", c.navGuarantee]].map(([href, label]) => (
               <a key={href} href={href} style={{ padding: "7px 13px", borderRadius: 999, color: "#4B4C57", fontWeight: 600, fontSize: 14, textDecoration: "none" }}>{label}</a>
             ))}
           </div>
 
+          {/* Spacer on mobile */}
+          <div style={{ flex: 1 }} />
+
           {/* Lang toggle + CTAs */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <div style={{ display: "flex", border: "1px solid #E4DED6", borderRadius: 999, overflow: "hidden", fontSize: 12, fontWeight: 700 }}>
               {["pt", "en"].map((l) => (
                 <button key={l} onClick={() => setLang(l)} style={{ padding: "5px 10px", border: "none", cursor: "pointer", background: lang === l ? ACCENT : "transparent", color: lang === l ? "#fff" : "#7A7B85", fontFamily: "inherit", fontWeight: 700 }}>{l.toUpperCase()}</button>
               ))}
             </div>
-            <button onClick={() => navigate("/login")} style={{ padding: "8px 14px", borderRadius: 999, background: "transparent", border: "1.5px solid #E4DED6", color: "#3A3B45", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{c.navLogin}</button>
-            <button onClick={() => navigate("/register")} style={{ padding: "9px 16px", borderRadius: 999, background: ACCENT, color: "#fff", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", fontFamily: "inherit" }}>{c.navCta}</button>
+            <button className="ot-nav-login" onClick={() => navigate("/login")} style={{ padding: "8px 14px", borderRadius: 999, background: "transparent", border: "1.5px solid #E4DED6", color: "#3A3B45", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{c.navLogin}</button>
+            <button onClick={() => navigate("/register")} style={{ padding: "9px 14px", borderRadius: 999, background: ACCENT, color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>{c.navCta}</button>
+            {/* Hamburger */}
+            <button className="ot-hamburger" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
+              <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><rect width="18" height="2" rx="1" fill="#3A3B45"/><rect y="6" width="18" height="2" rx="1" fill="#3A3B45"/><rect y="12" width="18" height="2" rx="1" fill="#3A3B45"/></svg>
+            </button>
           </div>
         </nav>
+        {/* Mobile dropdown menu */}
+        <div className={`ot-mobile-menu ${mobileMenuOpen ? "open" : ""}`}>
+          {[["#como", c.navHow], ["#tutores", c.navTutors], ["#planos", c.navPlans], ["#garantia", c.navGuarantee]].map(([href, label]) => (
+            <a key={href} href={href} onClick={() => setMobileMenuOpen(false)}>{label}</a>
+          ))}
+          <a href="/login" onClick={() => setMobileMenuOpen(false)} style={{ background: "#fff", border: "1px solid #E4DED6" }}>{c.navLogin}</a>
+        </div>
       </header>
 
       {/* HERO */}
@@ -298,7 +338,7 @@ export default function Landing() {
         {/* Visual */}
         <div className="ot-hero-visual" style={{ position: "relative", minHeight: 480, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", inset: -10, background: "radial-gradient(120% 90% at 65% 25%,#FDEBDD 0%,rgba(253,235,221,0) 62%)" }} />
-          <div style={{ position: "relative", width: 300, borderRadius: 26, overflow: "hidden", boxShadow: "0 34px 64px -24px rgba(23,24,28,.34)", border: "5px solid #fff", background: "#fff", zIndex: 2 }}>
+          <div className="ot-hero-card" style={{ position: "relative", width: 300, borderRadius: 26, overflow: "hidden", boxShadow: "0 34px 64px -24px rgba(23,24,28,.34)", border: "5px solid #fff", background: "#fff", zIndex: 2 }}>
             {/* Photo */}
             <div style={{ position: "relative", aspectRatio: "1/1", overflow: "hidden" }}>
               <img
@@ -322,24 +362,24 @@ export default function Landing() {
             </div>
           </div>
           {/* Floating cards */}
-          <div style={{ position: "absolute", top: 8, left: 0, background: "#fff", border: "1px solid #EFEAE3", borderRadius: 16, padding: "12px 14px", boxShadow: "0 16px 34px -16px rgba(0,0,0,.28)", animation: "ot-floaty 5s ease-in-out infinite", zIndex: 3 }}>
+          <div className="ot-float-card" style={{ position: "absolute", top: 8, left: 0, background: "#fff", border: "1px solid #EFEAE3", borderRadius: 16, padding: "12px 14px", boxShadow: "0 16px 34px -16px rgba(0,0,0,.28)", animation: "ot-floaty 5s ease-in-out infinite", zIndex: 3 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ width: 34, height: 34, borderRadius: 10, background: "#FDECE0", color: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16 }}>🔥</span>
               <div><div style={{ fontSize: 11, color: "#7A7B85", fontWeight: 600 }}>{c.fStreakLabel}</div><div style={{ fontSize: 16, fontWeight: 800 }}>{c.fStreakVal}</div></div>
             </div>
           </div>
-          <div style={{ position: "absolute", top: 34, right: -6, background: "#fff", border: "1px solid #EFEAE3", borderRadius: 16, padding: "12px 15px", boxShadow: "0 16px 34px -16px rgba(0,0,0,.28)", animation: "ot-floaty2 6s ease-in-out infinite", zIndex: 3 }}>
+          <div className="ot-float-card" style={{ position: "absolute", top: 34, right: -6, background: "#fff", border: "1px solid #EFEAE3", borderRadius: 16, padding: "12px 15px", boxShadow: "0 16px 34px -16px rgba(0,0,0,.28)", animation: "ot-floaty2 6s ease-in-out infinite", zIndex: 3 }}>
             <div style={{ fontSize: 11, color: "#7A7B85", fontWeight: 600 }}>{c.fPronLabel}</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}><span style={{ fontSize: 22, fontWeight: 800, color: "#2E9E5B" }}>{c.fPronVal}</span><span style={{ fontSize: 12, color: "#2E9E5B", fontWeight: 700 }}>%</span></div>
           </div>
-          <div style={{ position: "absolute", bottom: 70, left: -8, background: "#fff", border: "1px solid #EFEAE3", borderRadius: 16, padding: "12px 14px", boxShadow: "0 16px 34px -16px rgba(0,0,0,.28)", animation: "ot-floaty3 5.5s ease-in-out infinite", zIndex: 3 }}>
+          <div className="ot-float-card" style={{ position: "absolute", bottom: 70, left: -8, background: "#fff", border: "1px solid #EFEAE3", borderRadius: 16, padding: "12px 14px", boxShadow: "0 16px 34px -16px rgba(0,0,0,.28)", animation: "ot-floaty3 5.5s ease-in-out infinite", zIndex: 3 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <span style={{ width: 30, height: 30, borderRadius: 9, background: "#EAF1FB", color: "#2F6BD4", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>✓</span>
               <div><div style={{ fontSize: 11, color: "#7A7B85", fontWeight: 600 }}>{c.fSaveLabel}</div><div style={{ fontSize: 14, fontWeight: 800 }}>{c.fSaveWord}</div></div>
             </div>
           </div>
-          <div style={{ position: "absolute", bottom: 8, left: 70, background: ACCENT, color: "#fff", borderRadius: "14px 14px 14px 4px", padding: "7px 13px", fontWeight: 800, fontSize: 14, boxShadow: "0 12px 26px -12px rgba(242,106,27,.6)", zIndex: 3 }}>Hello!</div>
-          <div style={{ position: "absolute", top: 2, right: 64, background: "#fff", border: "1px solid #EFEAE3", color: "#17181C", borderRadius: "14px 14px 4px 14px", padding: "7px 13px", fontWeight: 800, fontSize: 14, zIndex: 3 }}>{c.bubbleReply}</div>
+          <div className="ot-float-card" style={{ position: "absolute", bottom: 8, left: 70, background: ACCENT, color: "#fff", borderRadius: "14px 14px 14px 4px", padding: "7px 13px", fontWeight: 800, fontSize: 14, boxShadow: "0 12px 26px -12px rgba(242,106,27,.6)", zIndex: 3 }}>Hello!</div>
+          <div className="ot-float-card" style={{ position: "absolute", top: 2, right: 64, background: "#fff", border: "1px solid #EFEAE3", color: "#17181C", borderRadius: "14px 14px 4px 14px", padding: "7px 13px", fontWeight: 800, fontSize: 14, zIndex: 3 }}>{c.bubbleReply}</div>
         </div>
       </section>
 
