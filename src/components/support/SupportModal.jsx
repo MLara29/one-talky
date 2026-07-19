@@ -31,8 +31,8 @@ export default function SupportModal({ onClose }) {
       <div className="rounded-3xl w-full max-w-md p-6 shadow-2xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
-              <MessageSquare className="w-4 h-4 text-violet-500" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.2)" }}>
+              <MessageSquare className="w-4 h-4 text-orange-400" />
             </div>
             <div>
               <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>Contact Support</h2>
@@ -74,7 +74,7 @@ export default function SupportModal({ onClose }) {
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Describe your issue or question..."
                 rows={5}
-                className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-500/50 resize-none"
+                className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 resize-none"
                 style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
               />
             </div>

@@ -56,8 +56,8 @@ export default function Profile() {
         await base44.entities.StudentProfile.update(profile.id, { full_name: profile.full_name });
       }
       await base44.auth.updateMe({ full_name: profile.full_name });
-      toast({ title: "Perfil salvo! ✅" });
-    } catch { toast({ title: "Erro ao salvar", variant: "destructive" }); } finally { setSaving(false); }
+      toast({ title: "Profile saved! ✅" });
+    } catch { toast({ title: "Error saving", variant: "destructive" }); } finally { setSaving(false); }
   };
 
   const handlePhotoUpload = async (file) => {
@@ -67,13 +67,13 @@ export default function Profile() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await base44.entities.TutorProfile.update(profile.id, { photo_url: file_url });
       setProfile({ ...profile, photo_url: file_url });
-      toast({ title: "Foto atualizada! 📸" });
-    } catch { toast({ title: "Erro ao enviar foto", variant: "destructive" }); } finally { setUploadingPhoto(false); }
+      toast({ title: "Photo updated! 📸" });
+    } catch { toast({ title: "Error uploading photo", variant: "destructive" }); } finally { setUploadingPhoto(false); }
   };
 
   if (loading) return (
     <div className="flex items-center justify-center py-24">
-      <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
     </div>
   );
 
@@ -86,7 +86,7 @@ export default function Profile() {
         <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">My Profile</h1>
         <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-5">
           <div className="flex items-center gap-4 mb-2">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
               <User className="w-8 h-8 text-white" />
             </div>
             <div>
@@ -99,12 +99,12 @@ export default function Profile() {
             <Input
               value={profile?.full_name || ""}
               onChange={e => setProfile({ ...profile, full_name: e.target.value })}
-              className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-violet-500/50"
+              className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-orange-500/50"
             />
           </div>
           <Button onClick={handleSave} disabled={saving}
-            className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all">
-            <Save className="w-4 h-4 mr-2" /> {saving ? "Salvando..." : "Salvar"}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all">
+            <Save className="w-4 h-4 mr-2" /> {saving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default function Profile() {
 
   return (
     <div className="max-w-lg mx-auto">
-      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-6">Meu Perfil</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-6">My Profile</h1>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 p-1 bg-white/5 border border-white/10 rounded-2xl">
@@ -121,21 +121,21 @@ export default function Profile() {
           onClick={() => setActiveTab("personal")}
           className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all ${
             activeTab === "personal"
-              ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+              ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
               : "text-gray-400 hover:text-white"
           }`}
         >
-          Informações Pessoais
+          Personal Info
         </button>
         <button
           onClick={() => setActiveTab("public")}
           className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all ${
             activeTab === "public"
-              ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+              ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
               : "text-gray-400 hover:text-white"
           }`}
         >
-          Meu Perfil Público
+          My Public Profile
         </button>
       </div>
 
@@ -143,7 +143,7 @@ export default function Profile() {
       {activeTab === "personal" && (
         <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-5">
           <div className="flex items-center gap-4 mb-2">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
               <User className="w-8 h-8 text-white" />
             </div>
             <div>
@@ -162,45 +162,45 @@ export default function Profile() {
           </div>
 
           <div>
-            <Label className="theme-subtext text-gray-500 text-sm">Nome completo</Label>
+            <Label className="theme-subtext text-gray-500 text-sm">Full name</Label>
             <Input
               value={profile?.full_name || ""}
               onChange={e => setProfile({ ...profile, full_name: e.target.value })}
-              className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-violet-500/50"
+              className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-orange-500/50"
             />
           </div>
 
           <div>
-            <Label className="theme-subtext text-gray-500 text-sm">E-mail de contato (para lembretes e mensagens do admin)</Label>
+            <Label className="theme-subtext text-gray-500 text-sm">Contact email (for lesson reminders and admin messages)</Label>
             <Input
               type="email"
               value={pioneerEmail}
               onChange={e => setPioneerEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-violet-500/50"
+              placeholder="your@email.com"
+              className="theme-input mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-orange-500/50"
             />
-            <p className="theme-subtext text-xs text-gray-500 mt-1">Usado para receber lembretes de aulas e mensagens do administrador.</p>
+            <p className="theme-subtext text-xs text-gray-500 mt-1">Used to receive lesson reminders and messages from the administrator.</p>
           </div>
 
           {isUpwork ? (
             <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-              <p className="text-xs text-blue-400 font-medium">💼 Contrato Upwork — pagamentos processados diretamente pelo Upwork. Sem necessidade de dados Payoneer.</p>
+              <p className="text-xs text-blue-400 font-medium">💼 Upwork contract — payments processed directly through Upwork. No Payoneer details needed.</p>
             </div>
           ) : (
             <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <p className="text-xs text-emerald-600 font-medium">💳 Contrato direto — certifique-se que o e-mail acima corresponde à sua conta Payoneer para saques nos dias 15 e 30.</p>
+              <p className="text-xs text-emerald-600 font-medium">💳 Direct contract — make sure the email above matches your Payoneer account for payouts on the 15th and 30th.</p>
             </div>
           )}
 
-          <div className="p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20">
-            <p className="theme-subtext text-xs text-violet-600 font-medium">
-              💡 Sua taxa por aula é definida pelo administrador: <strong>${(profile?.price_per_minute || 0.5).toFixed(2)}/min</strong> (${((profile?.price_per_minute || 0.5) * 30).toFixed(2)} por sessão de 30 min).
+          <div className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20">
+            <p className="theme-subtext text-xs text-orange-400 font-medium">
+              💡 Your lesson rate is set by the administrator: <strong>${(profile?.price_per_minute || 0.5).toFixed(2)}/min</strong> (${((profile?.price_per_minute || 0.5) * 30).toFixed(2)} per 30-min session).
             </p>
           </div>
 
           <Button onClick={handleSave} disabled={saving}
-            className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all">
-            <Save className="w-4 h-4 mr-2" /> {saving ? "Salvando..." : "Salvar alterações"}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all">
+            <Save className="w-4 h-4 mr-2" /> {saving ? "Saving..." : "Save changes"}
           </Button>
         </div>
       )}
@@ -211,19 +211,19 @@ export default function Profile() {
           {/* Photo card */}
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Eye className="w-4 h-4 text-violet-400" />
-              <p className="text-sm font-semibold text-violet-400">Esta informação é visível para os alunos na plataforma</p>
+              <Eye className="w-4 h-4 text-orange-400" />
+              <p className="text-sm font-semibold text-orange-400">This information is visible to students on the platform</p>
             </div>
 
             {/* Nome público */}
             <div className="mb-5">
-              <Label className="theme-subtext text-gray-500 text-sm block mb-1">Nome público</Label>
-              <p className="text-xs text-violet-400 mb-2">👤 Este é o nome que os alunos verão no seu card e perfil. Pode ser seu primeiro nome, apelido ou como preferir ser chamado.</p>
+              <Label className="theme-subtext text-gray-500 text-sm block mb-1">Public name</Label>
+              <p className="text-xs text-orange-400 mb-2">👤 This is the name students will see on your card and profile. It can be your first name, nickname or whatever you prefer to be called.</p>
               <Input
                 value={profile?.full_name || ""}
                 onChange={e => setProfile({ ...profile, full_name: e.target.value })}
-                placeholder="Ex: Helena, Prof. Carlos, Teacher Ana..."
-                className="theme-input bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
+                placeholder="e.g. Helena, Prof. Carlos, Teacher Ana..."
+                className="theme-input bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-orange-500/50"
               />
             </div>
 
@@ -231,9 +231,9 @@ export default function Profile() {
             <div className="flex items-center gap-5">
               <div className="relative shrink-0">
                 <img
-                  src={profile?.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.full_name || "T")}&background=7c3aed&color=fff&size=80`}
-                  alt="Foto de perfil"
-                  className="w-24 h-24 rounded-2xl object-cover ring-2 ring-violet-500/30"
+                  src={profile?.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.full_name || "T")}&background=F26A1B&color=fff&size=80`}
+                  alt="Profile photo"
+                  className="w-24 h-24 rounded-2xl object-cover ring-2 ring-orange-500/30"
                 />
                 {uploadingPhoto && (
                   <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
@@ -266,7 +266,7 @@ export default function Profile() {
                   disabled={uploadingPhoto}
                   className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start"
                 >
-                  <Upload className="w-4 h-4 mr-2" /> Enviar foto da galeria
+                  <Upload className="w-4 h-4 mr-2" /> Upload from gallery
                 </Button>
                 <Button
                   variant="outline"
@@ -275,7 +275,7 @@ export default function Profile() {
                   disabled={uploadingPhoto}
                   className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start"
                 >
-                  <Camera className="w-4 h-4 mr-2" /> Tirar foto agora
+                  <Camera className="w-4 h-4 mr-2" /> Take photo now
                 </Button>
               </div>
             </div>
@@ -284,22 +284,22 @@ export default function Profile() {
           {/* Bio card */}
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
             <div>
-              <Label className="theme-subtext text-gray-500 text-sm block mb-1">Bio — Apresentação para os alunos</Label>
-              <p className="text-xs text-violet-400 mb-3">
-                ✨ Escreva uma breve apresentação sobre você: sua experiência, estilo de ensino e o que os alunos podem esperar das suas aulas. Este texto aparecerá no seu perfil público e será a primeira impressão que os alunos terão de você.
+              <Label className="theme-subtext text-gray-500 text-sm block mb-1">Bio — Introduction for students</Label>
+              <p className="text-xs text-orange-400 mb-3">
+                ✨ Write a brief introduction about yourself: your experience, teaching style and what students can expect from your lessons. This text will appear on your public profile.
               </p>
               <Textarea
                 value={profile?.bio || ""}
                 onChange={e => setProfile({ ...profile, bio: e.target.value.slice(0, 300) })}
-                placeholder="Ex: Olá! Sou professor de inglês com 5 anos de experiência. Especializado em conversação e pronúncia para iniciantes e intermediários. Minhas aulas são dinâmicas e focadas nos seus objetivos..."
-                className="theme-input h-32 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
+                placeholder="e.g. Hi! I'm an English teacher with 5 years of experience. Specialised in conversation and pronunciation for beginners and intermediate learners..."
+                className="theme-input h-32 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-orange-500/50"
               />
-              <p className="theme-subtext text-xs text-gray-500 mt-1 text-right">{(profile?.bio || "").length}/300 caracteres</p>
+              <p className="theme-subtext text-xs text-gray-500 mt-1 text-right">{(profile?.bio || "").length}/300 characters</p>
             </div>
 
             <Button onClick={handleSave} disabled={saving}
-              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all">
-              <Save className="w-4 h-4 mr-2" /> {saving ? "Salvando..." : "Salvar perfil público"}
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all">
+              <Save className="w-4 h-4 mr-2" /> {saving ? "Saving..." : "Save public profile"}
             </Button>
           </div>
         </div>

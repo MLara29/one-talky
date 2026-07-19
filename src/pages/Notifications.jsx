@@ -25,7 +25,7 @@ export default function Notifications() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-24">
-      <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
     </div>
   );
 
@@ -43,7 +43,7 @@ export default function Notifications() {
         <div className="space-y-2">
           {notifications.map(n => (
             <div key={n.id} className={`theme-card rounded-2xl border p-4 flex items-start justify-between gap-3 transition-all ${
-              n.is_read ? "bg-white/3 border-white/5" : "bg-violet-500/10 border-violet-500/20"
+              n.is_read ? "bg-white/3 border-white/5" : "bg-orange-500/10 border-orange-500/20"
             }`}>
               <div>
                 <p className={`text-sm font-medium ${n.is_read ? "theme-subtext text-gray-500" : "theme-heading text-white"}`}>{n.title}</p>
@@ -51,7 +51,7 @@ export default function Notifications() {
                 <p className="theme-subtext text-[10px] text-gray-500 mt-1">{new Date(n.created_date).toLocaleString()}</p>
               </div>
               {!n.is_read && (
-                <Button size="sm" variant="ghost" onClick={() => markRead(n.id)} className="shrink-0 text-violet-500 hover:text-violet-600 hover:bg-violet-500/10">
+                <Button size="sm" variant="ghost" onClick={() => markRead(n.id)} className="shrink-0 text-orange-400 hover:text-orange-500 hover:bg-orange-500/10">
                   <Check className="w-4 h-4" />
                 </Button>
               )}
