@@ -77,7 +77,7 @@ export default function OnboardingStudent() {
 
   const handleSubmit = async () => {
     if (!userId) {
-      toast({ title: "Erro de autenticação", description: "Recarregue a página e tente novamente.", variant: "destructive" });
+      toast({ title: "Authentication error", description: "Please reload the page and try again.", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -103,7 +103,7 @@ export default function OnboardingStudent() {
       toast({ title: t(uiLang, "welcomeTitle"), description: t(uiLang, "welcomeDesc") });
       window.location.href = "/";
     } catch (e) {
-      toast({ title: "Erro", description: String(e?.message || t(uiLang, "errorMsg")), variant: "destructive" });
+      toast({ title: "Error", description: String(e?.message || t(uiLang, "errorMsg")), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -144,7 +144,7 @@ export default function OnboardingStudent() {
           </div>
 
           <h1 className="font-display text-2xl font-bold text-gray-900">{t(uiLang, "setupProfile")}</h1>
-          <p className="text-gray-500 text-sm mt-1">Passo {step} de 3</p>
+          <p className="text-gray-500 text-sm mt-1">Step {step} of 3</p>
           <div className="flex justify-center gap-2 mt-4">
             {[1, 2, 3].map(s => (
               <div key={s} className={`h-1.5 w-14 rounded-full transition-colors ${s <= step ? "bg-violet-600" : "bg-gray-200"}`} />
@@ -265,8 +265,8 @@ export default function OnboardingStudent() {
             <div className="space-y-5">
               {/* Conversation Topics */}
               <div>
-                <Label className={`${labelCls} block mb-1`}>Tópicos favoritos de conversa</Label>
-                <p className="text-xs text-gray-500 mb-3">Escolha os assuntos que você mais gosta de discutir (selecione quantos quiser)</p>
+                <Label className={`${labelCls} block mb-1`}>{t(uiLang, "favoriteTopics") || "Favorite conversation topics"}</Label>
+                <p className="text-xs text-gray-500 mb-3">Choose the topics you enjoy discussing most (select as many as you like)</p>
                 <div className="flex flex-wrap gap-2">
                   {INTERESTS.map(topic => (
                     <button
@@ -288,28 +288,28 @@ export default function OnboardingStudent() {
               {/* Coupon field */}
               <div>
                 <Label className={`${labelCls} flex items-center gap-1.5 mb-1.5`}>
-                  <Tag className="w-3.5 h-3.5" /> Cupom promocional <span className="text-gray-400 font-normal">(opcional)</span>
+                  <Tag className="w-3.5 h-3.5" /> Promo coupon <span className="text-gray-400 font-normal">(optional)</span>
                 </Label>
                 <div className="flex gap-2">
                   <Input
                     value={couponCode}
                     onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponStatus(null); setCouponData(null); }}
-                    placeholder="Ex: BEMVINDO10"
+                    placeholder="Ex: WELCOME10"
                     className={`${inputCls} font-mono uppercase`}
                   />
                   <Button type="button" onClick={checkCoupon} disabled={!couponCode.trim() || checkingCoupon}
                     variant="outline" className="shrink-0 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white px-4">
-                    {checkingCoupon ? "..." : "Aplicar"}
+                    {checkingCoupon ? "..." : "Apply"}
                   </Button>
                 </div>
                 {couponStatus === "valid" && couponData && (
                   <p className="flex items-center gap-1.5 text-emerald-600 text-xs mt-1.5">
-                    <CheckCircle className="w-3.5 h-3.5" /> Cupom válido! Você ganha {couponData.credits_minutes} minutos grátis 🎉
+                    <CheckCircle className="w-3.5 h-3.5" /> Valid coupon! You get {couponData.credits_minutes} free minutes 🎉
                   </p>
                 )}
                 {couponStatus === "invalid" && (
                   <p className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
-                    <XCircle className="w-3.5 h-3.5" /> Cupom inválido ou expirado.
+                    <XCircle className="w-3.5 h-3.5" /> Invalid or expired coupon.
                   </p>
                 )}
               </div>
