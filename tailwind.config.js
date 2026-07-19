@@ -62,12 +62,12 @@ module.exports = {
   			}
   		},
   		fontFamily: {
-  			sans: ['var(--font-sans)', 'Open Sans', 'ui-sans-serif'],
+  			sans: ['var(--font-sans)', 'Inter', 'ui-sans-serif'],
   			serif: ['var(--font-serif)', 'Georgia', 'ui-serif'],
   			mono: ['var(--font-mono)', 'Menlo', 'ui-monospace'],
-  			heading: ['var(--font-sans)', 'Open Sans', 'ui-sans-serif'],
-  			body: ['var(--font-sans)', 'Open Sans', 'ui-sans-serif'],
-  			display: ['var(--font-sans)', 'Open Sans', 'ui-sans-serif'],
+  			heading: ['var(--font-heading)', 'Poppins', 'ui-sans-serif'],
+  			body: ['var(--font-body)', 'Inter', 'ui-sans-serif'],
+  			display: ['var(--font-display)', 'Poppins', 'ui-sans-serif'],
   		},
   		keyframes: {
   			'float': {
