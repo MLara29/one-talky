@@ -17,10 +17,10 @@ for (let h = 6; h < 24; h++) {
   HOURS.push(`${String(h).padStart(2, "0")}:30`);
 }
 
-const WEEKDAY_SHORT_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-const MONTH_NAMES_PT = [
-  "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+const WEEKDAY_SHORT_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_NAMES_EN = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
 ];
 
 function getDaysInMonth(year, month) {
@@ -99,9 +99,9 @@ export default function TutorSchedule() {
     setSaving(true);
     try {
       await base44.entities.TutorProfile.update(profile.id, { availability });
-      toast({ title: "Agenda salva! ✅", description: "Seus horários foram atualizados com sucesso." });
+      toast({ title: "Schedule saved! ✅", description: "Your availability has been updated successfully." });
     } catch (err) {
-      toast({ title: "Erro ao salvar", description: err?.message || "Tente novamente.", variant: "destructive" });
+      toast({ title: "Error saving", description: err?.message || "Please try again.", variant: "destructive" });
     } finally { setSaving(false); }
   };
 
@@ -145,14 +145,14 @@ export default function TutorSchedule() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Minha Agenda</h1>
+          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">My Schedule</h1>
           <p className="theme-subtext text-gray-500 text-sm mt-1">
-            Defina sua disponibilidade semanal
+            Set your weekly availability
           </p>
         </div>
         <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
           <div className={`w-2.5 h-2.5 rounded-full ${profile?.is_available_now ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`} />
-          <Label className="theme-subtext text-sm font-medium text-gray-500">Disponível agora</Label>
+          <Label className="theme-subtext text-sm font-medium text-gray-500">Available now</Label>
           <Switch checked={profile?.is_available_now} onCheckedChange={toggleAvailableNow} />
         </div>
       </div>
@@ -161,9 +161,9 @@ export default function TutorSchedule() {
       <div className="mb-5 flex items-start gap-2 px-4 py-3 rounded-2xl bg-violet-500/10 border border-violet-500/20">
         <Info className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
         <p className="text-xs text-violet-300">
-          Seus horários são salvos no seu fuso horário:{" "}
-          <strong className="text-violet-200">{tutorTz}</strong>. Os alunos verão os horários convertidos automaticamente para o fuso deles.
-          {totalSlots > 0 && <span className="ml-2 text-violet-400">· {totalSlots} horário{totalSlots > 1 ? "s" : ""} configurado{totalSlots > 1 ? "s" : ""} na semana</span>}
+          Your slots are saved in your timezone:{" "}
+          <strong className="text-violet-200">{tutorTz}</strong>. Students will see them automatically converted to their own timezone.
+          {totalSlots > 0 && <span className="ml-2 text-violet-400">· {totalSlots} slot{totalSlots > 1 ? "s" : ""} configured this week</span>}
         </p>
       </div>
 
@@ -177,7 +177,7 @@ export default function TutorSchedule() {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <p className="theme-heading font-semibold text-white text-lg">
-              {MONTH_NAMES_PT[viewMonth]} {viewYear}
+              {MONTH_NAMES_EN[viewMonth]} {viewYear}
             </p>
             <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-white/10 transition-colors text-gray-400 hover:text-white">
               <ChevronRight className="w-5 h-5" />
@@ -186,7 +186,7 @@ export default function TutorSchedule() {
 
           {/* Weekday headers */}
           <div className="grid grid-cols-7 mb-2">
-            {WEEKDAY_SHORT_PT.map(d => (
+            {WEEKDAY_SHORT_EN.map(d => (
               <div key={d} className="text-center text-xs font-semibold text-gray-500 py-1">{d}</div>
             ))}
           </div>
@@ -233,15 +233,15 @@ export default function TutorSchedule() {
           <div className="flex items-center gap-4 mt-5 pt-4 border-t border-white/5 flex-wrap">
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <div className="w-3 h-3 rounded-sm bg-emerald-500/20 border border-emerald-500/30" />
-              Com horários
+              Has slots
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <div className="w-3 h-3 rounded-sm bg-violet-600" />
-              Selecionado
+              Selected
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <div className="w-3 h-3 rounded-sm bg-white/5 border border-white/10" />
-              Sem horários
+              No slots
             </div>
           </div>
         </div>
@@ -253,21 +253,21 @@ export default function TutorSchedule() {
               <div className="w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
                 <Clock className="w-8 h-8 text-violet-400" />
               </div>
-              <p className="theme-heading font-semibold text-white">Selecione um dia</p>
+              <p className="theme-heading font-semibold text-white">Select a day</p>
               <p className="theme-subtext text-sm text-gray-500 max-w-[220px]">
-                Clique em um dia para definir os horários disponíveis. Dias da mesma semana compartilham a mesma configuração.
+                Click a day to set your available slots. Days of the same weekday share the same configuration.
               </p>
             </div>
           ) : (
             <>
               <div className="mb-4">
                 <p className="theme-heading font-semibold text-white text-lg">
-                  {selectedDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+                  {selectedDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Disponibilidade para toda <strong className="text-violet-400">{
-                    new Intl.DateTimeFormat("pt-BR", { timeZone: tutorTz, weekday: "long" }).format(selectedDate)
-                  }s</strong> · {selectedSlots.length === 0 ? "Nenhum horário" : `${selectedSlots.length} slot${selectedSlots.length > 1 ? "s" : ""} de 30min`}
+                  Availability for every <strong className="text-violet-400">{
+                    new Intl.DateTimeFormat("en-US", { timeZone: tutorTz, weekday: "long" }).format(selectedDate)
+                  }</strong> · {selectedSlots.length === 0 ? "No slots selected" : `${selectedSlots.length} 30-min slot${selectedSlots.length > 1 ? "s" : ""}`}
                 </p>
               </div>
 
@@ -292,7 +292,7 @@ export default function TutorSchedule() {
 
               {selectedSlots.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-white/5">
-                  <p className="text-xs text-gray-500 mb-2">Horários selecionados (no seu fuso):</p>
+                  <p className="text-xs text-gray-500 mb-2">Selected slots (in your timezone):</p>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedSlots.map(h => (
                       <span key={h} className="text-xs bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 px-2 py-0.5 rounded-lg">
@@ -313,7 +313,7 @@ export default function TutorSchedule() {
           disabled={saving}
           className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all"
         >
-          {saving ? "Salvando..." : "Salvar agenda"}
+          {saving ? "Saving..." : "Save schedule"}
         </Button>
       </div>
     </div>
