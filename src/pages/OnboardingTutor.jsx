@@ -177,10 +177,6 @@ export default function OnboardingTutor() {
                 onVideoRemoved={() => set("intro_video_url", "")}
               />
 
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                <p className="text-xs text-emerald-700 font-medium">💡 Remuneração definida pela plataforma: R$ 2,20/min. O aluno paga R$ 66 a cada 30 minutos.</p>
-              </div>
-
               <div className="flex gap-3 mt-2">
                 <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
                   <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
