@@ -10,7 +10,7 @@ const STATUS_STYLES = {
   closed: "bg-gray-500/10 border-gray-500/20 text-gray-400",
 };
 
-const STATUS_LABELS = { open: "Aberto", replied: "Respondido", closed: "Encerrado" };
+const STATUS_LABELS = { open: "Open", replied: "Replied", closed: "Closed" };
 
 export default function AdminSupport() {
   const { toast } = useToast();
@@ -38,7 +38,7 @@ export default function AdminSupport() {
       status: "replied",
       replied_at: new Date().toISOString(),
     });
-    toast({ title: "Resposta enviada!" });
+    toast({ title: "Reply sent!" });
     setSending(null);
     setReplyText(prev => ({ ...prev, [msg.id]: "" }));
     load();
@@ -55,19 +55,19 @@ export default function AdminSupport() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">Suporte</h1>
-          <p className="text-gray-500 text-sm mt-1">{counts.open} aberto{counts.open !== 1 ? "s" : ""} · {counts.total} total</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">Support</h1>
+          <p className="text-gray-500 text-sm mt-1">{counts.open} open · {counts.total} total</p>
         </div>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-24">
-          <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
         </div>
       ) : messages.length === 0 ? (
         <div className="text-center py-24 rounded-3xl border border-white/5 bg-white/3">
           <MessageSquare className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-          <p className="text-gray-500 text-sm">Nenhuma mensagem de suporte</p>
+          <p className="text-gray-500 text-sm">No support messages</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -78,8 +78,8 @@ export default function AdminSupport() {
                 className="w-full text-left flex items-center justify-between gap-4 p-4 hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-500/20 flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-4 h-4 text-violet-400" />
+                  <div className="w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-4 h-4 text-orange-400" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-white font-semibold text-sm truncate">{msg.subject}</p>
@@ -102,8 +102,8 @@ export default function AdminSupport() {
                   </div>
 
                   {msg.admin_reply && (
-                    <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3">
-                      <p className="text-xs text-violet-400 mb-1 font-semibold">Sua resposta</p>
+                    <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3">
+                      <p className="text-xs text-orange-400 mb-1 font-semibold">Your reply</p>
                       <p className="text-gray-300 text-sm whitespace-pre-wrap">{msg.admin_reply}</p>
                     </div>
                   )}
@@ -113,16 +113,16 @@ export default function AdminSupport() {
                       <textarea
                         value={replyText[msg.id] || ""}
                         onChange={e => setReplyText(prev => ({ ...prev, [msg.id]: e.target.value }))}
-                        placeholder="Escreva uma resposta..."
+                        placeholder="Write a reply..."
                         rows={3}
-                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-violet-500/50 resize-none"
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
                       />
                       <div className="flex flex-col gap-2">
                         <Button
                           size="sm"
                           onClick={() => sendReply(msg)}
                           disabled={sending === msg.id || !replyText[msg.id]?.trim()}
-                          className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0"
+                          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0"
                         >
                           <Send className="w-3.5 h-3.5" />
                         </Button>
@@ -131,7 +131,7 @@ export default function AdminSupport() {
                           variant="ghost"
                           onClick={() => closeTicket(msg.id)}
                           className="border border-gray-500/20 text-gray-500 hover:text-gray-300"
-                          title="Encerrar ticket"
+                          title="Close ticket"
                         >
                           <XCircle className="w-3.5 h-3.5" />
                         </Button>
@@ -140,7 +140,7 @@ export default function AdminSupport() {
                   )}
 
                   {msg.status === "closed" && (
-                    <p className="text-xs text-gray-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Ticket encerrado</p>
+                    <p className="text-xs text-gray-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Ticket closed</p>
                   )}
                 </div>
               )}
