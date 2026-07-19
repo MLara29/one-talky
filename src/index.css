@@ -6,37 +6,37 @@
 
 :root {
   --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  --foreground: 270 6% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --card-foreground: 270 6% 10%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --chart-1: 221.2 83.2% 53.3%;
+  --popover-foreground: 270 6% 10%;
+  --primary: 262 83% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 270 20% 96%;
+  --secondary-foreground: 270 6% 10%;
+  --muted: 270 20% 96%;
+  --muted-foreground: 270 5% 45%;
+  --accent: 270 20% 94%;
+  --accent-foreground: 262 83% 58%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 270 15% 91%;
+  --input: 270 15% 91%;
+  --ring: 262 83% 58%;
+  --chart-1: 262 83% 58%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
+  --chart-4: 200 70% 50%;
   --chart-5: 340 75% 55%;
-  --sidebar: 0 0% 98%;
-  --sidebar-foreground: 222.2 84% 4.9%;
-  --sidebar-primary: 221.2 83.2% 53.3%;
-  --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 210 40% 96.1%;
-  --sidebar-accent-foreground: 222.2 47.4% 11.2%;
-  --sidebar-border: 214.3 31.8% 91.4%;
-  --sidebar-ring: 221.2 83.2% 53.3%;
+  --sidebar: 270 25% 98%;
+  --sidebar-foreground: 270 6% 10%;
+  --sidebar-primary: 262 83% 58%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 270 20% 94%;
+  --sidebar-accent-foreground: 262 83% 58%;
+  --sidebar-border: 270 15% 91%;
+  --sidebar-ring: 262 83% 58%;
   --font-sans: 'Inter', sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
@@ -46,69 +46,69 @@
   --radius: 0.75rem;
 
   /* App-specific aliases */
-  --app-bg: #f1f5f9;
+  --app-bg: #f5f3ff;
   --app-sidebar-bg: #ffffff;
   --app-header-bg: #ffffff;
-  --app-border: #e2e8f0;
+  --app-border: #ede9fe;
   --app-card-bg: #ffffff;
-  --app-text-primary: #0f172a;
-  --app-text-secondary: #475569;
-  --app-text-muted: #94a3b8;
-  --app-nav-active-bg: #eff6ff;
-  --app-nav-hover-bg: #f8fafc;
-  --app-primary: #3b82f6;
-  --app-primary-light: #eff6ff;
+  --app-text-primary: #1e1b2e;
+  --app-text-secondary: #5b5676;
+  --app-text-muted: #9ca3af;
+  --app-nav-active-bg: #ede9fe;
+  --app-nav-hover-bg: #f5f3ff;
+  --app-primary: #7c3aed;
+  --app-primary-light: #ede9fe;
   --app-yellow: #f59e0b;
   --app-yellow-light: rgba(245,158,11,0.12);
 }
 
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
-  --chart-1: 220 70% 50%;
+  --background: 270 20% 7%;
+  --foreground: 270 10% 95%;
+  --card: 270 20% 10%;
+  --card-foreground: 270 10% 95%;
+  --popover: 270 20% 7%;
+  --popover-foreground: 270 10% 95%;
+  --primary: 262 83% 65%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 270 15% 18%;
+  --secondary-foreground: 270 10% 95%;
+  --muted: 270 15% 18%;
+  --muted-foreground: 270 5% 55%;
+  --accent: 270 15% 18%;
+  --accent-foreground: 270 10% 95%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 270 15% 20%;
+  --input: 270 15% 20%;
+  --ring: 262 83% 65%;
+  --chart-1: 262 83% 65%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
+  --chart-4: 200 70% 50%;
   --chart-5: 340 75% 55%;
-  --sidebar: 222.2 84% 4.9%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-primary: 217.2 91.2% 59.8%;
-  --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-  --sidebar-accent: 217.2 32.6% 17.5%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 217.2 32.6% 17.5%;
-  --sidebar-ring: 224.3 76.3% 48%;
+  --sidebar: 270 20% 10%;
+  --sidebar-foreground: 270 10% 95%;
+  --sidebar-primary: 262 83% 65%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 270 15% 18%;
+  --sidebar-accent-foreground: 262 83% 65%;
+  --sidebar-border: 270 15% 20%;
+  --sidebar-ring: 262 83% 65%;
 
   /* App-specific aliases — dark */
-  --app-bg: #0f172a;
-  --app-sidebar-bg: #1e293b;
-  --app-header-bg: #1e293b;
-  --app-border: #334155;
-  --app-card-bg: #1e293b;
-  --app-text-primary: #f1f5f9;
-  --app-text-secondary: #94a3b8;
-  --app-text-muted: #64748b;
-  --app-nav-active-bg: #1e3a5f;
-  --app-nav-hover-bg: #263548;
-  --app-primary: #3b82f6;
-  --app-primary-light: #1e3a5f;
+  --app-bg: #13111a;
+  --app-sidebar-bg: #1a1726;
+  --app-header-bg: #1a1726;
+  --app-border: #2d2a3e;
+  --app-card-bg: #1a1726;
+  --app-text-primary: #f0eeff;
+  --app-text-secondary: #a89ec0;
+  --app-text-muted: #6b6585;
+  --app-nav-active-bg: #2d2a4a;
+  --app-nav-hover-bg: #231f35;
+  --app-primary: #9f7aea;
+  --app-primary-light: #2d2a4a;
   --app-yellow: #f59e0b;
   --app-yellow-light: rgba(245,158,11,0.12);
 }
@@ -131,7 +131,7 @@
   border-radius: var(--radius);
 }
 .theme-card:hover {
-  box-shadow: 0 4px 20px 0 rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px 0 rgba(124,58,237,0.08);
 }
 .theme-heading {
   color: var(--app-text-primary);
@@ -156,12 +156,12 @@
 }
 .theme-badge-primary {
   background: var(--app-primary-light);
-  border: 1px solid rgba(59,130,246,0.25);
+  border: 1px solid rgba(124,58,237,0.2);
   color: var(--app-primary);
 }
 .theme-badge-violet {
   background: #f5f3ff;
-  border: 1px solid rgba(139,92,246,0.25);
+  border: 1px solid rgba(124,58,237,0.2);
   color: #7c3aed;
 }
 .theme-btn-ghost {
