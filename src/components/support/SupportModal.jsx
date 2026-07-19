@@ -35,8 +35,8 @@ export default function SupportModal({ onClose }) {
               <MessageSquare className="w-4 h-4 text-violet-500" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>Falar com o suporte</h2>
-              <p className="text-xs" style={{ color: "var(--app-text-secondary)" }}>Nossa equipe responderá em breve</p>
+              <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>Contact Support</h2>
+              <p className="text-xs" style={{ color: "var(--app-text-secondary)" }}>Our team will get back to you shortly</p>
             </div>
           </div>
           <button onClick={onClose} className="transition-colors" style={{ color: "var(--app-text-muted)" }}>
@@ -49,30 +49,30 @@ export default function SupportModal({ onClose }) {
             <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-7 h-7 text-emerald-500" />
             </div>
-            <h3 className="font-display font-bold mb-2" style={{ color: "var(--app-text-primary)" }}>Mensagem enviada!</h3>
-            <p className="text-sm mb-6" style={{ color: "var(--app-text-secondary)" }}>Entraremos em contato em breve.</p>
-            <Button onClick={onClose} className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0">
-              Fechar
+            <h3 className="font-display font-bold mb-2" style={{ color: "var(--app-text-primary)" }}>Message sent!</h3>
+            <p className="text-sm mb-6" style={{ color: "var(--app-text-secondary)" }}>We'll get back to you soon.</p>
+            <Button onClick={onClose} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0">
+              Close
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Assunto</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Subject</label>
               <Input
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
-                placeholder="Ex: Problema com pagamento"
+                placeholder="e.g. Payment issue"
                 className="theme-input"
                 style={{ background: "var(--app-nav-hover-bg)", borderColor: "var(--app-border)", color: "var(--app-text-primary)" }}
               />
             </div>
             <div>
-              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Mensagem</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Message</label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
-                placeholder="Descreva seu problema ou dúvida..."
+                placeholder="Describe your issue or question..."
                 rows={5}
                 className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-500/50 resize-none"
                 style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
@@ -81,10 +81,10 @@ export default function SupportModal({ onClose }) {
             <Button
               onClick={handleSend}
               disabled={sending || !subject.trim() || !message.trim()}
-              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20"
             >
               <Send className="w-4 h-4 mr-2" />
-              {sending ? "Enviando..." : "Enviar mensagem"}
+              {sending ? "Sending..." : "Send message"}
             </Button>
           </div>
         )}
