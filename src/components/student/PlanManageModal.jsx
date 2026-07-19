@@ -6,7 +6,7 @@ import { X, ArrowUp, ArrowDown, XCircle, CheckCircle, Zap } from "lucide-react";
 const PLANS = [
   { id: "free", label: "Free", minutes: 15, price: "R$ 0", color: "from-gray-500 to-gray-600" },
   { id: "basic", label: "Basic", minutes: 60, price: "R$ 49/mês", color: "from-blue-500 to-cyan-500" },
-  { id: "standard", label: "Standard", minutes: 200, price: "R$ 129/mês", color: "from-violet-500 to-indigo-500" },
+  { id: "standard", label: "Standard", minutes: 200, price: "R$ 129/mês", color: "from-orange-500 to-amber-500" },
   { id: "premium", label: "Premium", minutes: 600, price: "R$ 299/mês", color: "from-amber-400 to-orange-500" },
 ];
 
@@ -41,12 +41,12 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
       <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-violet-600" />
+            <div className="w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-orange-500" />
             </div>
             <div>
               <h2 className="font-display font-bold text-slate-800 text-base">Gerenciar plano</h2>
-              <p className="text-slate-500 text-xs">Plano atual: <span className="text-violet-600 font-semibold capitalize">{profile.plan || "free"}</span></p>
+              <p className="text-slate-500 text-xs">Plano atual: <span className="text-orange-500 font-semibold capitalize">{profile.plan || "free"}</span></p>
             </div>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700 transition-colors">
@@ -61,7 +61,7 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
             </div>
             <h3 className="font-display font-bold text-slate-800 mb-2">Plano atualizado!</h3>
             <p className="text-slate-500 text-sm mb-6">Seu plano foi alterado com sucesso.</p>
-            <Button onClick={onClose} className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0">Fechar</Button>
+            <Button onClick={onClose} className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0">Fechar</Button>
           </div>
         ) : (
           <>
@@ -75,7 +75,7 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
                     onClick={() => setSelected(plan.id)}
                     className={`text-left p-4 rounded-2xl border transition-all ${
                       isActive
-                        ? "border-violet-500 bg-violet-50"
+                        ? "border-orange-500 bg-orange-50"
                         : "border-gray-200 bg-gray-50 hover:border-gray-300"
                     }`}
                   >
@@ -114,7 +114,7 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
               <Button
                 onClick={handleConfirm}
                 disabled={saving || isSame}
-                className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20"
+                className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20"
               >
                 {saving ? "Salvando..." : isSame ? "Nenhuma alteração" : isUpgrade ? "Fazer upgrade" : "Fazer downgrade"}
               </Button>

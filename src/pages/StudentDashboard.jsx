@@ -96,7 +96,7 @@ export default function StudentDashboard() {
           {profile && (
             <button
               onClick={() => setShowPlanModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20 transition-all text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 hover:bg-orange-500/20 transition-all text-sm font-medium"
             >
               <Zap className="w-4 h-4" />
               <span className="capitalize">{profile.plan || "free"}</span>
@@ -118,7 +118,7 @@ export default function StudentDashboard() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder={t(lang, "searchByName")}
-            className="theme-input pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-violet-500/50"
+            className="theme-input pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-orange-500/50"
           />
         </div>
         <Button
@@ -138,7 +138,7 @@ export default function StudentDashboard() {
 
       {loading ? (
         <div className="flex items-center justify-center py-24">
-          <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="theme-empty text-center py-24 rounded-3xl border border-white/5">

@@ -61,7 +61,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
         <Button
           size="sm"
           onClick={() => setShowTopup(!showTopup)}
-          className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all"
+          className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all"
         >
           <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar minutos
         </Button>
@@ -81,7 +81,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
                 key={pack.id}
                 onClick={() => buyPack(pack)}
                 disabled={processing}
-                className="theme-card flex flex-col items-center gap-1 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-violet-500/40 hover:bg-violet-500/10 transition-all text-center"
+                className="theme-card flex flex-col items-center gap-1 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-orange-500/40 hover:bg-orange-500/10 transition-all text-center"
               >
                 <span className="theme-heading font-display font-bold text-white text-sm">{pack.label}</span>
                 {pack.badge && <span className="text-[10px] text-emerald-600 font-semibold">{pack.badge}</span>}

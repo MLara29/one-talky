@@ -11,13 +11,13 @@ export default function TutorCard({ tutor }) {
   const live = isLive(tutor);
   return (
     <Link to={`/tutor/${tutor.id}`} className="block group">
-      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:border-violet-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1">
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:border-orange-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1">
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <img
-              src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=7c3aed&color=fff&size=80`}
+              src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=F26A1B&color=fff&size=80`}
               alt={tutor.full_name}
-              className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10 group-hover:ring-violet-500/30 transition-all"
+              className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10 group-hover:ring-orange-500/30 transition-all"
             />
             {live && (
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 border-2 border-slate-950 rounded-full">
@@ -26,7 +26,7 @@ export default function TutorCard({ tutor }) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="theme-heading font-display font-bold text-white group-hover:text-violet-600 transition-colors truncate">{tutor.full_name}</h3>
+            <h3 className="theme-heading font-display font-bold text-white group-hover:text-orange-400 transition-colors truncate">{tutor.full_name}</h3>
             <p className="theme-subtext text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
               <span className="text-lg leading-none">
                 {getCountryFlag(tutor.nationality) !== "🌍"
@@ -52,7 +52,7 @@ export default function TutorCard({ tutor }) {
 
         <div className="mt-4 flex flex-wrap gap-1.5">
           {tutor.native_languages?.map(l => (
-            <span key={l} className="theme-badge-violet text-xs px-2.5 py-1 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium">
+            <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium">
               {getLanguageLabel(l)}
             </span>
           ))}

@@ -110,7 +110,7 @@ export default function TutorDashboard() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-24">
-      <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
     </div>
   );
 
@@ -143,7 +143,7 @@ export default function TutorDashboard() {
   );
 
   const stats = [
-    { label: t(lang, "totalLessons"), value: profile.total_lessons || 0, icon: Users, gradient: "from-violet-500 to-indigo-500" },
+    { label: t(lang, "totalLessons"), value: profile.total_lessons || 0, icon: Users, gradient: "from-orange-500 to-amber-500" },
     { label: t(lang, "minutesTaught"), value: profile.total_minutes || 0, icon: Clock, gradient: "from-blue-500 to-cyan-500" },
     { label: t(lang, "rating"), value: profile.average_rating?.toFixed(1) || "N/A", icon: Star, gradient: "from-amber-400 to-orange-500" },
     { label: t(lang, "earnings"), value: `$${completedLessons.reduce((s, l) => s + (l.duration_minutes || 0) * (profile.price_per_minute || 0.9967), 0).toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
@@ -229,7 +229,7 @@ export default function TutorDashboard() {
                       </p>
                       {sp && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium capitalize">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium capitalize">
                             {sp.level}
                           </span>
                           {sp.conversation_topics?.slice(0, 3).map(topic => (
@@ -242,7 +242,7 @@ export default function TutorDashboard() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <Link to={`/classroom/${l.id}`}>
-                        <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-violet-600 to-indigo-600 shadow-violet-500/20"}`}>
+                        <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-orange-500 to-amber-500 shadow-orange-500/20"}`}>
                           {l.status === "in_progress" ? t(lang, "joinNow") : t(lang, "join")}
                         </Button>
                       </Link>
