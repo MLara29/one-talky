@@ -18,10 +18,15 @@
       "type": "string",
       "enum": [
         "pending",
+        "processing",
         "paid",
         "rejected"
       ],
       "default": "pending"
+    },
+    "tutor_confirmed": {
+      "type": "boolean",
+      "default": false
     },
     "pioneer_email": {
       "type": "string"
@@ -47,9 +52,16 @@
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.tutor_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "delete": {
       "user_condition": {
