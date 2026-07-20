@@ -48,7 +48,7 @@ export default function OnboardingTutor() {
 
   const handleSubmit = async () => {
     if (!userId) {
-      toast({ title: "Erro de autenticação", description: "Recarregue a página e tente novamente.", variant: "destructive" });
+      toast({ title: "Authentication error", description: "Please reload the page and try again.", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -69,37 +69,37 @@ export default function OnboardingTutor() {
       await base44.entities.TutorProfile.create(profileData);
       await base44.functions.invoke('setUserRole', { role: 'tutor' });
       await base44.auth.updateMe({ profile_completed: true });
-      toast({ title: "Candidatura enviada! 🎉", description: "Vamos revisar o seu perfil e entraremos em contato em breve." });
+      toast({ title: "Application submitted! 🎉", description: "We'll review your profile and get back to you soon." });
       window.location.href = "/";
     } catch (e) {
-      toast({ title: "Erro ao finalizar cadastro", description: String(e?.message || "Tente novamente."), variant: "destructive" });
+      toast({ title: "Error submitting application", description: String(e?.message || "Please try again."), variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
-  const inputCls = "mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 shadow-sm";
+  const inputCls = "mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 shadow-sm";
   const selectTriggerCls = "mt-1.5 bg-white border-gray-300 text-gray-900 shadow-sm";
   const selectContentCls = "bg-white border-gray-200 text-gray-900 shadow-xl z-50";
-  const selectItemCls = "text-gray-900 focus:bg-emerald-50 focus:text-emerald-700";
+  const selectItemCls = "text-gray-900 focus:bg-orange-50 focus:text-orange-700";
   const labelCls = "text-gray-700 font-medium";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <span className="font-display text-xl font-bold text-gray-900">One Talky</span>
           </div>
-          <h1 className="font-display text-2xl font-bold text-gray-900">Torne-se um tutor</h1>
-          <p className="text-gray-500 text-sm mt-1">Passo {step} de 3</p>
+          <h1 className="font-display text-2xl font-bold text-gray-900">Become a tutor</h1>
+          <p className="text-gray-500 text-sm mt-1">Step {step} of 3</p>
           <div className="flex justify-center gap-2 mt-4">
             {[1, 2, 3].map(s => (
-              <div key={s} className={`h-1.5 w-12 rounded-full transition-colors ${s <= step ? "bg-emerald-500" : "bg-gray-200"}`} />
+              <div key={s} className={`h-1.5 w-12 rounded-full transition-colors ${s <= step ? "bg-orange-500" : "bg-gray-200"}`} />
             ))}
           </div>
         </div>
@@ -110,19 +110,19 @@ export default function OnboardingTutor() {
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <Label className={labelCls}>Nome completo</Label>
+                <Label className={labelCls}>Full name</Label>
                 <Input
                   value={form.full_name}
                   onChange={e => set("full_name", e.target.value)}
-                  placeholder="Seu nome completo"
+                  placeholder="Your full name"
                   className={inputCls}
                 />
               </div>
               <div>
-                <Label className={labelCls}>País de residência</Label>
+                <Label className={labelCls}>Country of residence</Label>
                 <Select value={form.country} onValueChange={v => { set("country", v); set("nationality", v); }}>
                   <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder="Selecione o país" />
+                    <SelectValue placeholder="Select your country" />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
                     {COUNTRIES.map(c => <SelectItem key={c} value={c} className={selectItemCls}>{c}</SelectItem>)}
@@ -130,7 +130,7 @@ export default function OnboardingTutor() {
                 </Select>
               </div>
               <div>
-                <Label className={`${labelCls} mb-2 block`}>Idioma(s) nativo(s)</Label>
+                <Label className={`${labelCls} mb-2 block`}>Native language(s)</Label>
                 <div className="flex flex-wrap gap-2 mt-1.5">
                   {LANGUAGES.map(l => (
                     <button
@@ -139,8 +139,8 @@ export default function OnboardingTutor() {
                       onClick={() => toggleLang(l.value)}
                       className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
                         form.native_languages.includes(l.value)
-                          ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
-                          : "bg-white text-gray-600 border-gray-300 hover:border-emerald-400 hover:text-emerald-600"
+                          ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-600"
                       }`}
                     >
                       {l.flag} {l.label}
@@ -152,9 +152,9 @@ export default function OnboardingTutor() {
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={!form.full_name || !form.country || form.native_languages.length === 0}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all mt-2"
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all mt-2"
               >
-                Continuar <ChevronRight className="w-4 h-4 ml-1" />
+                Continue <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           )}
@@ -163,12 +163,12 @@ export default function OnboardingTutor() {
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <Label className={labelCls}>Bio (até 300 caracteres)</Label>
+                <Label className={labelCls}>Bio (up to 300 characters)</Label>
                 <Textarea
                   value={form.bio}
                   onChange={e => set("bio", e.target.value.slice(0, 300))}
-                  placeholder="Fale sobre você para os alunos..."
-                  className={`mt-1.5 h-24 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 shadow-sm`}
+                  placeholder="Tell students about yourself..."
+                  className={`mt-1.5 h-24 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 shadow-sm`}
                 />
                 <p className="text-xs text-gray-400 mt-1">{form.bio.length}/300</p>
               </div>
@@ -180,10 +180,10 @@ export default function OnboardingTutor() {
 
               <div className="flex gap-3 mt-2">
                 <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Back
                 </Button>
-                <Button type="button" onClick={() => setStep(3)} disabled={!form.bio} className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 shadow-lg shadow-emerald-500/20">
-                  Continuar <ChevronRight className="w-4 h-4 ml-1" />
+                <Button type="button" onClick={() => setStep(3)} disabled={!form.bio} className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20">
+                  Continue <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             </div>
@@ -193,8 +193,8 @@ export default function OnboardingTutor() {
           {step === 3 && (
             <div className="space-y-5">
               <div>
-                <Label className={`${labelCls} mb-1 block`}>Tópicos de conversa que você gosta</Label>
-                <p className="text-xs text-gray-500 mb-3">Selecione os assuntos que você se sente mais confortável em discutir</p>
+                <Label className={`${labelCls} mb-1 block`}>Conversation topics you enjoy</Label>
+                <p className="text-xs text-gray-500 mb-3">Select the subjects you feel most comfortable discussing</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {INTERESTS.map(i => (
                     <button
@@ -203,8 +203,8 @@ export default function OnboardingTutor() {
                       onClick={() => toggleInterest(i)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                         form.interests.includes(i)
-                          ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
-                          : "bg-white text-gray-600 border-gray-300 hover:border-emerald-400 hover:text-emerald-600"
+                          ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-600"
                       }`}
                     >
                       {i}
@@ -214,15 +214,15 @@ export default function OnboardingTutor() {
               </div>
               <div className="flex gap-3 mt-2">
                 <Button type="button" variant="outline" onClick={() => setStep(2)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Back
                 </Button>
                 <Button
                   type="button"
                   onClick={handleSubmit}
                   disabled={form.interests.length === 0 || saving || !userId}
-                  className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all"
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all"
                 >
-                  {saving ? "Enviando..." : "Enviar candidatura"}
+                  {saving ? "Submitting..." : "Submit application"}
                 </Button>
               </div>
             </div>
