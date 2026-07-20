@@ -77,13 +77,13 @@ export default function AdminEarnings() {
       if (tutorEmail) {
         await sendPaymentEmail(
           tutorEmail,
-          "💸 Seu pagamento está sendo processado – One Talky",
+          "💸 Your payment is being processed – One Talky",
           `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px">
-            <h2 style="color:#F26A1B;margin-bottom:8px">Olá, ${tutor.full_name}! 👋</h2>
-            <p style="color:#374151;font-size:16px">Seu pagamento de <strong style="color:#10b981">$${earned.toFixed(2)}</strong> está sendo processado pela equipe One Talky.</p>
-            <p style="color:#374151;font-size:15px">Em breve você receberá uma confirmação quando o pagamento for enviado para sua conta.</p>
-            <p style="color:#6b7280;font-size:13px;margin-top:24px">Qualquer dúvida, entre em contato pelo suporte da plataforma.</p>
-            <p style="color:#6b7280;font-size:13px">Equipe One Talky 🧡</p>
+            <h2 style="color:#F26A1B;margin-bottom:8px">Hi, ${tutor.full_name}! 👋</h2>
+            <p style="color:#374151;font-size:16px">Your payment of <strong style="color:#10b981">$${earned.toFixed(2)}</strong> is currently being processed by the One Talky team.</p>
+            <p style="color:#374151;font-size:15px">You will receive another email once the payment has been sent to your account.</p>
+            <p style="color:#6b7280;font-size:13px;margin-top:24px">If you have any questions, please reach out through the platform support.</p>
+            <p style="color:#6b7280;font-size:13px">The One Talky Team 🧡</p>
           </div>`
         );
       }
@@ -109,14 +109,14 @@ export default function AdminEarnings() {
       if (tutorEmail) {
         await sendPaymentEmail(
           tutorEmail,
-          "✅ Pagamento enviado! Confirme o recebimento – One Talky",
+          "✅ Payment sent! Please confirm receipt – One Talky",
           `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px">
-            <h2 style="color:#F26A1B;margin-bottom:8px">Olá, ${tutor.full_name}! 🎉</h2>
-            <p style="color:#374151;font-size:16px">Seu pagamento de <strong style="color:#10b981">$${(wr?.amount || 0).toFixed(2)}</strong> foi enviado com sucesso!</p>
-            <p style="color:#374151;font-size:15px">Por favor, acesse a plataforma <strong>One Talky</strong> e confirme o recebimento na sua área de ganhos.</p>
-            <a href="https://onetalky.base44.app/earnings" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#F26A1B;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px">Confirmar recebimento →</a>
-            <p style="color:#6b7280;font-size:13px;margin-top:24px">Qualquer dúvida, entre em contato pelo suporte da plataforma.</p>
-            <p style="color:#6b7280;font-size:13px">Equipe One Talky 🧡</p>
+            <h2 style="color:#F26A1B;margin-bottom:8px">Hi, ${tutor.full_name}! 🎉</h2>
+            <p style="color:#374151;font-size:16px">Your payment of <strong style="color:#10b981">$${(wr?.amount || 0).toFixed(2)}</strong> has been successfully sent!</p>
+            <p style="color:#374151;font-size:15px">Please log in to <strong>One Talky</strong> and confirm receipt in your earnings section.</p>
+            <a href="https://onetalky.base44.app/earnings" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#F26A1B;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px">Confirm receipt →</a>
+            <p style="color:#6b7280;font-size:13px;margin-top:24px">If you have any questions, please reach out through the platform support.</p>
+            <p style="color:#6b7280;font-size:13px">The One Talky Team 🧡</p>
           </div>`
         );
       }
