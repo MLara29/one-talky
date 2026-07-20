@@ -161,8 +161,17 @@ export default function TutorEarnings() {
         <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
           <CheckCircle className="w-5 h-5 text-gray-600 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm text-gray-400">Withdrawals are processed on the <strong className="text-white">15th and 30th</strong> of each month.</p>
-            <p className="text-xs text-gray-600 mt-0.5">Make sure your Payoneer email is set in <strong className="text-gray-400">Personal Info</strong> before the next withdrawal date.</p>
+            {profile?.contract_type === "upwork" ? (
+              <>
+                <p className="text-sm text-gray-400">Payments are processed <strong className="text-white">every Sunday</strong> via Upwork Bonus Tool.</p>
+                <p className="text-xs text-gray-600 mt-0.5">If you have a balance to receive, it will be processed weekly through your Upwork contract.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-400">Withdrawals are processed on the <strong className="text-white">15th and 30th</strong> of each month.</p>
+                <p className="text-xs text-gray-600 mt-0.5">Make sure your Payoneer email is set in <strong className="text-gray-400">Personal Info</strong> before the next withdrawal date.</p>
+              </>
+            )}
           </div>
         </div>
       )}

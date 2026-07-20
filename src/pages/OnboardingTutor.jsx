@@ -23,7 +23,7 @@ export default function OnboardingTutor() {
     bio: "",
     intro_video_url: "",
     interests: [],
-    price_per_minute: 0,
+    price_per_minute: 0.0833,
   });
 
   useEffect(() => {
