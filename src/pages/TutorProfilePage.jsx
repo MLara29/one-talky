@@ -18,6 +18,7 @@ export default function TutorProfilePage() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [inLesson, setInLesson] = useState(false);
 
   useEffect(() => { loadTutor(); }, [id]);
 
@@ -25,8 +26,12 @@ export default function TutorProfilePage() {
     try {
       const t = await base44.entities.TutorProfile.get(id);
       setTutor(t);
-      const r = await base44.entities.Review.filter({ tutor_id: id, is_visible: true });
+      const [r, activeLesson] = await Promise.all([
+        base44.entities.Review.filter({ tutor_id: id, is_visible: true }),
+        base44.entities.Lesson.filter({ tutor_id: t.user_id, status: "in_progress" }, "-created_date", 1),
+      ]);
       setReviews(r);
+      setInLesson(activeLesson.length > 0);
     } catch {} finally { setLoading(false); }
   };
 
@@ -91,7 +96,7 @@ export default function TutorProfilePage() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-24">
-      <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
     </div>
   );
 
@@ -101,7 +106,7 @@ export default function TutorProfilePage() {
     <div className="max-w-3xl mx-auto">
       <button
         onClick={() => navigate(-1)}
-        className="theme-subtext flex items-center gap-1 text-sm text-gray-500 hover:text-violet-500 mb-6 transition-colors font-medium"
+        className="theme-subtext flex items-center gap-1 text-sm text-gray-500 hover:text-orange-400 mb-6 transition-colors font-medium"
       >
         <ChevronLeft className="w-4 h-4" /> Back
       </button>
@@ -113,9 +118,9 @@ export default function TutorProfilePage() {
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <div className="relative shrink-0">
               <img
-                src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=7c3aed&color=fff&size=120`}
+                src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=F26A1B&color=fff&size=120`}
                 alt={tutor.full_name}
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-violet-500/20"
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-orange-500/20"
               />
               {tutor.is_available_now && (
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 border-2 border-white rounded-full">
@@ -137,10 +142,15 @@ export default function TutorProfilePage() {
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {tutor.native_languages?.map(l => (
-                  <span key={l} className="theme-badge-violet text-xs px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/20 text-violet-300 font-medium">
+                  <span key={l} className="text-xs px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium">
                     {getLanguageLabel(l)} (Native)
                   </span>
                 ))}
+                {inLesson && (
+                  <span className="text-xs px-3 py-1 rounded-full bg-red-500/15 border border-red-500/20 text-red-400 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> In a lesson
+                  </span>
+                )}
               </div>
             </div>
 
@@ -180,10 +190,15 @@ export default function TutorProfilePage() {
         <div className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row gap-3">
           {tutor.is_available_now && (
             <Button
-              onClick={startInstantLesson} disabled={booking}
-              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white h-12 rounded-2xl border-0 shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all"
+              onClick={startInstantLesson} disabled={booking || inLesson}
+              className={`flex-1 h-12 rounded-2xl border-0 shadow-lg transition-all ${
+                inLesson
+                  ? "bg-red-500/10 border border-red-500/20 text-red-400 cursor-not-allowed opacity-60"
+                  : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-emerald-500/20 hover:scale-105"
+              }`}
             >
-              <Video className="w-4 h-4 mr-2" /> {booking ? "Starting..." : "Lesson now"}
+              <Video className="w-4 h-4 mr-2" />
+              {inLesson ? "Tutor is busy" : booking ? "Starting..." : "Lesson now"}
             </Button>
           )}
           <Button
@@ -191,7 +206,7 @@ export default function TutorProfilePage() {
             className={`flex-1 h-12 rounded-2xl border-0 transition-all hover:scale-105 shadow-lg ${
               tutor.is_available_now
                 ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
-                : "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-violet-500/20"
+                : "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/20"
             }`}
           >
             <Calendar className="w-4 h-4 mr-2" /> Schedule lesson

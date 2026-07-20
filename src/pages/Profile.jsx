@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Save, Camera, Upload, Eye } from "lucide-react";
+import { User, Save, Camera, Upload, Eye, Video } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Profile() {
@@ -17,8 +17,10 @@ export default function Profile() {
   const [pioneerEmail, setPioneerEmail] = useState("");
   const [activeTab, setActiveTab] = useState("personal");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+  const videoInputRef = useRef(null);
   const role = user?.role;
 
   useEffect(() => { loadProfile(); }, [user]);
@@ -69,6 +71,17 @@ export default function Profile() {
       setProfile({ ...profile, photo_url: file_url });
       toast({ title: "Photo updated! 📸" });
     } catch { toast({ title: "Error uploading photo", variant: "destructive" }); } finally { setUploadingPhoto(false); }
+  };
+
+  const handleVideoUpload = async (file) => {
+    if (!file || !profile) return;
+    setUploadingVideo(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.TutorProfile.update(profile.id, { intro_video_url: file_url });
+      setProfile({ ...profile, intro_video_url: file_url });
+      toast({ title: "Intro video updated! 🎥" });
+    } catch { toast({ title: "Error uploading video", variant: "destructive" }); } finally { setUploadingVideo(false); }
   };
 
   if (loading) return (
@@ -227,7 +240,7 @@ export default function Profile() {
               />
             </div>
 
-            <Label className="theme-subtext text-gray-500 text-sm block mb-3">Foto de perfil</Label>
+            <Label className="theme-subtext text-gray-500 text-sm block mb-3">Profile photo</Label>
             <div className="flex items-center gap-5">
               <div className="relative shrink-0">
                 <img
@@ -279,6 +292,46 @@ export default function Profile() {
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Intro video card */}
+          <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Video className="w-4 h-4 text-orange-400" />
+              <Label className="theme-subtext text-gray-500 text-sm">Intro video</Label>
+            </div>
+            <p className="text-xs text-orange-400">🎥 A short intro video helps students connect with you before booking a lesson. Keep it under 2 minutes!</p>
+            <input
+              ref={videoInputRef}
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={e => { if (e.target.files[0]) handleVideoUpload(e.target.files[0]); e.target.value = ""; }}
+            />
+            {profile?.intro_video_url ? (
+              <div className="space-y-3">
+                <video src={profile.intro_video_url} controls className="w-full rounded-xl bg-black" style={{ maxHeight: 220 }} />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => videoInputRef.current.click()}
+                  disabled={uploadingVideo}
+                  className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start"
+                >
+                  <Upload className="w-4 h-4 mr-2" /> {uploadingVideo ? "Uploading..." : "Replace video"}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => videoInputRef.current.click()}
+                disabled={uploadingVideo}
+                className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start"
+              >
+                <Upload className="w-4 h-4 mr-2" /> {uploadingVideo ? "Uploading..." : "Upload intro video"}
+              </Button>
+            )}
           </div>
 
           {/* Bio card */}

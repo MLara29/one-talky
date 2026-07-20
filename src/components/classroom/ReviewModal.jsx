@@ -64,14 +64,14 @@ export default function ReviewModal({ lesson, userRole, onClose }) {
         <Textarea
           value={comment} onChange={e => setComment(e.target.value)}
           placeholder="Leave a comment (optional)..."
-          className="mb-6 h-24 theme-input focus:border-violet-500/50"
+          className="mb-6 h-24 theme-input focus:border-orange-500/50"
         />
 
         <div className="flex gap-3">
           <Button variant="outline" onClick={onClose} className="flex-1 theme-btn-ghost rounded-xl">Skip</Button>
           <Button
             onClick={handleSubmit} disabled={rating === 0 || submitting}
-            className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20"
+            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20"
           >
             {submitting ? "Submitting..." : "Submit review"}
           </Button>
