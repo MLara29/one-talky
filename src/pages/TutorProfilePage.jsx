@@ -27,7 +27,7 @@ export default function TutorProfilePage() {
       const t = await base44.entities.TutorProfile.get(id);
       setTutor(t);
       const [r, activeLesson] = await Promise.all([
-        base44.entities.Review.filter({ tutor_id: id, is_visible: true }),
+        base44.entities.Review.filter({ tutor_id: t.user_id, is_visible: true }),
         base44.entities.Lesson.filter({ tutor_id: t.user_id, status: "in_progress" }, "-created_date", 1),
       ]);
       setReviews(r);
