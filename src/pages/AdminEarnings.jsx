@@ -44,12 +44,20 @@ export default function AdminEarnings() {
       .reduce((sum, l) => sum + (l.duration_minutes || 0) * (rate || 0), 0);
   };
 
+  const sendPaymentEmail = async (toEmail, subject, html) => {
+    try {
+      await base44.functions.sendEmail({ to: toEmail, subject, html });
+    } catch (e) {
+      console.warn("Email send failed:", e.message);
+    }
+  };
+
   const markProcessing = async (tutor) => {
     setProcessing(tutor.user_id + "_proc");
     try {
-      // Create or find latest pending/none withdrawal and set to processing
       const existing = withdrawals.find(w => w.tutor_id === tutor.user_id && w.status === "pending");
       const earned = getTutorEarned(tutor.user_id, tutor.price_per_minute);
+      const pioneerEmail = (() => { try { return JSON.parse(tutor.bank_info || "{}").pioneer_email || ""; } catch { return ""; } })();
       if (existing) {
         await base44.entities.WithdrawalRequest.update(existing.id, { status: "processing" });
       } else {
@@ -58,10 +66,28 @@ export default function AdminEarnings() {
           tutor_name: tutor.full_name,
           amount: earned,
           period: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-          pioneer_email: (() => { try { return JSON.parse(tutor.bank_info || "{}").pioneer_email || ""; } catch { return ""; } })(),
+          pioneer_email: pioneerEmail,
           status: "processing",
         });
       }
+
+      // Get tutor's user email
+      const users = await base44.entities.User.filter({ id: tutor.user_id });
+      const tutorEmail = users[0]?.email;
+      if (tutorEmail) {
+        await sendPaymentEmail(
+          tutorEmail,
+          "💸 Seu pagamento está sendo processado – One Talky",
+          `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px">
+            <h2 style="color:#F26A1B;margin-bottom:8px">Olá, ${tutor.full_name}! 👋</h2>
+            <p style="color:#374151;font-size:16px">Seu pagamento de <strong style="color:#10b981">$${earned.toFixed(2)}</strong> está sendo processado pela equipe One Talky.</p>
+            <p style="color:#374151;font-size:15px">Em breve você receberá uma confirmação quando o pagamento for enviado para sua conta.</p>
+            <p style="color:#6b7280;font-size:13px;margin-top:24px">Qualquer dúvida, entre em contato pelo suporte da plataforma.</p>
+            <p style="color:#6b7280;font-size:13px">Equipe One Talky 🧡</p>
+          </div>`
+        );
+      }
+
       toast({ title: "Payment processing notified ✅", description: `${tutor.full_name} will see the processing status.` });
       loadData();
     } catch {
@@ -76,6 +102,25 @@ export default function AdminEarnings() {
       if (wr) {
         await base44.entities.WithdrawalRequest.update(wr.id, { status: "paid" });
       }
+
+      // Get tutor's user email
+      const users = await base44.entities.User.filter({ id: tutor.user_id });
+      const tutorEmail = users[0]?.email;
+      if (tutorEmail) {
+        await sendPaymentEmail(
+          tutorEmail,
+          "✅ Pagamento enviado! Confirme o recebimento – One Talky",
+          `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px">
+            <h2 style="color:#F26A1B;margin-bottom:8px">Olá, ${tutor.full_name}! 🎉</h2>
+            <p style="color:#374151;font-size:16px">Seu pagamento de <strong style="color:#10b981">$${(wr?.amount || 0).toFixed(2)}</strong> foi enviado com sucesso!</p>
+            <p style="color:#374151;font-size:15px">Por favor, acesse a plataforma <strong>One Talky</strong> e confirme o recebimento na sua área de ganhos.</p>
+            <a href="https://onetalky.base44.app/earnings" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#F26A1B;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px">Confirmar recebimento →</a>
+            <p style="color:#6b7280;font-size:13px;margin-top:24px">Qualquer dúvida, entre em contato pelo suporte da plataforma.</p>
+            <p style="color:#6b7280;font-size:13px">Equipe One Talky 🧡</p>
+          </div>`
+        );
+      }
+
       toast({ title: "Marked as paid ✅", description: `${tutor.full_name} will be asked to confirm receipt.` });
       loadData();
     } catch {
