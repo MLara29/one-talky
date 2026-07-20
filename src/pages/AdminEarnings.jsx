@@ -27,10 +27,12 @@ export default function AdminEarnings() {
     } catch {} finally { setLoading(false); }
   };
 
-  // Calculate real earned per tutor from lessons
+  // Calculate unpaid earnings: only lessons after the last confirmed withdrawal
   const getTutorEarned = (tutorUserId, rate) => {
+    const tutorWRs = withdrawals.filter(w => w.tutor_id === tutorUserId && w.tutor_confirmed && w.confirmed_at);
+    const lastConfirmedAt = tutorWRs.sort((a, b) => new Date(b.confirmed_at) - new Date(a.confirmed_at))[0]?.confirmed_at || null;
     return lessons
-      .filter(l => l.tutor_id === tutorUserId)
+      .filter(l => l.tutor_id === tutorUserId && (!lastConfirmedAt || new Date(l.ended_at || l.created_date) > new Date(lastConfirmedAt)))
       .reduce((sum, l) => sum + (l.duration_minutes || 0) * (rate || 0), 0);
   };
 

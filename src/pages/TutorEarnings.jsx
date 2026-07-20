@@ -81,13 +81,10 @@ export default function TutorEarnings() {
     if (!paidUnconfirmedWR) return;
     setRequesting(true);
     try {
-      await base44.entities.WithdrawalRequest.update(paidUnconfirmedWR.id, { tutor_confirmed: true });
-      // Subtract paid amount from tutor profile earnings
-      const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
-      if (profiles.length > 0) {
-        const newEarnings = Math.max(0, (profiles[0].total_earnings || 0) - (paidUnconfirmedWR.amount || 0));
-        await base44.entities.TutorProfile.update(profiles[0].id, { total_earnings: newEarnings });
-      }
+      await base44.entities.WithdrawalRequest.update(paidUnconfirmedWR.id, {
+        tutor_confirmed: true,
+        confirmed_at: new Date().toISOString(),
+      });
       toast({ title: "Receipt confirmed! 🎉", description: "Thank you for confirming. Your earnings have been updated." });
       loadData();
     } catch {
@@ -96,8 +93,18 @@ export default function TutorEarnings() {
   };
 
   const rate = profile?.price_per_minute || 0.9967;
-  // Calculate total earned directly from completed lessons (source of truth)
-  const totalEarned = lessons.reduce((sum, l) => sum + (l.duration_minutes || 0) * rate, 0);
+
+  // Find the latest confirmed withdrawal date — lessons before this are already paid
+  const lastConfirmedAt = withdrawals
+    .filter(w => w.tutor_confirmed && w.confirmed_at)
+    .sort((a, b) => new Date(b.confirmed_at) - new Date(a.confirmed_at))[0]?.confirmed_at || null;
+
+  // Only count lessons after the last confirmed payment
+  const unpaidLessons = lastConfirmedAt
+    ? lessons.filter(l => new Date(l.ended_at || l.created_date) > new Date(lastConfirmedAt))
+    : lessons;
+
+  const totalEarned = unpaidLessons.reduce((sum, l) => sum + (l.duration_minutes || 0) * rate, 0);
 
   // Build per-day map for the calendar
   const dayDataMap = {};

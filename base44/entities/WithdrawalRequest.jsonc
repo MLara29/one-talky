@@ -28,6 +28,10 @@
       "type": "boolean",
       "default": false
     },
+    "confirmed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "pioneer_email": {
       "type": "string"
     }
