@@ -52,6 +52,8 @@ export default function TutorEarnings() {
 
   const isWithdrawalDay = () => { const day = new Date().getDate(); return day === 15 || day === 30; };
   const hasPendingWithdrawal = withdrawals.some(w => w.status === "pending");
+  const processingWR = withdrawals.find(w => w.status === "processing");
+  const paidUnconfirmedWR = withdrawals.find(w => w.status === "paid" && !w.tutor_confirmed);
   const getPioneerEmail = () => {
     try { return JSON.parse(profile?.bank_info || "{}").pioneer_email || null; } catch { return null; }
   };
@@ -67,12 +69,30 @@ export default function TutorEarnings() {
     const period = `${today.toLocaleString("en-US", { month: "long" })} ${today.getDate()}`;
     await base44.entities.WithdrawalRequest.create({
       tutor_id: profile.user_id, tutor_name: profile.full_name,
-      amount: profile.total_earnings || 0, period,
+      amount: totalEarned, period,
       pioneer_email: pioneerEmail, status: "pending",
     });
     toast({ title: "Withdrawal requested!", description: "We'll process your payment within 2 business days." });
     setRequesting(false);
     loadData();
+  };
+
+  const confirmReceipt = async () => {
+    if (!paidUnconfirmedWR) return;
+    setRequesting(true);
+    try {
+      await base44.entities.WithdrawalRequest.update(paidUnconfirmedWR.id, { tutor_confirmed: true });
+      // Subtract paid amount from tutor profile earnings
+      const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
+      if (profiles.length > 0) {
+        const newEarnings = Math.max(0, (profiles[0].total_earnings || 0) - (paidUnconfirmedWR.amount || 0));
+        await base44.entities.TutorProfile.update(profiles[0].id, { total_earnings: newEarnings });
+      }
+      toast({ title: "Receipt confirmed! 🎉", description: "Thank you for confirming. Your earnings have been updated." });
+      loadData();
+    } catch {
+      toast({ title: "Error", variant: "destructive" });
+    } finally { setRequesting(false); }
   };
 
   const rate = profile?.price_per_minute || 0.9967;
@@ -140,7 +160,29 @@ export default function TutorEarnings() {
       </div>
 
       {/* Withdrawal */}
-      {hasPendingWithdrawal ? (
+      {/* Payment status banners — priority order */}
+      {paidUnconfirmedWR ? (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 mb-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-sm font-semibold text-emerald-400">🎉 Payment completed!</p>
+              <p className="text-xs text-gray-400 mt-0.5">Your payment of <strong className="text-white">${paidUnconfirmedWR.amount?.toFixed(2)}</strong> has been sent. Please confirm you received it.</p>
+            </div>
+            <Button onClick={confirmReceipt} disabled={requesting} className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 shadow-lg shadow-emerald-500/20 shrink-0">
+              <CheckCircle className="w-4 h-4 mr-1" />
+              {requesting ? "Confirming..." : "Confirm receipt"}
+            </Button>
+          </div>
+        </div>
+      ) : processingWR ? (
+        <div className="flex items-center gap-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 mb-6">
+          <div className="w-5 h-5 border-2 border-blue-400/40 border-t-blue-400 rounded-full animate-spin shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-blue-400">Payment being processed</p>
+            <p className="text-xs text-gray-500 mt-0.5">Your payment of <strong className="text-white">${processingWR.amount?.toFixed(2)}</strong> is being processed. You'll be notified when it's done.</p>
+          </div>
+        </div>
+      ) : hasPendingWithdrawal ? (
         <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 mb-6">
           <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
           <p className="text-sm text-amber-500">You have a withdrawal request pending. We'll process it within 2 business days.</p>
@@ -152,7 +194,7 @@ export default function TutorEarnings() {
               <p className="text-sm font-semibold text-emerald-400">🎉 Withdrawal available today!</p>
               <p className="text-xs text-gray-500 mt-0.5">Request your earnings of <strong className="text-white">${totalEarned.toFixed(2)}</strong> via Payoneer.</p>
             </div>
-            <Button onClick={requestWithdrawal} disabled={requesting} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0 shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all shrink-0">
+            <Button onClick={requestWithdrawal} disabled={requesting} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all shrink-0">
               {requesting ? "Requesting..." : "Request withdrawal"}
             </Button>
           </div>
