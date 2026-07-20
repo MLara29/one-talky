@@ -273,7 +273,7 @@ export default function Landing() {
         <nav style={{ maxWidth: 1180, margin: "0 auto", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           {/* Logo */}
           <a href="#top" style={{ display: "flex", alignItems: "center", gap: 9, color: "#17181C", textDecoration: "none", flexShrink: 0 }}>
-            <span style={{ width: 32, height: 32, borderRadius: 9, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 18 }}>O</span>
+            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png" alt="One Talky" style={{ width: 32, height: 32, borderRadius: 9, objectFit: "cover" }} />
             <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-.01em" }}>One Talky</span>
           </a>
 
@@ -643,7 +643,7 @@ export default function Landing() {
       <footer style={{ background: "#101115", color: "#8E8B84", padding: "44px 24px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 9, color: "#fff" }}>
-            <span style={{ width: 26, height: 26, borderRadius: 8, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15 }}>O</span>
+            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png" alt="One Talky" style={{ width: 26, height: 26, borderRadius: 8, objectFit: "cover" }} />
             <span style={{ fontWeight: 800, fontSize: 16 }}>One Talky</span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 20, fontSize: 13.5 }}>

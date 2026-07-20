@@ -89,9 +89,12 @@ export default function AppLayout() {
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <Link to="/dashboard" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-lg font-black text-white text-lg" style={{ background: "#F26A1B", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", boxShadow: "0 4px 12px rgba(242,106,27,0.4)" }}>
-                O
-              </div>
+              <img
+                src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png"
+                alt="One Talky"
+                className="w-8 h-8 rounded-xl object-cover"
+                style={{ boxShadow: "0 4px 12px rgba(242,106,27,0.4)" }}
+              />
               <span className="font-display text-lg font-bold hidden sm:block" style={{ color: "var(--app-text-primary)" }}>
                 One Talky
               </span>
