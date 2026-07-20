@@ -29,10 +29,18 @@ export default function AdminEarnings() {
 
   // Calculate unpaid earnings: only lessons after the last confirmed withdrawal
   const getTutorEarned = (tutorUserId, rate) => {
-    const tutorWRs = withdrawals.filter(w => w.tutor_id === tutorUserId && w.tutor_confirmed && w.confirmed_at);
-    const lastConfirmedAt = tutorWRs.sort((a, b) => new Date(b.confirmed_at) - new Date(a.confirmed_at))[0]?.confirmed_at || null;
+    const tutorWRs = withdrawals.filter(w => w.tutor_id === tutorUserId && w.tutor_confirmed);
+    const lastWR = tutorWRs.sort((a, b) => new Date(b.confirmed_at || b.created_date) - new Date(a.confirmed_at || a.created_date))[0];
+    const lastConfirmedAt = lastWR ? (lastWR.confirmed_at || lastWR.created_date) : null;
+    const cutoff = lastConfirmedAt ? new Date(lastConfirmedAt) : null;
     return lessons
-      .filter(l => l.tutor_id === tutorUserId && (!lastConfirmedAt || new Date(l.ended_at || l.created_date) > new Date(lastConfirmedAt)))
+      .filter(l => {
+        if (l.tutor_id !== tutorUserId) return false;
+        if (!cutoff) return true;
+        // Use the most reliable date available
+        const lessonDate = new Date(l.ended_at || l.updated_date || l.created_date);
+        return lessonDate > cutoff;
+      })
       .reduce((sum, l) => sum + (l.duration_minutes || 0) * (rate || 0), 0);
   };
 

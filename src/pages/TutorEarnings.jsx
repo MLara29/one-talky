@@ -95,13 +95,14 @@ export default function TutorEarnings() {
   const rate = profile?.price_per_minute || 0.9967;
 
   // Find the latest confirmed withdrawal date — lessons before this are already paid
-  const lastConfirmedAt = withdrawals
-    .filter(w => w.tutor_confirmed && w.confirmed_at)
-    .sort((a, b) => new Date(b.confirmed_at) - new Date(a.confirmed_at))[0]?.confirmed_at || null;
+  const confirmedWRs = withdrawals.filter(w => w.tutor_confirmed);
+  const lastConfirmedWR = confirmedWRs.sort((a, b) => new Date(b.confirmed_at || b.created_date) - new Date(a.confirmed_at || a.created_date))[0];
+  const lastConfirmedAt = lastConfirmedWR ? (lastConfirmedWR.confirmed_at || lastConfirmedWR.created_date) : null;
 
   // Only count lessons after the last confirmed payment
-  const unpaidLessons = lastConfirmedAt
-    ? lessons.filter(l => new Date(l.ended_at || l.created_date) > new Date(lastConfirmedAt))
+  const cutoff = lastConfirmedAt ? new Date(lastConfirmedAt) : null;
+  const unpaidLessons = cutoff
+    ? lessons.filter(l => new Date(l.ended_at || l.updated_date || l.created_date) > cutoff)
     : lessons;
 
   const totalEarned = unpaidLessons.reduce((sum, l) => sum + (l.duration_minutes || 0) * rate, 0);
