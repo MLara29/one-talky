@@ -57,6 +57,7 @@ export const COUNTRIES = [
   "Italy", "Germany", "Austria", "Brazil", "Portugal",
   "Japan", "South Korea", "China", "India", "South Africa",
   "New Zealand", "Netherlands", "Sweden", "Norway", "Denmark",
+  "Kenya",
 ];
 
 // Preço base: R$29,90 por 30 minutos (R$0,9967/min)
@@ -113,7 +114,7 @@ export function getCountryFlag(country) {
     "Vietnamese": "🇻🇳", "Indonesian": "🇮🇩", "Malaysian": "🇲🇾", "Pakistani": "🇵🇰",
     "Turkish": "🇹🇷", "Polish": "🇵🇱", "Romanian": "🇷🇴", "Ukrainian": "🇺🇦",
     "Greek": "🇬🇷", "Finnish": "🇫🇮", "Czech": "🇨🇿", "Hungarian": "🇭🇺",
-    "Moroccan": "🇲🇦", "Egyptian": "🇪🇬", "Nigerian": "🇳🇬", "Kenyan": "🇰🇪",
+    "Kenya": "🇰🇪", "Moroccan": "🇲🇦", "Egyptian": "🇪🇬", "Nigerian": "🇳🇬", "Kenyan": "🇰🇪",
     "Russian": "🇷🇺", "Israeli": "🇮🇱", "Saudi": "🇸🇦", "Emirati": "🇦🇪",
   };
   // Case-insensitive lookup
