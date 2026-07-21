@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function AdminUsers() {
@@ -65,6 +66,15 @@ export default function AdminUsers() {
     await base44.entities.StudentProfile.delete(s.id);
     setStudents(prev => prev.filter(x => x.id !== s.id));
     toast({ title: "Aluno deletado" });
+  };
+
+  const changeUserRole = async (userId, role) => {
+    if (!userId) {
+      toast({ title: "Usuário sem conta vinculada", variant: "destructive" });
+      return;
+    }
+    await base44.functions.invoke("setUserRole", { targetUserId: userId, role });
+    toast({ title: `Role alterada para "${role}" ✅` });
   };
 
   const setAffiliateRole = async (a) => {
@@ -156,6 +166,17 @@ export default function AdminUsers() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    <Select onValueChange={(role) => changeUserRole(users[t.user_id]?.id || t.user_id, role)}>
+                      <SelectTrigger className="h-7 text-xs w-28 bg-white/5 border-white/10 text-gray-300 hidden sm:flex">
+                        <SelectValue placeholder="Role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tutor">Tutor</SelectItem>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="affiliate">Affiliate</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                     {/* Contract type badge + toggle */}
                     <button
                       onClick={() => toggleContractType(t)}
@@ -212,6 +233,17 @@ export default function AdminUsers() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    <Select onValueChange={(role) => changeUserRole(users[s.user_id]?.id || s.user_id, role)}>
+                      <SelectTrigger className="h-7 text-xs w-28 bg-white/5 border-white/10 text-gray-300 hidden sm:flex">
+                        <SelectValue placeholder="Role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tutor">Tutor</SelectItem>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="affiliate">Affiliate</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
                       s.plan === "blocked" ? "bg-red-500/10 border-red-500/20 text-red-600" : "bg-blue-500/10 border-blue-500/20 text-blue-600"
                     } capitalize`}>{s.plan || "free"}</span>
