@@ -222,48 +222,96 @@ export default function AdminAffiliates() {
                   </div>
                 </div>
 
-                {/* Expanded earnings */}
+                {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="border-t border-white/10 p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="theme-heading font-semibold text-sm">Comissões ({affEarnings.length})</h4>
-                      {aff.pix_key && (
-                        <p className="text-xs text-gray-500">
-                          Pix: <strong className="text-gray-300">{aff.pix_key}</strong> ({aff.pix_key_type})
-                        </p>
+                  <div className="border-t border-white/10 p-5 space-y-6">
+
+                    {/* Summary cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { label: "Total ganho", value: fmtBRL(summary.total), color: "text-emerald-400" },
+                        { label: "Disponível p/ pagar", value: fmtBRL(summary.available), color: "text-amber-400" },
+                        { label: "Total pago", value: fmtBRL(affEarnings.filter(e => e.status === "pago").reduce((s, e) => s + (e.commission_amount || 0), 0)), color: "text-blue-400" },
+                        { label: "Alunos únicos", value: summary.students, color: "theme-heading" },
+                      ].map(card => (
+                        <div key={card.label} className="bg-white/3 border border-white/5 rounded-xl p-3 text-center">
+                          <p className={`text-base font-bold ${card.color}`}>{card.value}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Payment info */}
+                    <div className="bg-white/3 border border-white/5 rounded-xl p-4">
+                      <h4 className="theme-heading font-semibold text-sm mb-3 flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-violet-400" /> Dados para Pagamento
+                      </h4>
+                      {aff.pix_key ? (
+                        <div className="space-y-2">
+                          <div className="flex gap-2 flex-wrap">
+                            <span className="text-xs text-gray-500">Tipo de chave Pix:</span>
+                            <span className="text-xs font-medium theme-heading capitalize">{aff.pix_key_type || "—"}</span>
+                          </div>
+                          <div className="flex gap-2 flex-wrap items-center">
+                            <span className="text-xs text-gray-500">Chave Pix:</span>
+                            <span className="text-xs font-mono font-bold theme-heading bg-violet-500/10 border border-violet-500/20 text-violet-300 px-2 py-0.5 rounded-lg select-all">{aff.pix_key}</span>
+                          </div>
+                          {aff.bank_info && (
+                            <div className="flex gap-2 flex-wrap">
+                              <span className="text-xs text-gray-500">Info adicional:</span>
+                              <span className="text-xs theme-heading">{aff.bank_info}</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-600">Afiliado ainda não cadastrou dados de pagamento.</p>
                       )}
                     </div>
-                    {affEarnings.length === 0 ? (
-                      <p className="text-gray-600 text-sm">Nenhuma comissão ainda.</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {affEarnings.map(e => {
-                          const cfg = STATUS_CFG[e.status] || STATUS_CFG.aguardando_7_dias;
-                          return (
-                            <div key={e.id} className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/5 gap-4 flex-wrap">
-                              <div>
-                                <p className="theme-heading text-sm font-medium">{e.student_name}</p>
-                                <p className="theme-subtext text-xs text-gray-500">
-                                  {e.plan_id} · {new Date(e.sale_date).toLocaleDateString("pt-BR")}
-                                </p>
+
+                    {/* Students / commissions list */}
+                    <div>
+                      <h4 className="theme-heading font-semibold text-sm mb-3">Alunos & Comissões ({affEarnings.length})</h4>
+                      {affEarnings.length === 0 ? (
+                        <p className="text-gray-600 text-sm">Nenhuma comissão registrada ainda.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {affEarnings.map(e => {
+                            const cfg = STATUS_CFG[e.status] || STATUS_CFG.aguardando_7_dias;
+                            return (
+                              <div key={e.id} className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/5 gap-4 flex-wrap">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 font-bold text-xs flex-shrink-0">
+                                    {(e.student_name || "?").charAt(0).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <p className="theme-heading text-sm font-medium">{e.student_name || "—"}</p>
+                                    <p className="theme-subtext text-xs text-gray-500">
+                                      {e.plan_id} · {e.sale_date ? new Date(e.sale_date).toLocaleDateString("pt-BR") : "—"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3 flex-wrap">
+                                  <div className="text-right">
+                                    <p className="text-xs text-gray-500">Venda: {fmtBRL(e.sale_amount)}</p>
+                                    <p className="text-sm font-bold text-emerald-400">Comissão: {fmtBRL(e.commission_amount)}</p>
+                                  </div>
+                                  <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${cfg.cls}`}>
+                                    {cfg.label}
+                                  </span>
+                                  {e.status === "liberado" && (
+                                    <Button size="sm" onClick={() => markAsPaid(e.id)}
+                                      className="bg-emerald-600 hover:bg-emerald-700 text-white border-0 h-7 text-xs">
+                                      Marcar pago
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-3">
-                                <span className="font-bold text-emerald-400">{fmtBRL(e.commission_amount)}</span>
-                                <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${cfg.cls}`}>
-                                  {cfg.label}
-                                </span>
-                                {e.status === "liberado" && (
-                                  <Button size="sm" onClick={() => markAsPaid(e.id)}
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white border-0 h-7 text-xs">
-                                    Marcar pago
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
                   </div>
                 )}
               </div>
