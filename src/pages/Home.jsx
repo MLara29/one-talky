@@ -65,7 +65,10 @@ export default function Home() {
     </div>
   );
 
-  if (!resolvedRole) return <Navigate to="/choose-role" replace />;
+  if (!resolvedRole) {
+    if (user?.role === "affiliate") return <Navigate to="/onboarding/affiliate" replace />;
+    return <Navigate to="/choose-role" replace />;
+  }
 
   if (resolvedRole === "affiliate") return <Navigate to="/affiliate" replace />;
   if (resolvedRole === "tutor") return <TutorDashboard />;
