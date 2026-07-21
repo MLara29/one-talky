@@ -16,23 +16,26 @@ export default function Home() {
     if (user.role === "admin") { setChecking(false); return; }
     if (user.role === "tutor") { setResolvedRole("tutor"); setChecking(false); return; }
     if (user.role === "student") { setResolvedRole("student"); setChecking(false); return; }
+    if (user.role === "affiliate") { setResolvedRole("affiliate"); setChecking(false); return; }
     checkProfile();
   }, [user?.id]);
 
   const checkProfile = async () => {
     try {
-      const [tutorProfiles, studentProfiles] = await Promise.all([
+      const [tutorProfiles, studentProfiles, affiliateProfiles] = await Promise.all([
         base44.entities.TutorProfile.filter({ user_id: user.id }),
         base44.entities.StudentProfile.filter({ user_id: user.id }),
+        base44.entities.Affiliate.filter({ user_id: user.id }),
       ]);
-      console.log("checkProfile:", { userId: user.id, tutors: tutorProfiles.length, students: studentProfiles.length });
       if (tutorProfiles.length > 0) {
         setResolvedRole("tutor");
-        // Self-heal: fix role if it wasn't set correctly during onboarding
         if (user.role !== "tutor") await base44.auth.updateMe({ role: "tutor" });
       } else if (studentProfiles.length > 0) {
         setResolvedRole("student");
         if (user.role !== "student") await base44.auth.updateMe({ role: "student" });
+      } else if (affiliateProfiles.length > 0) {
+        setResolvedRole("affiliate");
+        if (user.role !== "affiliate") await base44.auth.updateMe({ role: "affiliate" });
       } else {
         setResolvedRole(null);
       }
@@ -54,6 +57,7 @@ export default function Home() {
 
   if (!resolvedRole) return <Navigate to="/choose-role" replace />;
 
+  if (resolvedRole === "affiliate") return <Navigate to="/affiliate" replace />;
   if (resolvedRole === "tutor") return <TutorDashboard />;
   return <StudentDashboard />;
 }
