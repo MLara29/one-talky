@@ -63,13 +63,25 @@ export default function OnboardingStudent() {
     try {
       const results = await base44.entities.Coupon.filter({ code, is_active: true });
       const c = results[0];
-      if (c && (c.used_count || 0) < c.max_uses) {
-        setCouponStatus("valid");
-        setCouponData(c);
-      } else {
+      if (!c || (c.used_count || 0) >= c.max_uses) {
         setCouponStatus("invalid");
         setCouponData(null);
+        return;
       }
+      // Verificar se este usuário já usou este cupom (amarrado ao user_id/email)
+      if (userId && c.affiliate_id) {
+        const alreadyUsed = await base44.entities.AffiliateEarning.filter({
+          student_id: userId,
+          coupon_code: c.code,
+        });
+        if (alreadyUsed.length > 0) {
+          setCouponStatus("already_used");
+          setCouponData(null);
+          return;
+        }
+      }
+      setCouponStatus("valid");
+      setCouponData(c);
     } catch {
       setCouponStatus("invalid");
     } finally { setCheckingCoupon(false); }
@@ -316,6 +328,11 @@ export default function OnboardingStudent() {
                 {couponStatus === "invalid" && (
                   <p className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
                     <XCircle className="w-3.5 h-3.5" /> Invalid or expired coupon.
+                  </p>
+                )}
+                {couponStatus === "already_used" && (
+                  <p className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
+                    <XCircle className="w-3.5 h-3.5" /> Este cupom já foi utilizado pela sua conta.
                   </p>
                 )}
               </div>

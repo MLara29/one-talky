@@ -81,32 +81,41 @@ Deno.serve(async (req) => {
       });
       const coupon = coupons[0];
       if (coupon?.affiliate_id) {
-        const affiliates = await base44.asServiceRole.entities.Affiliate.filter({
-          id: coupon.affiliate_id,
-          status: "active",
+        // Guard: cupom só pode ser usado uma vez por estudante (amarrado ao user_id)
+        const alreadyUsed = await base44.asServiceRole.entities.AffiliateEarning.filter({
+          student_id: user.id,
+          coupon_code: coupon.code,
         });
-        const affiliate = affiliates[0];
-        if (affiliate) {
-          const saleAmount = PRICE_CATALOG[payment.external_reference] ?? 0;
-          const commissionPct = affiliate.commission_percent ?? 15;
-          const commissionAmount = parseFloat(((saleAmount * commissionPct) / 100).toFixed(2));
-          const saleDate = new Date().toISOString();
-          const releaseDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
-          await base44.asServiceRole.entities.AffiliateEarning.create({
-            affiliate_id: affiliate.id,
-            student_id: user.id,
-            student_name: profile.full_name || user.email,
-            coupon_code: coupon.code,
-            plan_id: itemId,
-            sale_amount: saleAmount,
-            commission_percent: commissionPct,
-            commission_amount: commissionAmount,
-            payment_id: String(payment_id),
-            sale_date: saleDate,
-            release_date: releaseDate,
-            status: "aguardando_7_dias",
+        if (alreadyUsed.length > 0) {
+          // Cupom já foi usado por este estudante — não gera nova comissão
+        } else {
+          const affiliates = await base44.asServiceRole.entities.Affiliate.filter({
+            id: coupon.affiliate_id,
+            status: "active",
           });
+          const affiliate = affiliates[0];
+          if (affiliate) {
+            const saleAmount = PRICE_CATALOG[payment.external_reference] ?? 0;
+            const commissionPct = affiliate.commission_percent ?? 15;
+            const commissionAmount = parseFloat(((saleAmount * commissionPct) / 100).toFixed(2));
+            const saleDate = new Date().toISOString();
+            const releaseDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+            await base44.asServiceRole.entities.AffiliateEarning.create({
+              affiliate_id: affiliate.id,
+              student_id: user.id,
+              student_name: profile.full_name || user.email,
+              coupon_code: coupon.code,
+              plan_id: itemId,
+              sale_amount: saleAmount,
+              commission_percent: commissionPct,
+              commission_amount: commissionAmount,
+              payment_id: String(payment_id),
+              sale_date: saleDate,
+              release_date: releaseDate,
+              status: "aguardando_7_dias",
+            });
+          }
         }
       }
     }
