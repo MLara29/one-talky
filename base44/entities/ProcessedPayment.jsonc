@@ -1,0 +1,35 @@
+{
+  "name": "ProcessedPayment",
+  "type": "object",
+  "properties": {
+    "payment_id": {
+      "type": "string",
+      "description": "Unique Mercado Pago payment_id \u2014 used to prevent double-spend"
+    },
+    "user_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "payment_id",
+    "user_id"
+  ],
+  "rls": {
+    "create": null,
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

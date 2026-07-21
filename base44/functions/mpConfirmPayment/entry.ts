@@ -21,6 +21,12 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, status: payment.status });
     }
 
+    // Guard: ensure this payment_id has not been processed before (prevent double-spend)
+    const existing = await base44.asServiceRole.entities.ProcessedPayment.filter({ payment_id: String(payment_id) });
+    if (existing.length > 0) {
+      return Response.json({ success: false, error: "Payment already processed" }, { status: 409 });
+    }
+
     // external_reference vem do objeto verificado da API do MP, não do cliente
     const parts = (payment.external_reference || "").split(":");
     const type = parts[0];
@@ -40,6 +46,12 @@ Deno.serve(async (req) => {
     }
 
     await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
+
+    // Record the processed payment to prevent replay
+    await base44.asServiceRole.entities.ProcessedPayment.create({
+      payment_id: String(payment_id),
+      user_id: user.id,
+    });
 
     return Response.json({ success: true, type, item_id: itemId, minutes_added: minutes });
   } catch (error) {

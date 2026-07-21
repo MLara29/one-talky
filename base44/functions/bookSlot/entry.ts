@@ -6,10 +6,11 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { tutor_profile_id, scheduled_at, action, lesson_id } = await req.json();
+    let { tutor_profile_id, scheduled_at, action, lesson_id } = await req.json();
     if (!tutor_profile_id || !scheduled_at) return Response.json({ error: 'Missing params' }, { status: 400 });
 
     // For 'release' action, verify the lesson belongs to the calling user
+    // and derive tutor_profile_id from the lesson record — never trust the client-supplied value
     if (action === 'release') {
       if (!lesson_id) return Response.json({ error: 'lesson_id required to release a slot' }, { status: 400 });
       const lesson = await base44.asServiceRole.entities.Lesson.get(lesson_id);
@@ -17,6 +18,10 @@ Deno.serve(async (req) => {
       if (lesson.student_id !== user.id && lesson.tutor_id !== user.id && user.role !== 'admin') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
+      // Override client-supplied tutor_profile_id with the one from the verified lesson
+      const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
+      if (tutorProfiles.length === 0) return Response.json({ error: 'Tutor profile not found' }, { status: 404 });
+      tutor_profile_id = tutorProfiles[0].id;
     } else {
       // For booking, verify the caller is a student (only students book slots)
       if (user.role !== 'student' && user.role !== 'admin') {
