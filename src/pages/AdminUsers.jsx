@@ -68,7 +68,6 @@ export default function AdminUsers() {
   };
 
   const setAffiliateRole = async (a) => {
-    // Find user by user_id or email
     let targetUser = users[a.user_id];
     if (!targetUser && a.email) {
       targetUser = Object.values(users).find(u => u.email === a.email);
@@ -77,12 +76,14 @@ export default function AdminUsers() {
       toast({ title: "Usuário não encontrado", description: "O afiliado precisa se registrar na plataforma primeiro.", variant: "destructive" });
       return;
     }
-    // Update affiliate with user_id if missing
+    // Link user_id on affiliate record if missing
     if (!a.user_id || a.user_id !== targetUser.id) {
       await base44.entities.Affiliate.update(a.id, { user_id: targetUser.id });
       setAffiliates(prev => prev.map(x => x.id === a.id ? { ...x, user_id: targetUser.id } : x));
     }
-    toast({ title: "Role de afiliado vinculada!", description: `${a.full_name} terá acesso ao painel de afiliado no próximo login.` });
+    // Set role = "affiliate" on the User record using the backend function
+    await base44.functions.invoke("setUserRole", { targetUserId: targetUser.id, role: "affiliate" });
+    toast({ title: "Role affiliate definida!", description: `${a.full_name} já tem acesso ao painel de afiliado.` });
   };
 
   const deleteAffiliate = async (a) => {
