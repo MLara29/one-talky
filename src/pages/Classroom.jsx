@@ -375,17 +375,8 @@ export default function Classroom() {
 
     if (currentLesson?.tutor_id) {
       try {
-        const tutorProfiles = await base44.entities.TutorProfile.filter({ user_id: currentLesson.tutor_id });
-        if (tutorProfiles.length > 0) {
-          const tp = tutorProfiles[0];
-          const rate = tp.price_per_minute ?? 0.9967;
-          const earningsSecs = durationSeconds * (rate / 60); // rate per second
-          await base44.entities.TutorProfile.update(tp.id, {
-            total_earnings: Math.round(((tp.total_earnings ?? 0) + earningsSecs) * 100) / 100,
-            total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
-            total_lessons: (tp.total_lessons ?? 0) + 1,
-          });
-        }
+        // Earnings calculated server-side from recorded timestamps — never from client
+        await base44.functions.invoke('finalizeTutorEarnings', { lesson_id: id });
       } catch {}
     }
 
