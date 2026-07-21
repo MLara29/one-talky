@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 export default function Register() {
   const [searchParams] = useSearchParams();
   const defaultRole = searchParams.get("role") === "tutor" ? "tutor" : "student";
+  const nextUrl = searchParams.get("next") || null;
   const [role] = useState(defaultRole); // role fixed by URL — no in-page switcher
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,7 +49,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = role === "tutor" ? "/onboarding/tutor" : "/onboarding/student";
+      window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -70,7 +71,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    const dest = role === "tutor" ? "/onboarding/tutor" : "/onboarding/student";
+    const dest = nextUrl || (role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
     base44.auth.loginWithProvider("google", dest);
   };
 

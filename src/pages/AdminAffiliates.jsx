@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Users, DollarSign, ToggleLeft, ToggleRight, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Users, DollarSign, ToggleLeft, ToggleRight, Trash2, ChevronDown, ChevronUp, Copy, Link } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 function fmtBRL(v) {
@@ -108,14 +108,26 @@ export default function AdminAffiliates() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-          <Users className="w-4 h-4 text-white" />
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+            <Users className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="theme-heading font-display text-xl font-bold">Afiliados</h1>
+            <p className="theme-subtext text-sm text-gray-500">Gerencie influenciadores e suas comissões</p>
+          </div>
         </div>
-        <div>
-          <h1 className="theme-heading font-display text-xl font-bold">Afiliados</h1>
-          <p className="theme-subtext text-sm text-gray-500">Gerencie influenciadores e suas comissões</p>
-        </div>
+        <Button
+          onClick={() => {
+            const link = `${window.location.origin}/register?next=/onboarding/affiliate`;
+            navigator.clipboard.writeText(link);
+            toast({ title: "Link copiado! 🔗", description: "Envie este link para o influencer se cadastrar." });
+          }}
+          className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20"
+        >
+          <Link className="w-4 h-4 mr-1.5" /> Copiar link de cadastro
+        </Button>
       </div>
 
       {/* Create form */}

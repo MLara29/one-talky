@@ -38,6 +38,7 @@ import AdminEmail from '@/pages/AdminEmail';
 import AdminAffiliates from '@/pages/AdminAffiliates';
 import AffiliateDashboard from '@/pages/AffiliateDashboard';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import OnboardingAffiliate from '@/pages/OnboardingAffiliate';
 import Notifications from '@/pages/Notifications';
 import MyMessages from '@/pages/MyMessages';
 import Profile from '@/pages/Profile';
@@ -76,6 +77,7 @@ const AuthenticatedApp = () => {
         <Route path="/choose-role" element={<ChooseRole />} />
         <Route path="/onboarding/student" element={<OnboardingStudent />} />
         <Route path="/onboarding/tutor" element={<OnboardingTutor />} />
+        <Route path="/onboarding/affiliate" element={<OnboardingAffiliate />} />
         <Route path="/classroom/:id" element={<Classroom />} />
 
         <Route element={<AppLayout />}>
