@@ -64,35 +64,52 @@ export default function OnboardingAffiliate() {
     try {
       const code = form.coupon_code.trim().toUpperCase();
 
-      // Validate coupon exists and is affiliate-linked or available
+      // Validate coupon exists
       const coupons = await base44.entities.Coupon.filter({ code });
       if (coupons.length === 0) {
         throw new Error(`Cupom "${code}" não encontrado. Verifique com o administrador.`);
       }
       const coupon = coupons[0];
-      if (coupon.affiliate_id && coupon.affiliate_id !== "") {
-        // Check if linked to another affiliate
-        const existing = await base44.entities.Affiliate.filter({ coupon_code: code });
-        if (existing.length > 0 && existing[0].user_id !== userId) {
+
+      // Check if admin pre-created an affiliate record with this coupon code or this user's email
+      const existingByCoupon = await base44.entities.Affiliate.filter({ coupon_code: code });
+      const existingByEmail = userEmail ? await base44.entities.Affiliate.filter({ email: userEmail }) : [];
+
+      const preCreated = existingByCoupon[0] || existingByEmail[0];
+
+      if (preCreated) {
+        // Admin pre-created this affiliate — just update with user's data
+        if (preCreated.user_id && preCreated.user_id !== userId) {
           throw new Error("Este cupom já está vinculado a outro afiliado.");
         }
+        await base44.entities.Affiliate.update(preCreated.id, {
+          user_id: userId,
+          full_name: form.full_name,
+          email: userEmail,
+          coupon_code: code,
+          pix_key: form.pix_key,
+          pix_key_type: form.pix_key_type,
+          bank_info: form.bank_info,
+          status: "active",
+        });
+        await base44.entities.Coupon.update(coupon.id, { affiliate_id: preCreated.id });
+      } else {
+        // No pre-created record — create fresh
+        const newAffiliate = await base44.entities.Affiliate.create({
+          user_id: userId,
+          full_name: form.full_name,
+          email: userEmail,
+          coupon_code: code,
+          commission_percent: 15,
+          status: "active",
+          pix_key: form.pix_key,
+          pix_key_type: form.pix_key_type,
+          bank_info: form.bank_info,
+        });
+        await base44.entities.Coupon.update(coupon.id, { affiliate_id: newAffiliate.id });
       }
 
-      await base44.entities.Affiliate.create({
-        user_id: userId,
-        full_name: form.full_name,
-        email: userEmail,
-        coupon_code: code,
-        commission_percent: 15,
-        status: "active",
-        pix_key: form.pix_key,
-        pix_key_type: form.pix_key_type,
-        bank_info: form.bank_info,
-      });
-
-      // Link coupon to this affiliate
-      await base44.entities.Coupon.update(coupon.id, { affiliate_id: userId });
-
+      await base44.functions.invoke("setUserRole", { role: "affiliate" });
       toast({ title: "Cadastro realizado! 🎉", description: "Seu perfil de afiliado foi criado com sucesso." });
       setAlreadyRegistered(true);
       window.location.href = "/affiliate";
