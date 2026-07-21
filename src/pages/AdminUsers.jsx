@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Trash2, Ban, CheckCircle, Link2, Copy } from "lucide-react";
+import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function AdminUsers() {
   const [tutors, setTutors] = useState([]);
   const [students, setStudents] = useState([]);
+  const [affiliates, setAffiliates] = useState([]);
   const [users, setUsers] = useState({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -16,15 +17,17 @@ export default function AdminUsers() {
 
   const loadData = async () => {
     try {
-      const [t, s, allUsers] = await Promise.all([
+      const [t, s, a, allUsers] = await Promise.all([
         base44.entities.TutorProfile.list("-created_date", 50),
         base44.entities.StudentProfile.list("-created_date", 50),
+        base44.entities.Affiliate.list("-created_date", 100),
         base44.entities.User.list("-created_date", 200),
       ]);
       const userMap = {};
       allUsers.forEach(u => { userMap[u.id] = u; });
       setTutors(t);
       setStudents(s);
+      setAffiliates(a);
       setUsers(userMap);
     } catch {} finally { setLoading(false); }
   };
@@ -62,6 +65,31 @@ export default function AdminUsers() {
     await base44.entities.StudentProfile.delete(s.id);
     setStudents(prev => prev.filter(x => x.id !== s.id));
     toast({ title: "Aluno deletado" });
+  };
+
+  const setAffiliateRole = async (a) => {
+    // Find user by user_id or email
+    let targetUser = users[a.user_id];
+    if (!targetUser && a.email) {
+      targetUser = Object.values(users).find(u => u.email === a.email);
+    }
+    if (!targetUser) {
+      toast({ title: "Usuário não encontrado", description: "O afiliado precisa se registrar na plataforma primeiro.", variant: "destructive" });
+      return;
+    }
+    // Update affiliate with user_id if missing
+    if (!a.user_id || a.user_id !== targetUser.id) {
+      await base44.entities.Affiliate.update(a.id, { user_id: targetUser.id });
+      setAffiliates(prev => prev.map(x => x.id === a.id ? { ...x, user_id: targetUser.id } : x));
+    }
+    toast({ title: "Role de afiliado vinculada!", description: `${a.full_name} terá acesso ao painel de afiliado no próximo login.` });
+  };
+
+  const deleteAffiliate = async (a) => {
+    if (!confirm(`Deletar afiliado ${a.full_name}?`)) return;
+    await base44.entities.Affiliate.delete(a.id);
+    setAffiliates(prev => prev.filter(x => x.id !== a.id));
+    toast({ title: "Afiliado deletado" });
   };
 
   const [copied, setCopied] = useState(false);
@@ -106,6 +134,9 @@ export default function AdminUsers() {
           </TabsTrigger>
           <TabsTrigger value="students" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
             Students ({students.length})
+          </TabsTrigger>
+          <TabsTrigger value="affiliates" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
+            Affiliates ({affiliates.length})
           </TabsTrigger>
         </TabsList>
 
@@ -203,6 +234,53 @@ export default function AdminUsers() {
                 </div>
               ))}
               {students.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">No students yet</p>}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="affiliates">
+          <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
+            <div className="divide-y divide-white/5">
+              {affiliates.map(a => {
+                const linkedUser = users[a.user_id] || (a.email ? Object.values(users).find(u => u.email === a.email) : null);
+                return (
+                  <div key={a.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/3 transition-all">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
+                        <span className="text-orange-400 font-bold text-sm">{a.full_name?.[0] || "A"}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="theme-heading font-medium text-sm text-white truncate">{a.full_name}</p>
+                        <p className="theme-subtext text-xs text-gray-500 truncate">{a.email} · cupom: <span className="font-mono text-orange-400">{a.coupon_code}</span></p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
+                        linkedUser ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" : "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                      }`}>
+                        {linkedUser ? "Vinculado" : "Sem conta"}
+                      </span>
+                      <Button
+                        size="sm" variant="ghost"
+                        onClick={() => setAffiliateRole(a)}
+                        className="px-2 h-8 text-orange-400 hover:text-orange-300"
+                        title="Vincular role de afiliado ao usuário"
+                      >
+                        <UserCheck className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm" variant="ghost"
+                        onClick={() => deleteAffiliate(a)}
+                        className="px-2 h-8 text-red-500 hover:text-red-400"
+                        title="Deletar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+              {affiliates.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">No affiliates yet</p>}
             </div>
           </div>
         </TabsContent>
