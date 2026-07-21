@@ -33,6 +33,12 @@ Deno.serve(async (req) => {
     const itemId = parts[1];
     const minutes = parseInt(parts[2] || "0", 10);
 
+    // Verify the payment belongs to the authenticated user by checking the payer's email
+    const payerEmail = payment.payer?.email;
+    if (payerEmail && user.email && payerEmail.toLowerCase() !== user.email.toLowerCase()) {
+      return Response.json({ error: "Payment does not belong to this user" }, { status: 403 });
+    }
+
     // Atualiza perfil do aluno
     const profiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: user.id });
     if (profiles.length === 0) return Response.json({ error: "Perfil não encontrado" }, { status: 404 });

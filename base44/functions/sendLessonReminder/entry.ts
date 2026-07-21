@@ -10,6 +10,15 @@ function formatDateTime(isoString) {
   });
 }
 
+function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function labelFor(minutes) {
   if (minutes < 60) return `${minutes} minutes`;
   if (minutes === 60) return '1 hour';
@@ -18,6 +27,9 @@ function labelFor(minutes) {
 }
 
 function tutorEmailHtml({ tutorName, studentName, lessonTime, minutesBefore }) {
+  tutorName = escapeHtml(tutorName);
+  studentName = escapeHtml(studentName);
+  lessonTime = escapeHtml(lessonTime);
   const timeLabel = labelFor(minutesBefore);
   return `
 <!DOCTYPE html>
@@ -80,6 +92,9 @@ function tutorEmailHtml({ tutorName, studentName, lessonTime, minutesBefore }) {
 }
 
 function studentEmailHtml({ studentName, tutorName, lessonTime, minutesBefore }) {
+  studentName = escapeHtml(studentName);
+  tutorName = escapeHtml(tutorName);
+  lessonTime = escapeHtml(lessonTime);
   const timeLabel = labelFor(minutesBefore);
   return `
 <!DOCTYPE html>
