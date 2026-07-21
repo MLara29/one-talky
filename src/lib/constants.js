@@ -67,7 +67,6 @@ export const PRICE_PER_MIN_BRL = 0.9967;
 // Standard: 2 aulas/semana × 4 = 8 × R$29,90 = R$239,20 → 5% off = R$227,24/mês
 // Premium:  4 aulas/semana × 4 = 16 × R$29,90 = R$478,40 → 10% off = R$430,56/mês
 export const PLANS = [
-  { id: "free", name: "Teste Grátis", minutes: 15, price_brl: 0, price_weekly: 0, price_monthly: 0, description: "Experimente a plataforma", sessions_per_week: 0 },
   { id: "basic", name: "Básico", minutes: 120, price_brl: 119.60, price_weekly: 29.90, price_monthly: 119.60, description: "120 min/mês · 4 aulas de 30 min", popular: false, sessions_per_week: 1 },
   { id: "standard", name: "Standard", minutes: 240, price_brl: 227.24, price_weekly: 56.81, price_monthly: 227.24, description: "240 min/mês · 8 aulas de 30 min", popular: true, sessions_per_week: 2 },
   { id: "premium", name: "Premium", minutes: 480, price_brl: 430.56, price_weekly: 107.64, price_monthly: 430.56, description: "480 min/mês · 16 aulas de 30 min", sessions_per_week: 4 },

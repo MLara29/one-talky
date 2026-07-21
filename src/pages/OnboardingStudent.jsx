@@ -42,8 +42,13 @@ export default function OnboardingStudent() {
   const [couponData, setCouponData] = useState(null);
   const [checkingCoupon, setCheckingCoupon] = useState(false);
 
+  const [userEmail, setUserEmail] = useState("");
+
   useEffect(() => {
-    base44.auth.me().then(me => setUserId(me.id)).catch(() => {});
+    base44.auth.me().then(me => {
+      setUserId(me.id);
+      setUserEmail(me.email || "");
+    }).catch(() => {});
   }, []);
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
@@ -68,11 +73,11 @@ export default function OnboardingStudent() {
         setCouponData(null);
         return;
       }
-      // Verificar se este usuário já usou este cupom (amarrado ao user_id/email)
-      if (userId && c.affiliate_id) {
+      // Verificar se este email já usou este cupom de afiliado
+      if (c.affiliate_id) {
         const alreadyUsed = await base44.entities.AffiliateEarning.filter({
-          student_id: userId,
           coupon_code: c.code,
+          student_name: userEmail, // usamos student_name para gravar o email do estudante
         });
         if (alreadyUsed.length > 0) {
           setCouponStatus("already_used");
@@ -109,6 +114,22 @@ export default function OnboardingStudent() {
       });
       if (couponStatus === "valid" && couponData) {
         await base44.entities.Coupon.update(couponData.id, { used_count: (couponData.used_count || 0) + 1 }).catch(() => {});
+        // Se for cupom de afiliado, registrar o uso por email para evitar reuso
+        if (couponData.affiliate_id) {
+          base44.entities.AffiliateEarning.create({
+            affiliate_id: couponData.affiliate_id,
+            student_id: userId,
+            student_name: userEmail, // email usado como chave de trava por email
+            coupon_code: couponData.code,
+            plan_id: "onboarding_bonus",
+            sale_amount: 0,
+            commission_percent: 0,
+            commission_amount: 0,
+            payment_id: `onboarding_${userId}`,
+            sale_date: new Date().toISOString(),
+            status: "liberado",
+          }).catch(() => {});
+        }
       }
       await base44.auth.updateMe({ profile_completed: true });
       await base44.functions.invoke('setUserRole', { role: 'student' });

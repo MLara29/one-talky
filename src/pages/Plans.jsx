@@ -200,9 +200,7 @@ export default function Plans() {
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
                       <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>Todos os tutores nativos
                     </li>
-                    <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
-                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>Gravação de aulas
-                    </li>
+
                   </ul>
 
                   <button
