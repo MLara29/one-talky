@@ -42,7 +42,20 @@
     "pioneer_email"
   ],
   "rls": {
-    "create": null,
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "tutor"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "read": {
       "$or": [
         {
