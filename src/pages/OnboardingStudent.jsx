@@ -100,6 +100,12 @@ export default function OnboardingStudent() {
       }
       await base44.auth.updateMe({ profile_completed: true });
       await base44.functions.invoke('setUserRole', { role: 'student' });
+      base44.functions.invoke('notifyAdminNewUser', {
+        full_name: form.full_name,
+        role: 'student',
+        plan: 'free',
+        coupon_code: couponStatus === "valid" ? couponCode : null,
+      }).catch(() => {});
       toast({ title: t(uiLang, "welcomeTitle"), description: t(uiLang, "welcomeDesc") });
       window.location.href = "/";
     } catch (e) {

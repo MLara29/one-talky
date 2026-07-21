@@ -69,6 +69,12 @@ export default function OnboardingTutor() {
       await base44.entities.TutorProfile.create(profileData);
       await base44.functions.invoke('setUserRole', { role: 'tutor' });
       await base44.auth.updateMe({ profile_completed: true });
+      base44.functions.invoke('notifyAdminNewUser', {
+        full_name: form.full_name,
+        role: 'tutor',
+        plan: null,
+        coupon_code: null,
+      }).catch(() => {});
       toast({ title: "Application submitted! 🎉", description: "We'll review your profile and get back to you soon." });
       window.location.href = "/";
     } catch (e) {
