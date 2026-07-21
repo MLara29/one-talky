@@ -34,9 +34,22 @@ export default function OnboardingAffiliate() {
       setUserId(me.id);
       setUserEmail(me.email || "");
       setForm(f => ({ ...f, full_name: me.full_name || "" }));
-      // Check if already registered as affiliate
-      const existing = await base44.entities.Affiliate.filter({ user_id: me.id });
-      if (existing.length > 0) setAlreadyRegistered(true);
+      // Check if already registered as affiliate (by user_id or by email)
+      let existing = await base44.entities.Affiliate.filter({ user_id: me.id });
+      if (existing.length === 0 && me.email) {
+        existing = await base44.entities.Affiliate.filter({ email: me.email });
+        if (existing.length > 0) {
+          // Link user_id and redirect
+          await base44.entities.Affiliate.update(existing[0].id, { user_id: me.id });
+          await base44.auth.updateMe({ role: "affiliate" });
+          window.location.href = "/affiliate";
+          return;
+        }
+      }
+      if (existing.length > 0) {
+        await base44.auth.updateMe({ role: "affiliate" });
+        window.location.href = "/affiliate";
+      }
     }).catch(() => {});
   }, []);
 

@@ -22,10 +22,9 @@ export default function Home() {
 
   const checkProfile = async () => {
     try {
-      const [tutorProfiles, studentProfiles, affiliateProfiles] = await Promise.all([
+      const [tutorProfiles, studentProfiles] = await Promise.all([
         base44.entities.TutorProfile.filter({ user_id: user.id }),
         base44.entities.StudentProfile.filter({ user_id: user.id }),
-        base44.entities.Affiliate.filter({ user_id: user.id }),
       ]);
       if (tutorProfiles.length > 0) {
         setResolvedRole("tutor");
@@ -33,11 +32,22 @@ export default function Home() {
       } else if (studentProfiles.length > 0) {
         setResolvedRole("student");
         if (user.role !== "student") await base44.auth.updateMe({ role: "student" });
-      } else if (affiliateProfiles.length > 0) {
-        setResolvedRole("affiliate");
-        if (user.role !== "affiliate") await base44.auth.updateMe({ role: "affiliate" });
       } else {
-        setResolvedRole(null);
+        // Check affiliate by user_id first, then fallback to email
+        let affiliates = await base44.entities.Affiliate.filter({ user_id: user.id });
+        if (affiliates.length === 0 && user.email) {
+          affiliates = await base44.entities.Affiliate.filter({ email: user.email });
+          if (affiliates.length > 0) {
+            // Self-heal: link user_id to this affiliate record
+            await base44.entities.Affiliate.update(affiliates[0].id, { user_id: user.id });
+          }
+        }
+        if (affiliates.length > 0) {
+          setResolvedRole("affiliate");
+          if (user.role !== "affiliate") await base44.auth.updateMe({ role: "affiliate" });
+        } else {
+          setResolvedRole(null);
+        }
       }
     } catch (e) {
       console.error("checkProfile error:", e);
