@@ -42,7 +42,6 @@ const ADMIN_NAV = [
 
 const AFFILIATE_NAV = [
   { label: "Dashboard", path: "/affiliate", icon: Home },
-  { label: "Histórico", path: "/affiliate", icon: DollarSign },
 ];
 
 
