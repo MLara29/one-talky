@@ -16,7 +16,7 @@ function formatExpiry(v) {
   return digits;
 }
 
-export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
+export default function CheckoutModal({ item, onClose, onSuccess, userEmail, affiliateCoupon }) {
   const [tab, setTab] = useState("card"); // "card" | "pix" — pix temporarily disabled
   const [step, setStep] = useState("loading");
   const [errorMsg, setErrorMsg] = useState("");
@@ -103,6 +103,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail }) {
         installments: parseInt(form.installments) || 1,
         external_reference: item.external_reference,
         payer_email: userEmail,
+        coupon_code: affiliateCoupon || undefined,
       });
       if (res.data?.success) {
         setStep("success");

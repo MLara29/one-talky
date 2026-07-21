@@ -1,5 +1,17 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 
+// Server-side price catalog for affiliate commission calculation
+const PRICE_CATALOG: Record<string, number> = {
+  "plan:basic":    119.60,
+  "plan:standard": 227.24,
+  "plan:premium":  430.56,
+  "pack:pp_30":    29.90,
+  "pack:pp_60":    56.81,
+  "pack:pp_120":   107.64,
+  "pack:pp_300":   254.15,
+  "pack:pp_600":   478.40,
+};
+
 // Server-side catalog — prices and minutes are NEVER trusted from the client
 const CATALOG = {
   "plan:basic:2":  { minutes: 60,  price: 59.80,  plan: "basic" },
@@ -27,6 +39,7 @@ Deno.serve(async (req) => {
       installments,
       external_reference, // "plan:standard" or "pack:pp_60"
       payer_email,
+      coupon_code,
     } = await req.json();
 
     // Validate the reference against the server-side catalog
@@ -73,6 +86,42 @@ Deno.serve(async (req) => {
         };
         if (item.plan) updateData.plan = item.plan;
         await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
+
+        // ── Affiliate commission logic ──────────────────────────────────────
+        if (coupon_code) {
+          const coupons = await base44.asServiceRole.entities.Coupon.filter({
+            code: String(coupon_code).toUpperCase(),
+            is_active: true,
+          });
+          const coupon = coupons[0];
+          if (coupon?.affiliate_id) {
+            const affiliates = await base44.asServiceRole.entities.Affiliate.filter({
+              id: coupon.affiliate_id,
+              status: "active",
+            });
+            const affiliate = affiliates[0];
+            if (affiliate) {
+              const saleAmount = PRICE_CATALOG[external_reference] ?? item.price;
+              const commissionPct = affiliate.commission_percent ?? 15;
+              const commissionAmount = parseFloat(((saleAmount * commissionPct) / 100).toFixed(2));
+              await base44.asServiceRole.entities.AffiliateEarning.create({
+                affiliate_id: affiliate.id,
+                student_id: user.id,
+                student_name: profile.full_name || user.email,
+                coupon_code: coupon.code,
+                plan_id: item.plan || external_reference,
+                sale_amount: saleAmount,
+                commission_percent: commissionPct,
+                commission_amount: commissionAmount,
+                payment_id: String(payment.id),
+                sale_date: new Date().toISOString(),
+                release_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                status: "aguardando_7_dias",
+              });
+            }
+          }
+        }
+        // ── end affiliate logic ─────────────────────────────────────────────
       }
     }
 

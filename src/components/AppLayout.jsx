@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import {
   Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle
+  GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users
 } from "lucide-react";
 
 const STUDENT_NAV = [
@@ -37,6 +37,12 @@ const ADMIN_NAV = [
   { label: "Support", path: "/admin/support", icon: MessageCircle },
   { label: "Coupons", path: "/admin/coupons", icon: Tag },
   { label: "Email", path: "/admin/email", icon: Mail },
+  { label: "Afiliados", path: "/admin/affiliates", icon: Users },
+];
+
+const AFFILIATE_NAV = [
+  { label: "Dashboard", path: "/affiliate", icon: Home },
+  { label: "Histórico", path: "/affiliate", icon: DollarSign },
 ];
 
 
@@ -45,7 +51,7 @@ export default function AppLayout() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const role = user?.role || "student";
-  const nav = role === "admin" ? ADMIN_NAV : role === "tutor" ? TUTOR_NAV : STUDENT_NAV;
+  const nav = role === "admin" ? ADMIN_NAV : role === "tutor" ? TUTOR_NAV : role === "affiliate" ? AFFILIATE_NAV : STUDENT_NAV;
 
   // Heartbeat for tutors: keep last_seen updated on every page
   const tutorProfileIdRef = useRef(null);

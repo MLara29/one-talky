@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "release_affiliate_commissions",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "release_commissions": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "releaseAffiliateCommissions",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Liberar comiss\u00f5es vencidas",
+            "description": "Muda status aguardando_7_dias \u2192 liberado"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Runs daily and liberates commissions that have passed the 7-day grace period",
+  "name": "Release Affiliate Commissions",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 8 * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

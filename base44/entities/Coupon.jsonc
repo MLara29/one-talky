@@ -25,6 +25,10 @@
     },
     "description": {
       "type": "string"
+    },
+    "affiliate_id": {
+      "type": "string",
+      "description": "ID do Affiliate vinculado a este cupom (opcional)"
     }
   },
   "required": [
