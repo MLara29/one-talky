@@ -46,7 +46,9 @@
     "message"
   ],
   "rls": {
-    "create": null,
+    "create": {
+      "data.sender_id": "{{user.id}}"
+    },
     "read": {
       "$or": [
         {
