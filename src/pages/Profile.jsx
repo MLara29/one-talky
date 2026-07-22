@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Save, Camera, Upload, Eye, Video } from "lucide-react";
+import { User, Save, Camera, Upload, Eye, Video, Star } from "lucide-react";
+import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Profile() {
@@ -223,33 +224,73 @@ export default function Profile() {
         <div className="space-y-4">
 
           {/* Profile preview card */}
-          <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-4">
+          <div className="rounded-3xl border border-white/20 bg-white/5 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Eye className="w-4 h-4 text-blue-400" />
-              <p className="text-sm font-bold text-blue-300">This is how your profile looks to students</p>
+              <Eye className="w-4 h-4 text-orange-400" />
+              <p className="text-sm font-bold text-white">This is how your profile looks to students</p>
             </div>
-            {/* Mini preview of the tutor card */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-start gap-4">
-              <img
-                src={profile?.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.full_name || "T")}&background=F26A1B&color=fff&size=80`}
-                alt="Preview"
-                className="w-16 h-16 rounded-xl object-cover ring-2 ring-orange-500/20 shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-white text-sm">{profile?.full_name || "Your name"}</p>
-                <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{profile?.bio || "Your bio will appear here..."}</p>
-                {profile?.intro_video_url && (
-                  <span className="inline-flex items-center gap-1 mt-1.5 text-xs text-emerald-400">
-                    <Video className="w-3 h-3" /> Intro video ✓
-                  </span>
-                )}
+
+            {/* Exact replica of TutorCard */}
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-5">
+              <div className="flex items-start gap-4">
+                <div className="relative shrink-0">
+                  <img
+                    src={profile?.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.full_name || "T")}&background=F26A1B&color=fff&size=80`}
+                    alt="Preview"
+                    className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10"
+                  />
+                  {profile?.is_available_now ? (
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 border-2 border-slate-950 rounded-full">
+                      <span className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-60" />
+                    </div>
+                  ) : (
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gray-500 border-2 border-slate-950 rounded-full" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display font-bold text-white truncate">{profile?.full_name || "Your name"}</h3>
+                  <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
+                    <span className="text-lg leading-none">{getCountryFlag(profile?.nationality || profile?.country)}</span>
+                    <span>{profile?.nationality || profile?.country || "Your country"}</span>
+                  </p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className="flex items-center gap-1 text-sm text-amber-500 font-semibold">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      {(profile?.total_reviews || 0) > 0 ? (profile?.average_rating || 0).toFixed(1) : "New"}
+                    </span>
+                    <span className="text-xs text-gray-600">{profile?.total_lessons || 0} lessons</span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  {profile?.is_available_now ? (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-500/15 border border-emerald-500/20 text-emerald-400">● Online</span>
+                  ) : (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-white/5 border border-white/10 text-gray-500">Offline</span>
+                  )}
+                </div>
               </div>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {profile?.native_languages?.map(l => (
+                  <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium">
+                    {getLanguageLabel(l)}
+                  </span>
+                ))}
+                {profile?.interests?.slice(0, 3).map(i => (
+                  <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">{i}</span>
+                ))}
+              </div>
+              {profile?.is_available_now && (
+                <div className="mt-3 text-xs font-semibold text-emerald-500 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Available now
+                </div>
+              )}
             </div>
-            {/* Tips */}
-            <div className="mt-3 space-y-1.5 text-xs text-blue-200">
-              <p>📸 <strong>Profile photo:</strong> Use a clear photo in a well-lit environment — students trust tutors they can see clearly.</p>
-              <p>✍️ <strong>Bio:</strong> Write a short introduction about yourself, your teaching style and experience.</p>
-              <p>🎥 <strong>Intro video:</strong> Record a video of up to 2 minutes introducing yourself — this greatly increases your bookings!</p>
+
+            {/* Tips below the card */}
+            <div className="mt-4 space-y-2 text-xs text-gray-300">
+              <p>📸 <strong className="text-white">Profile photo:</strong> Always add a photo in a well-lit environment — students trust tutors they can see clearly.</p>
+              <p>✍️ <strong className="text-white">Bio:</strong> Write a short introduction about yourself, your teaching style and experience.</p>
+              <p>🎥 <strong className="text-white">Intro video:</strong> Record a video of up to 2 minutes introducing yourself — this greatly increases your bookings!</p>
             </div>
           </div>
 
