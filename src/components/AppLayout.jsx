@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -53,17 +53,10 @@ export default function AppLayout() {
   const nav = role === "admin" ? ADMIN_NAV : role === "tutor" ? TUTOR_NAV : role === "affiliate" ? AFFILIATE_NAV : STUDENT_NAV;
 
   // Heartbeat for tutors: keep last_seen updated on every page
-  const tutorProfileIdRef = useRef(null);
   useEffect(() => {
     if (role !== "tutor" || !user?.id) return;
     const beat = async () => {
-      if (!tutorProfileIdRef.current) {
-        const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) tutorProfileIdRef.current = profiles[0].id;
-      }
-      if (tutorProfileIdRef.current) {
-        await base44.entities.TutorProfile.update(tutorProfileIdRef.current, { last_seen: new Date().toISOString() });
-      }
+      await base44.functions.updateMyProfile({ last_seen: new Date().toISOString() });
     };
     beat();
     const interval = setInterval(beat, 60 * 1000); // every 1 minute
