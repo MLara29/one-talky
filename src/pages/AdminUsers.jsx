@@ -174,7 +174,6 @@ export default function AdminUsers() {
                         <SelectItem value="tutor">Tutor</SelectItem>
                         <SelectItem value="student">Student</SelectItem>
                         <SelectItem value="affiliate">Affiliate</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                     {/* Contract type badge + toggle */}
@@ -241,7 +240,6 @@ export default function AdminUsers() {
                         <SelectItem value="tutor">Tutor</SelectItem>
                         <SelectItem value="student">Student</SelectItem>
                         <SelectItem value="affiliate">Affiliate</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
