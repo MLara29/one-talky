@@ -11,6 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
+function AutoDismissAlert({ children, onDismiss, className }) {
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 5000);
+    return () => clearTimeout(t);
+  }, []);
+  return <div className={className}>{children}</div>;
+}
+
 export default function TutorDashboard() {
   const { user } = useAuth();
   const lang = "en"; // Tutors always see the interface in English
@@ -181,51 +189,53 @@ export default function TutorDashboard() {
   return (
     <div>
       {upcomingAlert && (
-        <div className="mb-4 flex items-center justify-between gap-4 bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-500/30 rounded-2xl px-5 py-4">
+        <AutoDismissAlert onDismiss={() => setUpcomingAlert(null)}
+          className="mb-4 flex items-center justify-between gap-4 bg-gradient-to-r from-orange-500/20 to-orange-600/10 border border-orange-500/40 rounded-2xl px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5 text-amber-400" />
+            <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 text-orange-400" />
             </div>
             <div>
-              <p className="theme-heading font-semibold text-white text-sm">⏰ Lesson starting soon!</p>
-              <p className="theme-subtext text-xs text-amber-400">{upcomingAlert.student_name} — {upcomingAlert.language} — in less than 5 minutes</p>
+              <p className="font-semibold text-white text-sm">⏰ Lesson starting soon!</p>
+              <p className="text-xs text-orange-400">{upcomingAlert.student_name} — {upcomingAlert.language} — in less than 5 minutes</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Link to={`/classroom/${upcomingAlert.id}`}>
-              <Button size="sm" className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg shadow-amber-500/30">
+              <Button size="sm" className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/30">
                 Open classroom
               </Button>
             </Link>
-            <button onClick={() => setUpcomingAlert(null)} className="theme-subtext text-gray-500 hover:text-gray-700 transition-colors">
+            <button onClick={() => setUpcomingAlert(null)} className="text-orange-300 hover:text-white transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </AutoDismissAlert>
       )}
 
       {liveAlert && (
-        <div className="mb-6 flex items-center justify-between gap-4 bg-gradient-to-r from-red-500/15 to-rose-500/10 border border-red-500/30 rounded-2xl px-5 py-4 animate-pulse">
+        <AutoDismissAlert onDismiss={() => setLiveAlert(null)}
+          className="mb-6 flex items-center justify-between gap-4 bg-gradient-to-r from-orange-500/20 to-orange-700/10 border border-orange-500/50 rounded-2xl px-5 py-4 animate-pulse">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0">
-              <Bell className="w-5 h-5 text-red-500" />
+            <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
+              <Bell className="w-5 h-5 text-orange-400" />
             </div>
             <div>
-              <p className="theme-heading font-semibold text-white text-sm">📞 {liveAlert.student_name} is calling!</p>
-              <p className="theme-subtext text-xs text-red-500">Live lesson — join now</p>
+              <p className="font-semibold text-white text-sm">📞 {liveAlert.student_name} is calling!</p>
+              <p className="text-xs text-orange-400">Live lesson — join now</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Link to={`/classroom/${liveAlert.id}`}>
-              <Button size="sm" className="bg-gradient-to-r from-red-500 to-rose-600 text-white border-0 shadow-lg shadow-red-500/30">
+              <Button size="sm" className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/30">
                 Join now
               </Button>
             </Link>
-            <button onClick={() => setLiveAlert(null)} className="theme-subtext text-gray-500 hover:text-gray-700 transition-colors">
+            <button onClick={() => setLiveAlert(null)} className="text-orange-300 hover:text-white transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </AutoDismissAlert>
       )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
