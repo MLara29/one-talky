@@ -57,7 +57,7 @@ export const COUNTRIES = [
   "Italy", "Germany", "Austria", "Brazil", "Portugal",
   "Japan", "South Korea", "China", "India", "South Africa",
   "New Zealand", "Netherlands", "Sweden", "Norway", "Denmark",
-  "Kenya",
+  "Kenya", "Philippines",
 ];
 
 // Preço base: R$29,90 por 30 minutos (R$0,9967/min)

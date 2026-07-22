@@ -92,9 +92,9 @@ export default function TutorBankInfo() {
               <SelectTrigger className="pl-9 bg-white/5 border-white/10 text-white">
                 <SelectValue placeholder="Select your country" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-white/10 text-white max-h-64 overflow-y-auto">
+              <SelectContent className="bg-white border-gray-200 text-gray-900 max-h-64 overflow-y-auto">
                 {COUNTRIES.map(c => (
-                  <SelectItem key={c} value={c} className="text-white focus:bg-orange-500/20 focus:text-orange-300">{c}</SelectItem>
+                  <SelectItem key={c} value={c} className="text-gray-900 focus:bg-orange-50 focus:text-orange-700">{c}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
