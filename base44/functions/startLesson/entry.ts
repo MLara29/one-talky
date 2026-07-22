@@ -31,8 +31,8 @@ Deno.serve(async (req) => {
     // Notify the tutor
     await base44.asServiceRole.entities.Notification.create({
       user_id: lesson.tutor_id,
-      title: "📞 Aula ao vivo iniciada!",
-      message: `${lesson.student_name} está aguardando você na aula de ${lesson.language}. Entre agora!`,
+      title: "📞 Live lesson started!",
+      message: `${lesson.student_name} is waiting for you in the ${lesson.language} lesson. Join now!`,
       type: "lesson_booked",
       link: `/classroom/${lesson_id}`,
       is_read: false,

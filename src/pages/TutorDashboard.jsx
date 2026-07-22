@@ -22,28 +22,56 @@ export default function TutorDashboard() {
   const [studentProfiles, setStudentProfiles] = useState({});
   const [loading, setLoading] = useState(true);
   const [liveAlert, setLiveAlert] = useState(null);
+  const [upcomingAlert, setUpcomingAlert] = useState(null);
   const [showSupport, setShowSupport] = useState(false);
   const prevLessonsRef = useRef([]);
+  const shownUpcomingRef = useRef(new Set());
+  const shownLiveRef = useRef(new Set());
 
   useEffect(() => { loadData(); }, [user]);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const check = async () => {
       if (!user) return;
       try {
         const live = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "in_progress" });
         const sched = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" });
         const allLessons = [...live, ...sched];
-        const prevIds = prevLessonsRef.current.filter(l => l.status === "in_progress").map(l => l.id);
-        const newLive = live.find(l => !prevIds.includes(l.id));
+
+        // Live alert: only show for truly in_progress lessons not seen before
+        const newLive = live.find(l => !shownLiveRef.current.has(l.id));
         if (newLive) {
+          shownLiveRef.current.add(newLive.id);
           setLiveAlert(newLive);
           toast({ title: "📞 Live lesson!", description: `${newLive.student_name} is waiting for you!` });
         }
+
+        // Auto-dismiss liveAlert if lesson is no longer in_progress
+        setLiveAlert(prev => {
+          if (!prev) return null;
+          const stillLive = live.find(l => l.id === prev.id);
+          return stillLive ? prev : null;
+        });
+
+        // Upcoming alert: scheduled lesson starting within 5 minutes
+        const now = Date.now();
+        const upcoming = sched.find(l => {
+          if (!l.scheduled_at) return false;
+          const startsIn = new Date(l.scheduled_at).getTime() - now;
+          return startsIn > 0 && startsIn <= 5 * 60 * 1000 && !shownUpcomingRef.current.has(l.id);
+        });
+        if (upcoming) {
+          shownUpcomingRef.current.add(upcoming.id);
+          setUpcomingAlert(upcoming);
+          toast({ title: "⏰ Lesson starting soon!", description: `${upcoming.student_name}'s lesson starts in less than 5 minutes.` });
+        }
+
         prevLessonsRef.current = allLessons;
         setLessons(allLessons);
       } catch {}
-    }, 10000);
+    };
+    check();
+    const interval = setInterval(check, 10000);
     return () => clearInterval(interval);
   }, [user]);
 
@@ -152,6 +180,30 @@ export default function TutorDashboard() {
 
   return (
     <div>
+      {upcomingAlert && (
+        <div className="mb-4 flex items-center justify-between gap-4 bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-500/30 rounded-2xl px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <p className="theme-heading font-semibold text-white text-sm">⏰ Lesson starting soon!</p>
+              <p className="theme-subtext text-xs text-amber-400">{upcomingAlert.student_name} — {upcomingAlert.language} — in less than 5 minutes</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to={`/classroom/${upcomingAlert.id}`}>
+              <Button size="sm" className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg shadow-amber-500/30">
+                Open classroom
+              </Button>
+            </Link>
+            <button onClick={() => setUpcomingAlert(null)} className="theme-subtext text-gray-500 hover:text-gray-700 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {liveAlert && (
         <div className="mb-6 flex items-center justify-between gap-4 bg-gradient-to-r from-red-500/15 to-rose-500/10 border border-red-500/30 rounded-2xl px-5 py-4 animate-pulse">
           <div className="flex items-center gap-3">
@@ -159,8 +211,8 @@ export default function TutorDashboard() {
               <Bell className="w-5 h-5 text-red-500" />
             </div>
             <div>
-              <p className="theme-heading font-semibold text-white text-sm">📞 {liveAlert.student_name}!</p>
-              <p className="theme-subtext text-xs text-red-500">Live lesson now</p>
+              <p className="theme-heading font-semibold text-white text-sm">📞 {liveAlert.student_name} is calling!</p>
+              <p className="theme-subtext text-xs text-red-500">Live lesson — join now</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
