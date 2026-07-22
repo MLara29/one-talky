@@ -59,11 +59,9 @@ const CONTENT = {
     anchorNote: "Pagamento seguro via Mercado Pago · Sem fidelidade · Cancele quando quiser.",
     perWeek: "/semana", perMonth: "/mês", totalWord: "Total ",
     plans: [
-      { tag: "Básico · 2 aulas", name: "60 min / mês", weekly: "R$29,90", monthly: "R$59,80", features: ["60 minutos de conversa por mês", "2 aulas individuais de 30 min", "Agendamento livre", "Tutores de todos os níveis"], cta: "Começar no Básico", highlight: false, badge: "" },
-      { tag: "Básico · 4 aulas", name: "120 min / mês", weekly: "R$29,90", monthly: "R$119,60", features: ["120 minutos de conversa por mês", "4 aulas individuais de 30 min", "Uma conversa por semana: o ritmo mínimo pra criar hábito", "Agendamento livre"], cta: "Quero 1 aula por semana", highlight: true, badge: "Mais escolhido" },
-      { tag: "Standard · 240 min", name: "R$28,40 por aula", weekly: "R$56,81", monthly: "R$227,24", features: ["240 minutos de conversa por mês", "Até 8 aulas de 30 min", "Sai por R$28,40 por aula", "Ideal pra quem tem prazo: viagem, entrevista, prova"], cta: "Assinar o Standard", highlight: false, badge: "" },
-      { tag: "Premium · 480 min", name: "Menos de R$1/min", weekly: "R$107,64", monthly: "R$430,56", features: ["480 minutos de conversa por mês", "Até 16 aulas de 30 min", "Sai por R$26,91 por aula", "Prática quase diária: o caminho mais curto pra destravar"], cta: "Assinar o Premium", highlight: false, badge: "" },
-
+      { tag: "Básico", name: "60 min / mês", weekly: "R$29,90", monthly: "R$59,80", features: ["60 minutos de conversa por mês", "2 aulas individuais de 30 min", "Agendamento livre", "Tutores de todos os níveis"], cta: "Começar no Básico", highlight: false, badge: "" },
+      { tag: "Standard", name: "120 min / mês", weekly: "R$29,90", monthly: "R$119,60", features: ["120 minutos de conversa por mês", "4 aulas de 30 min ou 2 aulas de 1 hora", "Uma conversa por semana: o ritmo mínimo pra criar hábito", "Agendamento livre"], cta: "Assinar o Standard", highlight: true, badge: "Mais escolhido" },
+      { tag: "Premium", name: "240 min / mês", weekly: "R$56,81", monthly: "R$227,24", features: ["240 minutos de conversa por mês", "8 aulas de 30 min ou 4 aulas de 1 hora", "Sai por R$28,40 por aula", "Prática 2× por semana: o caminho mais rápido pra destravar"], cta: "Assinar o Premium", highlight: false, badge: "" },
     ],
     guarTitle: "7 dias. Sem perguntas.",
     guar: ["Assine, faça suas aulas, converse com os tutores. Se em até 7 dias achar que o One Talky não é pra você, manda uma mensagem e a gente devolve ", "100% do valor", ". Sem formulário, sem justificativa."],
@@ -151,11 +149,9 @@ const CONTENT = {
     anchorNote: "Secure payment via Mercado Pago · No lock-in · Cancel anytime.",
     perWeek: "/week", perMonth: "/month", totalWord: "Total ",
     plans: [
-      { tag: "Basic · 2 lessons", name: "60 min / month", weekly: "R$29.90", monthly: "R$59.80", features: ["60 minutes of conversation per month", "2 one-on-one 30-min lessons", "Free scheduling", "Tutors of every level"], cta: "Start on Basic", highlight: false, badge: "" },
-      { tag: "Basic · 4 lessons", name: "120 min / month", weekly: "R$29.90", monthly: "R$119.60", features: ["120 minutes of conversation per month", "4 one-on-one 30-min lessons", "One conversation a week: the minimum to build a habit", "Free scheduling"], cta: "I want 1 lesson a week", highlight: true, badge: "Most chosen" },
-      { tag: "Standard · 240 min", name: "R$28.40 per lesson", weekly: "R$56.81", monthly: "R$227.24", features: ["240 minutes of conversation per month", "Up to 8 lessons of 30 min", "Works out to R$28.40 per lesson", "Great for a deadline: trip, interview, exam"], cta: "Subscribe to Standard", highlight: false, badge: "" },
-      { tag: "Premium · 480 min", name: "Under R$1/min", weekly: "R$107.64", monthly: "R$430.56", features: ["480 minutes of conversation per month", "Up to 16 lessons of 30 min", "Works out to R$26.91 per lesson", "Near-daily practice: the shortest path to breaking through"], cta: "Subscribe to Premium", highlight: false, badge: "" },
-
+      { tag: "Basic", name: "60 min / month", weekly: "R$29.90", monthly: "R$59.80", features: ["60 minutes of conversation per month", "2 one-on-one 30-min lessons", "Free scheduling", "Tutors of every level"], cta: "Start on Basic", highlight: false, badge: "" },
+      { tag: "Standard", name: "120 min / month", weekly: "R$29.90", monthly: "R$119.60", features: ["120 minutes of conversation per month", "4 lessons of 30 min or 2 lessons of 1 hour", "One conversation a week: the minimum to build a habit", "Free scheduling"], cta: "Subscribe to Standard", highlight: true, badge: "Most chosen" },
+      { tag: "Premium", name: "240 min / month", weekly: "R$56.81", monthly: "R$227.24", features: ["240 minutes of conversation per month", "8 lessons of 30 min or 4 lessons of 1 hour", "Works out to R$28.40 per lesson", "Twice a week practice: the fastest path to fluency"], cta: "Subscribe to Premium", highlight: false, badge: "" },
     ],
     guarTitle: "7 days. No questions.",
     guar: ["Subscribe, take your lessons, talk to the tutors. If within 7 days you feel One Talky isn't for you, send us a message and we refund ", "100% of your money", ". No form, no justification."],

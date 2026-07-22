@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Check, Zap, Clock, CreditCard } from "lucide-react";
+import { Clock, CreditCard } from "lucide-react";
 import { PLANS, PREPAID_PACKS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,18 +14,12 @@ function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-const BASIC_OPTIONS = {
-  2: { sessions: 2, minutes: 60,  price_monthly: 59.80,  price_weekly: 29.90,  description: "60 min/mês · 2 aulas de 30 min" },
-  4: { sessions: 4, minutes: 120, price_monthly: 119.60, price_weekly: 29.90,  description: "120 min/mês · 4 aulas de 30 min" },
-};
-
 export default function Plans() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checkoutItem, setCheckoutItem] = useState(null);
-  const [basicSessions, setBasicSessions] = useState(4);
 
   useEffect(() => { loadProfile(); }, [user]);
 
@@ -45,15 +39,12 @@ export default function Plans() {
     loadProfile();
   };
 
-  const selectPlan = (plan, overrides = {}) => {
-    if (!profile || (overrides.price_monthly ?? plan.price_monthly) === 0) return;
-    const price = overrides.price_monthly ?? plan.price_monthly;
-    const minutes = overrides.minutes ?? plan.minutes;
-    const ref = plan.id === "basic" ? `plan:basic:${basicSessions}` : `plan:${plan.id}`;
+  const selectPlan = (plan) => {
+    if (!profile || plan.price_monthly === 0) return;
     setCheckoutItem({
-      title: `One Talky — Plano ${plan.name} (${minutes} min/mês)`,
-      price,
-      external_reference: ref,
+      title: `One Talky — Plano ${plan.name} (${plan.minutes} min/mês)`,
+      price: plan.price_monthly,
+      external_reference: `plan:${plan.id}`,
     });
   };
 
@@ -114,15 +105,9 @@ export default function Plans() {
 
         {/* ── PLANOS MENSAIS ── */}
         <TabsContent value="plans">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+          <div className="grid sm:grid-cols-3 gap-4 items-stretch">
             {PLANS.map(plan => {
-              const isBasic = plan.id === "basic";
-              const basicOpt = BASIC_OPTIONS[basicSessions];
               const isCurrent = profile?.plan === plan.id;
-              const displayMinutes = isBasic ? basicOpt.minutes : plan.minutes;
-              const displayPrice = isBasic ? basicOpt.price_monthly : plan.price_monthly;
-              const displayWeekly = isBasic ? basicOpt.price_weekly : plan.price_weekly;
-              const displayDesc = isBasic ? basicOpt.description : plan.description;
               const isHighlight = plan.popular;
 
               return (
@@ -153,71 +138,55 @@ export default function Plans() {
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "#A29A8C" }}>One Talky</div>
                     <div style={{ fontSize: 17, fontWeight: 800, marginTop: 4, color: "#17181C" }}>{plan.name}</div>
-                    <div style={{ fontSize: 12.5, color: "#8A8B94", marginTop: 2 }}>{displayDesc}</div>
+                    <div style={{ fontSize: 12.5, color: "#8A8B94", marginTop: 2 }}>{plan.description}</div>
                   </div>
 
-                  {/* Seletor de aulas — básico */}
-                  {isBasic && (
-                    <div>
-                      <p style={{ fontSize: 11, fontWeight: 700, color: "#7A7B85", marginBottom: 6 }}>Aulas por mês:</p>
-                      <div className="flex gap-2">
-                        {[2, 4].map(n => (
-                          <button
-                            key={n}
-                            onClick={() => setBasicSessions(n)}
-                            style={{
-                              flex: 1, padding: "5px 0", borderRadius: 10, fontSize: 12, fontWeight: 700, border: `1.5px solid ${basicSessions === n ? ACCENT : "#E4DED6"}`,
-                              background: basicSessions === n ? ACCENT : "#fff", color: basicSessions === n ? "#fff" : "#5A5B66", cursor: "pointer", fontFamily: "inherit",
-                            }}
-                          >
-                            {n} aulas
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   <div>
-                    {displayPrice === 0 ? (
-                      <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>Grátis</span>
-                    ) : (
-                      <>
-                        <div className="flex items-baseline gap-1">
-                          <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>{fmtBRL(displayWeekly)}</span>
-                          <span style={{ fontSize: 13, color: "#8A8B94", fontWeight: 700 }}>/semana</span>
-                        </div>
-                        <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{fmtBRL(displayPrice)}/mês</div>
-                      </>
-                    )}
+                    <div className="flex items-baseline gap-1">
+                      <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>{fmtBRL(plan.price_weekly)}</span>
+                      <span style={{ fontSize: 13, color: "#8A8B94", fontWeight: 700 }}>/semana</span>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{fmtBRL(plan.price_monthly)}/mês</div>
                   </div>
 
                   <div style={{ height: 1, background: "#EEE7DD" }} />
 
                   <ul className="flex flex-col gap-2 flex-1" style={{ listStyle: "none", padding: 0, margin: 0 }}>
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
-                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{displayMinutes} minutos/mês
+                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{plan.minutes} minutos/mês
                     </li>
+                    {plan.id === "standard" && (
+                      <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
+                        <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>4×30 min ou 2×1 hora
+                      </li>
+                    )}
+                    {plan.id === "premium" && (
+                      <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
+                        <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>8×30 min ou 4×1 hora
+                      </li>
+                    )}
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
                       <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>Todos os tutores nativos
                     </li>
-
+                    <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
+                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>Acesso ao pré-pago
+                    </li>
                   </ul>
 
                   <button
-                    onClick={() => selectPlan(plan, isBasic ? { price_monthly: displayPrice, minutes: displayMinutes } : {})}
-                    disabled={isCurrent || displayPrice === 0}
+                    onClick={() => selectPlan(plan)}
+                    disabled={isCurrent}
                     style={{
                       textAlign: "center", padding: "13px 0", borderRadius: 999, fontWeight: 700, fontSize: 14.5,
                       background: isCurrent ? "#f0fdf4" : isHighlight ? ACCENT : "#17181C",
                       color: isCurrent ? "#22c55e" : "#fff",
                       border: isCurrent ? "1.5px solid #86efac" : "none",
-                      cursor: isCurrent || displayPrice === 0 ? "default" : "pointer",
-                      opacity: displayPrice === 0 ? 0.5 : 1,
+                      cursor: isCurrent ? "default" : "pointer",
                       fontFamily: "inherit", transition: "opacity .2s",
                     }}
                   >
                     <CreditCard className="inline w-4 h-4 mr-2 mb-0.5" />
-                    {isCurrent ? "✓ Plano atual" : displayPrice === 0 ? "Grátis" : "Pagar com cartão"}
+                    {isCurrent ? "✓ Plano atual" : "Assinar agora"}
                   </button>
                 </div>
               );
@@ -228,6 +197,14 @@ export default function Plans() {
         {/* ── PRÉ-PAGO ── */}
         <TabsContent value="prepaid">
           <div className="max-w-2xl mx-auto">
+            {/* Bloqueio para quem não tem plano mensal */}
+            {(!profile?.plan || profile.plan === "free") && (
+              <div className="mb-6 flex flex-col items-center gap-3 rounded-2xl p-6 text-center" style={{ background: "#FFF7F1", border: "1.5px solid rgba(242,106,27,0.3)" }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: "#FDECE0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🔒</div>
+                <p className="font-semibold" style={{ color: "#17181C" }}>Disponível apenas para assinantes</p>
+                <p className="text-sm" style={{ color: "#5A5B66" }}>Assine qualquer plano mensal para desbloquear a compra de minutos avulsos.</p>
+              </div>
+            )}
             <p className="text-center text-sm mb-6" style={{ color: "#5A5B66" }}>Compre minutos sem mensalidade. Os créditos não expiram.</p>
             <div className="space-y-3">
               {PREPAID_PACKS.map(pack => (
@@ -255,11 +232,12 @@ export default function Plans() {
                     <p className="font-display font-bold text-lg" style={{ color: "#17181C" }}>{fmtBRL(pack.price_brl)}</p>
                     <button
                       onClick={() => buyPack(pack)}
-                      disabled={!!checkoutItem}
+                      disabled={!!checkoutItem || !profile?.plan || profile.plan === "free"}
                       style={{
                         marginTop: 4, padding: "7px 18px", borderRadius: 999, fontWeight: 700, fontSize: 13.5,
-                        background: ACCENT, color: "#fff", border: "none", cursor: checkoutItem ? "not-allowed" : "pointer",
-                        opacity: checkoutItem ? 0.6 : 1, fontFamily: "inherit",
+                        background: ACCENT, color: "#fff", border: "none",
+                        cursor: (checkoutItem || !profile?.plan || profile.plan === "free") ? "not-allowed" : "pointer",
+                        opacity: (checkoutItem || !profile?.plan || profile.plan === "free") ? 0.4 : 1, fontFamily: "inherit",
                       }}
                     >
                       Comprar
