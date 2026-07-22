@@ -3,7 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { COUNTRIES } from "@/lib/constants";
 import { User, Mail, Globe, Phone, Save, Bell, BellOff } from "lucide-react";
 
 export default function TutorBankInfo() {
@@ -85,8 +87,17 @@ export default function TutorBankInfo() {
         <div>
           <label className="theme-subtext text-xs text-gray-500 mb-1.5 block">Nationality</label>
           <div className="relative">
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
-            <Input value={form.nationality} onChange={set("nationality")} placeholder="e.g. Brazilian" className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-600" />
+            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 z-10" />
+            <Select value={form.nationality} onValueChange={v => setForm(f => ({ ...f, nationality: v }))}>
+              <SelectTrigger className="pl-9 bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="Select your country" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-white/10 text-white max-h-64 overflow-y-auto">
+                {COUNTRIES.map(c => (
+                  <SelectItem key={c} value={c} className="text-white focus:bg-orange-500/20 focus:text-orange-300">{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

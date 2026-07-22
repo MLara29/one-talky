@@ -117,9 +117,20 @@ export default function OnboardingTutor() {
               </div>
               <div>
                 <Label className={labelCls}>Country of residence</Label>
-                <Select value={form.country} onValueChange={v => { set("country", v); set("nationality", v); }}>
+                <Select value={form.country} onValueChange={v => set("country", v)}>
                   <SelectTrigger className={selectTriggerCls}>
                     <SelectValue placeholder="Select your country" />
+                  </SelectTrigger>
+                  <SelectContent className={selectContentCls}>
+                    {COUNTRIES.map(c => <SelectItem key={c} value={c} className={selectItemCls}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className={labelCls}>Nationality</Label>
+                <Select value={form.nationality} onValueChange={v => set("nationality", v)}>
+                  <SelectTrigger className={selectTriggerCls}>
+                    <SelectValue placeholder="Select your nationality" />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
                     {COUNTRIES.map(c => <SelectItem key={c} value={c} className={selectItemCls}>{c}</SelectItem>)}
@@ -148,7 +159,7 @@ export default function OnboardingTutor() {
               <Button
                 type="button"
                 onClick={() => setStep(2)}
-                disabled={!form.full_name || !form.country || form.native_languages.length === 0}
+                disabled={!form.full_name || !form.country || !form.nationality || form.native_languages.length === 0}
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all mt-2"
               >
                 Continue <ChevronRight className="w-4 h-4 ml-1" />
