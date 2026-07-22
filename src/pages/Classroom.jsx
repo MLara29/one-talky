@@ -337,10 +337,21 @@ export default function Classroom() {
 
     await leaveChannel();
 
-    try {
-      // All lesson finalization (status, student credits, tutor earnings) handled server-side
-      await base44.functions.invoke('endLesson', { lesson_id: id, is_recorded: isRecording });
-    } catch {}
+    // Retry up to 3 times to ensure lesson is finalized server-side
+    let success = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await base44.functions.invoke('endLesson', { lesson_id: id, is_recorded: isRecording });
+        success = true;
+        break;
+      } catch (e) {
+        console.error(`[endLesson] attempt ${attempt + 1} failed:`, e);
+        if (attempt < 2) await new Promise(r => setTimeout(r, 1500));
+      }
+    }
+    if (!success) {
+      toast({ title: "Erro ao encerrar aula", description: "A aula pode não ter sido salva corretamente. Contate o suporte.", variant: "destructive" });
+    }
 
     setShowReview(true);
   };
