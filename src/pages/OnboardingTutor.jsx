@@ -14,7 +14,6 @@ export default function OnboardingTutor() {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
-  const [userId, setUserId] = useState(null);
   const [form, setForm] = useState({
     full_name: "",
     country: "",
@@ -26,9 +25,7 @@ export default function OnboardingTutor() {
     price_per_minute: 0.0833,
   });
 
-  useEffect(() => {
-    base44.auth.me().then(me => setUserId(me.id)).catch(() => {});
-  }, []);
+
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -47,26 +44,20 @@ export default function OnboardingTutor() {
   };
 
   const handleSubmit = async () => {
-    if (!userId) {
-      toast({ title: "Authentication error", description: "Please reload the page and try again.", variant: "destructive" });
-      return;
-    }
     setSaving(true);
     try {
-      const profileData = {
-        full_name: form.full_name,
-        country: form.country,
-        nationality: form.nationality,
-        native_languages: form.native_languages,
-        bio: form.bio,
-        interests: form.interests,
-        price_per_minute: Number(form.price_per_minute) || 0.5,
-        status: "pending",
-        user_id: userId,
-      };
-      if (form.intro_video_url) profileData.intro_video_url = form.intro_video_url;
-
-      await base44.entities.TutorProfile.create(profileData);
+      // Profile creation handled server-side — financial fields always set to defaults
+      await base44.functions.invoke('createTutorProfile', {
+        profile: {
+          full_name: form.full_name,
+          country: form.country,
+          nationality: form.nationality,
+          native_languages: form.native_languages,
+          bio: form.bio,
+          interests: form.interests,
+          intro_video_url: form.intro_video_url || undefined,
+        },
+      });
       await base44.functions.invoke('setUserRole', { role: 'tutor' });
       await base44.auth.updateMe({ profile_completed: true });
       base44.functions.invoke('notifyAdminNewUser', {
@@ -225,7 +216,7 @@ export default function OnboardingTutor() {
                 <Button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={form.interests.length === 0 || saving || !userId}
+                  disabled={form.interests.length === 0 || saving}
                   className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all"
                 >
                   {saving ? "Submitting..." : "Submit application"}

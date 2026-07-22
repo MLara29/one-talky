@@ -53,9 +53,9 @@ export default function Profile() {
         if (profile.contract_type !== "upwork") {
           updates.bank_info = JSON.stringify({ pioneer_email: pioneerEmail });
         }
-        await base44.entities.TutorProfile.update(profile.id, updates);
+        await base44.functions.invoke('updateMyProfile', { updates });
       } else {
-        await base44.entities.StudentProfile.update(profile.id, { full_name: profile.full_name });
+        await base44.functions.invoke('updateMyProfile', { updates: { full_name: profile.full_name } });
       }
       await base44.auth.updateMe({ full_name: profile.full_name });
       toast({ title: "Profile saved! ✅" });
@@ -67,7 +67,7 @@ export default function Profile() {
     setUploadingPhoto(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.entities.TutorProfile.update(profile.id, { photo_url: file_url });
+      await base44.functions.invoke('updateMyProfile', { updates: { photo_url: file_url } });
       setProfile({ ...profile, photo_url: file_url });
       toast({ title: "Photo updated! 📸" });
     } catch { toast({ title: "Error uploading photo", variant: "destructive" }); } finally { setUploadingPhoto(false); }
@@ -78,7 +78,7 @@ export default function Profile() {
     setUploadingVideo(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.entities.TutorProfile.update(profile.id, { intro_video_url: file_url });
+      await base44.functions.invoke('updateMyProfile', { updates: { intro_video_url: file_url } });
       setProfile({ ...profile, intro_video_url: file_url });
       toast({ title: "Intro video updated! 🎥" });
     } catch { toast({ title: "Error uploading video", variant: "destructive" }); } finally { setUploadingVideo(false); }

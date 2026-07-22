@@ -139,15 +139,8 @@ export default function Classroom() {
   const notifyTutor = async (l) => {
     try {
       if (user?.role !== "tutor") {
-        await base44.entities.Notification.create({
-          user_id: l.tutor_id,
-          title: "📞 Aula ao vivo iniciada!",
-          message: `${l.student_name} está aguardando você na aula de ${l.language}. Entre agora!`,
-          type: "lesson_booked",
-          link: `/classroom/${l.id}`,
-          is_read: false,
-        });
-        await base44.entities.Lesson.update(l.id, { status: "in_progress", started_at: new Date().toISOString() });
+        // Start lesson and notify tutor server-side
+        await base44.functions.invoke('startLesson', { lesson_id: l.id });
       }
     } catch {}
   };
@@ -343,42 +336,11 @@ export default function Classroom() {
     setLessonEnding(true);
 
     await leaveChannel();
-    const durationSeconds = Math.max(1, elapsedRef.current);
-    const durationMinutes = durationSeconds / 60; // proportional, not rounded
-    const currentLesson = lessonRef.current;
 
     try {
-      // Mark lesson completed — this signals the other party to also leave
-      await base44.entities.Lesson.update(id, {
-        status: "completed",
-        ended_at: new Date().toISOString(),
-        duration_minutes: Math.round(durationMinutes),
-        is_recorded: isRecording,
-      });
+      // All lesson finalization (status, student credits, tutor earnings) handled server-side
+      await base44.functions.invoke('endLesson', { lesson_id: id, is_recorded: isRecording });
     } catch {}
-
-    if (currentLesson?.student_id) {
-      try {
-        const profiles = await base44.entities.StudentProfile.filter({ user_id: currentLesson.student_id });
-        if (profiles.length > 0) {
-          const profile = profiles[0];
-          const newCredits = Math.max(0, (profile.credits_minutes ?? 0) - durationMinutes);
-          await base44.entities.StudentProfile.update(profile.id, {
-            credits_minutes: Math.round(newCredits * 100) / 100,
-            total_minutes: Math.round(((profile.total_minutes ?? 0) + durationMinutes) * 100) / 100,
-            total_lessons: (profile.total_lessons ?? 0) + 1,
-            last_practice_date: new Date().toISOString().split("T")[0],
-          });
-        }
-      } catch {}
-    }
-
-    if (currentLesson?.tutor_id) {
-      try {
-        // Earnings calculated server-side from recorded timestamps — never from client
-        await base44.functions.invoke('finalizeTutorEarnings', { lesson_id: id });
-      } catch {}
-    }
 
     setShowReview(true);
   };

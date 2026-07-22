@@ -1,0 +1,66 @@
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
+
+// Fields that tutors are allowed to update on their own profile
+const TUTOR_ALLOWED_FIELDS = new Set([
+  "full_name", "bio", "bank_info", "photo_url", "intro_video_url",
+  "availability", "is_available_now", "last_seen", "timezone", "accent",
+  "booked_slots", "interests", "other_languages",
+]);
+
+// Fields that students are allowed to update on their own profile
+const STUDENT_ALLOWED_FIELDS = new Set([
+  "full_name", "photo_url", "nationality", "accent_preference",
+  "conversation_topics", "objective", "level",
+]);
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { updates } = await req.json();
+    if (!updates || typeof updates !== "object") {
+      return Response.json({ error: "updates object required" }, { status: 400 });
+    }
+
+    const role = user.role;
+
+    if (role === "tutor") {
+      // Strip any fields not in the allowed list — financial fields are never touched
+      const safeUpdates: Record<string, unknown> = {};
+      for (const key of Object.keys(updates)) {
+        if (TUTOR_ALLOWED_FIELDS.has(key)) {
+          safeUpdates[key] = updates[key];
+        }
+      }
+      if (Object.keys(safeUpdates).length === 0) {
+        return Response.json({ error: "No allowed fields to update" }, { status: 400 });
+      }
+      const profiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: user.id });
+      if (profiles.length === 0) return Response.json({ error: "Profile not found" }, { status: 404 });
+      await base44.asServiceRole.entities.TutorProfile.update(profiles[0].id, safeUpdates);
+      return Response.json({ success: true });
+
+    } else if (role === "student") {
+      const safeUpdates: Record<string, unknown> = {};
+      for (const key of Object.keys(updates)) {
+        if (STUDENT_ALLOWED_FIELDS.has(key)) {
+          safeUpdates[key] = updates[key];
+        }
+      }
+      if (Object.keys(safeUpdates).length === 0) {
+        return Response.json({ error: "No allowed fields to update" }, { status: 400 });
+      }
+      const profiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: user.id });
+      if (profiles.length === 0) return Response.json({ error: "Profile not found" }, { status: 404 });
+      await base44.asServiceRole.entities.StudentProfile.update(profiles[0].id, safeUpdates);
+      return Response.json({ success: true });
+
+    } else {
+      return Response.json({ error: "Forbidden for this role" }, { status: 403 });
+    }
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});

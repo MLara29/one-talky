@@ -57,7 +57,7 @@ export default function TutorDashboard() {
         if (profiles.length > 0) profileId = profiles[0].id;
       }
       if (profileId) {
-        await base44.entities.TutorProfile.update(profileId, { last_seen: new Date().toISOString() });
+        await base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date().toISOString() } });
       }
     };
     beat();
@@ -94,13 +94,14 @@ export default function TutorDashboard() {
 
   const toggleAvailability = async () => {
     if (!profile) return;
-    await base44.entities.TutorProfile.update(profile.id, { is_available_now: !profile.is_available_now });
-    setProfile({ ...profile, is_available_now: !profile.is_available_now });
+    const newVal = !profile.is_available_now;
+    await base44.functions.invoke('updateMyProfile', { updates: { is_available_now: newVal } });
+    setProfile({ ...profile, is_available_now: newVal });
   };
 
   const rejectLesson = async (lessonId) => {
     try {
-      await base44.entities.Lesson.update(lessonId, { status: "cancelled" });
+      await base44.functions.invoke('endLesson', { lesson_id: lessonId, is_recorded: false });
       setLessons(prev => prev.filter(l => l.id !== lessonId));
       toast({ title: "Lesson cancelled" });
     } catch {

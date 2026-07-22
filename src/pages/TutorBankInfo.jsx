@@ -49,10 +49,12 @@ export default function TutorBankInfo() {
       pioneer_email: form.pioneer_email,
       reminder_enabled: form.reminder_enabled,
     });
-    await base44.entities.TutorProfile.update(profile.id, {
-      full_name: form.full_name,
-      nationality: form.nationality,
-      bank_info: extra,
+    await base44.functions.invoke('updateMyProfile', {
+      updates: {
+        full_name: form.full_name,
+        nationality: form.nationality,
+        bank_info: extra,
+      },
     });
     setSaving(false);
     toast({ title: "Personal info saved!" });

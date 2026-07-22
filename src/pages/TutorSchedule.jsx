@@ -61,7 +61,7 @@ export default function TutorSchedule() {
         const p = profiles[0];
         if (!p.timezone) {
           const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          await base44.entities.TutorProfile.update(p.id, { timezone: tz });
+          await base44.functions.invoke('updateMyProfile', { updates: { timezone: tz } });
           p.timezone = tz;
         }
         setProfile(p);
@@ -98,7 +98,7 @@ export default function TutorSchedule() {
     if (!profile) return;
     setSaving(true);
     try {
-      await base44.entities.TutorProfile.update(profile.id, { availability });
+      await base44.functions.invoke('updateMyProfile', { updates: { availability } });
       toast({ title: "Schedule saved! ✅", description: "Your availability has been updated successfully." });
     } catch (err) {
       toast({ title: "Error saving", description: err?.message || "Please try again.", variant: "destructive" });
@@ -107,7 +107,7 @@ export default function TutorSchedule() {
 
   const toggleAvailableNow = async () => {
     if (!profile) return;
-    await base44.entities.TutorProfile.update(profile.id, { is_available_now: !profile.is_available_now });
+    await base44.functions.invoke('updateMyProfile', { updates: { is_available_now: !profile.is_available_now } });
     setProfile({ ...profile, is_available_now: !profile.is_available_now });
   };
 

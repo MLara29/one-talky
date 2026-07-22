@@ -58,32 +58,7 @@ export default function MyLessons() {
     if (!cancellingLesson) return;
     setActionLoading(true);
     try {
-      await base44.entities.Lesson.update(cancellingLesson.id, { status: "cancelled" });
-
-      // Release the booked slot via backend function (student can't update TutorProfile directly)
-      if (cancellingLesson.scheduled_at) {
-        const tutorProfiles = await base44.entities.TutorProfile.filter({ user_id: cancellingLesson.tutor_id });
-        if (tutorProfiles.length > 0) {
-          await base44.functions.invoke('bookSlot', {
-            tutor_profile_id: tutorProfiles[0].id,
-            scheduled_at: cancellingLesson.scheduled_at,
-            action: 'release',
-          });
-        }
-      }
-
-      if (cancellingLesson.tutor_id) {
-        await base44.entities.Notification.create({
-          user_id: cancellingLesson.tutor_id,
-          title: "Lesson cancelled by student",
-          message: message
-            ? `${cancellingLesson.student_name} cancelled the lesson. Message: "${message}"`
-            : `${cancellingLesson.student_name} cancelled the scheduled lesson.`,
-          type: "general",
-          is_read: false,
-        });
-      }
-
+      await base44.functions.invoke('cancelLesson', { lesson_id: cancellingLesson.id, message });
       setLessons(prev => prev.map(l => l.id === cancellingLesson.id ? { ...l, status: "cancelled" } : l));
       setCancellingLesson(null);
       toast({ title: "Lesson cancelled", description: message ? "Message sent to tutor." : "" });
@@ -96,30 +71,7 @@ export default function MyLessons() {
     if (!managingLesson) return;
     setActionLoading(true);
     try {
-      await base44.entities.Lesson.update(managingLesson.id, { status: "cancelled" });
-
-      // Release the booked slot via backend function
-      if (managingLesson.scheduled_at) {
-        await base44.functions.invoke('bookSlot', {
-          tutor_profile_id: tutorProfile?.id,
-          scheduled_at: managingLesson.scheduled_at,
-          action: 'release',
-        });
-      }
-
-      // Send notification + message to student
-      if (managingLesson.student_id) {
-        await base44.entities.Notification.create({
-          user_id: managingLesson.student_id,
-          title: "Lesson cancelled by tutor",
-          message: message
-            ? `Your lesson was cancelled. Message from tutor: "${message}"`
-            : "Your scheduled lesson was cancelled by the tutor.",
-          type: "general",
-          is_read: false,
-        });
-      }
-
+      await base44.functions.invoke('cancelLesson', { lesson_id: managingLesson.id, message });
       setLessons(prev => prev.map(l => l.id === managingLesson.id ? { ...l, status: "cancelled" } : l));
       setManagingLesson(null);
       toast({ title: "Lesson cancelled", description: message ? "Message sent to student." : "" });
@@ -132,38 +84,7 @@ export default function MyLessons() {
     if (!managingLesson) return;
     setActionLoading(true);
     try {
-      // Release old slot, add new one via backend function
-      if (tutorProfile && managingLesson.scheduled_at) {
-        await base44.functions.invoke('bookSlot', {
-          tutor_profile_id: tutorProfile.id,
-          scheduled_at: managingLesson.scheduled_at,
-          action: 'release',
-        });
-      }
-      if (tutorProfile) {
-        await base44.functions.invoke('bookSlot', {
-          tutor_profile_id: tutorProfile.id,
-          scheduled_at: newScheduledAt,
-          action: 'book',
-        });
-      }
-
-      await base44.entities.Lesson.update(managingLesson.id, { scheduled_at: newScheduledAt });
-
-      // Notify student
-      if (managingLesson.student_id) {
-        const newDate = new Date(newScheduledAt).toLocaleString();
-        await base44.entities.Notification.create({
-          user_id: managingLesson.student_id,
-          title: "Lesson rescheduled",
-          message: message
-            ? `Your lesson was moved to ${newDate}. Note from tutor: "${message}"`
-            : `Your lesson was rescheduled to ${newDate}.`,
-          type: "lesson_reminder",
-          is_read: false,
-        });
-      }
-
+      await base44.functions.invoke('rescheduleLesson', { lesson_id: managingLesson.id, new_scheduled_at: newScheduledAt, message });
       setLessons(prev => prev.map(l => l.id === managingLesson.id ? { ...l, scheduled_at: newScheduledAt } : l));
       setManagingLesson(null);
       toast({ title: "Lesson rescheduled! 📅", description: message ? "Message sent to student." : "" });
