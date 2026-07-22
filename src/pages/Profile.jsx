@@ -221,6 +221,38 @@ export default function Profile() {
       {/* Public Profile Tab */}
       {activeTab === "public" && (
         <div className="space-y-4">
+
+          {/* Profile preview card */}
+          <div className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Eye className="w-4 h-4 text-blue-400" />
+              <p className="text-sm font-bold text-blue-300">This is how your profile looks to students</p>
+            </div>
+            {/* Mini preview of the tutor card */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-start gap-4">
+              <img
+                src={profile?.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.full_name || "T")}&background=F26A1B&color=fff&size=80`}
+                alt="Preview"
+                className="w-16 h-16 rounded-xl object-cover ring-2 ring-orange-500/20 shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-white text-sm">{profile?.full_name || "Your name"}</p>
+                <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{profile?.bio || "Your bio will appear here..."}</p>
+                {profile?.intro_video_url && (
+                  <span className="inline-flex items-center gap-1 mt-1.5 text-xs text-emerald-400">
+                    <Video className="w-3 h-3" /> Intro video ✓
+                  </span>
+                )}
+              </div>
+            </div>
+            {/* Tips */}
+            <div className="mt-3 space-y-1.5 text-xs text-blue-200">
+              <p>📸 <strong>Profile photo:</strong> Use a clear photo in a well-lit environment — students trust tutors they can see clearly.</p>
+              <p>✍️ <strong>Bio:</strong> Write a short introduction about yourself, your teaching style and experience.</p>
+              <p>🎥 <strong>Intro video:</strong> Record a video of up to 2 minutes introducing yourself — this greatly increases your bookings!</p>
+            </div>
+          </div>
+
           {/* Photo card */}
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center gap-2 mb-4">

@@ -51,13 +51,41 @@ export const LEVELS = [
 ];
 
 export const COUNTRIES = [
-  "United States", "United Kingdom", "Canada", "Australia", "Ireland",
-  "Spain", "Mexico", "Argentina", "Colombia", "Chile",
-  "France", "Belgium", "Switzerland", "Canada (QC)",
-  "Italy", "Germany", "Austria", "Brazil", "Portugal",
-  "Japan", "South Korea", "China", "India", "South Africa",
-  "New Zealand", "Netherlands", "Sweden", "Norway", "Denmark",
-  "Kenya", "Philippines",
+  // North America
+  "United States", "Canada", "Mexico",
+  // Central America & Caribbean
+  "Guatemala", "Honduras", "El Salvador", "Nicaragua", "Costa Rica", "Panama",
+  "Cuba", "Dominican Republic", "Haiti", "Jamaica", "Puerto Rico",
+  // South America
+  "Brazil", "Argentina", "Colombia", "Chile", "Peru", "Venezuela",
+  "Ecuador", "Bolivia", "Paraguay", "Uruguay", "Guyana", "Suriname",
+  // Europe
+  "United Kingdom", "Ireland", "France", "Belgium", "Switzerland",
+  "Spain", "Portugal", "Italy", "Germany", "Austria", "Netherlands",
+  "Sweden", "Norway", "Denmark", "Finland", "Poland", "Romania",
+  "Ukraine", "Russia", "Greece", "Czech Republic", "Hungary",
+  "Canada (QC)", "Australia", "New Zealand",
+  // Africa
+  "Nigeria", "South Africa", "Kenya", "Ethiopia", "Ghana",
+  "Tanzania", "Uganda", "Rwanda", "Senegal", "Ivory Coast",
+  "Cameroon", "Angola", "Mozambique", "Zimbabwe", "Zambia",
+  "Malawi", "Madagascar", "Morocco", "Algeria", "Tunisia",
+  "Libya", "Egypt", "Sudan", "South Sudan", "Somalia",
+  "DR Congo", "Congo", "Gabon", "Benin", "Togo",
+  "Burkina Faso", "Mali", "Niger", "Chad", "Mauritania",
+  "Gambia", "Guinea", "Guinea-Bissau", "Sierra Leone", "Liberia",
+  "Cape Verde", "São Tomé and Príncipe", "Equatorial Guinea",
+  "Eritrea", "Djibouti", "Comoros", "Mauritius", "Seychelles",
+  "Botswana", "Namibia", "Lesotho", "Eswatini",
+  // Asia
+  "Philippines", "India", "China", "Japan", "South Korea",
+  "Vietnam", "Thailand", "Indonesia", "Malaysia", "Singapore",
+  "Myanmar", "Cambodia", "Laos", "Bangladesh", "Sri Lanka",
+  "Nepal", "Pakistan", "Afghanistan", "Iran", "Iraq",
+  "Turkey", "Saudi Arabia", "UAE", "Qatar", "Kuwait",
+  "Bahrain", "Oman", "Jordan", "Lebanon", "Syria",
+  "Israel", "Palestine", "Yemen", "Mongolia", "Taiwan",
+  "Hong Kong", "Macau",
 ];
 
 // Preço base: R$29,90 por 30 minutos (R$0,9967/min)
@@ -113,8 +141,36 @@ export function getCountryFlag(country) {
     "Vietnamese": "🇻🇳", "Indonesian": "🇮🇩", "Malaysian": "🇲🇾", "Pakistani": "🇵🇰",
     "Turkish": "🇹🇷", "Polish": "🇵🇱", "Romanian": "🇷🇴", "Ukrainian": "🇺🇦",
     "Greek": "🇬🇷", "Finnish": "🇫🇮", "Czech": "🇨🇿", "Hungarian": "🇭🇺",
-    "Kenya": "🇰🇪", "Moroccan": "🇲🇦", "Egyptian": "🇪🇬", "Nigerian": "🇳🇬", "Kenyan": "🇰🇪",
-    "Russian": "🇷🇺", "Israeli": "🇮🇱", "Saudi": "🇸🇦", "Emirati": "🇦🇪",
+    "Kenya": "🇰🇪", "Morocco": "🇲🇦", "Egypt": "🇪🇬", "Nigeria": "🇳🇬",
+    "Ghana": "🇬🇭", "Ethiopia": "🇪🇹", "Tanzania": "🇹🇿", "Uganda": "🇺🇬",
+    "Rwanda": "🇷🇼", "Senegal": "🇸🇳", "Ivory Coast": "🇨🇮", "Cameroon": "🇨🇲",
+    "Angola": "🇦🇴", "Mozambique": "🇲🇿", "Zimbabwe": "🇿🇼", "Zambia": "🇿🇲",
+    "Malawi": "🇲🇼", "Madagascar": "🇲🇬", "Algeria": "🇩🇿", "Tunisia": "🇹🇳",
+    "Libya": "🇱🇾", "Sudan": "🇸🇩", "South Sudan": "🇸🇸", "Somalia": "🇸🇴",
+    "DR Congo": "🇨🇩", "Congo": "🇨🇬", "Gabon": "🇬🇦", "Benin": "🇧🇯", "Togo": "🇹🇬",
+    "Burkina Faso": "🇧🇫", "Mali": "🇲🇱", "Niger": "🇳🇪", "Chad": "🇹🇩",
+    "Mauritania": "🇲🇷", "Gambia": "🇬🇲", "Guinea": "🇬🇳", "Guinea-Bissau": "🇬🇼",
+    "Sierra Leone": "🇸🇱", "Liberia": "🇱🇷", "Cape Verde": "🇨🇻",
+    "São Tomé and Príncipe": "🇸🇹", "Equatorial Guinea": "🇬🇶",
+    "Eritrea": "🇪🇷", "Djibouti": "🇩🇯", "Comoros": "🇰🇲", "Mauritius": "🇲🇺",
+    "Seychelles": "🇸🇨", "Botswana": "🇧🇼", "Namibia": "🇳🇦", "Lesotho": "🇱🇸", "Eswatini": "🇸🇿",
+    "Philippines": "🇵🇭", "Vietnam": "🇻🇳", "Thailand": "🇹🇭", "Indonesia": "🇮🇩",
+    "Malaysia": "🇲🇾", "Singapore": "🇸🇬", "Myanmar": "🇲🇲", "Cambodia": "🇰🇭",
+    "Laos": "🇱🇦", "Bangladesh": "🇧🇩", "Sri Lanka": "🇱🇰", "Nepal": "🇳🇵",
+    "Pakistan": "🇵🇰", "Afghanistan": "🇦🇫", "Iran": "🇮🇷", "Iraq": "🇮🇶",
+    "Turkey": "🇹🇷", "Saudi Arabia": "🇸🇦", "UAE": "🇦🇪", "Qatar": "🇶🇦",
+    "Kuwait": "🇰🇼", "Bahrain": "🇧🇭", "Oman": "🇴🇲", "Jordan": "🇯🇴",
+    "Lebanon": "🇱🇧", "Syria": "🇸🇾", "Israel": "🇮🇱", "Palestine": "🇵🇸",
+    "Yemen": "🇾🇪", "Mongolia": "🇲🇳", "Taiwan": "🇹🇼", "Hong Kong": "🇭🇰", "Macau": "🇲🇴",
+    "Guatemala": "🇬🇹", "Honduras": "🇭🇳", "El Salvador": "🇸🇻", "Nicaragua": "🇳🇮",
+    "Costa Rica": "🇨🇷", "Panama": "🇵🇦", "Cuba": "🇨🇺", "Dominican Republic": "🇩🇴",
+    "Haiti": "🇭🇹", "Jamaica": "🇯🇲", "Peru": "🇵🇪", "Venezuela": "🇻🇪",
+    "Ecuador": "🇪🇨", "Bolivia": "🇧🇴", "Paraguay": "🇵🇾", "Uruguay": "🇺🇾",
+    "Guyana": "🇬🇾", "Suriname": "🇸🇷", "Poland": "🇵🇱", "Romania": "🇷🇴",
+    "Ukraine": "🇺🇦", "Russia": "🇷🇺", "Greece": "🇬🇷", "Finland": "🇫🇮",
+    "Czech Republic": "🇨🇿", "Hungary": "🇭🇺",
+    "Moroccan": "🇲🇦", "Egyptian": "🇪🇬", "Nigerian": "🇳🇬", "Kenyan": "🇰🇪",
+    "Saudi": "🇸🇦", "Emirati": "🇦🇪",
   };
   // Case-insensitive lookup
   const key = Object.keys(flags).find(k => k.toLowerCase() === country.toLowerCase());
