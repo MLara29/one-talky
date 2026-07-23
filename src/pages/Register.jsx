@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
@@ -22,17 +23,23 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("As senhas não coincidem.");
+      return;
+    }
+    if (!termsAccepted) {
+      setError("Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.");
       return;
     }
     setLoading(true);
     try {
       await base44.auth.register({ email, password, role });
+      // Store terms acceptance — will be saved after OTP verification via updateMe
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
@@ -48,6 +55,12 @@ export default function Register() {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
+        // Save terms acceptance on the user record
+        await base44.auth.updateMe({
+          terms_accepted: true,
+          terms_accepted_at: new Date().toISOString(),
+          privacy_policy_accepted: true,
+        });
       }
       window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
     } catch (err) {
@@ -217,7 +230,27 @@ export default function Register() {
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+        <div className="flex items-start gap-3 pt-1">
+          <Checkbox
+            id="terms"
+            checked={termsAccepted}
+            onCheckedChange={(v) => setTermsAccepted(!!v)}
+            className="mt-0.5"
+          />
+          <label htmlFor="terms" className="text-sm text-muted-foreground leading-snug cursor-pointer">
+            Li e concordo com os{" "}
+            <Link to="/termos" target="_blank" className="text-primary font-medium hover:underline">
+              Termos de Uso
+            </Link>{" "}
+            e com a{" "}
+            <Link to="/privacidade" target="_blank" className="text-primary font-medium hover:underline">
+              Política de Privacidade
+            </Link>{" "}
+            da One Talky.
+          </label>
+        </div>
+
+        <Button type="submit" className="w-full h-12 font-medium" disabled={loading || !termsAccepted}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

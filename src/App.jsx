@@ -38,6 +38,7 @@ import AdminEmail from '@/pages/AdminEmail';
 import AdminAffiliates from '@/pages/AdminAffiliates';
 import AffiliateDashboard from '@/pages/AffiliateDashboard';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import TermsOfUse from '@/pages/TermsOfUse';
 import OnboardingAffiliate from '@/pages/OnboardingAffiliate';
 import Notifications from '@/pages/Notifications';
 import MyMessages from '@/pages/MyMessages';
@@ -67,7 +68,9 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/landing" element={<Landing />} />
+      <Route path="/privacidade" element={<PrivacyPolicy />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/termos" element={<TermsOfUse />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

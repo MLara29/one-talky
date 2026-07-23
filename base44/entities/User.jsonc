@@ -6,12 +6,22 @@
       "type": "string",
       "enum": [
         "admin",
+        "user",
+        "student",
         "tutor",
-        "student"
+        "affiliate"
       ],
-      "default": "student"
+      "default": "user"
     },
-    "profile_completed": {
+    "terms_accepted": {
+      "type": "boolean",
+      "default": false
+    },
+    "terms_accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "privacy_policy_accepted": {
       "type": "boolean",
       "default": false
     }

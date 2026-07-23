@@ -6,52 +6,83 @@ const ACCENT = "#F26A1B";
 
 const sections = [
   {
-    title: "1. Dados Coletados",
+    title: "1. Adequação à LGPD — Dados Coletados",
     content: (
       <>
-        <p>Coletamos os seguintes dados necessários para a prestação e melhoria dos nossos serviços:</p>
-        <ul>
-          <li><strong>Estudantes:</strong> Nome completo, endereço de e-mail e histórico de consumo de minutos.</li>
-          <li><strong>Tutores:</strong> Nome completo, e-mail, fuso horário, foto de perfil, vídeo de apresentação e biografia pública.</li>
+        <p>
+          A One Talky adota o princípio da <strong>minimização de dados</strong> previsto na Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD). Coletamos apenas os dados estritamente necessários para a prestação dos nossos serviços:
+        </p>
+        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+          <li><strong>Estudantes:</strong> Nome completo, endereço de e-mail e histórico de consumo de minutos de aula.</li>
+          <li><strong>Tutores:</strong> Nome completo, e-mail, país/fuso horário, foto de perfil, vídeo de apresentação e biografia pública.</li>
+        </ul>
+        <p style={{ marginTop: 10 }}>
+          Não coletamos dados sensíveis como documentos de identidade, dados biométricos ou informações de saúde.
+        </p>
+      </>
+    ),
+  },
+  {
+    title: "2. Gateway de Pagamento — Segurança Financeira",
+    content: (
+      <>
+        <p>
+          A One Talky <strong>não armazena, processa nem tem acesso a dados de cartão de crédito</strong> em seus servidores.
+        </p>
+        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+          <li>Todas as transações financeiras são processadas de forma <strong>100% criptografada e externa</strong> pelo parceiro de pagamentos <strong>Mercado Pago</strong>.</li>
+          <li>Os dados de cartão do usuário são inseridos diretamente em um ambiente seguro do Mercado Pago (PCI DSS Compliant), nunca transitando pelos servidores da One Talky.</li>
+          <li>A One Talky recebe apenas a confirmação do status do pagamento (aprovado/recusado) e o identificador da transação, sem qualquer dado financeiro sensível.</li>
         </ul>
       </>
     ),
   },
   {
-    title: "2. Processamento de Pagamentos e Segurança Financeira",
-    content: (
-      <p>
-        A One Talky <strong>não armazena nem processa dados de cartão de crédito</strong> em seus servidores próprios.
-        Todas as transações financeiras são realizadas de forma externa, criptografada e segura pela instituição parceira <strong>Mercado Pago</strong>.
-        A One Talky tem acesso apenas à confirmação do status do pagamento.
-      </p>
-    ),
-  },
-  {
-    title: "3. Transmissão de Vídeo, Imagem e Áudio",
+    title: "3. Logs e Vídeo — Infraestrutura Agora.io",
     content: (
       <>
-        <p>As aulas e chamadas de vídeo em tempo real são viabilizadas através da tecnologia de infraestrutura da <strong>Agora.io</strong>.</p>
-        <p>As transmissões de áudio e vídeo ocorrem de forma privada entre o aluno e o tutor.</p>
-        <p>A One Talky <strong>não realiza gravações rotineiras</strong> das aulas para uso comercial. Eventuais registros podem ser mantidos estritamente nos logs do servidor por curtos períodos apenas para auditoria de segurança interna e resolução de disputas técnicas ou de conduta.</p>
+        <p>
+          As aulas em tempo real são viabilizadas pela infraestrutura de WebRTC da <strong>Agora.io</strong>, uma plataforma de comunicação em nuvem com padrões internacionais de segurança.
+        </p>
+        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+          <li>A <strong>transmissão de áudio e vídeo é direta (ponta a ponta)</strong> entre aluno e tutor, sem armazenamento de gravações de vídeo pela One Talky para uso comercial ou divulgação.</li>
+          <li>Os <strong>logs de duração das chamadas</strong> (horário de início, término e total de minutos) são mantidos nos servidores da One Talky <strong>estritamente para fins de auditoria interna</strong>, conciliação do consumo de minutos do aluno e cálculo dos pagamentos devidos aos tutores.</li>
+          <li>Esses logs de duração são dados operacionais essenciais à prestação do serviço e não são compartilhados com terceiros além do próprio tutor participante da aula.</li>
+        </ul>
       </>
     ),
   },
   {
-    title: "4. Cookies, Pixel e Rastreamento",
+    title: "4. Cookies e Rastreamento",
     content: (
       <>
-        <p>Utilizamos <strong>cookies essenciais</strong> para manter o usuário conectado em seu Dashboard com segurança.</p>
-        <p>Também utilizamos ferramentas de análise de terceiros (como o Pixel do Meta e tags do Google) para monitorar o desempenho de nossas campanhas de marketing e entender o comportamento de navegação em nossa Landing Page.</p>
+        <p>Utilizamos <strong>cookies essenciais</strong> para manter a sessão do usuário autenticada com segurança em seu painel.</p>
+        <p style={{ marginTop: 8 }}>Também utilizamos ferramentas de análise de terceiros (como o Pixel do Meta e tags do Google) exclusivamente para monitorar o desempenho de campanhas de marketing e o comportamento de navegação na Landing Page pública, não no painel autenticado dos usuários.</p>
       </>
     ),
   },
   {
-    title: "5. Direitos do Usuário",
+    title: "5. Compartilhamento de Dados",
     content: (
       <p>
-        Nos termos da LGPD, você poderá, a qualquer momento, solicitar a confirmação da existência de tratamento de seus dados, a correção de dados incompletos ou a exclusão definitiva de sua conta e dados de nossa base, enviando um e-mail para o nosso canal oficial de suporte.
+        A One Talky não vende, aluga ou compartilha dados pessoais de usuários com terceiros para fins comerciais. O compartilhamento ocorre apenas com prestadores de serviço essenciais (Agora.io para vídeo, Mercado Pago para pagamentos) na exata medida necessária para o funcionamento da plataforma.
       </p>
+    ),
+  },
+  {
+    title: "6. Direitos do Usuário (LGPD)",
+    content: (
+      <>
+        <p>Nos termos da LGPD, você tem direito a:</p>
+        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+          <li>Confirmar a existência de tratamento de seus dados;</li>
+          <li>Acessar seus dados pessoais armazenados;</li>
+          <li>Corrigir dados incompletos ou desatualizados;</li>
+          <li>Solicitar a anonimização ou exclusão de dados desnecessários;</li>
+          <li>Solicitar a exclusão definitiva de sua conta e dados.</li>
+        </ul>
+        <p style={{ marginTop: 10 }}>Para exercer seus direitos, entre em contato pelo canal oficial de suporte disponível na plataforma.</p>
+      </>
     ),
   },
 ];
