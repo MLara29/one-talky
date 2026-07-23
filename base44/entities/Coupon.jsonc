@@ -8,8 +8,37 @@
     },
     "credits_minutes": {
       "type": "number",
-      "default": 10,
+      "default": 0,
       "description": "Free minutes granted when coupon is used"
+    },
+    "discount_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Percentual de desconto concedido (0 = sem desconto)"
+    },
+    "discount_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "first_month",
+        "period",
+        "bimestral",
+        "trimestral",
+        "semestral",
+        "anual"
+      ],
+      "default": "none",
+      "description": "Tipo de aplica\u00e7\u00e3o do desconto"
+    },
+    "discount_start": {
+      "type": "string",
+      "format": "date",
+      "description": "In\u00edcio do per\u00edodo de desconto (apenas para discount_type=period)"
+    },
+    "discount_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Fim do per\u00edodo de desconto (apenas para discount_type=period)"
     },
     "max_uses": {
       "type": "number",

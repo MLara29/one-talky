@@ -17,6 +17,8 @@ export default function AdminAffiliates() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [expanded, setExpanded] = useState(null);
+  const [editingCommission, setEditingCommission] = useState({}); // { [affiliateId]: string }
+  const [savingCommission, setSavingCommission] = useState(null);
   const [form, setForm] = useState({
     full_name: "", email: "", coupon_code: "", commission_percent: 15, user_id: "",
   });
@@ -92,6 +94,23 @@ export default function AdminAffiliates() {
     });
     toast({ title: "Marcado como pago ✅" });
     loadData();
+  };
+
+  const saveCommission = async (aff) => {
+    const newPct = Number(editingCommission[aff.id]);
+    if (isNaN(newPct) || newPct < 1 || newPct > 100) {
+      toast({ title: "Valor inválido", description: "Comissão deve ser entre 1 e 100%.", variant: "destructive" });
+      return;
+    }
+    setSavingCommission(aff.id);
+    try {
+      await base44.entities.Affiliate.update(aff.id, { commission_percent: newPct });
+      toast({ title: "Comissão atualizada ✅" });
+      setEditingCommission(prev => { const n = { ...prev }; delete n[aff.id]; return n; });
+      loadData();
+    } catch (err) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally { setSavingCommission(null); }
   };
 
   const deleteAffiliate = async (aff) => {
@@ -251,6 +270,35 @@ export default function AdminAffiliates() {
                           <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
                         </div>
                       ))}
+                    </div>
+
+                    {/* Commission editor */}
+                    <div className="bg-white/3 border border-white/5 rounded-xl p-4">
+                      <h4 className="theme-heading font-semibold text-sm mb-3">Comissão do Afiliado</h4>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Atual:</span>
+                          <span className="font-bold text-violet-400 text-sm">{aff.commission_percent}%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number" min={1} max={100}
+                            placeholder="Nova %"
+                            value={editingCommission[aff.id] ?? ""}
+                            onChange={e => setEditingCommission(prev => ({ ...prev, [aff.id]: e.target.value }))}
+                            className="theme-input w-24 h-8 text-sm"
+                          />
+                          <Button
+                            size="sm"
+                            disabled={!editingCommission[aff.id] || savingCommission === aff.id}
+                            onClick={() => saveCommission(aff)}
+                            className="h-8 text-xs bg-violet-600 hover:bg-violet-700 text-white border-0"
+                          >
+                            {savingCommission === aff.id ? "Salvando..." : "Salvar"}
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-2">⚠️ Apenas administradores podem alterar a comissão. A alteração é registrada no banco de dados com controle de acesso por role.</p>
                     </div>
 
                     {/* Payment info */}

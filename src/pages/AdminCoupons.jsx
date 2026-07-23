@@ -6,13 +6,28 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ToggleLeft, ToggleRight, Tag, Copy, Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
+const DISCOUNT_TYPES = [
+  { value: "none", label: "Sem desconto" },
+  { value: "first_month", label: "Apenas 1º mês" },
+  { value: "bimestral", label: "Bimestral (2 meses)" },
+  { value: "trimestral", label: "Trimestral (3 meses)" },
+  { value: "semestral", label: "Semestral (6 meses)" },
+  { value: "anual", label: "Anual (12 meses)" },
+  { value: "period", label: "Período personalizado" },
+];
+
+const EMPTY_FORM = {
+  code: "", credits_minutes: 0, max_uses: 100, description: "",
+  discount_percent: 0, discount_type: "none", discount_start: "", discount_end: "",
+};
+
 export default function AdminCoupons() {
   const { toast } = useToast();
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState(null);
-  const [form, setForm] = useState({ code: "", credits_minutes: 10, max_uses: 100, description: "" });
+  const [form, setForm] = useState(EMPTY_FORM);
 
   useEffect(() => { loadCoupons(); }, []);
 
@@ -29,19 +44,26 @@ export default function AdminCoupons() {
     try {
       const code = form.code.trim().toUpperCase();
       if (!code) return;
-      await base44.entities.Coupon.create({
+      const payload = {
         code,
-        credits_minutes: Number(form.credits_minutes),
+        credits_minutes: Number(form.credits_minutes) || 0,
+        discount_percent: Number(form.discount_percent) || 0,
+        discount_type: form.discount_percent > 0 ? form.discount_type : "none",
         max_uses: Number(form.max_uses),
         description: form.description,
         used_count: 0,
         is_active: true,
-      });
-      setForm({ code: "", credits_minutes: 10, max_uses: 100, description: "" });
+      };
+      if (form.discount_type === "period") {
+        payload.discount_start = form.discount_start || undefined;
+        payload.discount_end = form.discount_end || undefined;
+      }
+      await base44.entities.Coupon.create(payload);
+      setForm(EMPTY_FORM);
       toast({ title: "Cupom criado! 🎟️" });
       loadCoupons();
-    } catch (e) {
-      toast({ title: "Erro", description: e?.message || "Não foi possível criar o cupom.", variant: "destructive" });
+    } catch (err) {
+      toast({ title: "Erro", description: err?.message || "Não foi possível criar o cupom.", variant: "destructive" });
     } finally { setCreating(false); }
   };
 
@@ -62,6 +84,15 @@ export default function AdminCoupons() {
     setTimeout(() => setCopied(null), 1500);
   };
 
+  const discountLabel = (c) => {
+    if (!c.discount_percent) return null;
+    const type = DISCOUNT_TYPES.find(t => t.value === c.discount_type);
+    if (c.discount_type === "period" && c.discount_start && c.discount_end) {
+      return `${c.discount_percent}% · ${new Date(c.discount_start).toLocaleDateString("pt-BR")} a ${new Date(c.discount_end).toLocaleDateString("pt-BR")}`;
+    }
+    return `${c.discount_percent}% · ${type?.label || c.discount_type}`;
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
@@ -69,8 +100,8 @@ export default function AdminCoupons() {
           <Tag className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h1 className="theme-heading font-display text-xl font-bold">Cupons de Boas-Vindas</h1>
-          <p className="theme-subtext text-sm text-gray-500">Crie códigos que concedem minutos grátis a novos alunos</p>
+          <h1 className="theme-heading font-display text-xl font-bold">Cupons</h1>
+          <p className="theme-subtext text-sm text-gray-500">Crie códigos com minutos grátis e/ou descontos nas assinaturas</p>
         </div>
       </div>
 
@@ -84,7 +115,7 @@ export default function AdminCoupons() {
               <Input
                 value={form.code}
                 onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
-                placeholder="Ex: BEMVINDO10"
+                placeholder="Ex: BEMVINDO20"
                 className="theme-input uppercase font-mono"
                 required
               />
@@ -92,12 +123,51 @@ export default function AdminCoupons() {
             <div>
               <Label className="theme-subtext text-sm mb-1 block">Minutos grátis</Label>
               <Input
-                type="number" min={1} max={60}
+                type="number" min={0} max={120}
                 value={form.credits_minutes}
                 onChange={e => setForm(f => ({ ...f, credits_minutes: e.target.value }))}
                 className="theme-input"
               />
             </div>
+            <div>
+              <Label className="theme-subtext text-sm mb-1 block">Desconto (%)</Label>
+              <Input
+                type="number" min={0} max={100}
+                value={form.discount_percent}
+                onChange={e => setForm(f => ({ ...f, discount_percent: e.target.value }))}
+                placeholder="0 = sem desconto"
+                className="theme-input"
+              />
+            </div>
+            <div>
+              <Label className="theme-subtext text-sm mb-1 block">Tipo de desconto</Label>
+              <select
+                value={form.discount_type}
+                onChange={e => setForm(f => ({ ...f, discount_type: e.target.value }))}
+                disabled={!Number(form.discount_percent)}
+                className="theme-input w-full h-9 rounded-md border border-white/10 bg-transparent px-3 py-1 text-sm disabled:opacity-40"
+              >
+                {DISCOUNT_TYPES.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+            {form.discount_type === "period" && Number(form.discount_percent) > 0 && (
+              <>
+                <div>
+                  <Label className="theme-subtext text-sm mb-1 block">Data início</Label>
+                  <Input type="date" value={form.discount_start}
+                    onChange={e => setForm(f => ({ ...f, discount_start: e.target.value }))}
+                    className="theme-input" />
+                </div>
+                <div>
+                  <Label className="theme-subtext text-sm mb-1 block">Data fim</Label>
+                  <Input type="date" value={form.discount_end}
+                    onChange={e => setForm(f => ({ ...f, discount_end: e.target.value }))}
+                    className="theme-input" />
+                </div>
+              </>
+            )}
             <div>
               <Label className="theme-subtext text-sm mb-1 block">Máximo de usos</Label>
               <Input
@@ -134,41 +204,53 @@ export default function AdminCoupons() {
           <p className="theme-subtext text-center text-gray-500 py-12">Nenhum cupom criado ainda.</p>
         ) : (
           <div className="divide-y" style={{ borderColor: "var(--app-border)" }}>
-            {coupons.map(c => (
-              <div key={c.id} className="flex items-center justify-between px-6 py-4 gap-4 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-violet-400 text-sm bg-violet-500/10 border border-violet-500/20 px-3 py-1 rounded-lg">
-                    {c.code}
-                  </span>
-                  <div>
-                    <p className="theme-heading text-sm font-semibold">{c.credits_minutes} min grátis</p>
-                    {c.description && <p className="theme-subtext text-xs text-gray-500">{c.description}</p>}
-                    <p className="theme-subtext text-xs text-gray-500">
-                      {c.used_count || 0} / {c.max_uses} usos ·{" "}
-                      <span className={c.is_active ? "text-emerald-500" : "text-red-500"}>
-                        {c.is_active ? "Ativo" : "Inativo"}
-                      </span>
-                    </p>
+            {coupons.map(c => {
+              const dl = discountLabel(c);
+              return (
+                <div key={c.id} className="flex items-center justify-between px-6 py-4 gap-4 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono font-bold text-violet-400 text-sm bg-violet-500/10 border border-violet-500/20 px-3 py-1 rounded-lg">
+                      {c.code}
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {c.credits_minutes > 0 && (
+                          <p className="theme-heading text-sm font-semibold">{c.credits_minutes} min grátis</p>
+                        )}
+                        {dl && (
+                          <span className="text-xs font-medium text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">
+                            🏷 {dl}
+                          </span>
+                        )}
+                      </div>
+                      {c.description && <p className="theme-subtext text-xs text-gray-500">{c.description}</p>}
+                      <p className="theme-subtext text-xs text-gray-500">
+                        {c.used_count || 0} / {c.max_uses} usos ·{" "}
+                        <span className={c.is_active ? "text-emerald-500" : "text-red-500"}>
+                          {c.is_active ? "Ativo" : "Inativo"}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => copyCode(c.code)} title="Copiar código"
+                      className="p-2 rounded-lg hover:bg-white/10 transition-colors theme-subtext text-gray-400">
+                      {copied === c.code ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                    <button onClick={() => toggleActive(c)} title="Ativar/Desativar"
+                      className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+                      {c.is_active
+                        ? <ToggleRight className="w-5 h-5 text-emerald-400" />
+                        : <ToggleLeft className="w-5 h-5 text-gray-500" />}
+                    </button>
+                    <button onClick={() => deleteCoupon(c)} title="Excluir"
+                      className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-red-400">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => copyCode(c.code)} title="Copiar código"
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors theme-subtext text-gray-400">
-                    {copied === c.code ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                  <button onClick={() => toggleActive(c)} title="Ativar/Desativar"
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors">
-                    {c.is_active
-                      ? <ToggleRight className="w-5 h-5 text-emerald-400" />
-                      : <ToggleLeft className="w-5 h-5 text-gray-500" />}
-                  </button>
-                  <button onClick={() => deleteCoupon(c)} title="Excluir"
-                    className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-red-400">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
