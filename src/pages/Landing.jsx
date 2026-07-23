@@ -645,8 +645,8 @@ export default function Landing() {
             <span style={{ fontWeight: 800, fontSize: 16 }}>One Talky</span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 20, fontSize: 13.5 }}>
-            <Link to="/privacy" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footPrivacy}</Link>
-            <a href="#" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footTerms}</a>
+            <Link to="/privacidade" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footPrivacy}</Link>
+            <Link to="/termos" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footTerms}</Link>
             <a href="#" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footSupport}</a>
             <Link to="/login" style={{ color: ACCENT, textDecoration: "none", fontWeight: 700 }}>{c.navLogin}</Link>
           </div>
