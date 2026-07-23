@@ -1,48 +1,37 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LANGUAGES, OBJECTIVES, LEVELS, ACCENTS, COUNTRIES, UI_LANGUAGES, INTERESTS } from "@/lib/constants";
-import { MessageCircle, ChevronRight, ChevronLeft, Globe, Tag, CheckCircle, XCircle } from "lucide-react";
+import { LANGUAGES, OBJECTIVES, LEVELS, INTERESTS } from "@/lib/constants";
+import { ChevronRight, ChevronLeft, Tag, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { t, detectLanguage } from "@/lib/i18n";
 
-const LEVELS_LABELS = {
-  en: { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" },
-  pt_br: { beginner: "Iniciante", intermediate: "Intermediário", advanced: "Avançado" },
-  pt_pt: { beginner: "Iniciante", intermediate: "Intermédio", advanced: "Avançado" },
-  es: { beginner: "Principiante", intermediate: "Intermedio", advanced: "Avanzado" },
-  fr: { beginner: "Débutant", intermediate: "Intermédiaire", advanced: "Avancé" },
-  de: { beginner: "Anfänger", intermediate: "Mittelstufe", advanced: "Fortgeschritten" },
-  it: { beginner: "Principiante", intermediate: "Intermedio", advanced: "Avanzato" },
+const LEVELS_PT = {
+  beginner: "Iniciante",
+  intermediate: "Intermediário",
+  advanced: "Avançado",
 };
 
 export default function OnboardingStudent() {
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const [uiLang, setUiLang] = useState(() => detectLanguage());
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [userEmail, setUserEmail] = useState("");
   const [form, setForm] = useState({
     full_name: "",
-    nationality: "",
-    native_language: "",
+    native_language: "portuguese_br",
     target_language: "",
     level: "",
     objective: "",
-    accent_preference: "",
     conversation_topics: [],
   });
   const [couponCode, setCouponCode] = useState("");
   const [couponStatus, setCouponStatus] = useState(null);
   const [couponData, setCouponData] = useState(null);
   const [checkingCoupon, setCheckingCoupon] = useState(false);
-
-  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     base44.auth.me().then(me => {
@@ -73,11 +62,10 @@ export default function OnboardingStudent() {
         setCouponData(null);
         return;
       }
-      // Verificar se este email já usou este cupom de afiliado
       if (c.affiliate_id) {
         const alreadyUsed = await base44.entities.AffiliateEarning.filter({
           coupon_code: c.code,
-          student_name: userEmail, // usamos student_name para gravar o email do estudante
+          student_name: userEmail,
         });
         if (alreadyUsed.length > 0) {
           setCouponStatus("already_used");
@@ -94,21 +82,20 @@ export default function OnboardingStudent() {
 
   const handleSubmit = async () => {
     if (!userId) {
-      toast({ title: "Authentication error", description: "Please reload the page and try again.", variant: "destructive" });
+      toast({ title: "Erro de autenticação", description: "Recarregue a página e tente novamente.", variant: "destructive" });
       return;
     }
     setSaving(true);
     try {
-      // Profile creation and coupon validation handled server-side
       await base44.functions.invoke('createStudentProfile', {
         profile: {
           full_name: form.full_name,
-          nationality: form.nationality,
+          nationality: "Brasil",
           native_language: form.native_language,
           target_language: form.target_language,
           level: form.level,
           objective: form.objective,
-          accent_preference: form.accent_preference || "",
+          accent_preference: "",
           conversation_topics: form.conversation_topics,
         },
         coupon_code: couponStatus === "valid" ? couponCode : null,
@@ -121,97 +108,61 @@ export default function OnboardingStudent() {
         plan: 'free',
         coupon_code: couponStatus === "valid" ? couponCode : null,
       }).catch(() => {});
-      toast({ title: t(uiLang, "welcomeTitle"), description: t(uiLang, "welcomeDesc") });
+      toast({ title: "Bem-vindo à One Talky! 🎉", description: "Seu perfil foi criado com sucesso." });
       window.location.href = "/";
     } catch (e) {
-      toast({ title: "Error", description: String(e?.message || t(uiLang, "errorMsg")), variant: "destructive" });
+      toast({ title: "Erro", description: String(e?.message || "Não foi possível criar seu perfil. Tente novamente."), variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
-  const accents = ACCENTS[form.target_language] || [];
-  const levelLabels = LEVELS_LABELS[uiLang] || LEVELS_LABELS.en;
-
-  const inputCls = "mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:ring-violet-500/20 shadow-sm";
+  const inputCls = "mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:ring-orange-500/20 shadow-sm";
   const selectTriggerCls = "mt-1.5 bg-white border-gray-300 text-gray-900 shadow-sm";
   const selectContentCls = "bg-white border-gray-200 text-gray-900 shadow-xl z-50";
-  const selectItemCls = "text-gray-900 focus:bg-violet-50 focus:text-violet-700";
+  const selectItemCls = "text-gray-900 focus:bg-orange-50 focus:text-orange-700";
   const labelCls = "text-gray-700 font-medium";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-indigo-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-violet-500/30">
-              <MessageCircle className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-display text-xl font-bold text-gray-900">One Talky</span>
+            <img
+              src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/2ef13ca22_ChatGPTImage23dejulde202614_44_54.png"
+              alt="One Talky"
+              className="w-12 h-12 object-contain"
+            />
           </div>
 
-          <div className="flex items-center justify-center gap-2 mb-5">
-            <Globe className="w-4 h-4 text-gray-400" />
-            <select
-              value={uiLang}
-              onChange={e => setUiLang(e.target.value)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-violet-500 shadow-sm"
-            >
-              {UI_LANGUAGES.map(l => (
-                <option key={l.value} value={l.value}>{l.flag} {l.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <h1 className="font-display text-2xl font-bold text-gray-900">{t(uiLang, "setupProfile")}</h1>
-          <p className="text-gray-500 text-sm mt-1">Step {step} of 3</p>
+          <h1 className="font-display text-2xl font-bold text-gray-900">Configure seu perfil</h1>
+          <p className="text-gray-500 text-sm mt-1">Passo {step} de 3</p>
           <div className="flex justify-center gap-2 mt-4">
             {[1, 2, 3].map(s => (
-              <div key={s} className={`h-1.5 w-14 rounded-full transition-colors ${s <= step ? "bg-violet-600" : "bg-gray-200"}`} />
+              <div key={s} className={`h-1.5 w-14 rounded-full transition-colors ${s <= step ? "bg-orange-500" : "bg-gray-200"}`} />
             ))}
           </div>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-xl">
+          {/* STEP 1 */}
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <Label className={labelCls}>{t(uiLang, "fullName")}</Label>
+                <Label className={labelCls}>Nome completo</Label>
                 <Input
                   value={form.full_name}
                   onChange={e => set("full_name", e.target.value)}
-                  placeholder={t(uiLang, "fullNamePlaceholder")}
+                  placeholder="Seu nome completo"
                   className={inputCls}
                 />
               </div>
               <div>
-                <Label className={labelCls}>{t(uiLang, "nationality")}</Label>
-                <Select value={form.nationality} onValueChange={v => set("nationality", v)}>
-                  <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder={t(uiLang, "selectCountry")} />
-                  </SelectTrigger>
-                  <SelectContent className={selectContentCls}>
-                    {COUNTRIES.map(c => <SelectItem key={c} value={c} className={selectItemCls}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className={labelCls}>{t(uiLang, "nativeLanguage")}</Label>
-                <Select value={form.native_language} onValueChange={v => set("native_language", v)}>
-                  <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder={t(uiLang, "selectLanguage")} />
-                  </SelectTrigger>
-                  <SelectContent className={selectContentCls}>
-                    {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value} className={selectItemCls}>{l.flag} {l.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className={labelCls}>{t(uiLang, "targetLanguage")}</Label>
+                <Label className={labelCls}>Idioma que está aprendendo</Label>
                 <Select value={form.target_language} onValueChange={v => set("target_language", v)}>
                   <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder={t(uiLang, "selectLanguage")} />
+                    <SelectValue placeholder="Selecione o idioma" />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
                     {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value} className={selectItemCls}>{l.flag} {l.label}</SelectItem>)}
@@ -220,74 +171,63 @@ export default function OnboardingStudent() {
               </div>
               <Button
                 onClick={() => setStep(2)}
-                disabled={!form.full_name || !form.nationality || !form.native_language || !form.target_language}
-                className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all mt-2"
+                disabled={!form.full_name.trim() || !form.target_language}
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 transition-all mt-2"
               >
-                {t(uiLang, "continue")} <ChevronRight className="w-4 h-4 ml-1" />
+                Continuar <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           )}
 
+          {/* STEP 2 */}
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <Label className={labelCls}>{t(uiLang, "level")}</Label>
+                <Label className={labelCls}>Nível atual</Label>
                 <Select value={form.level} onValueChange={v => set("level", v)}>
                   <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder={t(uiLang, "selectLevel")} />
+                    <SelectValue placeholder="Selecione seu nível" />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
                     {LEVELS.map(l => (
-                      <SelectItem key={l.value} value={l.value} className={selectItemCls}>{levelLabels[l.value] || l.label}</SelectItem>
+                      <SelectItem key={l.value} value={l.value} className={selectItemCls}>{LEVELS_PT[l.value]}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className={labelCls}>{t(uiLang, "goal")}</Label>
+                <Label className={labelCls}>Objetivo principal</Label>
                 <Select value={form.objective} onValueChange={v => set("objective", v)}>
                   <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder={t(uiLang, "selectGoal")} />
+                    <SelectValue placeholder="Selecione seu objetivo" />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
                     {OBJECTIVES.map(o => <SelectItem key={o.value} value={o.value} className={selectItemCls}>{o.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              {accents.length > 0 && (
-                <div>
-                  <Label className={labelCls}>{t(uiLang, "accentPref")}</Label>
-                  <Select value={form.accent_preference} onValueChange={v => set("accent_preference", v)}>
-                    <SelectTrigger className={selectTriggerCls}>
-                      <SelectValue placeholder={t(uiLang, "accentPlaceholder")} />
-                    </SelectTrigger>
-                    <SelectContent className={selectContentCls}>
-                      {accents.map(a => <SelectItem key={a} value={a} className={selectItemCls}>{a}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
               <div className="flex gap-3 mt-2">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
-                  <ChevronLeft className="w-4 h-4 mr-1" /> {t(uiLang, "back")}
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
                 </Button>
                 <Button
                   onClick={() => setStep(3)}
                   disabled={!form.level || !form.objective}
-                  className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all"
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 transition-all"
                 >
-                  {t(uiLang, "continue")} <ChevronRight className="w-4 h-4 ml-1" />
+                  Continuar <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             </div>
           )}
 
+          {/* STEP 3 */}
           {step === 3 && (
             <div className="space-y-5">
-              {/* Conversation Topics */}
+              {/* Tópicos de conversa */}
               <div>
-                <Label className={`${labelCls} block mb-1`}>{t(uiLang, "favoriteTopics") || "Favorite conversation topics"}</Label>
-                <p className="text-xs text-gray-500 mb-3">Choose the topics you enjoy discussing most (select as many as you like)</p>
+                <Label className={`${labelCls} block mb-1`}>Tópicos favoritos de conversa</Label>
+                <p className="text-xs text-gray-500 mb-3">Escolha os temas que você mais gosta de conversar (pode selecionar vários)</p>
                 <div className="flex flex-wrap gap-2">
                   {INTERESTS.map(topic => (
                     <button
@@ -296,8 +236,8 @@ export default function OnboardingStudent() {
                       onClick={() => toggleTopic(topic)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                         form.conversation_topics.includes(topic)
-                          ? "bg-violet-600 text-white border-violet-600 shadow-sm"
-                          : "bg-white text-gray-600 border-gray-300 hover:border-violet-400 hover:text-violet-600"
+                          ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-600"
                       }`}
                     >
                       {topic}
@@ -306,31 +246,31 @@ export default function OnboardingStudent() {
                 </div>
               </div>
 
-              {/* Coupon field */}
+              {/* Cupom */}
               <div>
                 <Label className={`${labelCls} flex items-center gap-1.5 mb-1.5`}>
-                  <Tag className="w-3.5 h-3.5" /> Promo coupon <span className="text-gray-400 font-normal">(optional)</span>
+                  <Tag className="w-3.5 h-3.5" /> Cupom promocional <span className="text-gray-400 font-normal">(opcional)</span>
                 </Label>
                 <div className="flex gap-2">
                   <Input
                     value={couponCode}
                     onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponStatus(null); setCouponData(null); }}
-                    placeholder="Ex: WELCOME10"
+                    placeholder="Ex: BEMVINDO10"
                     className={`${inputCls} font-mono uppercase`}
                   />
                   <Button type="button" onClick={checkCoupon} disabled={!couponCode.trim() || checkingCoupon}
                     variant="outline" className="shrink-0 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white px-4">
-                    {checkingCoupon ? "..." : "Apply"}
+                    {checkingCoupon ? "..." : "Aplicar"}
                   </Button>
                 </div>
                 {couponStatus === "valid" && couponData && (
                   <p className="flex items-center gap-1.5 text-emerald-600 text-xs mt-1.5">
-                    <CheckCircle className="w-3.5 h-3.5" /> Valid coupon! You get {couponData.credits_minutes} free minutes 🎉
+                    <CheckCircle className="w-3.5 h-3.5" /> Cupom válido! Você ganha {couponData.credits_minutes} minutos grátis 🎉
                   </p>
                 )}
                 {couponStatus === "invalid" && (
                   <p className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
-                    <XCircle className="w-3.5 h-3.5" /> Invalid or expired coupon.
+                    <XCircle className="w-3.5 h-3.5" /> Cupom inválido ou expirado.
                   </p>
                 )}
                 {couponStatus === "already_used" && (
@@ -342,14 +282,14 @@ export default function OnboardingStudent() {
 
               <div className="flex gap-3 mt-2">
                 <Button variant="outline" onClick={() => setStep(2)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
-                  <ChevronLeft className="w-4 h-4 mr-1" /> {t(uiLang, "back")}
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
                 </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={saving}
-                  className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all"
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 transition-all"
                 >
-                  {saving ? t(uiLang, "saving") : t(uiLang, "startSpeaking")}
+                  {saving ? "Salvando..." : "Começar a praticar! 🚀"}
                 </Button>
               </div>
             </div>

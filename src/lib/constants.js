@@ -29,19 +29,19 @@ export const UI_LANGUAGES = [
 ];
 
 export const INTERESTS = [
-  "Travel", "Business", "Pop Culture", "Job Interviews",
-  "Daily Life", "Sports", "Technology", "Food & Cooking",
-  "Movies & TV", "Music", "Politics", "Science",
-  "Art & Design", "Health & Fitness", "Education",
+  "Viagens", "Negócios", "Cultura Pop", "Entrevistas de Emprego",
+  "Dia a Dia", "Esportes", "Tecnologia", "Gastronomia",
+  "Filmes & Séries", "Música", "Política", "Ciência",
+  "Arte & Design", "Saúde & Fitness", "Educação",
 ];
 
 export const OBJECTIVES = [
-  { value: "travel", label: "Travel" },
-  { value: "work", label: "Work" },
-  { value: "interview", label: "Job Interviews" },
-  { value: "relocation", label: "Moving Abroad" },
-  { value: "conversation", label: "General Conversation" },
-  { value: "exams", label: "Language Exams" },
+  { value: "travel", label: "Viagens" },
+  { value: "work", label: "Trabalho" },
+  { value: "interview", label: "Entrevistas de Emprego" },
+  { value: "relocation", label: "Morar no Exterior" },
+  { value: "conversation", label: "Conversação Geral" },
+  { value: "exams", label: "Exames de Idiomas" },
 ];
 
 export const LEVELS = [

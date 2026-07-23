@@ -43,6 +43,7 @@ import OnboardingAffiliate from '@/pages/OnboardingAffiliate';
 import Notifications from '@/pages/Notifications';
 import MyMessages from '@/pages/MyMessages';
 import Profile from '@/pages/Profile';
+import StudentPersonalInfo from '@/pages/StudentPersonalInfo';
 import AppLayout from '@/components/AppLayout';
 
 const AuthenticatedApp = () => {
@@ -106,6 +107,7 @@ const AuthenticatedApp = () => {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my-messages" element={<MyMessages />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/student/personal-info" element={<StudentPersonalInfo />} />
         </Route>
       </Route>
 

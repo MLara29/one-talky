@@ -11,11 +11,12 @@ import {
 } from "lucide-react";
 
 const STUDENT_NAV = [
-  { label: "Find Tutors", path: "/dashboard", icon: Search },
-  { label: "My Lessons", path: "/my-lessons", icon: BookOpen },
-  { label: "Progress", path: "/progress", icon: BarChart3 },
-  { label: "Plans", path: "/plans", icon: DollarSign },
-  { label: "Support", path: "/my-messages", icon: Inbox },
+  { label: "Encontrar Tutores", path: "/dashboard", icon: Search },
+  { label: "Minhas Aulas", path: "/my-lessons", icon: BookOpen },
+  { label: "Progresso", path: "/progress", icon: BarChart3 },
+  { label: "Planos", path: "/plans", icon: DollarSign },
+  { label: "Meu Perfil", path: "/student/personal-info", icon: User },
+  { label: "Suporte", path: "/my-messages", icon: Inbox },
 ];
 
 const TUTOR_NAV = [
@@ -88,10 +89,9 @@ export default function AppLayout() {
             </button>
             <Link to="/dashboard" className="flex items-center gap-2.5">
               <img
-                src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png"
+                src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/2ef13ca22_ChatGPTImage23dejulde202614_44_54.png"
                 alt="One Talky"
-                className="w-8 h-8 rounded-xl object-cover"
-                style={{ boxShadow: "0 4px 12px rgba(242,106,27,0.4)" }}
+                className="w-8 h-8 object-contain"
               />
               <span className="font-display text-lg font-bold hidden sm:block" style={{ color: "var(--app-text-primary)" }}>
                 One Talky
