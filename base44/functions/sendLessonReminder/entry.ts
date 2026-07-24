@@ -26,6 +26,8 @@ function labelFor(minutes) {
   return '24 hours';
 }
 
+const LOGO_URL = 'https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png';
+
 function tutorEmailHtml({ tutorName, studentName, lessonTime, minutesBefore }) {
   tutorName = escapeHtml(tutorName);
   studentName = escapeHtml(studentName);
@@ -41,10 +43,10 @@ function tutorEmailHtml({ tutorName, studentName, lessonTime, minutesBefore }) {
       <table width="560" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f0f1f,#1a0a2e);border-radius:20px;overflow:hidden;border:1px solid rgba(139,92,246,0.25);">
         <tr>
           <td style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:32px 36px;text-align:center;">
-            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:10px 16px;margin-bottom:16px;">
-              <span style="font-size:24px;">🎙️</span>
+            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:8px 12px;margin-bottom:14px;">
+              <img src="${LOGO_URL}" alt="One Talky" width="40" height="40" style="border-radius:10px;display:block;object-fit:cover;" />
             </div>
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">OneTalky</h1>
+            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">One Talky</h1>
             <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Language conversation platform</p>
           </td>
         </tr>
@@ -106,10 +108,10 @@ function studentEmailHtml({ studentName, tutorName, lessonTime, minutesBefore })
       <table width="560" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f0f1f,#0a1a2e);border-radius:20px;overflow:hidden;border:1px solid rgba(99,102,241,0.25);">
         <tr>
           <td style="background:linear-gradient(135deg,#4f46e5,#0ea5e9);padding:32px 36px;text-align:center;">
-            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:10px 16px;margin-bottom:16px;">
-              <span style="font-size:24px;">💬</span>
+            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:8px 12px;margin-bottom:14px;">
+              <img src="${LOGO_URL}" alt="One Talky" width="40" height="40" style="border-radius:10px;display:block;object-fit:cover;" />
             </div>
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">OneTalky</h1>
+            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">One Talky</h1>
             <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Language conversation platform</p>
           </td>
         </tr>

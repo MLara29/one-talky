@@ -105,7 +105,16 @@ export default function MyLessons() {
 
   return (
     <div>
-      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">My Lessons</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-4">My Lessons</h1>
+
+      {user?.role === "student" && (
+        <div className="mb-6 flex gap-2 items-start bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-sm text-amber-200">
+          <Clock className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
+          <span>
+            <strong className="text-amber-300">Cancellation policy:</strong> You must cancel at least <strong>24 hours before</strong> your scheduled lesson. If you booked a lesson with less than 24h notice, you have <strong>up to 1 hour after booking</strong> to cancel. Late cancellations result in minute deduction.
+          </span>
+        </div>
+      )}
 
       <Tabs defaultValue="upcoming">
         <TabsList className="mb-6 bg-white/5 border border-white/10">

@@ -1,19 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import nodemailer from 'npm:nodemailer@6.9.14';
 
+const LOGO_URL = 'https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png';
+
 function escapeHtml(str: string): string {
   return String(str || '')
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-function formatDateTime(isoString: string): string {
+function formatInTz(isoString: string, tz: string): string {
   const d = new Date(isoString);
   return d.toLocaleString('en-US', {
-    timeZone: 'America/Sao_Paulo',
+    timeZone: tz,
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -24,14 +23,26 @@ function levelLabel(level: string): string {
   return map[level] || level || '—';
 }
 
-function buildEmail({ tutorName, studentName, scheduledAt, level, topics, objective }: {
+function buildEmail({ tutorName, studentName, scheduledAt, level, topics, objective, tutorTz }: {
   tutorName: string; studentName: string; scheduledAt: string;
-  level: string; topics: string[]; objective: string;
+  level: string; topics: string[]; objective: string; tutorTz: string;
 }) {
-  const lessonTime = formatDateTime(scheduledAt);
+  const brasiliaTz = 'America/Sao_Paulo';
+  const brasiliaTime = formatInTz(scheduledAt, brasiliaTz);
+  const tutorLocalTime = tutorTz && tutorTz !== brasiliaTz ? formatInTz(scheduledAt, tutorTz) : null;
+
   const topicsList = topics && topics.length > 0
     ? topics.map(t => `<li style="margin:3px 0;color:#c4b5fd;font-size:14px;">• ${escapeHtml(t)}</li>`).join('')
     : '<li style="margin:3px 0;color:#9ca3af;font-size:14px;">Not specified</li>';
+
+  const tutorTzRow = tutorLocalTime ? `
+    <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+    <tr>
+      <td style="padding:8px 0;">
+        <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">🕐 Date & Time (your local timezone — ${escapeHtml(tutorTz)})</span><br>
+        <span style="color:#a78bfa;font-size:15px;font-weight:600;">${escapeHtml(tutorLocalTime)}</span>
+      </td>
+    </tr>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -42,10 +53,10 @@ function buildEmail({ tutorName, studentName, scheduledAt, level, topics, object
       <table width="560" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f0f1f,#1a0a2e);border-radius:20px;overflow:hidden;border:1px solid rgba(139,92,246,0.25);">
         <tr>
           <td style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:32px 36px;text-align:center;">
-            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:10px 16px;margin-bottom:16px;">
-              <span style="font-size:24px;">📅</span>
+            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:8px 12px;margin-bottom:14px;">
+              <img src="${LOGO_URL}" alt="One Talky" width="40" height="40" style="border-radius:10px;display:block;object-fit:cover;" />
             </div>
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">OneTalky</h1>
+            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">One Talky</h1>
             <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Language conversation platform</p>
           </td>
         </tr>
@@ -68,10 +79,11 @@ function buildEmail({ tutorName, studentName, scheduledAt, level, topics, object
                 <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
                 <tr>
                   <td style="padding:8px 0;">
-                    <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">📅 Date & Time (your local Brasília timezone)</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(lessonTime)}</span>
+                    <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">🇧🇷 Date & Time (Brasília — America/Sao_Paulo)</span><br>
+                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(brasiliaTime)}</span>
                   </td>
                 </tr>
+                ${tutorTzRow}
                 <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
                 <tr>
                   <td style="padding:8px 0;">
@@ -111,7 +123,7 @@ function buildEmail({ tutorName, studentName, scheduledAt, level, topics, object
         </tr>
         <tr>
           <td style="padding:20px 36px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
-            <p style="margin:0;color:#4b5563;font-size:11px;">OneTalky · You are receiving this email because a student has booked a lesson with you.</p>
+            <p style="margin:0;color:#4b5563;font-size:11px;">One Talky · You are receiving this email because a student has booked a lesson with you.</p>
           </td>
         </tr>
       </table>
@@ -128,7 +140,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const { tutor_id, student_id, scheduled_at, lesson_id } = body;
+    const { tutor_id, student_id, scheduled_at } = body;
 
     if (!tutor_id || !scheduled_at) {
       return Response.json({ error: 'Missing tutor_id or scheduled_at' }, { status: 400 });
@@ -142,12 +154,10 @@ Deno.serve(async (req) => {
 
     if (!smtpHost) return Response.json({ error: 'SMTP not configured' }, { status: 500 });
 
-    // Fetch tutor profile & email
     const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: tutor_id });
     const tutorProfile = tutorProfiles[0];
     if (!tutorProfile) return Response.json({ error: 'Tutor not found' }, { status: 404 });
 
-    // Fetch tutor email (from bank_info.pioneer_email or User entity)
     let tutorEmail: string | null = null;
     if (tutorProfile.bank_info) {
       try { tutorEmail = JSON.parse(tutorProfile.bank_info).pioneer_email || null; } catch { /* noop */ }
@@ -160,7 +170,6 @@ Deno.serve(async (req) => {
 
     if (!tutorEmail) return Response.json({ error: 'Could not determine tutor email' }, { status: 404 });
 
-    // Fetch student profile for details
     let studentName = body.student_name || 'Student';
     let level = 'beginner';
     let topics: string[] = [];
@@ -178,16 +187,14 @@ Deno.serve(async (req) => {
     }
 
     const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
+      host: smtpHost, port: smtpPort, secure: smtpPort === 465,
       auth: { user: smtpUser, pass: smtpPass },
     });
 
     await transporter.sendMail({
       from: smtpFrom,
       to: tutorEmail,
-      subject: `📅 New lesson booked with ${studentName} – OneTalky`,
+      subject: `📅 New lesson booked with ${studentName} – One Talky`,
       html: buildEmail({
         tutorName: tutorProfile.full_name || 'Tutor',
         studentName,
@@ -195,6 +202,7 @@ Deno.serve(async (req) => {
         level,
         topics,
         objective,
+        tutorTz: tutorProfile.timezone || 'America/Sao_Paulo',
       }),
     });
 

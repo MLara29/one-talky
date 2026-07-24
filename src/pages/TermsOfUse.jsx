@@ -52,8 +52,15 @@ const sections = [
           Para garantir a remuneração justa dos tutores e a qualidade da plataforma, aplicam-se as seguintes regras de cancelamento:
         </p>
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
-          <li>Cancelamentos de aulas agendadas pelo aluno devem ser realizados com <strong>no mínimo 24 horas de antecedência</strong> em relação ao horário marcado.</li>
-          <li>Cancelamentos realizados com menos de 24 horas de antecedência, bem como ausências sem aviso (no-show), resultarão no <strong>débito integral dos minutos</strong> correspondentes à duração da aula agendada.</li>
+          <li>
+            <strong>Agendamentos com mais de 24 horas de antecedência:</strong> O aluno deve cancelar com no mínimo <strong>24 horas de antecedência</strong> em relação ao horário da aula. Cancelamentos fora deste prazo serão considerados tardios.
+          </li>
+          <li>
+            <strong>Agendamentos realizados com menos de 24 horas de antecedência:</strong> Quando o aluno agenda uma aula em cima da hora (menos de 24h antes do horário), ele terá até <strong>1 hora após o momento do agendamento</strong> para cancelar sem penalidade.
+          </li>
+          <li>
+            Cancelamentos tardios e ausências sem aviso (no-show) resultarão no <strong>débito integral dos minutos</strong> correspondentes à duração da aula agendada.
+          </li>
           <li>Os minutos debitados por cancelamento tardio ou no-show remuneram o tutor que reservou aquele horário em sua agenda.</li>
           <li>Tutores podem cancelar aulas com até 4 horas de antecedência sem penalidade. Cancelamentos recorrentes por parte de tutores podem resultar em suspensão da conta.</li>
         </ul>
