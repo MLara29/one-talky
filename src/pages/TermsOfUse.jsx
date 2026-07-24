@@ -45,11 +45,11 @@ const sections = [
     ),
   },
   {
-    title: "4. Cancelamento e No-Show de Aulas Agendadas",
+    title: "4. Cancelamento, No-Show e Atraso na Entrada",
     content: (
       <>
         <p>
-          Para garantir a remuneração justa dos tutores e a qualidade da plataforma, aplicam-se as seguintes regras de cancelamento:
+          Para garantir a remuneração justa dos tutores e a qualidade da plataforma, aplicam-se as seguintes regras:
         </p>
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
           <li>
@@ -57,6 +57,9 @@ const sections = [
           </li>
           <li>
             <strong>Agendamentos realizados com menos de 24 horas de antecedência:</strong> Quando o aluno agenda uma aula em cima da hora (menos de 24h antes do horário), ele terá até <strong>1 hora após o momento do agendamento</strong> para cancelar sem penalidade.
+          </li>
+          <li>
+            <strong>Limite de tolerância para entrada (no-show):</strong> O aluno tem até <strong>10 minutos</strong> após o horário de início da aula agendada para entrar na sala de vídeo. Caso o tutor esteja online e pronto para a aula e o aluno não compareça dentro desse prazo, os minutos correspondentes à duração da aula serão <strong>debitados automaticamente</strong>. Se o tutor não estiver na plataforma no momento agendado, o aluno <strong>não será penalizado</strong>.
           </li>
           <li>
             Cancelamentos tardios e ausências sem aviso (no-show) resultarão no <strong>débito integral dos minutos</strong> correspondentes à duração da aula agendada.

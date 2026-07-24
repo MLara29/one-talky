@@ -3,14 +3,31 @@ import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
+import { useLang } from "@/lib/LanguageContext";
 
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
 const isOnline = (t) => t.last_seen && (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
 const isLive = (t) => t.is_available_now && isOnline(t);
 
-export default function TutorCard({ tutor }) {
+// Interest topic translations for student view
+const TOPIC_TRANSLATIONS = {
+  pt_br: { "Travel": "Viagens", "Business": "Negócios", "Sports": "Esportes", "Music": "Música", "Technology": "Tecnologia", "Food & Cooking": "Culinária", "Movies & TV": "Filmes e Séries", "Culture": "Cultura", "Science": "Ciência", "Politics": "Política", "Art": "Arte", "Fashion": "Moda", "Health": "Saúde", "Education": "Educação", "History": "História", "Environment": "Meio Ambiente", "Gaming": "Jogos", "Literature": "Literatura", "Finance": "Finanças", "Philosophy": "Filosofia" },
+  pt_pt: { "Travel": "Viagens", "Business": "Negócios", "Sports": "Desporto", "Music": "Música", "Technology": "Tecnologia", "Food & Cooking": "Culinária", "Movies & TV": "Filmes e Séries", "Culture": "Cultura", "Science": "Ciência", "Politics": "Política", "Art": "Arte", "Fashion": "Moda", "Health": "Saúde", "Education": "Educação", "History": "História", "Environment": "Ambiente", "Gaming": "Jogos", "Literature": "Literatura", "Finance": "Finanças", "Philosophy": "Filosofia" },
+  es: { "Travel": "Viajes", "Business": "Negocios", "Sports": "Deportes", "Music": "Música", "Technology": "Tecnología", "Food & Cooking": "Gastronomía", "Movies & TV": "Cine y Series", "Culture": "Cultura", "Science": "Ciencia", "Politics": "Política", "Art": "Arte", "Fashion": "Moda", "Health": "Salud", "Education": "Educación", "History": "Historia", "Environment": "Medio Ambiente", "Gaming": "Videojuegos", "Literature": "Literatura", "Finance": "Finanzas", "Philosophy": "Filosofía" },
+  fr: { "Travel": "Voyages", "Business": "Affaires", "Sports": "Sports", "Music": "Musique", "Technology": "Technologie", "Food & Cooking": "Gastronomie", "Movies & TV": "Cinéma et Séries", "Culture": "Culture", "Science": "Science", "Politics": "Politique", "Art": "Art", "Fashion": "Mode", "Health": "Santé", "Education": "Éducation", "History": "Histoire", "Environment": "Environnement", "Gaming": "Jeux Vidéo", "Literature": "Littérature", "Finance": "Finance", "Philosophy": "Philosophie" },
+  de: { "Travel": "Reisen", "Business": "Geschäft", "Sports": "Sport", "Music": "Musik", "Technology": "Technologie", "Food & Cooking": "Küche", "Movies & TV": "Film & Serien", "Culture": "Kultur", "Science": "Wissenschaft", "Politics": "Politik", "Art": "Kunst", "Fashion": "Mode", "Health": "Gesundheit", "Education": "Bildung", "History": "Geschichte", "Environment": "Umwelt", "Gaming": "Gaming", "Literature": "Literatur", "Finance": "Finanzen", "Philosophy": "Philosophie" },
+  it: { "Travel": "Viaggi", "Business": "Affari", "Sports": "Sport", "Music": "Musica", "Technology": "Tecnologia", "Food & Cooking": "Gastronomia", "Movies & TV": "Cinema e Serie", "Culture": "Cultura", "Science": "Scienza", "Politics": "Politica", "Art": "Arte", "Fashion": "Moda", "Health": "Salute", "Education": "Istruzione", "History": "Storia", "Environment": "Ambiente", "Gaming": "Videogiochi", "Literature": "Letteratura", "Finance": "Finanza", "Philosophy": "Filosofia" },
+};
+
+function translateTopic(topic, lang) {
+  if (lang === "en") return topic;
+  return TOPIC_TRANSLATIONS[lang]?.[topic] || topic;
+}
+
+export default function TutorCard({ tutor, forceEnglishTopics = false }) {
   const live = isLive(tutor);
   const [inLesson, setInLesson] = useState(false);
+  const { lang } = useLang();
 
   useEffect(() => {
     if (!tutor.user_id) return;
@@ -81,7 +98,7 @@ export default function TutorCard({ tutor }) {
           ))}
           {tutor.interests?.slice(0, 3).map(i => (
             <span key={i} className="theme-btn-ghost text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">
-              {i}
+              {forceEnglishTopics ? i : translateTopic(i, lang)}
             </span>
           ))}
         </div>

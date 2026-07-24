@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Video, Calendar, Clock, CheckCircle, Settings2 } from "lucide-react";
+import { Video, Calendar, Clock, CheckCircle, Settings2, AlertTriangle } from "lucide-react";
 import { getLanguageLabel } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import CancelRescheduleModal from "@/components/lessons/CancelRescheduleModal";
@@ -12,17 +14,20 @@ import StudentCancelModal from "@/components/lessons/StudentCancelModal";
 
 export default function MyLessons() {
   const { user } = useAuth();
+  const { lang } = useLang();
   const { toast } = useToast();
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [managingLesson, setManagingLesson] = useState(null); // lesson being managed
+  const [managingLesson, setManagingLesson] = useState(null);
   const [tutorProfile, setTutorProfile] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const [cancellingLesson, setCancellingLesson] = useState(null); // for student cancel
+  const [cancellingLesson, setCancellingLesson] = useState(null);
+
+  const T = (key) => t(lang, key);
 
   useEffect(() => { loadData(); }, [user]);
 
-  // Real-time refresh for tutors — when a student books, the lesson appears immediately
+  // Real-time refresh for tutors
   useEffect(() => {
     if (user?.role !== "tutor") return;
     const unsubscribe = base44.entities.Lesson.subscribe((event) => {
@@ -53,7 +58,6 @@ export default function MyLessons() {
     } catch {} finally { setLoading(false); }
   };
 
-  // Student cancels their own lesson
   const handleStudentCancel = async (message) => {
     if (!cancellingLesson) return;
     setActionLoading(true);
@@ -61,7 +65,7 @@ export default function MyLessons() {
       await base44.functions.invoke('cancelLesson', { lesson_id: cancellingLesson.id, message });
       setLessons(prev => prev.map(l => l.id === cancellingLesson.id ? { ...l, status: "cancelled" } : l));
       setCancellingLesson(null);
-      toast({ title: "Lesson cancelled", description: message ? "Message sent to tutor." : "" });
+      toast({ title: T("cancelLesson"), description: message ? T("msgToTutor") : "" });
     } catch {
       toast({ title: "Error cancelling", variant: "destructive" });
     } finally { setActionLoading(false); }
@@ -105,24 +109,38 @@ export default function MyLessons() {
 
   return (
     <div>
-      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-4">My Lessons</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-4">
+        {user?.role === "student" ? T("myLessons") : "My Lessons"}
+      </h1>
 
       {user?.role === "student" && (
-        <div className="mb-6 flex gap-2 items-start bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-sm text-amber-200">
-          <Clock className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
-          <span>
-            <strong className="text-amber-300">Cancellation policy:</strong> You must cancel at least <strong>24 hours before</strong> your scheduled lesson. If you booked a lesson with less than 24h notice, you have <strong>up to 1 hour after booking</strong> to cancel. Late cancellations result in minute deduction.
-          </span>
+        <div className="mb-4 space-y-2">
+          {/* Cancellation policy */}
+          <div className="flex gap-2 items-start rounded-2xl p-4 text-sm" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
+            <Clock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#F26A1B" }} />
+            <span style={{ color: "var(--app-text-primary)" }}>
+              <strong style={{ color: "#F26A1B" }}>{T("cancelPolicy")}:</strong>{" "}
+              {T("cancelPolicyText")}
+            </span>
+          </div>
+          {/* No-show policy */}
+          <div className="flex gap-2 items-start rounded-2xl p-4 text-sm" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
+            <span style={{ color: "var(--app-text-primary)" }}>
+              <strong className="text-red-400">{T("noShowPolicy")}:</strong>{" "}
+              {T("noShowPolicyText")}
+            </span>
+          </div>
         </div>
       )}
 
       <Tabs defaultValue="upcoming">
         <TabsList className="mb-6 bg-white/5 border border-white/10">
           <TabsTrigger value="upcoming" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
-            Upcoming ({upcoming.length})
+            {user?.role === "student" ? T("upcomingTab") : "Upcoming"} ({upcoming.length})
           </TabsTrigger>
           <TabsTrigger value="completed" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
-            Completed ({completed.length})
+            {user?.role === "student" ? T("completedTab") : "Completed"} ({completed.length})
           </TabsTrigger>
         </TabsList>
 
@@ -135,11 +153,13 @@ export default function MyLessons() {
                     <Video className="w-5 h-5 text-blue-400" />
                     <div>
                       <p className="theme-heading font-semibold text-white">{user?.role === "tutor" ? l.student_name : l.tutor_name}</p>
-                      <p className="theme-subtext text-sm text-gray-500">{getLanguageLabel(l.language)} · In progress</p>
+                      <p className="theme-subtext text-sm text-gray-500">{getLanguageLabel(l.language)} · {user?.role === "student" ? T("inProgress") : "In progress"}</p>
                     </div>
                   </div>
                   <Link to={`/classroom/${l.id}`}>
-                    <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600 border-0">Rejoin</Button>
+                    <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600 border-0">
+                      {user?.role === "student" ? T("rejoinBtn") : "Rejoin"}
+                    </Button>
                   </Link>
                 </div>
               ))}
@@ -148,10 +168,18 @@ export default function MyLessons() {
           {upcoming.length === 0 ? (
             <div className="theme-empty text-center py-20 bg-white/3 border border-white/5 rounded-3xl">
               <Calendar className="theme-muted-icon w-12 h-12 text-gray-700 mx-auto mb-4" />
-              <h3 className="theme-heading font-display font-bold text-white mb-1">No upcoming lessons</h3>
-              <p className="theme-subtext text-sm text-gray-600 mb-5">Find a tutor and book your next session</p>
+              <h3 className="theme-heading font-display font-bold text-white mb-1">
+                {user?.role === "student" ? T("noUpcomingLessons2") : "No upcoming lessons"}
+              </h3>
+              <p className="theme-subtext text-sm text-gray-600 mb-5">
+                {user?.role === "student" ? T("noUpcomingLessonsSub") : ""}
+              </p>
               {user?.role === "student" && (
-                <Link to="/dashboard"><Button className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0">Find tutors</Button></Link>
+                <Link to="/dashboard">
+                  <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0">
+                    {T("findTutors")}
+                  </Button>
+                </Link>
               )}
             </div>
           ) : (
@@ -162,7 +190,9 @@ export default function MyLessons() {
                     <Calendar className="w-4 h-4 text-violet-400" />
                     <div>
                       <p className="theme-heading font-semibold text-white">{user?.role === "tutor" ? l.student_name : l.tutor_name}</p>
-                      <p className="theme-subtext text-sm text-gray-500">{getLanguageLabel(l.language)} · {l.scheduled_at ? new Date(l.scheduled_at).toLocaleString() : "Instant"}</p>
+                      <p className="theme-subtext text-sm text-gray-500">
+                        {getLanguageLabel(l.language)} · {l.scheduled_at ? new Date(l.scheduled_at).toLocaleString() : (user?.role === "student" ? T("instant") : "Instant")}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -184,11 +214,13 @@ export default function MyLessons() {
                         onClick={() => setCancellingLesson(l)}
                         className="border-red-500/20 text-red-400 hover:text-red-300 hover:border-red-500/40 bg-transparent text-xs"
                       >
-                        Cancel
+                        {T("cancelBtn")}
                       </Button>
                     )}
                     <Link to={`/classroom/${l.id}`}>
-                      <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:opacity-90">Join</Button>
+                      <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:opacity-90">
+                        {user?.role === "student" ? T("joinBtn") : "Join"}
+                      </Button>
                     </Link>
                   </div>
                 </div>
@@ -201,8 +233,12 @@ export default function MyLessons() {
           {completed.length === 0 ? (
             <div className="theme-empty text-center py-20 bg-white/3 border border-white/5 rounded-3xl">
               <CheckCircle className="theme-muted-icon w-12 h-12 text-gray-700 mx-auto mb-4" />
-              <h3 className="theme-heading font-display font-bold text-white mb-1">No completed lessons yet</h3>
-              <p className="theme-subtext text-sm text-gray-600">Your lesson history will appear here</p>
+              <h3 className="theme-heading font-display font-bold text-white mb-1">
+                {user?.role === "student" ? T("noCompletedLessons") : "No completed lessons yet"}
+              </h3>
+              <p className="theme-subtext text-sm text-gray-600">
+                {user?.role === "student" ? T("noCompletedLessonsSub") : "Your lesson history will appear here"}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -231,6 +267,7 @@ export default function MyLessons() {
           onClose={() => setCancellingLesson(null)}
           onCancel={handleStudentCancel}
           loading={actionLoading}
+          lang={lang}
         />
       )}
 

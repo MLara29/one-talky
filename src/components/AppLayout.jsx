@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { useLang } from "@/lib/LanguageContext";
 
 import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
@@ -10,14 +11,26 @@ import {
   GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users
 } from "lucide-react";
 
-const STUDENT_NAV = [
-  { label: "Encontrar Tutores", path: "/dashboard", icon: Search },
-  { label: "Minhas Aulas", path: "/my-lessons", icon: BookOpen },
-  { label: "Progresso", path: "/progress", icon: BarChart3 },
-  { label: "Planos", path: "/plans", icon: DollarSign },
-  { label: "Meu Perfil", path: "/student/personal-info", icon: User },
-  { label: "Suporte", path: "/my-messages", icon: Inbox },
-];
+const STUDENT_NAV = (lang) => {
+  const labels = {
+    en:    ["Find Tutors", "My Lessons", "Progress", "Plans", "My Profile", "Support"],
+    pt_br: ["Encontrar Tutores", "Minhas Aulas", "Progresso", "Planos", "Meu Perfil", "Suporte"],
+    pt_pt: ["Encontrar Tutores", "As Minhas Aulas", "Progresso", "Planos", "Meu Perfil", "Suporte"],
+    es:    ["Encontrar Tutores", "Mis Clases", "Progreso", "Planes", "Mi Perfil", "Soporte"],
+    fr:    ["Trouver des tuteurs", "Mes Leçons", "Progrès", "Plans", "Mon Profil", "Support"],
+    de:    ["Tutoren finden", "Meine Lektionen", "Fortschritt", "Pläne", "Mein Profil", "Support"],
+    it:    ["Trova tutors", "Le Mie Lezioni", "Progresso", "Piani", "Il Mio Profilo", "Supporto"],
+  };
+  const l = labels[lang] || labels["en"];
+  return [
+    { label: l[0], path: "/dashboard", icon: Search },
+    { label: l[1], path: "/my-lessons", icon: BookOpen },
+    { label: l[2], path: "/progress", icon: BarChart3 },
+    { label: l[3], path: "/plans", icon: DollarSign },
+    { label: l[4], path: "/student/personal-info", icon: User },
+    { label: l[5], path: "/my-messages", icon: Inbox },
+  ];
+};
 
 const TUTOR_NAV = [
   { label: "Dashboard", path: "/dashboard", icon: Home },
@@ -45,13 +58,20 @@ const AFFILIATE_NAV = [
   { label: "Dashboard", path: "/affiliate", icon: Home },
 ];
 
+const LANG_OPTIONS = ["pt_br", "en", "es", "fr", "de", "it"];
+const LANG_LABELS = { pt_br: "PT", en: "EN", es: "ES", fr: "FR", de: "DE", it: "IT" };
 
 export default function AppLayout() {
   const { user } = useAuth();
+  const { lang, changeLang } = useLang();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const role = user?.role || "student";
-  const nav = role === "admin" ? ADMIN_NAV : role === "tutor" ? TUTOR_NAV : role === "affiliate" ? AFFILIATE_NAV : STUDENT_NAV;
+
+  const nav = role === "admin" ? ADMIN_NAV
+    : role === "tutor" ? TUTOR_NAV
+    : role === "affiliate" ? AFFILIATE_NAV
+    : STUDENT_NAV(lang);
 
   // Heartbeat for tutors: keep last_seen updated on every page
   useEffect(() => {
@@ -60,7 +80,7 @@ export default function AppLayout() {
       await base44.functions.updateMyProfile({ last_seen: new Date().toISOString() });
     };
     beat();
-    const interval = setInterval(beat, 60 * 1000); // every 1 minute
+    const interval = setInterval(beat, 60 * 1000);
     return () => clearInterval(interval);
   }, [user?.id, role]);
 
@@ -69,10 +89,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: "var(--app-bg)" }}
-    >
+    <div className="min-h-screen" style={{ background: "var(--app-bg)" }}>
       {/* Top bar */}
       <header
         className="fixed top-0 left-0 right-0 backdrop-blur-xl z-40 h-14"
@@ -99,16 +116,34 @@ export default function AppLayout() {
             </Link>
             <span
               className="text-xs font-medium px-2.5 py-1 rounded-full capitalize hidden sm:block"
-              style={{
-                background: "rgba(242,106,27,0.1)",
-                border: "1px solid rgba(242,106,27,0.25)",
-                color: "#F26A1B"
-              }}
+              style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.25)", color: "#F26A1B" }}
             >
               {role}
             </span>
           </div>
           <div className="flex items-center gap-1">
+            {/* Language switcher — students only */}
+            {role === "student" && (
+              <div className="flex items-center border rounded-full overflow-hidden mr-1" style={{ borderColor: "var(--app-border)", fontSize: 11 }}>
+                {LANG_OPTIONS.map(l => (
+                  <button
+                    key={l}
+                    onClick={() => changeLang(l)}
+                    className="px-2 py-1 font-bold transition-colors"
+                    style={{
+                      background: lang === l ? "#F26A1B" : "transparent",
+                      color: lang === l ? "#fff" : "var(--app-text-secondary)",
+                      border: "none",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {LANG_LABELS[l]}
+                  </button>
+                ))}
+              </div>
+            )}
             <Link to="/notifications">
               <Button variant="ghost" size="icon" style={{ color: "var(--app-text-secondary)" }}>
                 <Bell className="w-4 h-4" />

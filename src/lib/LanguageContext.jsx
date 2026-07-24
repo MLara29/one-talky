@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { detectLanguage } from "@/lib/i18n";
 
 const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
-  const [lang, setLang] = useState(() => localStorage.getItem("ui_lang") || "en");
+  const [lang, setLang] = useState(() => localStorage.getItem("ui_lang") || detectLanguage());
 
   useEffect(() => {
     const handler = (e) => setLang(e.detail);
