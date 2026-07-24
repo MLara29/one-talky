@@ -32,7 +32,8 @@ export default function Classroom() {
   const [showCreditWarning, setShowCreditWarning] = useState(false);
   const [lessonEnding, setLessonEnding] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
-  // totalDurationMins: effective lesson duration = min(student_credits, scheduled_duration)
+  // Received by student: true when tutor is sharing screen
+  const [remoteIsScreenSharing, setRemoteIsScreenSharing] = useState(false);
   const [totalDurationMins, setTotalDurationMins] = useState(null);
   const chatOpenRef = useRef(false);
 
@@ -45,7 +46,7 @@ export default function Classroom() {
   const remoteVideoDiv = useRef(null);
   const chatBottomRef = useRef(null);
   const lessonRef = useRef(null);
-  const totalDurationRef = useRef(null); // seconds
+  const totalDurationRef = useRef(null);
   const endingRef = useRef(false);
   const elapsedRef = useRef(0);
 
@@ -74,13 +75,12 @@ export default function Classroom() {
     return () => leaveChannel();
   }, [id]);
 
-  // Main countdown timer — counts elapsed seconds and auto-ends when totalDuration is reached
+  // Main countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
       setElapsed(e => {
         const next = e + 1;
         elapsedRef.current = next;
-        // Auto-end when the effective lesson duration expires
         if (totalDurationRef.current !== null && next >= totalDurationRef.current && !endingRef.current) {
           endLesson();
         }
@@ -90,7 +90,7 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, []);
 
-  // Poll for remote lesson end (when the other party ends the call)
+  // Poll for remote lesson end
   useEffect(() => {
     const poll = setInterval(async () => {
       if (endingRef.current) return;
@@ -107,7 +107,7 @@ export default function Classroom() {
     return () => clearInterval(poll);
   }, [id]);
 
-  // Poll every 2s using service-role backend function to bypass RLS
+  // Chat + screen-share signal poller
   const seenMsgIds = useRef(new Set());
   useEffect(() => {
     const poll = async () => {
@@ -117,7 +117,12 @@ export default function Classroom() {
         msgs.forEach(m => {
           if (seenMsgIds.current.has(m.id)) return;
           seenMsgIds.current.add(m.id);
-          if (m.sender_id === user?.id) return; // skip own (already shown optimistically)
+          // System signal: screen share state from tutor
+          if (m.text?.startsWith("__SCREEN_SHARE:")) {
+            setRemoteIsScreenSharing(m.text === "__SCREEN_SHARE:true");
+            return;
+          }
+          if (m.sender_id === user?.id) return;
           setMessages(prev => [...prev, {
             id: m.id,
             sender_id: m.sender_id,
@@ -142,7 +147,6 @@ export default function Classroom() {
   const notifyTutor = async (l) => {
     try {
       if (user?.role !== "tutor") {
-        // Start lesson and notify tutor server-side
         await base44.functions.invoke('startLesson', { lesson_id: l.id });
       }
     } catch {}
@@ -155,14 +159,8 @@ export default function Classroom() {
       await notifyTutor(l);
       await joinChannel(l);
 
-      // --- Determine effective lesson duration ---
-      // 1. Fetch all scheduled lessons for this student+tutor pair to detect consecutive bookings
-      // 2. Sum consecutive durations starting from this lesson's scheduled_at
-      // 3. Effective duration = min(student_credits, total_scheduled_minutes)
+      let scheduledMins = l.duration_minutes || 30;
 
-      let scheduledMins = l.duration_minutes || 30; // default 30 if not set
-
-      // Check for consecutive bookings (same tutor+student, scheduled back-to-back)
       try {
         const allLessons = await base44.entities.Lesson.filter({
           tutor_id: l.tutor_id,
@@ -170,29 +168,23 @@ export default function Classroom() {
           status: "scheduled",
         });
         if (allLessons.length > 1 && l.scheduled_at) {
-          // Sort by scheduled_at
           const sorted = [...allLessons].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
-          // Find this lesson's index
           const idx = sorted.findIndex(x => x.id === l.id);
           if (idx !== -1) {
             let total = sorted[idx].duration_minutes || 30;
-            // Look forward: add consecutive lessons (gap ≤ 1 min)
             for (let i = idx + 1; i < sorted.length; i++) {
               const prev = sorted[i - 1];
               const curr = sorted[i];
               const prevEnd = new Date(prev.scheduled_at).getTime() + (prev.duration_minutes || 30) * 60000;
               const gap = new Date(curr.scheduled_at).getTime() - prevEnd;
-              if (gap <= 60000) { // ≤ 1 minute gap = consecutive
-                total += curr.duration_minutes || 30;
-              } else break;
+              if (gap <= 60000) { total += curr.duration_minutes || 30; } else break;
             }
             scheduledMins = total;
           }
         }
       } catch {}
 
-      // Fetch student credits
-      let studentCredits = scheduledMins; // default: assume enough credits
+      let studentCredits = scheduledMins;
       try {
         const studentId = user?.role === "student" ? user.id : l.student_id;
         const profiles = await base44.entities.StudentProfile.filter({ user_id: studentId });
@@ -201,7 +193,6 @@ export default function Classroom() {
         }
       } catch {}
 
-      // Effective duration: if student has enough credits, use full scheduled time; else use what's available
       const effectiveMins = Math.min(scheduledMins, studentCredits);
       setTotalDurationMins(effectiveMins);
       totalDurationRef.current = effectiveMins * 60;
@@ -221,7 +212,6 @@ export default function Classroom() {
   };
 
   const joinChannel = async (l) => {
-    // --- RTC ---
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     clientRef.current = client;
 
@@ -244,7 +234,7 @@ export default function Classroom() {
     const uid = (l.tutor_id === user?.id) ? 1 : 2;
     const channelName = id;
 
-    const { token, rtmToken, rtmUserId, appId } = await fetchAgoraToken(channelName, uid);
+    const { token, appId } = await fetchAgoraToken(channelName, uid);
     if (!appId) throw new Error("App ID do Agora não configurado");
 
     client.on("token-privilege-will-expire", async () => {
@@ -269,10 +259,17 @@ export default function Classroom() {
       }
     };
     playLocal();
+  };
 
-    // RTM is unreliable (clock skew causes Error Code 6 on Deno runtime).
-    // Chat uses DB + realtime subscribe as primary channel — fast and reliable.
-    console.log("[Chat] using DB realtime as primary chat channel");
+  const sendScreenShareSignal = async (active) => {
+    try {
+      await base44.entities.ClassroomMessage.create({
+        lesson_id: id,
+        sender_id: user?.id,
+        sender_name: "__system",
+        text: active ? "__SCREEN_SHARE:true" : "__SCREEN_SHARE:false",
+      });
+    } catch {}
   };
 
   const stopScreenShare = async () => {
@@ -290,7 +287,6 @@ export default function Classroom() {
       try { await client.unpublish(screenAudio); } catch {}
       screenAudio.close();
       screenAudioTrackRef.current = null;
-      // Restore mic
       if (localAudioTrackRef.current) {
         try { await client.publish(localAudioTrackRef.current); } catch {}
       }
@@ -299,6 +295,7 @@ export default function Classroom() {
       try { await client.publish(cameraTrack); } catch {}
     }
     setIsScreenSharing(false);
+    await sendScreenShareSignal(false);
   };
 
   const toggleScreenShare = async () => {
@@ -324,12 +321,10 @@ export default function Classroom() {
       const client = clientRef.current;
       const cameraTrack = localVideoTrackRef.current;
 
-      // Unpublish camera but keep it alive
       if (cameraTrack) {
         try { await client.unpublish(cameraTrack); } catch {}
       }
 
-      // If screen has audio, unpublish mic to avoid echo and publish screen audio instead
       if (screenAudio) {
         try { await client.unpublish(localAudioTrackRef.current); } catch {}
         await client.publish([screenTrack, screenAudio]);
@@ -338,14 +333,12 @@ export default function Classroom() {
       }
 
       setIsScreenSharing(true);
+      await sendScreenShareSignal(true);
 
       // Detect native browser "Stop sharing" button
-      screenTrack.on("track-ended", () => {
-        stopScreenShare();
-      });
+      screenTrack.on("track-ended", () => { stopScreenShare(); });
 
     } catch (e) {
-      // User cancelled or browser denied — show toast
       if (e?.name !== "NotAllowedError") {
         console.error("[ScreenShare]", e);
       }
@@ -358,7 +351,6 @@ export default function Classroom() {
   };
 
   const leaveChannel = async () => {
-    // Clean up screen share if active
     if (screenVideoTrackRef.current) {
       try { screenVideoTrackRef.current.close(); } catch {}
       screenVideoTrackRef.current = null;
@@ -390,7 +382,6 @@ export default function Classroom() {
     if (!msgInput.trim()) return;
     const text = msgInput.trim();
     setMsgInput("");
-    // Use display name from StudentProfile/TutorProfile if available, else full_name from auth, else email
     let senderName = user.full_name || user.email || "You";
     try {
       if (user.role === "student") {
@@ -402,7 +393,6 @@ export default function Classroom() {
       }
     } catch {}
 
-    // Optimistic local update
     setMessages(prev => [...prev, {
       id: `local-${Date.now()}`,
       sender_id: user.id,
@@ -411,7 +401,6 @@ export default function Classroom() {
       ts: Date.now(),
     }]);
 
-    // Save to DB — the other party receives it via realtime subscribe
     try {
       await base44.entities.ClassroomMessage.create({
         lesson_id: id,
@@ -431,7 +420,6 @@ export default function Classroom() {
 
     await leaveChannel();
 
-    // Retry up to 3 times to ensure lesson is finalized server-side
     let success = false;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
@@ -455,15 +443,12 @@ export default function Classroom() {
     return `${Math.floor(totalSecs / 60).toString().padStart(2, "0")}:${(totalSecs % 60).toString().padStart(2, "0")}`;
   };
 
-  // Countdown remaining seconds for both student and tutor
   const remainingSeconds = totalDurationMins !== null
     ? Math.max(0, totalDurationMins * 60 - elapsed)
     : null;
 
-  // Minutes remaining (for warning and display)
   const minsRemaining = remainingSeconds !== null ? remainingSeconds / 60 : null;
 
-  // Show warning when ≤ 2 minutes left
   useEffect(() => {
     if (remainingSeconds === null) return;
     if (remainingSeconds <= 120 && remainingSeconds > 0 && !showCreditWarning) {
@@ -474,8 +459,10 @@ export default function Classroom() {
     }
   }, [Math.floor(remainingSeconds ?? 999)]);
 
-  // Display: always countdown (for both student and tutor)
   const displaySeconds = remainingSeconds !== null ? remainingSeconds : elapsed;
+
+  // Student sees the remote (tutor) video enlarged when screen sharing is active
+  const screenShareActive = user?.role === "student" && remoteIsScreenSharing;
 
   if (loading) return (
     <div className="fixed inset-0 flex items-center justify-center bg-white">
@@ -535,7 +522,7 @@ export default function Classroom() {
 
       {/* Video area */}
       <div className="flex-1 flex relative overflow-hidden">
-        {/* Remote video (main) */}
+        {/* Remote video — full area */}
         <div className="flex-1 relative bg-black">
           <div
             ref={remoteVideoDiv}
@@ -556,10 +543,26 @@ export default function Classroom() {
               </div>
             </div>
           )}
+          {/* Badge shown to student when tutor is sharing screen */}
+          {screenShareActive && remoteVideoTrack && (
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/60 text-white text-xs px-2.5 py-1 rounded-lg backdrop-blur-sm">
+              <Monitor className="w-3.5 h-3.5 text-blue-400" />
+              <span>Compartilhando tela</span>
+            </div>
+          )}
         </div>
 
-        {/* Local video (PiP) */}
-        <div className="absolute bottom-4 right-4 w-36 sm:w-48 aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
+        {/* Local video (PiP) — shrinks when student is watching screen share */}
+        <div
+          className="absolute rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black"
+          style={{
+            transition: "all 0.3s ease",
+            bottom: screenShareActive ? 8 : 16,
+            right: screenShareActive ? 8 : 16,
+            width: screenShareActive ? 96 : 144,
+            aspectRatio: "16/9",
+          }}
+        >
           <div
             ref={localVideoDiv}
             className="w-full h-full"
@@ -567,7 +570,7 @@ export default function Classroom() {
           />
           {!cameraOn && (
             <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-              <VideoOff className="w-8 h-8 text-gray-700" />
+              <VideoOff className="w-6 h-6 text-gray-700" />
             </div>
           )}
         </div>
