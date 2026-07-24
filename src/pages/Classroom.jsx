@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, Globe, X, User, AlertTriangle } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, Globe, X, User, AlertTriangle, Monitor, MonitorOff } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import AgoraRTC from "agora-rtc-sdk-ng";
@@ -31,6 +31,7 @@ export default function Classroom() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
   const [lessonEnding, setLessonEnding] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
   // totalDurationMins: effective lesson duration = min(student_credits, scheduled_duration)
   const [totalDurationMins, setTotalDurationMins] = useState(null);
   const chatOpenRef = useRef(false);
@@ -38,6 +39,8 @@ export default function Classroom() {
   const clientRef = useRef(null);
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
+  const screenVideoTrackRef = useRef(null);
+  const screenAudioTrackRef = useRef(null);
   const localVideoDiv = useRef(null);
   const remoteVideoDiv = useRef(null);
   const chatBottomRef = useRef(null);
@@ -272,7 +275,98 @@ export default function Classroom() {
     console.log("[Chat] using DB realtime as primary chat channel");
   };
 
+  const stopScreenShare = async () => {
+    const client = clientRef.current;
+    const screenTrack = screenVideoTrackRef.current;
+    const screenAudio = screenAudioTrackRef.current;
+    const cameraTrack = localVideoTrackRef.current;
+
+    if (screenTrack) {
+      try { await client.unpublish(screenTrack); } catch {}
+      screenTrack.close();
+      screenVideoTrackRef.current = null;
+    }
+    if (screenAudio) {
+      try { await client.unpublish(screenAudio); } catch {}
+      screenAudio.close();
+      screenAudioTrackRef.current = null;
+      // Restore mic
+      if (localAudioTrackRef.current) {
+        try { await client.publish(localAudioTrackRef.current); } catch {}
+      }
+    }
+    if (cameraTrack) {
+      try { await client.publish(cameraTrack); } catch {}
+    }
+    setIsScreenSharing(false);
+  };
+
+  const toggleScreenShare = async () => {
+    if (isScreenSharing) {
+      await stopScreenShare();
+      return;
+    }
+
+    try {
+      const result = await AgoraRTC.createScreenVideoTrack({ encoderConfig: "1080p_1" }, "auto");
+
+      let screenTrack, screenAudio;
+      if (Array.isArray(result)) {
+        [screenTrack, screenAudio] = result;
+      } else {
+        screenTrack = result;
+        screenAudio = null;
+      }
+
+      screenVideoTrackRef.current = screenTrack;
+      screenAudioTrackRef.current = screenAudio || null;
+
+      const client = clientRef.current;
+      const cameraTrack = localVideoTrackRef.current;
+
+      // Unpublish camera but keep it alive
+      if (cameraTrack) {
+        try { await client.unpublish(cameraTrack); } catch {}
+      }
+
+      // If screen has audio, unpublish mic to avoid echo and publish screen audio instead
+      if (screenAudio) {
+        try { await client.unpublish(localAudioTrackRef.current); } catch {}
+        await client.publish([screenTrack, screenAudio]);
+      } else {
+        await client.publish(screenTrack);
+      }
+
+      setIsScreenSharing(true);
+
+      // Detect native browser "Stop sharing" button
+      screenTrack.on("track-ended", () => {
+        stopScreenShare();
+      });
+
+    } catch (e) {
+      // User cancelled or browser denied — show toast
+      if (e?.name !== "NotAllowedError") {
+        console.error("[ScreenShare]", e);
+      }
+      toast({
+        title: "Não foi possível compartilhar a tela",
+        description: "Verifique as permissões do navegador ou tente em um computador.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const leaveChannel = async () => {
+    // Clean up screen share if active
+    if (screenVideoTrackRef.current) {
+      try { screenVideoTrackRef.current.close(); } catch {}
+      screenVideoTrackRef.current = null;
+    }
+    if (screenAudioTrackRef.current) {
+      try { screenAudioTrackRef.current.close(); } catch {}
+      screenAudioTrackRef.current = null;
+    }
     localAudioTrackRef.current?.close();
     localVideoTrackRef.current?.close();
     await clientRef.current?.leave();
@@ -562,6 +656,20 @@ export default function Classroom() {
             </span>
           )}
         </button>
+        {user?.role === "tutor" && (
+          <button
+            onClick={toggleScreenShare}
+            title={isScreenSharing ? "Parar compartilhamento" : "Compartilhar tela"}
+            className={`hidden sm:flex rounded-2xl items-center justify-center transition-all hover:scale-105 shadow ${
+              isScreenSharing
+                ? "bg-blue-100 border border-blue-300 text-blue-600"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+            }`}
+            style={{ width: 52, height: 52 }}
+          >
+            {isScreenSharing ? <MonitorOff className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
+          </button>
+        )}
         <button
           onClick={endLesson}
           disabled={lessonEnding}
