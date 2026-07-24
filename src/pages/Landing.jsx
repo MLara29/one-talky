@@ -6,7 +6,7 @@ const ACCENT = "#F26A1B";
 const CONTENT = {
   pt: {
     navHow: "Como funciona", navTutors: "Tutores", navPlans: "Planos", navGuarantee: "Garantia",
-    navLogin: "Entrar", navCta: "Começar grátis",
+    navLogin: "Entrar", navCta: "Cadastre-se",
     heroBadge: "Conversação 1 a 1, ao vivo",
     headline: ["Você entende inglês. Só não consegue ", "falar."],
     heroSub1: "Aulas de conversação 1 a 1, por vídeo, com tutores de inglês do mundo inteiro. 30 minutos por vez, no seu horário. A partir de ",
@@ -96,7 +96,7 @@ const CONTENT = {
   },
   en: {
     navHow: "How it works", navTutors: "Tutors", navPlans: "Plans", navGuarantee: "Guarantee",
-    navLogin: "Log in", navCta: "Start free",
+    navLogin: "Log in", navCta: "Sign up",
     heroBadge: "Live 1-on-1 conversation",
     headline: ["You understand English. You just can't ", "speak it."],
     heroSub1: "1-on-1 conversation lessons, by video, with English tutors from all over the world. 30 minutes at a time, on your schedule. Starting at ",

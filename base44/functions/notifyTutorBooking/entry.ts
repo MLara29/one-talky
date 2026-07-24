@@ -1,0 +1,205 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import nodemailer from 'npm:nodemailer@6.9.14';
+
+function escapeHtml(str: string): string {
+  return String(str || '')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatDateTime(isoString: string): string {
+  const d = new Date(isoString);
+  return d.toLocaleString('en-US', {
+    timeZone: 'America/Sao_Paulo',
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function levelLabel(level: string): string {
+  const map: Record<string, string> = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
+  return map[level] || level || '—';
+}
+
+function buildEmail({ tutorName, studentName, scheduledAt, level, topics, objective }: {
+  tutorName: string; studentName: string; scheduledAt: string;
+  level: string; topics: string[]; objective: string;
+}) {
+  const lessonTime = formatDateTime(scheduledAt);
+  const topicsList = topics && topics.length > 0
+    ? topics.map(t => `<li style="margin:3px 0;color:#c4b5fd;font-size:14px;">• ${escapeHtml(t)}</li>`).join('')
+    : '<li style="margin:3px 0;color:#9ca3af;font-size:14px;">Not specified</li>';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#030309;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#030309;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f0f1f,#1a0a2e);border-radius:20px;overflow:hidden;border:1px solid rgba(139,92,246,0.25);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:32px 36px;text-align:center;">
+            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:10px 16px;margin-bottom:16px;">
+              <span style="font-size:24px;">📅</span>
+            </div>
+            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">OneTalky</h1>
+            <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Language conversation platform</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 36px 28px;">
+            <p style="margin:0 0 8px;color:#a78bfa;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">📅 New Lesson Scheduled</p>
+            <h2 style="margin:0 0 8px;color:#ffffff;font-size:20px;font-weight:700;">Hi, ${escapeHtml(tutorName)}!</h2>
+            <p style="margin:0 0 24px;color:#c4b5fd;font-size:15px;line-height:1.6;">
+              A new lesson has been booked with you by <strong style="color:#ffffff;">${escapeHtml(studentName)}</strong>. Here are the details:
+            </p>
+
+            <div style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:20px 22px;margin-bottom:20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:8px 0;">
+                    <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">👤 Student</span><br>
+                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(studentName)}</span>
+                  </td>
+                </tr>
+                <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr>
+                  <td style="padding:8px 0;">
+                    <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">📅 Date & Time (your local Brasília timezone)</span><br>
+                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(lessonTime)}</span>
+                  </td>
+                </tr>
+                <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr>
+                  <td style="padding:8px 0;">
+                    <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">📊 Student Level</span><br>
+                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(levelLabel(level))}</span>
+                  </td>
+                </tr>
+                <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr>
+                  <td style="padding:8px 0;">
+                    <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">🎯 Learning Objective</span><br>
+                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(objective || 'Not specified')}</span>
+                  </td>
+                </tr>
+                <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr>
+                  <td style="padding:8px 0;">
+                    <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">💬 Conversation Topics</span><br>
+                    <ul style="margin:6px 0 0;padding:0;list-style:none;">${topicsList}</ul>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="background:rgba(242,106,27,0.1);border:1px solid rgba(242,106,27,0.25);border-radius:12px;padding:14px 18px;margin-bottom:24px;">
+              <p style="margin:0;color:#fdba74;font-size:14px;line-height:1.5;">
+                💡 <strong>Tip:</strong> Use the student's topics and objective to personalize the lesson and make them feel more comfortable speaking.
+              </p>
+            </div>
+
+            <div style="text-align:center;">
+              <a href="https://onetalky.com/schedule" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
+                View my schedule →
+              </a>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 36px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+            <p style="margin:0;color:#4b5563;font-size:11px;">OneTalky · You are receiving this email because a student has booked a lesson with you.</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await req.json().catch(() => ({}));
+    const { tutor_id, student_id, scheduled_at, lesson_id } = body;
+
+    if (!tutor_id || !scheduled_at) {
+      return Response.json({ error: 'Missing tutor_id or scheduled_at' }, { status: 400 });
+    }
+
+    const smtpHost = Deno.env.get('SMTP_HOST');
+    const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '465');
+    const smtpUser = Deno.env.get('SMTP_USER');
+    const smtpPass = Deno.env.get('SMTP_PASS');
+    const smtpFrom = Deno.env.get('SMTP_FROM');
+
+    if (!smtpHost) return Response.json({ error: 'SMTP not configured' }, { status: 500 });
+
+    // Fetch tutor profile & email
+    const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: tutor_id });
+    const tutorProfile = tutorProfiles[0];
+    if (!tutorProfile) return Response.json({ error: 'Tutor not found' }, { status: 404 });
+
+    // Fetch tutor email (from bank_info.pioneer_email or User entity)
+    let tutorEmail: string | null = null;
+    if (tutorProfile.bank_info) {
+      try { tutorEmail = JSON.parse(tutorProfile.bank_info).pioneer_email || null; } catch { /* noop */ }
+    }
+    if (!tutorEmail) {
+      const allUsers = await base44.asServiceRole.entities.User.list();
+      const tutorUser = allUsers.find((u: any) => u.id === tutor_id);
+      tutorEmail = tutorUser?.email || null;
+    }
+
+    if (!tutorEmail) return Response.json({ error: 'Could not determine tutor email' }, { status: 404 });
+
+    // Fetch student profile for details
+    let studentName = body.student_name || 'Student';
+    let level = 'beginner';
+    let topics: string[] = [];
+    let objective = '';
+
+    if (student_id) {
+      const studentProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: student_id });
+      const sp = studentProfiles[0];
+      if (sp) {
+        studentName = sp.full_name || studentName;
+        level = sp.level || level;
+        topics = sp.conversation_topics || [];
+        objective = sp.objective || '';
+      }
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: { user: smtpUser, pass: smtpPass },
+    });
+
+    await transporter.sendMail({
+      from: smtpFrom,
+      to: tutorEmail,
+      subject: `📅 New lesson booked with ${studentName} – OneTalky`,
+      html: buildEmail({
+        tutorName: tutorProfile.full_name || 'Tutor',
+        studentName,
+        scheduledAt: scheduled_at,
+        level,
+        topics,
+        objective,
+      }),
+    });
+
+    return Response.json({ success: true, sent_to: tutorEmail });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});

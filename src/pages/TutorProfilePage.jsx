@@ -89,6 +89,13 @@ export default function TutorProfilePage() {
       }
       setShowSchedule(false);
       toast({ title: "Lesson scheduled! 📅", description: "Check 'My Lessons' to see your booking." });
+      // Notify tutor via email (fire and forget)
+      base44.functions.invoke('notifyTutorBooking', {
+        tutor_id: tutor.user_id,
+        student_id: user.id,
+        student_name: sp?.full_name || user.full_name,
+        scheduled_at: scheduledAt,
+      }).catch(() => {});
     } catch {
       toast({ title: "Error", description: "Could not schedule.", variant: "destructive" });
     } finally { setBooking(false); }
