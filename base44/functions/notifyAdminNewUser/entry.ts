@@ -9,13 +9,15 @@ Deno.serve(async (req) => {
 
     const { full_name, role, plan, coupon_code } = await req.json();
 
-    const adminEmail = Deno.env.get("SMTP_FROM");
     const smtpHost = Deno.env.get("SMTP_HOST");
     const smtpPort = parseInt(Deno.env.get("SMTP_PORT") || "465");
     const smtpUser = Deno.env.get("SMTP_USER");
     const smtpPass = Deno.env.get("SMTP_PASS");
+    const smtpFrom = Deno.env.get("SMTP_FROM");
+    // Admin receives at ADMIN_EMAIL if set, otherwise falls back to SMTP_USER
+    const adminEmail = Deno.env.get("ADMIN_EMAIL") || smtpUser;
 
-    if (!adminEmail || !smtpHost) {
+    if (!smtpHost || !adminEmail) {
       return Response.json({ error: "SMTP not configured" }, { status: 500 });
     }
 
@@ -51,7 +53,7 @@ Deno.serve(async (req) => {
     });
 
     await transporter.sendMail({
-      from: Deno.env.get("SMTP_FROM"),
+      from: smtpFrom,
       to: adminEmail,
       subject: `[One Talky] Novo ${roleLabel}: ${full_name}`,
       html,

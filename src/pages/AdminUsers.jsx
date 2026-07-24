@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import StudentDetailModal from "@/components/admin/StudentDetailModal";
+
+const PLAN_COLORS = {
+  free:     "bg-gray-500/10 border-gray-500/20 text-gray-400",
+  basic:    "bg-blue-500/10 border-blue-500/20 text-blue-400",
+  standard: "bg-violet-500/10 border-violet-500/20 text-violet-400",
+  premium:  "bg-amber-500/10 border-amber-500/20 text-amber-400",
+  blocked:  "bg-red-500/10 border-red-500/20 text-red-400",
+};
 
 export default function AdminUsers() {
   const [tutors, setTutors] = useState([]);
@@ -103,6 +112,7 @@ export default function AdminUsers() {
     toast({ title: "Afiliado deletado" });
   };
 
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [copied, setCopied] = useState(false);
   const tutorInviteLink = `${window.location.origin}/register?role=tutor`;
   const copyInviteLink = () => {
@@ -220,53 +230,50 @@ export default function AdminUsers() {
         <TabsContent value="students">
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
             <div className="divide-y divide-white/5">
-              {students.map(s => (
-                <div key={s.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/3 transition-all">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <img src={s.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
-                    <div className="min-w-0">
-                      <p className="theme-heading font-medium text-sm text-white truncate">{s.full_name}</p>
-                      <p className="theme-subtext text-xs text-gray-500 truncate">
-                        {users[s.user_id]?.email || `${s.target_language} · ${s.level}` || "—"}
-                      </p>
+              {students.map(s => {
+                const planKey = s.plan || "free";
+                const planColor = PLAN_COLORS[planKey] || PLAN_COLORS.free;
+                return (
+                  <div
+                    key={s.id}
+                    className="p-4 flex items-center justify-between gap-3 hover:bg-white/5 transition-all cursor-pointer"
+                    onClick={() => setSelectedStudent(s)}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img src={s.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm text-white truncate">{s.full_name}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {users[s.user_id]?.email || "—"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-gray-400 hidden sm:inline">{s.credits_minutes ?? 0} min</span>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium border capitalize ${planColor}`}>
+                        {planKey}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Select onValueChange={(role) => changeUserRole(users[s.user_id]?.id || s.user_id, role)}>
-                      <SelectTrigger className="h-7 text-xs w-28 bg-white/5 border-white/10 text-gray-300 hidden sm:flex">
-                        <SelectValue placeholder="Role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="tutor">Tutor</SelectItem>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="affiliate">Affiliate</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
-                      s.plan === "blocked" ? "bg-red-500/10 border-red-500/20 text-red-600" : "bg-blue-500/10 border-blue-500/20 text-blue-600"
-                    } capitalize`}>{s.plan || "free"}</span>
-                    <Button
-                      size="sm" variant="ghost"
-                      onClick={() => blockStudent(s)}
-                      className={`px-2 h-8 ${s.plan === "blocked" ? "text-emerald-500 hover:text-emerald-400" : "text-amber-500 hover:text-amber-400"}`}
-                      title={s.plan === "blocked" ? "Desbloquear" : "Bloquear"}
-                    >
-                      {s.plan === "blocked" ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-                    </Button>
-                    <Button
-                      size="sm" variant="ghost"
-                      onClick={() => deleteStudent(s)}
-                      className="px-2 h-8 text-red-500 hover:text-red-400"
-                      title="Deletar"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {students.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">No students yet</p>}
+                );
+              })}
+              {students.length === 0 && <p className="text-center text-sm text-gray-500 py-8">Nenhum aluno ainda</p>}
             </div>
           </div>
+          <StudentDetailModal
+            student={selectedStudent}
+            userEmail={selectedStudent ? users[selectedStudent.user_id]?.email : null}
+            open={!!selectedStudent}
+            onClose={() => setSelectedStudent(null)}
+            onUpdated={(updated) => {
+              setStudents(prev => prev.map(x => x.id === updated.id ? updated : x));
+              setSelectedStudent(updated);
+            }}
+            onDeleted={(id) => {
+              setStudents(prev => prev.filter(x => x.id !== id));
+              setSelectedStudent(null);
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="affiliates">
