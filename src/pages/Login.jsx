@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
-import { checkRateLimit, recordFailedAttempt, clearRateLimit } from "@/lib/useLoginRateLimit";
+
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -18,26 +18,35 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    const rl = checkRateLimit(email);
-    if (rl.blocked) {
-      setError(`Muitas tentativas. Tente novamente em ${rl.remainingMin} minuto(s).`);
-      return;
-    }
-
     setLoading(true);
+
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
-      clearRateLimit(email);
+      // 1. Check rate limit on the backend before attempting auth
+      const rlRes = await base44.functions.invoke("checkLoginRateLimit", { email });
+      if (!rlRes.data.allowed) {
+        setError(rlRes.data.message || "Muitas tentativas de login. Tente novamente em breve.");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Attempt auth
+      let success = false;
+      try {
+        await base44.auth.loginViaEmailPassword(email, password);
+        success = true;
+      } catch (authErr) {
+        // Record failed attempt, then show generic error
+        base44.functions.invoke("recordLoginAttempt", { email, success: false });
+        setError("E-mail ou senha inválidos.");
+        setLoading(false);
+        return;
+      }
+
+      // 3. Record success and redirect
+      base44.functions.invoke("recordLoginAttempt", { email, success: true });
       window.location.href = "/";
     } catch (err) {
-      recordFailedAttempt(email);
-      const rlAfter = checkRateLimit(email);
-      if (rlAfter.blocked) {
-        setError(`Muitas tentativas. Conta bloqueada por ${rlAfter.remainingMin} minuto(s).`);
-      } else {
-        setError(err.message || "Email ou senha inválidos.");
-      }
+      setError("E-mail ou senha inválidos.");
     } finally {
       setLoading(false);
     }

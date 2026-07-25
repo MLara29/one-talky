@@ -1,0 +1,48 @@
+{
+  "name": "LoginAttempt",
+  "type": "object",
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "description": "Email tentado (lowercase + trim)"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP do cliente (x-forwarded-for ou 'unknown')"
+    },
+    "success": {
+      "type": "boolean",
+      "default": false
+    },
+    "blocked": {
+      "type": "boolean",
+      "default": false,
+      "description": "True se a tentativa foi bloqueada pelo rate limit antes de chegar ao auth"
+    }
+  },
+  "required": [
+    "identifier"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
