@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, duration_minutes: Math.round(durationMinutes * 100) / 100 });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[endLesson]', error.message);
+    return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 });

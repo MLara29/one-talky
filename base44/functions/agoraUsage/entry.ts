@@ -107,6 +107,7 @@ Deno.serve(async (req) => {
       from_cache: false,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[agoraUsage]', error.message);
+    return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 });

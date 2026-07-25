@@ -61,6 +61,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Forbidden for this role" }, { status: 403 });
     }
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[updateMyProfile]', error.message);
+    return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 });

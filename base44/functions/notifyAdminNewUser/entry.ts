@@ -93,6 +93,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[notifyAdminNewUser]', error.message);
+    return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 });

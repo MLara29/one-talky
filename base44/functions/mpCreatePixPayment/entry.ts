@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
       qr_code_base64: qr?.qr_code_base64,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[mpCreatePixPayment]', error.message);
+    return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 });

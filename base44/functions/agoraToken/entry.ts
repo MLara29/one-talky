@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     const expirationSeconds = 86400; // 24h
     const privilegeExpiredTs = nowSeconds + expirationSeconds;
 
-    console.log(`[agoraToken] serverTime=${new Date().toISOString()} nowSeconds=${nowSeconds} privilegeExpiredTs=${privilegeExpiredTs} diff=${expirationSeconds}s`);
+    // Token generation — no sensitive data logged
 
     const agoraRole = role === 'subscriber' ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
 
@@ -58,11 +58,11 @@ Deno.serve(async (req) => {
       privilegeExpiredTs
     );
 
-    console.log(`[agoraToken] uid=${uid} rtmUserId=${rtmUserId} rtmToken_prefix=${rtmToken?.substring(0, 20)} privilegeExpiredTs=${privilegeExpiredTs}`);
+    // RTM token generated successfully
 
     return Response.json({ token, rtmToken, appId, channelName, uid: Number(uid), rtmUserId, privilegeExpiredTs, nowSeconds });
   } catch (error) {
-    console.error('[agoraToken] error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[agoraToken] token generation failed');
+    return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 });

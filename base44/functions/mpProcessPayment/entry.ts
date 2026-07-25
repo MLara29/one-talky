@@ -132,6 +132,7 @@ Deno.serve(async (req) => {
       id: payment.id,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[mpProcessPayment]', error.message);
+    return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 });
