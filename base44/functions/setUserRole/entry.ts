@@ -11,14 +11,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid role' }, { status: 400 });
     }
 
-    // Admin can set role on any user by passing targetUserId
+    // Admin can set any role on any user by passing targetUserId
     if (targetUserId) {
       if (user.role !== 'admin') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
       await base44.asServiceRole.entities.User.update(targetUserId, { role });
     } else {
-      // Self-update
+      // Self-update: only allow non-privileged roles (tutor/affiliate require admin approval)
+      const SELF_ASSIGNABLE_ROLES = ['student'];
+      if (!SELF_ASSIGNABLE_ROLES.includes(role)) {
+        return Response.json({ error: 'Forbidden: privileged role requires admin assignment' }, { status: 403 });
+      }
       await base44.asServiceRole.entities.User.update(user.id, { role });
     }
 

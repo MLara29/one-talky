@@ -9,6 +9,13 @@ Deno.serve(async (req) => {
 
     const { full_name, role, plan, coupon_code } = await req.json();
 
+    const esc = (s: string) => String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#x27;");
+
     const smtpHost = Deno.env.get("SMTP_HOST");
     const smtpPort = parseInt(Deno.env.get("SMTP_PORT") || "465");
     const smtpUser = Deno.env.get("SMTP_USER");
@@ -22,8 +29,8 @@ Deno.serve(async (req) => {
     }
 
     const roleLabel = role === "tutor" ? "Tutor" : "Aluno";
-    const planLabel = plan && plan !== "free" ? plan.charAt(0).toUpperCase() + plan.slice(1) : null;
-    const couponLabel = coupon_code ? ` (cupom: <strong>${coupon_code}</strong>)` : "";
+    const planLabel = plan && plan !== "free" ? esc(plan.charAt(0).toUpperCase() + plan.slice(1)) : null;
+    const couponLabel = coupon_code ? ` (cupom: <strong>${esc(coupon_code)}</strong>)` : "";
 
     const html = `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#f9fafb;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
@@ -31,9 +38,9 @@ Deno.serve(async (req) => {
           <span style="color:#fff;font-size:18px;font-weight:700;">🎉 Novo cadastro — One Talky</span>
         </div>
         <div style="padding:24px;">
-          <p style="margin:0 0 8px;font-size:15px;color:#111827;"><strong>Nome:</strong> ${full_name}</p>
-          <p style="margin:0 0 8px;font-size:15px;color:#111827;"><strong>Tipo:</strong> ${roleLabel}</p>
-          <p style="margin:0 0 8px;font-size:15px;color:#111827;"><strong>E-mail:</strong> ${user.email}</p>
+          <p style="margin:0 0 8px;font-size:15px;color:#111827;"><strong>Nome:</strong> ${esc(full_name)}</p>
+          <p style="margin:0 0 8px;font-size:15px;color:#111827;"><strong>Tipo:</strong> ${esc(roleLabel)}</p>
+          <p style="margin:0 0 8px;font-size:15px;color:#111827;"><strong>E-mail:</strong> ${esc(user.email)}</p>
           <p style="margin:0 0 8px;font-size:15px;color:#111827;">
             <strong>Plano:</strong>
             ${planLabel
