@@ -38,6 +38,17 @@ export default function AdminSupport() {
       status: "replied",
       replied_at: new Date().toISOString(),
     });
+    // Create a notification so the message appears in the user's My Messages page
+    try {
+      await base44.entities.Notification.create({
+        user_id: msg.sender_id,
+        title: `Resposta ao seu chamado: ${msg.subject}`,
+        message: reply,
+        type: "general",
+        is_read: false,
+        link: "/my-messages",
+      });
+    } catch {}
     toast({ title: "Reply sent!" });
     setSending(null);
     setReplyText(prev => ({ ...prev, [msg.id]: "" }));
