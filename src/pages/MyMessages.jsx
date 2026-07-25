@@ -130,7 +130,7 @@ export default function MyMessages() {
           style={{ background: tab === "admin" ? undefined : "var(--app-card-bg)" }}
         >
           <Bell className="w-4 h-4" />
-          From Admin
+          From Support
           {adminMessages.filter(n => !n.is_read).length > 0 && (
             <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
               {adminMessages.filter(n => !n.is_read).length}
