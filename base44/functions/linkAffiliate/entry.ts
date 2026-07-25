@@ -30,6 +30,11 @@ Deno.serve(async (req) => {
       if (preCreated.user_id && preCreated.user_id !== user.id) {
         return Response.json({ error: 'Este cupom já está vinculado a outro afiliado.' }, { status: 409 });
       }
+      // If not yet linked, the authenticated user's email must match the pre-registered email
+      // to prevent anyone with the public coupon code from hijacking the affiliate record
+      if (!preCreated.user_id && preCreated.email && preCreated.email.toLowerCase() !== user.email?.toLowerCase()) {
+        return Response.json({ error: 'Este cupom não pertence ao seu e-mail.' }, { status: 403 });
+      }
       // Update pre-created record with user data
       await base44.asServiceRole.entities.Affiliate.update(preCreated.id, {
         user_id: user.id,

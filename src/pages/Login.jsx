@@ -30,20 +30,18 @@ export default function Login() {
       }
 
       // 2. Attempt auth
-      let success = false;
       try {
         await base44.auth.loginViaEmailPassword(email, password);
-        success = true;
       } catch (authErr) {
-        // Record failed attempt, then show generic error
-        base44.functions.invoke("recordLoginAttempt", { email, success: false });
+        // Record failed attempt server-side via checkLoginRateLimit (action flag)
+        base44.functions.invoke("checkLoginRateLimit", { email, action: "record_failure" });
         setError("E-mail ou senha inválidos.");
         setLoading(false);
         return;
       }
 
       // 3. Record success and redirect
-      base44.functions.invoke("recordLoginAttempt", { email, success: true });
+      base44.functions.invoke("checkLoginRateLimit", { email, action: "record_success" });
       window.location.href = "/";
     } catch (err) {
       setError("E-mail ou senha inválidos.");
