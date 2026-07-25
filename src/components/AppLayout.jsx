@@ -54,6 +54,7 @@ const ADMIN_NAV = [
   { label: "Email", path: "/admin/email", icon: Mail },
   { label: "Notificações", path: "/admin/notifications", icon: Bell },
   { label: "Afiliados", path: "/admin/affiliates", icon: Users },
+  { label: "Agora Usage", path: "/admin/agora-usage", icon: BarChart3 },
 ];
 
 const AFFILIATE_NAV = [

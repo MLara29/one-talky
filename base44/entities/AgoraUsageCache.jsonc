@@ -1,0 +1,62 @@
+{
+  "name": "AgoraUsageCache",
+  "type": "object",
+  "properties": {
+    "cache_key": {
+      "type": "string",
+      "description": "e.g. '2026-07-01_2026-07-25'"
+    },
+    "from_date": {
+      "type": "string"
+    },
+    "to_date": {
+      "type": "string"
+    },
+    "usages": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Raw daily usage array from Agora API"
+    },
+    "total_audio_minutes": {
+      "type": "number",
+      "default": 0
+    },
+    "total_video_minutes": {
+      "type": "number",
+      "default": 0
+    },
+    "fetched_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "cache_key",
+    "from_date",
+    "to_date"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
