@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { MessageSquare, Clock, ChevronDown, ChevronUp, CheckCircle, Send, Plus, X, Bell } from "lucide-react";
+import { MessageSquare, Clock, ChevronDown, ChevronUp, CheckCircle, Send, Plus, X, Bell, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -43,6 +43,17 @@ export default function MyMessages() {
       await base44.entities.Notification.update(n.id, { is_read: true });
       setAdminMessages(prev => prev.map(a => a.id === n.id ? { ...a, is_read: true } : a));
     }
+  };
+
+  const deleteAdminMsg = async (id, e) => {
+    e.stopPropagation();
+    await base44.entities.Notification.delete(id);
+    setAdminMessages(prev => prev.filter(n => n.id !== id));
+  };
+
+  const clearAllAdminMsgs = async () => {
+    await Promise.all(adminMessages.map(n => base44.entities.Notification.delete(n.id)));
+    setAdminMessages([]);
   };
 
   const handleSend = async () => {
@@ -196,43 +207,61 @@ export default function MyMessages() {
         adminMessages.length === 0 ? (
           <div className="theme-empty text-center py-20 rounded-3xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
             <Bell className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
-            <h3 className="font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No messages from admin</h3>
+            <h3 className="font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No messages from support</h3>
             <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>Messages sent directly by the platform team will appear here.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {adminMessages.map(n => (
-              <div
-                key={n.id}
-                onClick={() => markAdminMsgRead(n)}
-                className="rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
-                style={{
-                  background: n.is_read ? "var(--app-card-bg)" : "rgba(242,106,27,0.08)",
-                  border: `1px solid ${n.is_read ? "var(--app-border)" : "rgba(242,106,27,0.25)"}`,
-                }}
+          <>
+            <div className="flex justify-end mb-3">
+              <button
+                onClick={clearAllAdminMsgs}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-red-500/10 text-red-400"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: "rgba(242,106,27,0.12)", border: "1px solid rgba(242,106,27,0.2)" }}>
-                    <Bell className="w-4 h-4 text-orange-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold text-sm" style={{ color: n.is_read ? "var(--app-text-secondary)" : "var(--app-text-primary)" }}>
-                        {n.title}
-                      </p>
-                      {!n.is_read && <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />}
+                <Trash2 className="w-3 h-3" /> Clear all
+              </button>
+            </div>
+            <div className="space-y-3">
+              {adminMessages.map(n => (
+                <div
+                  key={n.id}
+                  onClick={() => markAdminMsgRead(n)}
+                  className="rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
+                  style={{
+                    background: n.is_read ? "var(--app-card-bg)" : "rgba(242,106,27,0.08)",
+                    border: `1px solid ${n.is_read ? "var(--app-border)" : "rgba(242,106,27,0.25)"}`,
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: "rgba(242,106,27,0.12)", border: "1px solid rgba(242,106,27,0.2)" }}>
+                      <Bell className="w-4 h-4 text-orange-400" />
                     </div>
-                    <p className="text-sm mt-1.5 whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{n.message}</p>
-                    <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
-                      <Clock className="w-3 h-3" />
-                      {new Date(n.created_date).toLocaleString("pt-BR")}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-semibold text-sm" style={{ color: n.is_read ? "var(--app-text-secondary)" : "var(--app-text-primary)" }}>
+                          {n.title}
+                        </p>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-orange-500" />}
+                          <button
+                            onClick={(e) => deleteAdminMsg(n.id, e)}
+                            className="p-1 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-sm mt-1.5 whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{n.message}</p>
+                      <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
+                        <Clock className="w-3 h-3" />
+                        {new Date(n.created_date).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )
       )}
 

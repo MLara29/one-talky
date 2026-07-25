@@ -17,7 +17,7 @@ export default function NotificationBell() {
     if (!user?.id) return;
     try {
       const data = await base44.entities.Notification.filter(
-        { user_id: user.id },
+        { user_id: user.id, is_read: false },
         "-created_date",
         20
       );
