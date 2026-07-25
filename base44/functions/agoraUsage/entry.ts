@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     }
 
     const credentials = btoa(`${customerId}:${customerSecret}`);
-    const url = `https://api.agora.io/api/dev/v2/usage?project_id=${appId}&from_date=${fromDate}&to_date=${toDate}&business=default`;
+    const url = `https://api.agora.io/dev/v3/usage?project_id=${appId}&from_date=${fromDate}&to_date=${toDate}&business=default`;
 
     const agoraRes = await fetch(url, {
       headers: {
