@@ -55,6 +55,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.TutorProfile.update(tutor_profile_id, { booked_slots: updatedSlots });
     return Response.json({ success: true, booked_slots: updatedSlots });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[bookSlot]', error.message);
+    return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 });
