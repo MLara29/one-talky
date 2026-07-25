@@ -39,7 +39,7 @@ export default function TutorProfilePage() {
     if (user?.role !== "student") return true; // tutors/admins bypass
     const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
     const credits = profiles[0]?.credits_minutes ?? 0;
-    if (credits <= 0) {
+    if (credits < 10 / 60) { // less than 10 seconds worth of credit
       navigate("/plans");
       toast({ title: "Sem minutos disponíveis", description: "Adicione créditos para continuar.", variant: "destructive" });
       return false;

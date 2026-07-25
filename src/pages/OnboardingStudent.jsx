@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LANGUAGES, OBJECTIVES, LEVELS, INTERESTS } from "@/lib/constants";
+import { OBJECTIVES, LEVELS, INTERESTS } from "@/lib/constants";
 import { ChevronRight, ChevronLeft, Tag, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -23,7 +23,7 @@ export default function OnboardingStudent() {
   const [form, setForm] = useState({
     full_name: "",
     native_language: "portuguese_br",
-    target_language: "",
+    target_language: "english",
     level: "",
     objective: "",
     conversation_topics: [],
@@ -158,20 +158,9 @@ export default function OnboardingStudent() {
                   className={inputCls}
                 />
               </div>
-              <div>
-                <Label className={labelCls}>Idioma que está aprendendo</Label>
-                <Select value={form.target_language} onValueChange={v => set("target_language", v)}>
-                  <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder="Selecione o idioma" />
-                  </SelectTrigger>
-                  <SelectContent className={selectContentCls}>
-                    {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value} className={selectItemCls}>{l.flag} {l.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
               <Button
                 onClick={() => setStep(2)}
-                disabled={!form.full_name.trim() || !form.target_language}
+                disabled={!form.full_name.trim()}
                 className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 transition-all mt-2"
               >
                 Continuar <ChevronRight className="w-4 h-4 ml-1" />

@@ -249,7 +249,7 @@ export default function TutorEarnings() {
         </div>
 
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1.5">
           {calendarDays.map((day, idx) => {
             if (!day) return <div key={`e-${idx}`} />;
             const data = getDayData(day);
@@ -260,17 +260,18 @@ export default function TutorEarnings() {
               <button
                 key={idx}
                 onClick={() => setSelectedDay(isSelected ? null : day)}
-                className={`relative flex flex-col items-center justify-start rounded-xl p-1 transition-all min-h-[52px] border
-                  ${isSelected ? "bg-violet-600/20 border-violet-500/40" : data ? "bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/15 cursor-pointer" : "border-transparent hover:bg-white/5 cursor-default"}
+                className={`relative flex flex-col items-start rounded-xl p-2 transition-all border
+                  ${isSelected ? "bg-violet-600/20 border-violet-500/40" : data ? "bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/15 cursor-pointer" : "border-white/5 hover:bg-white/5 cursor-default"}
                 `}
+                style={{ minHeight: 72 }}
               >
-                <span className={`text-xs font-bold mt-0.5 ${isToday ? "text-violet-400" : data ? "text-emerald-400" : "text-gray-500"}`}>
+                <span className={`text-sm font-bold ${isToday ? "text-violet-400" : data ? "text-gray-300" : "text-gray-600"}`}>
                   {day}
                 </span>
                 {data && (
-                  <div className="mt-0.5 text-center">
-                    <p className="text-[9px] font-bold text-emerald-400">${data.earnings.toFixed(0)}</p>
-                    <p className="text-[8px] text-gray-500">{data.lessons} cls</p>
+                  <div className="mt-1 w-full">
+                    <p className="text-xs font-bold text-emerald-400 leading-tight">${data.earnings.toFixed(2)}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{data.lessons} aula{data.lessons !== 1 ? "s" : ""}</p>
                   </div>
                 )}
               </button>
