@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { checkRateLimit, recordFailedAttempt, clearRateLimit } from "@/lib/useLoginRateLimit";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -17,12 +18,26 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const rl = checkRateLimit(email);
+    if (rl.blocked) {
+      setError(`Muitas tentativas. Tente novamente em ${rl.remainingMin} minuto(s).`);
+      return;
+    }
+
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      clearRateLimit(email);
       window.location.href = "/";
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      recordFailedAttempt(email);
+      const rlAfter = checkRateLimit(email);
+      if (rlAfter.blocked) {
+        setError(`Muitas tentativas. Conta bloqueada por ${rlAfter.remainingMin} minuto(s).`);
+      } else {
+        setError(err.message || "Email ou senha inválidos.");
+      }
     } finally {
       setLoading(false);
     }
