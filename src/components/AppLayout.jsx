@@ -6,9 +6,10 @@ import { useLang } from "@/lib/LanguageContext";
 
 import { Button } from "@/components/ui/button";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
+import NotificationBell from "@/components/NotificationBell";
 import {
   Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, DollarSign, Star, Bell, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users
+  GraduationCap, DollarSign, Star, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users, Bell
 } from "lucide-react";
 
 const STUDENT_NAV = (lang) => {
@@ -51,6 +52,7 @@ const ADMIN_NAV = [
   { label: "Support", path: "/admin/support", icon: MessageCircle },
   { label: "Coupons", path: "/admin/coupons", icon: Tag },
   { label: "Email", path: "/admin/email", icon: Mail },
+  { label: "Notificações", path: "/admin/notifications", icon: Bell },
   { label: "Afiliados", path: "/admin/affiliates", icon: Users },
 ];
 
@@ -144,11 +146,7 @@ export default function AppLayout() {
                 ))}
               </div>
             )}
-            <Link to="/notifications">
-              <Button variant="ghost" size="icon" style={{ color: "var(--app-text-secondary)" }}>
-                <Bell className="w-4 h-4" />
-              </Button>
-            </Link>
+            <NotificationBell />
             <Link to="/profile">
               <Button variant="ghost" size="icon" style={{ color: "var(--app-text-secondary)" }}>
                 <User className="w-4 h-4" />

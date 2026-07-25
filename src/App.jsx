@@ -36,6 +36,7 @@ import AdminEarnings from '@/pages/AdminEarnings';
 import AdminCoupons from '@/pages/AdminCoupons';
 import AdminEmail from '@/pages/AdminEmail';
 import AdminAffiliates from '@/pages/AdminAffiliates';
+import AdminNotifications from '@/pages/AdminNotifications';
 import AffiliateDashboard from '@/pages/AffiliateDashboard';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
@@ -103,6 +104,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/coupons" element={<AdminCoupons />} />
           <Route path="/admin/email" element={<AdminEmail />} />
           <Route path="/admin/affiliates" element={<AdminAffiliates />} />
+          <Route path="/admin/notifications" element={<AdminNotifications />} />
           <Route path="/affiliate" element={<AffiliateDashboard />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my-messages" element={<MyMessages />} />
