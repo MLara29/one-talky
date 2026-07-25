@@ -107,15 +107,12 @@ export default function AppLayout() {
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <Link to="/dashboard" className="flex items-center gap-2.5">
+            <Link to="/dashboard" className="flex items-center">
               <img
-                src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/2ef13ca22_ChatGPTImage23dejulde202614_44_54.png"
+                src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/270f9d38c_fill-the-interior-area-inside-the-speech-bubble-ou.svg"
                 alt="One Talky"
-                className="w-8 h-8 object-contain"
+                className="h-8 w-auto object-contain"
               />
-              <span className="font-display text-lg font-bold hidden sm:block" style={{ color: "var(--app-text-primary)" }}>
-                One Talky
-              </span>
             </Link>
             <span
               className="text-xs font-medium px-2.5 py-1 rounded-full capitalize hidden sm:block"

@@ -270,9 +270,8 @@ export default function Landing() {
       <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(253,251,249,.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid #EFEAE3" }}>
         <nav style={{ maxWidth: 1180, margin: "0 auto", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           {/* Logo */}
-          <a href="#top" style={{ display: "flex", alignItems: "center", gap: 9, color: "#17181C", textDecoration: "none", flexShrink: 0 }}>
-            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png" alt="One Talky" style={{ width: 32, height: 32, borderRadius: 9, objectFit: "cover" }} />
-            <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-.01em" }}>One Talky</span>
+          <a href="#top" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0 }}>
+            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/270f9d38c_fill-the-interior-area-inside-the-speech-bubble-ou.svg" alt="One Talky" style={{ height: 36, width: "auto" }} />
           </a>
 
           {/* Links — hidden on mobile */}
@@ -640,9 +639,8 @@ export default function Landing() {
       {/* FOOTER */}
       <footer style={{ background: "#101115", color: "#8E8B84", padding: "44px 24px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, color: "#fff" }}>
-            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png" alt="One Talky" style={{ width: 26, height: 26, borderRadius: 8, objectFit: "cover" }} />
-            <span style={{ fontWeight: 800, fontSize: 16 }}>One Talky</span>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/270f9d38c_fill-the-interior-area-inside-the-speech-bubble-ou.svg" alt="One Talky" style={{ height: 30, width: "auto", filter: "brightness(0) invert(1)" }} />
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 20, fontSize: 13.5 }}>
             <Link to="/privacidade" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footPrivacy}</Link>
