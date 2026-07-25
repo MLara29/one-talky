@@ -57,6 +57,10 @@ export default function NotificationBell() {
       try {
         await base44.entities.Notification.update(n.id, { is_read: true });
         setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
+        // Remove from list after 1 minute
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(x => x.id !== n.id));
+        }, 60000);
       } catch {}
     }
     if (n.link) navigate(n.link);
