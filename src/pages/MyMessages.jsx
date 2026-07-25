@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { MessageSquare, Clock, ChevronDown, ChevronUp, CheckCircle, Send, Plus, X } from "lucide-react";
+import { MessageSquare, Clock, ChevronDown, ChevronUp, CheckCircle, Send, Plus, X, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -15,7 +15,9 @@ const STATUS_LABELS = { open: "Open", replied: "Replied", closed: "Closed" };
 export default function MyMessages() {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
+  const [adminMessages, setAdminMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("support"); // "support" | "admin"
   const [expanded, setExpanded] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [subject, setSubject] = useState("");
@@ -27,9 +29,20 @@ export default function MyMessages() {
 
   const load = async () => {
     try {
-      const data = await base44.entities.SupportMessage.filter({ sender_id: user.id }, "-created_date", 50);
-      setMessages(data);
+      const [support, notifs] = await Promise.all([
+        base44.entities.SupportMessage.filter({ sender_id: user.id }, "-created_date", 50),
+        base44.entities.Notification.filter({ user_id: user.id, link: "/my-messages" }, "-created_date", 50),
+      ]);
+      setMessages(support);
+      setAdminMessages(notifs);
     } catch {} finally { setLoading(false); }
+  };
+
+  const markAdminMsgRead = async (n) => {
+    if (!n.is_read) {
+      await base44.entities.Notification.update(n.id, { is_read: true });
+      setAdminMessages(prev => prev.map(a => a.id === n.id ? { ...a, is_read: true } : a));
+    }
   };
 
   const handleSend = async () => {
@@ -42,6 +55,20 @@ export default function MyMessages() {
       subject: subject.trim(),
       message: message.trim(),
     });
+    // Notify admins about new support message
+    try {
+      const admins = await base44.entities.User.filter({ role: "admin" });
+      await base44.entities.Notification.bulkCreate(
+        admins.map(a => ({
+          user_id: a.id,
+          title: `💬 Nova mensagem de suporte: ${subject.trim()}`,
+          message: `${user.full_name || user.email} (${user.role}) enviou uma mensagem de suporte.`,
+          type: "general",
+          is_read: false,
+          link: "/admin/support",
+        }))
+      );
+    } catch {}
     setSending(false);
     setSent(true);
     setSubject("");
@@ -64,15 +91,55 @@ export default function MyMessages() {
             Track your support messages and replies from our team
           </p>
         </div>
-        <Button
-          onClick={() => { setShowForm(true); setSent(false); }}
-          className="shrink-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20"
-        >
-          <Plus className="w-4 h-4 mr-2" /> New message
-        </Button>
+        {tab === "support" && (
+          <Button
+            onClick={() => { setShowForm(true); setSent(false); }}
+            className="shrink-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20"
+          >
+            <Plus className="w-4 h-4 mr-2" /> New message
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => setTab("support")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
+            tab === "support"
+              ? "bg-orange-500/20 border-orange-500/30 text-orange-500"
+              : "border-transparent text-gray-400 hover:bg-white/5"
+          }`}
+          style={{ background: tab === "support" ? undefined : "var(--app-card-bg)" }}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Support
+          {messages.filter(m => m.status === "replied").length > 0 && (
+            <span className="w-4 h-4 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center">
+              {messages.filter(m => m.status === "replied").length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab("admin")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
+            tab === "admin"
+              ? "bg-orange-500/20 border-orange-500/30 text-orange-500"
+              : "border-transparent text-gray-400 hover:bg-white/5"
+          }`}
+          style={{ background: tab === "admin" ? undefined : "var(--app-card-bg)" }}
+        >
+          <Bell className="w-4 h-4" />
+          From Admin
+          {adminMessages.filter(n => !n.is_read).length > 0 && (
+            <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+              {adminMessages.filter(n => !n.is_read).length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {showForm && tab === "support" && (
         <div className="rounded-2xl p-5 mb-6" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>Contact Support</h2>
@@ -124,7 +191,52 @@ export default function MyMessages() {
         </div>
       )}
 
-      {messages.length === 0 ? (
+      {/* Admin messages tab */}
+      {tab === "admin" && (
+        adminMessages.length === 0 ? (
+          <div className="theme-empty text-center py-20 rounded-3xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
+            <Bell className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
+            <h3 className="font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No messages from admin</h3>
+            <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>Messages sent directly by the platform team will appear here.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {adminMessages.map(n => (
+              <div
+                key={n.id}
+                onClick={() => markAdminMsgRead(n)}
+                className="rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
+                style={{
+                  background: n.is_read ? "var(--app-card-bg)" : "rgba(242,106,27,0.08)",
+                  border: `1px solid ${n.is_read ? "var(--app-border)" : "rgba(242,106,27,0.25)"}`,
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: "rgba(242,106,27,0.12)", border: "1px solid rgba(242,106,27,0.2)" }}>
+                    <Bell className="w-4 h-4 text-orange-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-semibold text-sm" style={{ color: n.is_read ? "var(--app-text-secondary)" : "var(--app-text-primary)" }}>
+                        {n.title}
+                      </p>
+                      {!n.is_read && <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />}
+                    </div>
+                    <p className="text-sm mt-1.5 whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{n.message}</p>
+                    <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
+                      <Clock className="w-3 h-3" />
+                      {new Date(n.created_date).toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+
+      {tab === "support" && messages.length === 0 ? (
         <div className="theme-empty text-center py-20 rounded-3xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
           <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
           <h3 className="theme-heading font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No messages yet</h3>
@@ -132,7 +244,7 @@ export default function MyMessages() {
           You haven't sent any support messages yet.
           </p>
         </div>
-      ) : (
+      ) : tab === "support" ? (
         <div className="space-y-3">
           {messages.map(msg => (
             <div key={msg.id} className="rounded-2xl overflow-hidden" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
@@ -205,7 +317,7 @@ export default function MyMessages() {
             </div>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

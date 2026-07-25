@@ -72,6 +72,20 @@ export default function TutorEarnings() {
       amount: totalEarned, period,
       pioneer_email: pioneerEmail, status: "pending",
     });
+    // Notify admins about withdrawal request
+    try {
+      const admins = await base44.entities.User.filter({ role: "admin" });
+      await base44.entities.Notification.bulkCreate(
+        admins.map(a => ({
+          user_id: a.id,
+          title: `💸 Solicitação de pagamento: ${profile.full_name}`,
+          message: `Tutor ${profile.full_name} solicitou retirada de $${totalEarned.toFixed(2)} via ${profile.contract_type === "upwork" ? "Upwork" : "Payoneer"}.`,
+          type: "general",
+          is_read: false,
+          link: "/admin/earnings",
+        }))
+      );
+    } catch {}
     toast({ title: "Withdrawal requested!", description: "We'll process your payment within 2 business days." });
     setRequesting(false);
     loadData();
@@ -85,6 +99,20 @@ export default function TutorEarnings() {
         tutor_confirmed: true,
         confirmed_at: new Date().toISOString(),
       });
+      // Notify admins about payment confirmation
+      try {
+        const admins = await base44.entities.User.filter({ role: "admin" });
+        await base44.entities.Notification.bulkCreate(
+          admins.map(a => ({
+            user_id: a.id,
+            title: `✅ Pagamento confirmado: ${profile.full_name}`,
+            message: `Tutor ${profile.full_name} confirmou o recebimento de $${paidUnconfirmedWR.amount?.toFixed(2)}.`,
+            type: "general",
+            is_read: false,
+            link: "/admin/earnings",
+          }))
+        );
+      } catch {}
       toast({ title: "Receipt confirmed! 🎉", description: "Thank you for confirming. Your earnings have been updated." });
       loadData();
     } catch {

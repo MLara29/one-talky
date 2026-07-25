@@ -66,6 +66,31 @@ Deno.serve(async (req) => {
       html,
     });
 
+    // Create in-app notification for all admins
+    try {
+      const admins = await base44.asServiceRole.entities.User.filter({ role: "admin" });
+      const notifTitle = role === "tutor"
+        ? `🧑‍🏫 Novo tutor aguardando aprovação: ${esc(full_name)}`
+        : `🎓 Novo estudante cadastrado: ${esc(full_name)}`;
+      const notifMessage = role === "tutor"
+        ? `Um novo tutor se cadastrou e está aguardando aprovação.`
+        : `Um novo estudante se cadastrou na plataforma${planLabel ? ` com plano ${planLabel}` : ""}.`;
+      const notifLink = role === "tutor" ? "/admin/approvals" : "/admin/users";
+
+      if (admins.length > 0) {
+        await base44.asServiceRole.entities.Notification.bulkCreate(
+          admins.map(a => ({
+            user_id: a.id,
+            title: notifTitle,
+            message: notifMessage,
+            type: "general",
+            is_read: false,
+            link: notifLink,
+          }))
+        );
+      }
+    } catch {}
+
     return Response.json({ success: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
