@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Save, Camera, Upload, Eye, Video, Star } from "lucide-react";
-import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
+import { User, Save, Camera, Upload, Eye, Video, Star, MessageSquare } from "lucide-react";
+import { getCountryFlag, getLanguageLabel, INTERESTS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Profile() {
@@ -50,7 +50,7 @@ export default function Profile() {
     setSaving(true);
     try {
       if (role === "tutor") {
-        const updates = { full_name: profile.full_name, bio: profile.bio };
+        const updates = { full_name: profile.full_name, bio: profile.bio, interests: profile.interests || [] };
         if (profile.contract_type !== "upwork") {
           updates.bank_info = JSON.stringify({ pioneer_email: pioneerEmail });
         }
@@ -405,6 +405,44 @@ export default function Profile() {
                 <Upload className="w-4 h-4 mr-2" /> {uploadingVideo ? "Uploading..." : "Upload intro video"}
               </Button>
             )}
+          </div>
+
+          {/* Conversation Topics card */}
+          <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <MessageSquare className="w-4 h-4 text-orange-400" />
+                <Label className="theme-subtext text-gray-500 text-sm block">Conversation topics</Label>
+              </div>
+              <p className="text-xs text-orange-400 mb-3">
+                🗣️ Select the topics you enjoy discussing. These appear on your public profile and help students find you.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {INTERESTS.map(topic => {
+                  const selected = (profile?.interests || []).includes(topic);
+                  return (
+                    <button
+                      key={topic}
+                      type="button"
+                      onClick={() => {
+                        const current = profile?.interests || [];
+                        const updated = selected
+                          ? current.filter(i => i !== topic)
+                          : [...current, topic];
+                        setProfile({ ...profile, interests: updated });
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        selected
+                          ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                          : "bg-white/5 text-gray-400 border-white/10 hover:border-orange-400 hover:text-orange-400"
+                      }`}
+                    >
+                      {topic}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Bio card */}
