@@ -133,7 +133,11 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
           </div>
         </div>
 
-        <div className="mt-4 flex-1">
+        {tutor.bio && (
+          <p className="theme-subtext text-xs text-gray-400 mt-3 line-clamp-2 leading-relaxed">{tutor.bio}</p>
+        )}
+
+        <div className="mt-3 flex-1">
           <div className="flex flex-wrap gap-1.5 overflow-hidden" style={{ maxHeight: "4rem" }}>
             {tutor.native_languages?.map(l => (
               <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium">
