@@ -70,11 +70,29 @@ export default function StudentDashboard() {
     return (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
   };
 
-  const filtered = tutors.filter(t => {
-    if (search && !t.full_name?.toLowerCase().includes(search.toLowerCase())) return false;
-    if (availableNow && !(t.is_available_now && isOnline(t))) return false;
-    return true;
-  });
+  const hasOpenSchedule = (tutor) => {
+    if (!tutor.availability) return false;
+    const days = Object.values(tutor.availability);
+    return days.some(slots => Array.isArray(slots) && slots.length > 0);
+  };
+
+  const getTutorPriority = (tutor) => {
+    const online = isOnline(tutor);
+    const availNow = tutor.is_available_now && online;
+    const openSchedule = hasOpenSchedule(tutor);
+    if (availNow) return 0;                    // online + available now
+    if (online && openSchedule) return 1;      // online + has schedule slots
+    if (!online && openSchedule) return 2;     // offline + has schedule slots
+    return 3;                                  // everything else
+  };
+
+  const filtered = tutors
+    .filter(t => {
+      if (search && !t.full_name?.toLowerCase().includes(search.toLowerCase())) return false;
+      if (availableNow && !(t.is_available_now && isOnline(t))) return false;
+      return true;
+    })
+    .sort((a, b) => getTutorPriority(a) - getTutorPriority(b));
 
   return (
     <div>
