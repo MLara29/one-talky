@@ -48,8 +48,12 @@ import Profile from '@/pages/Profile';
 import StudentPersonalInfo from '@/pages/StudentPersonalInfo';
 import AppLayout from '@/components/AppLayout';
 
+const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/landing', '/privacidade', '/privacy', '/termos'];
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+
+  const isPublicPath = PUBLIC_PATHS.some(p => window.location.pathname.startsWith(p));
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -59,7 +63,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError) {
+  if (authError && !isPublicPath) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
