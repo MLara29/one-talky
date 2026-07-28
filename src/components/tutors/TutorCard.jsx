@@ -80,8 +80,8 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
   };
 
   return (
-    <Link to={`/tutor/${tutor.id}`} className="block group">
-      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:border-orange-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1">
+    <Link to={`/tutor/${tutor.id}`} className="block group h-full">
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 hover:border-orange-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1 h-full flex flex-col">
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <img
@@ -133,17 +133,19 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {tutor.native_languages?.map(l => (
-            <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium">
-              {getLanguageLabel(l)}
-            </span>
-          ))}
-          {tutor.interests?.slice(0, 10).map(i => (
-            <span key={i} className="theme-btn-ghost text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">
-              {forceEnglishTopics ? i : translateTopic(i, lang)}
-            </span>
-          ))}
+        <div className="mt-4 flex-1">
+          <div className="flex flex-wrap gap-1.5 overflow-hidden" style={{ maxHeight: "4rem" }}>
+            {tutor.native_languages?.map(l => (
+              <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium">
+                {getLanguageLabel(l)}
+              </span>
+            ))}
+            {tutor.interests?.slice(0, 10).map(i => (
+              <span key={i} className="theme-btn-ghost text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">
+                {forceEnglishTopics ? i : translateTopic(i, lang)}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Status line */}
