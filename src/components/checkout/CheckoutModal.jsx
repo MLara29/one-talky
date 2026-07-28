@@ -115,7 +115,8 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         throw new Error(res.data?.status_detail || res.data?.error || "Pagamento recusado");
       }
     } catch (err) {
-      setErrorMsg(err.message || "Erro ao processar pagamento");
+      console.error("[CheckoutModal] card payment error:", err);
+      setErrorMsg("Não foi possível processar o pagamento. Verifique os dados do cartão e tente novamente.");
       setStep("error");
     }
   };
@@ -160,7 +161,8 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         }
       }, 5000);
     } catch (err) {
-      setErrorMsg(err.message || "Erro ao gerar Pix");
+      console.error("[CheckoutModal] pix payment error:", err);
+      setErrorMsg("Não foi possível gerar o Pix. Tente novamente.");
       setStep("error");
     }
   };

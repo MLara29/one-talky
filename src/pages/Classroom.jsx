@@ -198,8 +198,8 @@ export default function Classroom() {
       totalDurationRef.current = effectiveMins * 60;
 
     } catch (e) {
-      console.error("Classroom error:", e);
-      toast({ title: "Erro ao carregar aula", description: String(e?.message || e), variant: "destructive" });
+      console.error("[Classroom] loadLesson error:", e);
+      toast({ title: "Erro ao carregar aula", description: "Não foi possível carregar a aula. Verifique sua conexão e tente novamente.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

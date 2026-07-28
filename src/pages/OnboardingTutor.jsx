@@ -69,7 +69,8 @@ export default function OnboardingTutor() {
       toast({ title: "Application submitted! 🎉", description: "We'll review your profile and get back to you soon." });
       window.location.href = "/";
     } catch (e) {
-      toast({ title: "Error submitting application", description: String(e?.message || "Please try again."), variant: "destructive" });
+      console.error("[OnboardingTutor] submit error:", e);
+      toast({ title: "Erro ao enviar inscrição", description: "Não foi possível enviar sua inscrição. Tente novamente.", variant: "destructive" });
     } finally {
       setSaving(false);
     }

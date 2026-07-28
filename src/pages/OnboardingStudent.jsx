@@ -101,7 +101,8 @@ export default function OnboardingStudent() {
       toast({ title: "Bem-vindo à One Talky! 🎉", description: "Seu perfil foi criado com sucesso." });
       window.location.href = "/";
     } catch (e) {
-      toast({ title: "Erro", description: String(e?.message || "Não foi possível criar seu perfil. Tente novamente."), variant: "destructive" });
+      console.error("[OnboardingStudent] submit error:", e);
+      toast({ title: "Erro ao criar perfil", description: "Não foi possível criar seu perfil. Tente novamente.", variant: "destructive" });
     } finally {
       setSaving(false);
     }
