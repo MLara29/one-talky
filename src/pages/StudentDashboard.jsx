@@ -21,6 +21,7 @@ export default function StudentDashboard() {
   const [availableNow, setAvailableNow] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => { loadData(); }, [user]);
 
@@ -42,6 +43,12 @@ export default function StudentDashboard() {
       }
     });
     return () => { unsubTutor(); unsubReview(); };
+  }, []);
+
+  // Tick every 30s so isOnline (Date.now()-based) re-evaluates and cards re-sort dynamically
+  useEffect(() => {
+    const interval = setInterval(() => setTick(n => n + 1), 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadData = async () => {
@@ -86,13 +93,17 @@ export default function StudentDashboard() {
     return 3;                                  // everything else
   };
 
-  const filtered = tutors
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const filtered = React.useMemo(() => tutors
     .filter(t => {
       if (search && !t.full_name?.toLowerCase().includes(search.toLowerCase())) return false;
       if (availableNow && !(t.is_available_now && isOnline(t))) return false;
       return true;
     })
-    .sort((a, b) => getTutorPriority(a) - getTutorPriority(b));
+    .sort((a, b) => getTutorPriority(a) - getTutorPriority(b)),
+  // tick forces re-sort every 30s; tutors/search/availableNow on change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [tutors, search, availableNow, tick]);
 
   return (
     <div>
