@@ -29,10 +29,10 @@ export const UI_LANGUAGES = [
 ];
 
 export const INTERESTS = [
-  "Viagens", "Negócios", "Cultura Pop", "Entrevistas de Emprego",
-  "Dia a Dia", "Esportes", "Tecnologia", "Gastronomia",
-  "Filmes & Séries", "Música", "Política", "Ciência",
-  "Arte & Design", "Saúde & Fitness", "Educação",
+  "Travel", "Business", "Pop Culture", "Job Interviews",
+  "Daily Life", "Sports", "Technology", "Food & Cuisine",
+  "Movies & TV Shows", "Music", "Politics", "Science",
+  "Art & Design", "Health & Fitness", "Education",
 ];
 
 export const OBJECTIVES = [
