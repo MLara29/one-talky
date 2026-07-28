@@ -17,6 +17,7 @@ export default function AffiliateDashboard() {
   const [tab, setTab] = useState("overview");
   const [affiliate, setAffiliate] = useState(null);
   const [earnings, setEarnings] = useState([]);
+  const [freeStudents, setFreeStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadData(); }, [user]);
@@ -34,6 +35,14 @@ export default function AffiliateDashboard() {
           200
         );
         setEarnings(earns);
+
+        // Alunos que usaram o cupom mas ainda estão no plano free
+        const freeProfiles = await base44.entities.StudentProfile.filter(
+          { coupon_code: aff.coupon_code, plan: "free" },
+          "-created_date",
+          100
+        );
+        setFreeStudents(freeProfiles);
       }
     } finally {
       setLoading(false);
@@ -99,7 +108,7 @@ export default function AffiliateDashboard() {
       </div>
 
       {/* Content */}
-      {tab === "overview" && <AffiliateOverview affiliate={affiliate} earnings={earnings} />}
+      {tab === "overview" && <AffiliateOverview affiliate={affiliate} earnings={earnings} freeStudents={freeStudents} />}
       {tab === "history" && <AffiliateEarningsTable earnings={earnings} />}
       {tab === "payout" && <AffiliatePayoutTab affiliate={affiliate} onSaved={loadData} />}
     </div>
