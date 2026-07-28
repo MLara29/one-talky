@@ -58,6 +58,8 @@ export default function Plans() {
     });
   };
 
+  const affiliateCoupon = profile?.coupon_code || null;
+
   if (loading) return (
     <div className="flex items-center justify-center py-24">
       <div className="w-8 h-8 border-2 border-t-2 rounded-full animate-spin" style={{ borderColor: "#EEE7DD", borderTopColor: ACCENT }} />
@@ -72,6 +74,7 @@ export default function Plans() {
           userEmail={user?.email}
           onClose={() => setCheckoutItem(null)}
           onSuccess={handleSuccess}
+          affiliateCoupon={affiliateCoupon}
         />
       )}
 

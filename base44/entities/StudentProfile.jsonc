@@ -71,6 +71,10 @@
     "credits_minutes": {
       "type": "number",
       "default": 15
+    },
+    "coupon_code": {
+      "type": "string",
+      "description": "C\u00f3digo do cupom usado no onboarding (para aplicar comiss\u00e3o de afiliado em compras futuras)"
     }
   },
   "required": [

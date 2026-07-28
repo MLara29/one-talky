@@ -50,6 +50,7 @@ Deno.serve(async (req) => {
       conversation_topics: Array.isArray(profile.conversation_topics) ? profile.conversation_topics.slice(0, 30) : [],
       credits_minutes: freeCredits,
       plan: "free",
+      ...(couponRecord ? { coupon_code: couponRecord.code } : {}),
     });
 
     // Increment coupon usage and record affiliate earning if applicable

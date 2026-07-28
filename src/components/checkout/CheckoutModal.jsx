@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { X, CreditCard, Lock, CheckCircle, AlertCircle, Loader2, QrCode, Copy, Check } from "lucide-react";
+import { X, CreditCard, Lock, CheckCircle, AlertCircle, Loader2, QrCode, Copy, Check, Tag } from "lucide-react";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -195,6 +195,12 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         <div className="px-6 py-4" style={{ background: "var(--app-nav-hover-bg)", borderBottom: "1px solid var(--app-border)" }}>
           <p className="theme-subtext text-xs" style={{ color: "var(--app-text-secondary)" }}>{item.title}</p>
           <p className="theme-heading font-display font-bold text-2xl">{fmtBRL(item.price)}</p>
+          {affiliateCoupon && (
+            <div className="flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-emerald-500">
+              <Tag className="w-3 h-3" />
+              Cupom de afiliado aplicado: <span className="font-mono">{affiliateCoupon}</span>
+            </div>
+          )}
         </div>
 
         {/* Loading */}
