@@ -35,6 +35,9 @@ Deno.serve(async (req) => {
       total_reviews: 0,
     });
 
+    // Assign tutor role server-side (client cannot self-assign privileged roles)
+    await base44.asServiceRole.entities.User.update(user.id, { role: "tutor" });
+
     return Response.json({ success: true, profile_id: created.id });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

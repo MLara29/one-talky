@@ -58,7 +58,6 @@ export default function OnboardingTutor() {
           intro_video_url: form.intro_video_url || undefined,
         },
       });
-      await base44.functions.invoke('setUserRole', { role: 'tutor' });
       await base44.auth.updateMe({ profile_completed: true });
       base44.functions.invoke('notifyAdminNewUser', {
         full_name: form.full_name,
