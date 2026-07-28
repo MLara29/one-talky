@@ -147,7 +147,7 @@ export default function StudentDashboard() {
           <p className="theme-subtext text-sm text-gray-600">{t(lang, "noTutorsSub")}</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(t => <TutorCard key={t.id} tutor={t} />)}
         </div>
       )}

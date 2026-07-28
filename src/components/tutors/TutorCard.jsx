@@ -139,7 +139,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
               {getLanguageLabel(l)}
             </span>
           ))}
-          {tutor.interests?.slice(0, 3).map(i => (
+          {tutor.interests?.slice(0, 10).map(i => (
             <span key={i} className="theme-btn-ghost text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">
               {forceEnglishTopics ? i : translateTopic(i, lang)}
             </span>
@@ -165,7 +165,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
               <button
                 onClick={handleLessonNow}
                 disabled={booking}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 shadow-md shadow-emerald-500/20 hover:opacity-90 transition-all disabled:opacity-60"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/20 hover:opacity-90 transition-all disabled:opacity-60"
               >
                 <Video className="w-3.5 h-3.5" />
                 {booking ? "Starting..." : "Lesson now"}
@@ -174,8 +174,11 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
             {canSchedule && (
               <button
                 onClick={handleSchedule}
-                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border transition-all hover:border-orange-500/40 hover:text-orange-400 ${live ? "px-3" : "flex-1"}`}
-                style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.12)", color: "var(--app-text-secondary)" }}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold transition-all hover:scale-105 shadow-lg ${
+                  live
+                    ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
+                    : "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/20"
+                }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
                 {live ? "Schedule" : "Schedule a lesson"}
