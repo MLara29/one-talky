@@ -62,17 +62,7 @@ export default function OnboardingStudent() {
         setCouponData(null);
         return;
       }
-      if (c.affiliate_id) {
-        const alreadyUsed = await base44.entities.AffiliateEarning.filter({
-          coupon_code: c.code,
-          student_name: userEmail,
-        });
-        if (alreadyUsed.length > 0) {
-          setCouponStatus("already_used");
-          setCouponData(null);
-          return;
-        }
-      }
+
       setCouponStatus("valid");
       setCouponData(c);
     } catch {
