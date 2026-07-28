@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Star, Video, Calendar } from "lucide-react";
 import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 import { useLang } from "@/lib/LanguageContext";
+import { useAuth } from "@/lib/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
 const isOnline = (t) => t.last_seen && (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
 const isLive = (t) => t.is_available_now && isOnline(t);
+const hasSchedule = (t) => t.availability && Object.keys(t.availability).some(day => t.availability[day]?.length > 0);
 
 // Interest topic translations for student view
 const TOPIC_TRANSLATIONS = {
@@ -26,8 +29,14 @@ function translateTopic(topic, lang) {
 
 export default function TutorCard({ tutor, forceEnglishTopics = false }) {
   const live = isLive(tutor);
+  const online = isOnline(tutor);
+  const canSchedule = hasSchedule(tutor);
   const [inLesson, setInLesson] = useState(false);
+  const [booking, setBooking] = useState(false);
   const { lang } = useLang();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!tutor.user_id) return;
@@ -35,6 +44,40 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
       .then(lessons => setInLesson(lessons.length > 0))
       .catch(() => {});
   }, [tutor.user_id]);
+
+  const handleLessonNow = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (booking || inLesson) return;
+    setBooking(true);
+    try {
+      const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+      const sp = profiles[0];
+      const credits = sp?.credits_minutes ?? 0;
+      if (credits < 10 / 60) {
+        navigate("/plans");
+        toast({ title: "Sem minutos disponíveis", description: "Adicione créditos para continuar.", variant: "destructive" });
+        return;
+      }
+      const lesson = await base44.entities.Lesson.create({
+        tutor_id: tutor.user_id, student_id: user.id,
+        tutor_name: tutor.full_name, student_name: sp?.full_name || user.full_name,
+        language: tutor.native_languages?.[0] || "english",
+        status: "in_progress", type: "instant", started_at: new Date().toISOString(),
+      });
+      navigate(`/classroom/${lesson.id}`);
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível iniciar a aula. Tente novamente.", variant: "destructive" });
+    } finally {
+      setBooking(false);
+    }
+  };
+
+  const handleSchedule = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/tutor/${tutor.id}`);
+  };
 
   return (
     <Link to={`/tutor/${tutor.id}`} className="block group">
@@ -46,7 +89,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
               alt={tutor.full_name}
               className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10 group-hover:ring-orange-500/30 transition-all"
             />
-            {live && !inLesson && (
+            {online && !inLesson && (
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 border-2 border-slate-950 rounded-full">
                 <span className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-60" />
               </div>
@@ -78,7 +121,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
               <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-red-500/15 border border-red-500/20 text-red-400">
                 ● In a lesson
               </span>
-            ) : live ? (
+            ) : online ? (
               <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-500/15 border border-emerald-500/20 text-emerald-400">
                 ● Online
               </span>
@@ -103,6 +146,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
           ))}
         </div>
 
+        {/* Status line */}
         {inLesson && (
           <div className="mt-3 text-xs font-semibold text-red-400 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Busy — in a lesson
@@ -111,6 +155,32 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
         {!inLesson && live && (
           <div className="mt-3 text-xs font-semibold text-emerald-500 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Available now
+          </div>
+        )}
+
+        {/* Action buttons */}
+        {(live || canSchedule) && !inLesson && (
+          <div className="mt-4 flex gap-2" style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: "14px" }}>
+            {live && (
+              <button
+                onClick={handleLessonNow}
+                disabled={booking}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 shadow-md shadow-emerald-500/20 hover:opacity-90 transition-all disabled:opacity-60"
+              >
+                <Video className="w-3.5 h-3.5" />
+                {booking ? "Starting..." : "Lesson now"}
+              </button>
+            )}
+            {canSchedule && (
+              <button
+                onClick={handleSchedule}
+                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border transition-all hover:border-orange-500/40 hover:text-orange-400 ${live ? "px-3" : "flex-1"}`}
+                style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.12)", color: "var(--app-text-secondary)" }}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                {live ? "Schedule" : "Schedule a lesson"}
+              </button>
+            )}
           </div>
         )}
       </div>
