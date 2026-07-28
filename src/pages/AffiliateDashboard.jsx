@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { Users, DollarSign, Clock, TrendingUp } from "lucide-react";
+import { Users } from "lucide-react";
 import AffiliateOverview from "@/components/affiliate/AffiliateOverview";
 import AffiliateEarningsTable from "@/components/affiliate/AffiliateEarningsTable";
 import AffiliatePayoutTab from "@/components/affiliate/AffiliatePayoutTab";
+import AffiliateStudents from "@/components/affiliate/AffiliateStudents";
 
 const TABS = [
   { key: "overview", label: "Visão Geral" },
+  { key: "students", label: "Alunos" },
   { key: "history", label: "Histórico" },
   { key: "payout", label: "Dados para Repasse" },
 ];
@@ -18,6 +20,7 @@ export default function AffiliateDashboard() {
   const [affiliate, setAffiliate] = useState(null);
   const [earnings, setEarnings] = useState([]);
   const [freeStudents, setFreeStudents] = useState([]);
+  const [paidStudents, setPaidStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadData(); }, [user]);
@@ -36,13 +39,13 @@ export default function AffiliateDashboard() {
         );
         setEarnings(earns);
 
-        // Alunos que usaram o cupom mas ainda estão no plano free
-        const freeProfiles = await base44.entities.StudentProfile.filter(
-          { coupon_code: aff.coupon_code, plan: "free" },
-          "-created_date",
-          100
-        );
+        // Busca todos os alunos que usaram o cupom
+        const [freeProfiles, paidProfiles] = await Promise.all([
+          base44.entities.StudentProfile.filter({ coupon_code: aff.coupon_code, plan: "free" }, "-created_date", 200),
+          base44.entities.StudentProfile.filter({ coupon_code: aff.coupon_code }, "-created_date", 200),
+        ]);
         setFreeStudents(freeProfiles);
+        setPaidStudents(paidProfiles.filter(s => s.plan !== "free"));
       }
     } finally {
       setLoading(false);
@@ -108,7 +111,8 @@ export default function AffiliateDashboard() {
       </div>
 
       {/* Content */}
-      {tab === "overview" && <AffiliateOverview affiliate={affiliate} earnings={earnings} freeStudents={freeStudents} />}
+      {tab === "overview" && <AffiliateOverview affiliate={affiliate} earnings={earnings} freeStudents={freeStudents} paidStudents={paidStudents} />}
+      {tab === "students" && <AffiliateStudents paidStudents={paidStudents} freeStudents={freeStudents} />}
       {tab === "history" && <AffiliateEarningsTable earnings={earnings} />}
       {tab === "payout" && <AffiliatePayoutTab affiliate={affiliate} onSaved={loadData} />}
     </div>
