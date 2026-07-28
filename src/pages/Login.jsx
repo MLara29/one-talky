@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import TwoFactorModal from "@/components/TwoFactorModal";
 
 
 export default function Login() {
@@ -14,6 +15,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [show2FA, setShow2FA] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,8 +42,17 @@ export default function Login() {
         return;
       }
 
-      // 3. Record success and redirect
+      // 3. Record success
       base44.functions.invoke("checkLoginRateLimit", { email, action: "record_success" });
+
+      // 4. Check if 2FA is required (admin or tutor)
+      const otpRes = await base44.functions.invoke("sendOtp", {});
+      if (otpRes.data?.required) {
+        setShow2FA(true);
+        setLoading(false);
+        return;
+      }
+
       window.location.href = "/";
     } catch (err) {
       setError("E-mail ou senha inválidos.");
@@ -53,6 +64,10 @@ export default function Login() {
   const handleGoogle = () => {
     base44.auth.loginWithProvider("google", "/");
   };
+
+  if (show2FA) {
+    return <TwoFactorModal email={email} onVerified={() => { window.location.href = "/"; }} />;
+  }
 
   return (
     <AuthLayout
