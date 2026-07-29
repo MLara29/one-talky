@@ -320,7 +320,7 @@ export default function AppLayout() {
 
         {/* Main content */}
         <main className={`flex-1 min-h-[calc(100vh-4rem)] ${!isStudent ? "lg:ml-56" : ""}`}>
-          <div className="p-4 sm:p-6 max-w-screen-2xl mx-auto pb-24 lg:pb-6">
+          <div className="p-6 sm:p-8 lg:p-10 max-w-screen-2xl mx-auto pb-24 lg:pb-10">
             <Outlet />
           </div>
         </main>
