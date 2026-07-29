@@ -243,7 +243,7 @@ export default function AppLayout() {
 
         {/* Main content */}
         <main className="flex-1 lg:ml-56 min-h-[calc(100vh-3.5rem)]">
-          <div className="p-4 sm:p-6 max-w-6xl mx-auto pb-24 lg:pb-6">
+          <div className="p-4 sm:p-6 max-w-screen-2xl mx-auto pb-24 lg:pb-6">
             <Outlet />
           </div>
         </main>
