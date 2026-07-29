@@ -90,8 +90,7 @@ export default function AppLayout() {
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") clearOnline();
-      else beat();
+      if (document.visibilityState === "visible") beat();
     };
 
     beat();
