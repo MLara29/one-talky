@@ -61,8 +61,8 @@ const AFFILIATE_NAV = [
   { label: "Dashboard", path: "/affiliate", icon: Home },
 ];
 
-const LANG_OPTIONS = ["pt_br", "en", "es", "fr", "de", "it"];
-const LANG_LABELS = { pt_br: "PT", en: "EN", es: "ES", fr: "FR", de: "DE", it: "IT" };
+const LANG_OPTIONS = ["en", "pt_br"];
+const LANG_LABELS = { en: "EN", pt_br: "PT" };
 
 export default function AppLayout() {
   const { user } = useAuth();
