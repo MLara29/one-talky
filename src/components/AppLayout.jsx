@@ -111,7 +111,11 @@ export default function AppLayout() {
   const isStudent = role === "student";
 
   return (
-    <div className="min-h-screen" style={{ background: isStudent ? "#fdf6f0" : "var(--app-bg)" }}>
+    <div className="min-h-screen" style={{
+      background: isStudent
+        ? "linear-gradient(135deg, #fffaf7 0%, #fff5ee 50%, #ffe8d6 100%)"
+        : "var(--app-bg)"
+    }}>
       {/* Top bar */}
       <header
         className="fixed top-0 left-0 right-0 z-40 h-16"
@@ -138,7 +142,14 @@ export default function AppLayout() {
                 className="h-12 w-auto object-contain"
               />
             </Link>
-            {!isStudent && (
+            {isStudent ? (
+              <span
+                className="text-xs font-semibold px-3 py-1 rounded-full hidden sm:block"
+                style={{ background: "rgba(242,106,27,0.12)", color: "#F26A1B" }}
+              >
+                Student
+              </span>
+            ) : (
               <span
                 className="text-xs font-medium px-2.5 py-1 rounded-full capitalize hidden sm:block"
                 style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.25)", color: "#F26A1B" }}
