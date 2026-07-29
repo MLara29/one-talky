@@ -10,30 +10,66 @@ function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-// Striped progress bar like in the design
-function StripedBar({ pct, isLow }) {
+function PlanShield({ plan }) {
+  if (plan === "premium") {
+    return (
+      <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
+        <defs>
+          <linearGradient id="blackFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#3a3a3a"/><stop offset="0.5" stopColor="#1a1a1a"/><stop offset="1" stopColor="#050505"/>
+          </linearGradient>
+          <linearGradient id="goldStroke" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#f7e08a"/><stop offset="0.5" stopColor="#d4af37"/><stop offset="1" stopColor="#a67c1a"/>
+          </linearGradient>
+          <linearGradient id="goldCheck" x1="8" y1="10" x2="16" y2="16" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#f9e59a"/><stop offset="1" stopColor="#d4af37"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#blackFill)" stroke="url(#goldStroke)" strokeWidth="1.1"/>
+        <path d="M12 3.3l6.9 2.7v5.5c0 5-3 8.5-6.9 10.5V3.3z" fill="#fff" opacity="0.05"/>
+        <path d="M8.3 13.2l2.6 2.6 4.8-5.2" stroke="url(#goldCheck)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      </svg>
+    );
+  }
+  if (plan === "standard") {
+    return (
+      <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
+        <defs>
+          <linearGradient id="bronzeFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#e8b487"/><stop offset="0.5" stopColor="#c17d3f"/><stop offset="1" stopColor="#8a4f22"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#bronzeFill)" stroke="#6d3d18" strokeWidth="0.7"/>
+        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25V1z" fill="#000" opacity="0.08"/>
+        <path d="M8.3 13.2l2.6 2.6 4.8-5.2" stroke="#fff2e2" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      </svg>
+    );
+  }
+  if (plan === "basic") {
+    return (
+      <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
+        <defs>
+          <linearGradient id="basicFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#f1f3f6"/><stop offset="0.5" stopColor="#c3c8d1"/><stop offset="1" stopColor="#8f96a3"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#basicFill)" stroke="#6b7280" strokeWidth="0.7"/>
+        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25V1z" fill="#000" opacity="0.06"/>
+        <path d="M8.3 13.2l2.6 2.6 4.8-5.2" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      </svg>
+    );
+  }
+  // free (default)
   return (
-    <div className="relative w-36 h-6 rounded-full overflow-hidden bg-orange-100 border border-orange-200">
-      {/* Diagonal stripes background */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `repeating-linear-gradient(
-            45deg,
-            #fdba74 0px,
-            #fdba74 6px,
-            #fed7aa 6px,
-            #fed7aa 12px
-          )`,
-          width: `${pct}%`,
-          transition: "width 0.5s ease",
-        }}
-      />
-      {/* Percentage label */}
-      <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-orange-700">
-        {pct}%
-      </span>
-    </div>
+    <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
+      <defs>
+        <linearGradient id="freeFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#fdba74"/><stop offset="1" stopColor="#f97316"/>
+        </linearGradient>
+      </defs>
+      <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#freeFill)" stroke="#ea580c" strokeWidth="0.7"/>
+      <path d="M9.5 8.6h5M9.5 11.6h5M9.5 14.6h3" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" fill="none"/>
+    </svg>
   );
 }
 
@@ -43,9 +79,9 @@ export default function CreditsBanner({ profile, onUpdate }) {
   const [processing, setProcessing] = useState(false);
 
   const mins = profile?.credits_minutes || 0;
-  const planObj = PLANS.find(p => p.id === profile?.plan);
+  const plan = profile?.plan || "free";
+  const planObj = PLANS.find(p => p.id === plan);
   const isLow = mins < 30;
-  // Use 120 min as "full" reference for % display
   const pct = Math.min(100, Math.round((mins / 120) * 100));
 
   const buyPack = async (pack) => {
@@ -54,9 +90,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
     try {
       toast({ title: "Redirecionando para pagamento…" });
       await new Promise(r => setTimeout(r, 800));
-      await base44.entities.StudentProfile.update(profile.id, {
-        credits_minutes: mins + pack.minutes,
-      });
+      await base44.entities.StudentProfile.update(profile.id, { credits_minutes: mins + pack.minutes });
       onUpdate({ ...profile, credits_minutes: mins + pack.minutes });
       toast({ title: `+${pack.minutes} minutos adicionados! ⏱️` });
       setShowTopup(false);
@@ -66,60 +100,93 @@ export default function CreditsBanner({ profile, onUpdate }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-orange-100 px-5 py-3.5 mb-6 shadow-sm">
+    <div
+      className="mb-6"
+      style={{
+        background: "rgba(255,255,255,0.92)",
+        border: "1px solid rgba(249,115,22,0.14)",
+        borderRadius: 22,
+        padding: "18px 22px",
+        boxShadow: "0 14px 34px rgba(249,115,22,0.16)",
+      }}
+    >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        {/* Left: shield icon + plan info */}
-        <div className="flex items-center gap-3">
-          {/* Shield icon */}
-          <div className="relative w-10 h-10 shrink-0">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #f97316, #fb923c)" }}>
-              {/* Shield SVG */}
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white">
-                <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2zm-1 13l-3-3 1.41-1.41L11 13.17l5.59-5.59L18 9l-7 6z"/>
-              </svg>
-            </div>
+        {/* Left: shield + plan info */}
+        <div className="flex items-center gap-5">
+          <div className="shrink-0">
+            <PlanShield plan={plan} />
           </div>
           <div>
-            <p className="font-bold text-gray-900 text-sm flex items-center gap-2">
-              <span>{planObj?.name || "Plano Basic"}</span>
+            <div className="flex items-center gap-2">
+              <span style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap" }}>
+                {planObj?.name || "Plano Free"}
+              </span>
               {isLow && (
-                <span className="text-xs text-amber-500 font-semibold flex items-center gap-0.5">
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#f97316", whiteSpace: "nowrap" }}>
                   ⚠ Créditos baixos
                 </span>
               )}
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">R$ 2,20/min · 30 min = R$ 66</p>
+            </div>
+            <div style={{ fontSize: 13, color: "#6b7280", marginTop: 3 }}>R$ 2,20/min · 30 min = R$ 66</div>
           </div>
-        </div>
 
-        {/* Center: striped progress bar + label */}
-        <div className="flex flex-col items-center gap-0.5">
-          <StripedBar pct={pct} isLow={isLow} />
-          <span className="text-xs text-gray-500 mt-1">
-            <span className="font-bold text-gray-700">{Math.floor(mins)} min</span> restantes
-          </span>
+          {/* Striped progress bar */}
+          <div className="hidden sm:flex flex-col items-center gap-2">
+            <div style={{
+              width: 220, height: 30, borderRadius: 999,
+              border: "1px solid rgba(249,115,22,0.3)",
+              background: "#fff5ee",
+              position: "relative", overflow: "hidden",
+            }}>
+              <div style={{
+                position: "absolute", inset: "0 auto 0 0",
+                width: `${Math.max(pct, 4)}%`,
+                background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
+                borderRadius: 999,
+                transition: "width 0.5s ease",
+              }} />
+              <span style={{
+                position: "absolute", left: "50%", top: "50%",
+                transform: "translate(-50%,-50%)",
+                fontSize: 13, fontWeight: 800, color: "#f97316",
+              }}>{pct}%</span>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap" }}>
+              {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>restantes</span>
+            </span>
+          </div>
         </div>
 
         {/* Right: buttons */}
         <div className="flex items-center gap-2 shrink-0">
-          <Button
-            size="sm"
+          <button
             onClick={() => setShowTopup(!showTopup)}
-            className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-md rounded-full px-4 font-semibold"
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              background: "linear-gradient(135deg, #fb923c, #f97316)",
+              color: "#fff", border: "none", padding: "12px 20px",
+              borderRadius: 999, fontFamily: "inherit", fontSize: 14, fontWeight: 700,
+              cursor: "pointer", boxShadow: "0 8px 20px rgba(249,115,22,0.3)",
+            }}
           >
-            <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar minutos
-          </Button>
+            <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Adicionar minutos
+          </button>
           <Link to="/plans">
-            <Button size="sm" variant="outline" className="rounded-full border-gray-200 text-gray-600 hover:bg-gray-50 px-4 font-semibold">
-              <Zap className="w-3.5 h-3.5 mr-1" /> Ver planos
-            </Button>
+            <button style={{
+              display: "flex", alignItems: "center", gap: 8,
+              background: "#fff", color: "#1a1a1a",
+              border: "1px solid rgba(0,0,0,0.1)", padding: "12px 20px",
+              borderRadius: 999, fontFamily: "inherit", fontSize: 14, fontWeight: 700, cursor: "pointer",
+            }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="#f97316"><path d="M13 2L3 14h7v8l10-12h-7z"/></svg>
+              Ver planos
+            </button>
           </Link>
         </div>
       </div>
 
       {showTopup && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
+        <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(249,115,22,0.1)" }}>
           <p className="text-xs text-gray-500 mb-3 font-medium">Escolha um pacote pré-pago:</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             {PREPAID_PACKS.map(pack => (

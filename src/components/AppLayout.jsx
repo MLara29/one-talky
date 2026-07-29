@@ -118,14 +118,16 @@ export default function AppLayout() {
     }}>
       {/* Top bar */}
       <header
-        className="fixed top-0 left-0 right-0 z-40 h-16"
+        className="fixed top-0 left-0 right-0 z-40"
         style={{
-          background: isStudent ? "#ffffff" : "var(--app-header-bg)",
-          borderBottom: isStudent ? "1px solid #f0e8e0" : "1px solid var(--app-border)",
-          boxShadow: isStudent ? "0 1px 8px rgba(0,0,0,0.06)" : "none",
+          height: isStudent ? 88 : 64,
+          background: isStudent ? "rgba(255,255,255,0.85)" : "var(--app-header-bg)",
+          backdropFilter: isStudent ? "blur(12px)" : undefined,
+          borderBottom: isStudent ? "1px solid rgba(0,0,0,0.05)" : "1px solid var(--app-border)",
+          boxShadow: isStudent ? "0 4px 16px rgba(0,0,0,0.04)" : "none",
         }}
       >
-        <div className="h-full px-4 sm:px-6 flex items-center justify-between max-w-screen-2xl mx-auto">
+        <div className="h-full px-6 sm:px-9 flex items-center justify-between max-w-screen-2xl mx-auto">
           {/* Left: logo + mobile menu */}
           <div className="flex items-center gap-3">
             <button
@@ -139,7 +141,8 @@ export default function AppLayout() {
               <img
                 src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png"
                 alt="One Talky"
-                className="h-12 w-auto object-contain"
+                className="w-auto object-contain"
+                style={{ height: isStudent ? 72 : 48 }}
               />
             </Link>
             {isStudent ? (
@@ -161,17 +164,30 @@ export default function AppLayout() {
 
           {/* Center nav — students only, desktop */}
           {isStudent && (
-            <nav className="hidden lg:flex items-center gap-1 bg-gray-100 rounded-full px-1.5 py-1.5">
+            <nav className="hidden lg:flex items-center gap-1" style={{
+              background: "rgba(255,255,255,0.7)",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(0,0,0,0.05)",
+              padding: "6px",
+              borderRadius: 999,
+              boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+            }}>
               {nav.map(item => {
                 const active = location.pathname === item.path || (item.path === "/dashboard" && location.pathname === "/");
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
                     style={{
+                      whiteSpace: "nowrap",
+                      padding: "11px 20px",
+                      borderRadius: 999,
+                      fontSize: 14,
+                      fontWeight: active ? 700 : 600,
                       background: active ? "#1a1a1a" : "transparent",
-                      color: active ? "#ffffff" : "#555",
+                      color: active ? "#fff" : "#4b5563",
+                      boxShadow: active ? "0 6px 16px rgba(0,0,0,0.25)" : "none",
+                      textDecoration: "none",
                     }}
                   >
                     {item.label}
@@ -231,11 +247,12 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <div className="flex pt-16">
+      <div className="flex" style={{ paddingTop: isStudent ? 88 : 64 }}>
         {/* Sidebar - desktop (non-student roles only) */}
         {!isStudent && (
           <aside
-            className="hidden lg:flex flex-col w-56 fixed top-16 left-0 bottom-0 backdrop-blur-xl p-4"
+            className="hidden lg:flex flex-col w-56 fixed left-0 bottom-0 backdrop-blur-xl p-4"
+            style={{ top: isStudent ? 88 : 64 }}
             style={{ background: "var(--app-sidebar-bg)", borderRight: "1px solid var(--app-border)" }}
           >
             <nav className="space-y-1 flex-1">
@@ -271,7 +288,8 @@ export default function AppLayout() {
           <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setMobileOpen(false)}>
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
             <aside
-              className="absolute top-16 left-0 bottom-0 w-64 p-4"
+              className="absolute left-0 bottom-0 w-64 p-4"
+              style={{ top: isStudent ? 88 : 64 }}
               style={{ background: isStudent ? "#fff" : "var(--app-sidebar-bg)", borderRight: isStudent ? "1px solid #f0e8e0" : "1px solid var(--app-border)" }}
               onClick={e => e.stopPropagation()}
             >
