@@ -110,7 +110,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
         boxShadow: "0 14px 34px rgba(249,115,22,0.16)",
       }}
     >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         {/* Left: shield + plan info */}
         <div className="flex items-center gap-5">
           <div className="shrink-0">
@@ -129,32 +129,32 @@ export default function CreditsBanner({ profile, onUpdate }) {
             </div>
             <div style={{ fontSize: 13, color: "#6b7280", marginTop: 3 }}>R$ 2,20/min · 30 min = R$ 66</div>
           </div>
+        </div>
 
-          {/* Striped progress bar */}
-          <div className="hidden sm:flex flex-col items-center gap-2">
+        {/* Center: striped progress bar */}
+        <div className="hidden sm:flex flex-col items-center gap-2 flex-1 mx-6">
+          <div style={{
+            width: "100%", maxWidth: 260, height: 30, borderRadius: 999,
+            border: "1px solid rgba(249,115,22,0.3)",
+            background: "#fff5ee",
+            position: "relative", overflow: "hidden",
+          }}>
             <div style={{
-              width: 220, height: 30, borderRadius: 999,
-              border: "1px solid rgba(249,115,22,0.3)",
-              background: "#fff5ee",
-              position: "relative", overflow: "hidden",
-            }}>
-              <div style={{
-                position: "absolute", inset: "0 auto 0 0",
-                width: `${Math.max(pct, 4)}%`,
-                background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
-                borderRadius: 999,
-                transition: "width 0.5s ease",
-              }} />
-              <span style={{
-                position: "absolute", left: "50%", top: "50%",
-                transform: "translate(-50%,-50%)",
-                fontSize: 13, fontWeight: 800, color: "#f97316",
-              }}>{pct}%</span>
-            </div>
-            <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap" }}>
-              {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>restantes</span>
-            </span>
+              position: "absolute", inset: "0 auto 0 0",
+              width: `${Math.max(pct, 4)}%`,
+              background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
+              borderRadius: 999,
+              transition: "width 0.5s ease",
+            }} />
+            <span style={{
+              position: "absolute", left: "50%", top: "50%",
+              transform: "translate(-50%,-50%)",
+              fontSize: 13, fontWeight: 800, color: "#f97316",
+            }}>{pct}%</span>
           </div>
+          <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap" }}>
+            {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>restantes</span>
+          </span>
         </div>
 
         {/* Right: buttons */}
