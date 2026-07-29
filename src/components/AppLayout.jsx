@@ -128,7 +128,7 @@ export default function AppLayout() {
               <img
                 src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png"
                 alt="One Talky"
-                className="h-10 w-auto object-contain"
+                className="h-14 w-auto object-contain"
               />
             </Link>
             <span
