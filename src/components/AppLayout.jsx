@@ -108,18 +108,25 @@ export default function AppLayout() {
     base44.auth.logout("/");
   };
 
+  const isStudent = role === "student";
+
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg)" }}>
+    <div className="min-h-screen" style={{ background: isStudent ? "#fdf6f0" : "var(--app-bg)" }}>
       {/* Top bar */}
       <header
-        className="fixed top-0 left-0 right-0 backdrop-blur-xl z-40 h-14"
-        style={{ background: "var(--app-header-bg)", borderBottom: "1px solid var(--app-border)" }}
+        className="fixed top-0 left-0 right-0 z-40 h-16"
+        style={{
+          background: isStudent ? "#ffffff" : "var(--app-header-bg)",
+          borderBottom: isStudent ? "1px solid #f0e8e0" : "1px solid var(--app-border)",
+          boxShadow: isStudent ? "0 1px 8px rgba(0,0,0,0.06)" : "none",
+        }}
       >
-        <div className="h-full px-4 flex items-center justify-between">
+        <div className="h-full px-4 sm:px-6 flex items-center justify-between max-w-screen-2xl mx-auto">
+          {/* Left: logo + mobile menu */}
           <div className="flex items-center gap-3">
             <button
               className="lg:hidden p-1"
-              style={{ color: "var(--app-text-secondary)" }}
+              style={{ color: isStudent ? "#888" : "var(--app-text-secondary)" }}
               onClick={() => setMobileOpen(!mobileOpen)}
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -128,28 +135,56 @@ export default function AppLayout() {
               <img
                 src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png"
                 alt="One Talky"
-                className="h-14 w-auto object-contain"
+                className="h-12 w-auto object-contain"
               />
             </Link>
-            <span
-              className="text-xs font-medium px-2.5 py-1 rounded-full capitalize hidden sm:block"
-              style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.25)", color: "#F26A1B" }}
-            >
-              {role}
-            </span>
+            {!isStudent && (
+              <span
+                className="text-xs font-medium px-2.5 py-1 rounded-full capitalize hidden sm:block"
+                style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.25)", color: "#F26A1B" }}
+              >
+                {role}
+              </span>
+            )}
           </div>
+
+          {/* Center nav — students only, desktop */}
+          {isStudent && (
+            <nav className="hidden lg:flex items-center gap-1 bg-gray-100 rounded-full px-1.5 py-1.5">
+              {nav.map(item => {
+                const active = location.pathname === item.path || (item.path === "/dashboard" && location.pathname === "/");
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
+                    style={{
+                      background: active ? "#1a1a1a" : "transparent",
+                      color: active ? "#ffffff" : "#555",
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+
+          {/* Right: lang switcher + icons */}
           <div className="flex items-center gap-1">
-            {/* Language switcher — students only */}
-            {role === "student" && (
-              <div className="flex items-center border rounded-full overflow-hidden mr-1" style={{ borderColor: "var(--app-border)", fontSize: 11 }}>
+            {isStudent && (
+              <div
+                className="flex items-center border rounded-full overflow-hidden mr-1"
+                style={{ borderColor: "#e5e7eb", fontSize: 11 }}
+              >
                 {LANG_OPTIONS.map(l => (
                   <button
                     key={l}
                     onClick={() => changeLang(l)}
-                    className="px-2 py-1 font-bold transition-colors"
+                    className="px-2.5 py-1 font-bold transition-colors"
                     style={{
                       background: lang === l ? "#F26A1B" : "transparent",
-                      color: lang === l ? "#fff" : "var(--app-text-secondary)",
+                      color: lang === l ? "#fff" : "#888",
                       border: "none",
                       cursor: "pointer",
                       fontFamily: "inherit",
@@ -163,57 +198,70 @@ export default function AppLayout() {
             )}
             <NotificationBell />
             <Link to="/profile">
-              <Button variant="ghost" size="icon" style={{ color: "var(--app-text-secondary)" }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                style={{ color: isStudent ? "#555" : "var(--app-text-secondary)" }}
+                className={isStudent ? "hover:bg-gray-100 rounded-full" : ""}
+              >
                 <User className="w-4 h-4" />
               </Button>
             </Link>
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:text-red-400 hover:bg-red-500/10" style={{ color: "var(--app-text-secondary)" }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className={isStudent ? "hover:bg-red-50 hover:text-red-500 rounded-full" : "hover:text-red-400 hover:bg-red-500/10"}
+              style={{ color: isStudent ? "#555" : "var(--app-text-secondary)" }}
+            >
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="flex pt-14">
-        {/* Sidebar - desktop */}
-        <aside
-          className="hidden lg:flex flex-col w-56 fixed top-14 left-0 bottom-0 backdrop-blur-xl p-4"
-          style={{ background: "var(--app-sidebar-bg)", borderRight: "1px solid var(--app-border)" }}
-        >
-          <nav className="space-y-1 flex-1">
-            {nav.map(item => {
-              const active = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                  style={{
-                    background: active ? "rgba(242,106,27,0.10)" : "transparent",
-                    color: active ? "#F26A1B" : "var(--app-text-secondary)",
-                    border: active ? "1px solid rgba(242,106,27,0.25)" : "1px solid transparent"
-                  }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = "var(--app-nav-hover-bg)"; }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
-                >
-                  <item.icon className="w-4 h-4" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)" }} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="pt-3" style={{ borderTop: "1px solid var(--app-border)" }}>
-            <p className="text-[10px] text-center" style={{ color: "var(--app-text-muted)" }}>One Talky v1.0</p>
-          </div>
-        </aside>
+      <div className="flex pt-16">
+        {/* Sidebar - desktop (non-student roles only) */}
+        {!isStudent && (
+          <aside
+            className="hidden lg:flex flex-col w-56 fixed top-16 left-0 bottom-0 backdrop-blur-xl p-4"
+            style={{ background: "var(--app-sidebar-bg)", borderRight: "1px solid var(--app-border)" }}
+          >
+            <nav className="space-y-1 flex-1">
+              {nav.map(item => {
+                const active = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      background: active ? "rgba(242,106,27,0.10)" : "transparent",
+                      color: active ? "#F26A1B" : "var(--app-text-secondary)",
+                      border: active ? "1px solid rgba(242,106,27,0.25)" : "1px solid transparent"
+                    }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = "var(--app-nav-hover-bg)"; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <item.icon className="w-4 h-4" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)" }} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="pt-3" style={{ borderTop: "1px solid var(--app-border)" }}>
+              <p className="text-[10px] text-center" style={{ color: "var(--app-text-muted)" }}>One Talky v1.0</p>
+            </div>
+          </aside>
+        )}
 
         {/* Mobile nav overlay */}
         {mobileOpen && (
           <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setMobileOpen(false)}>
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
             <aside
-              className="absolute top-14 left-0 bottom-0 w-64 p-4"
-              style={{ background: "var(--app-sidebar-bg)", borderRight: "1px solid var(--app-border)" }}
+              className="absolute top-16 left-0 bottom-0 w-64 p-4"
+              style={{ background: isStudent ? "#fff" : "var(--app-sidebar-bg)", borderRight: isStudent ? "1px solid #f0e8e0" : "1px solid var(--app-border)" }}
               onClick={e => e.stopPropagation()}
             >
               <nav className="space-y-1">
@@ -227,11 +275,11 @@ export default function AppLayout() {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                       style={{
                         background: active ? "rgba(242,106,27,0.10)" : "transparent",
-                        color: active ? "#F26A1B" : "var(--app-text-secondary)",
+                        color: active ? "#F26A1B" : isStudent ? "#555" : "var(--app-text-secondary)",
                         border: active ? "1px solid rgba(242,106,27,0.25)" : "1px solid transparent"
                       }}
                     >
-                      <item.icon className="w-4 h-4" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)" }} />
+                      <item.icon className="w-4 h-4" style={{ color: active ? "#F26A1B" : isStudent ? "#aaa" : "var(--app-text-muted)" }} />
                       {item.label}
                     </Link>
                   );
@@ -242,7 +290,7 @@ export default function AppLayout() {
         )}
 
         {/* Main content */}
-        <main className="flex-1 lg:ml-56 min-h-[calc(100vh-3.5rem)]">
+        <main className={`flex-1 min-h-[calc(100vh-4rem)] ${!isStudent ? "lg:ml-56" : ""}`}>
           <div className="p-4 sm:p-6 max-w-screen-2xl mx-auto pb-24 lg:pb-6">
             <Outlet />
           </div>
@@ -254,15 +302,18 @@ export default function AppLayout() {
       {/* Mobile bottom nav */}
       <nav
         className="fixed bottom-0 left-0 right-0 backdrop-blur-xl lg:hidden z-40"
-        style={{ background: "var(--app-header-bg)", borderTop: "1px solid var(--app-border)" }}
+        style={{
+          background: isStudent ? "#ffffff" : "var(--app-header-bg)",
+          borderTop: isStudent ? "1px solid #f0e8e0" : "1px solid var(--app-border)",
+        }}
       >
         <div className="flex justify-around py-2">
-          {nav.slice(0, 4).map(item => {
+          {nav.slice(0, 5).map(item => {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path} className="flex flex-col items-center gap-0.5 p-2">
-                <item.icon className="w-5 h-5" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)" }} />
-                <span className="text-[10px]" style={{ color: active ? "#F26A1B" : "var(--app-text-muted)", fontWeight: active ? 600 : 400 }}>
+                <item.icon className="w-5 h-5" style={{ color: active ? "#F26A1B" : isStudent ? "#aaa" : "var(--app-text-muted)" }} />
+                <span className="text-[10px]" style={{ color: active ? "#F26A1B" : isStudent ? "#aaa" : "var(--app-text-muted)", fontWeight: active ? 600 : 400 }}>
                   {item.label}
                 </span>
               </Link>

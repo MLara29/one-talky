@@ -36,60 +36,64 @@ export default function CreditsBanner({ profile, onUpdate }) {
     } finally { setProcessing(false); }
   };
 
+  const pct = Math.min(100, Math.round((mins / 120) * 100));
+
   return (
-    <div className={`theme-card rounded-2xl border px-5 py-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
-      isLow
-        ? "bg-amber-500/10 border-amber-500/25"
-        : "bg-white/5 border-white/10"
-    }`}>
+    <div className="bg-white rounded-2xl border border-orange-100 px-5 py-4 mb-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isLow ? "bg-amber-500/20" : "bg-emerald-500/15"}`}>
-          <Clock className={`w-5 h-5 ${isLow ? "text-amber-500" : "text-emerald-500"}`} />
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-orange-500">
+          <Clock className="w-5 h-5 text-white" />
         </div>
         <div>
-          <p className="theme-heading font-display font-bold text-white">
-            {Math.floor(mins)} min disponíveis
-            {isLow && <span className="ml-2 text-xs text-amber-500 font-normal">⚠ Créditos baixos</span>}
+          <p className="font-bold text-gray-900 flex items-center gap-2">
+            <span className="capitalize">{planObj?.name || "Plano Basic"}</span>
+            {isLow && <span className="text-xs text-amber-500 font-semibold">⚠ Créditos baixos</span>}
           </p>
-          <p className="theme-subtext text-xs text-gray-500">
-            Plano: <span className="capitalize font-medium">{planObj?.name || "Teste Grátis"}</span>
-            {" · "}R$ 2,20/min · 30 min = R$ 66
-          </p>
+          <p className="text-xs text-gray-500 mt-0.5">R$ 2,20/min · 30 min = R$ 66</p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <div className="w-28 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${pct}%`, background: isLow ? "#f59e0b" : "#F26A1B" }}
+              />
+            </div>
+            <span className="text-xs font-semibold text-gray-600">{Math.floor(mins)} min restantes</span>
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Button
           size="sm"
           onClick={() => setShowTopup(!showTopup)}
-          className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all"
+          className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow rounded-full px-4"
         >
           <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar minutos
         </Button>
         <Link to="/plans">
-          <Button size="sm" variant="ghost" className="theme-btn-ghost bg-white/5 border border-white/10 text-gray-400 hover:text-white">
+          <Button size="sm" variant="outline" className="rounded-full border-gray-200 text-gray-600 hover:bg-gray-50 px-4">
             <Zap className="w-3.5 h-3.5 mr-1" /> Ver planos
           </Button>
         </Link>
       </div>
 
       {showTopup && (
-        <div className="w-full mt-1 pt-4 border-t border-white/10">
-          <p className="theme-subtext text-xs text-gray-500 mb-3 font-medium">Escolha um pacote pré-pago:</p>
+        <div className="w-full mt-1 pt-4 border-t border-gray-100">
+          <p className="text-xs text-gray-500 mb-3 font-medium">Escolha um pacote pré-pago:</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             {PREPAID_PACKS.map(pack => (
               <button
                 key={pack.id}
                 onClick={() => buyPack(pack)}
                 disabled={processing}
-                className="theme-card flex flex-col items-center gap-1 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-orange-500/40 hover:bg-orange-500/10 transition-all text-center"
+                className="flex flex-col items-center gap-1 p-3 rounded-xl bg-orange-50 border border-orange-100 hover:border-orange-400 hover:bg-orange-100 transition-all text-center"
               >
-                <span className="theme-heading font-display font-bold text-white text-sm">{pack.label}</span>
+                <span className="font-bold text-gray-900 text-sm">{pack.label}</span>
                 {pack.badge && <span className="text-[10px] text-emerald-600 font-semibold">{pack.badge}</span>}
-                <span className="theme-subtext text-xs text-gray-500">{fmtBRL(pack.price_brl)}</span>
+                <span className="text-xs text-gray-500">{fmtBRL(pack.price_brl)}</span>
               </button>
             ))}
           </div>
-          <p className="theme-subtext text-[10px] text-gray-500 mt-3 text-center">Créditos não expiram · Pagamento via Stripe</p>
+          <p className="text-[10px] text-gray-400 mt-3 text-center">Créditos não expiram · Pagamento via Stripe</p>
         </div>
       )}
     </div>
