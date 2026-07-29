@@ -271,7 +271,7 @@ export default function Landing() {
         <nav style={{ maxWidth: 1180, margin: "0 auto", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           {/* Logo */}
           <a href="#top" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0 }}>
-            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/aa8d50b0c_image1.svg" alt="One Talky" style={{ height: 52, width: "auto" }} />
+            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style={{ height: 44, width: "auto" }} />
           </a>
 
           {/* Links — hidden on mobile */}
@@ -640,7 +640,7 @@ export default function Landing() {
       <footer style={{ background: "#101115", color: "#8E8B84", padding: "44px 24px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 20 }}>
           <div style={{ display: "flex", alignItems: "center" }}>
-            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/aa8d50b0c_image1.svg" alt="One Talky" style={{ height: 30, width: "auto" }} />
+            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style={{ height: 30, width: "auto" }} />
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 20, fontSize: 13.5 }}>
             <Link to="/privacidade" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footPrivacy}</Link>
