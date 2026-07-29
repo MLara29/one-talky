@@ -320,7 +320,7 @@ export default function AppLayout() {
 
         {/* Main content */}
         <main className={`flex-1 min-h-[calc(100vh-4rem)] ${!isStudent ? "lg:ml-56" : ""}`}>
-          <div className="p-6 sm:p-8 lg:p-10 max-w-screen-2xl mx-auto pb-24 lg:pb-10">
+          <div className="px-8 py-6 sm:px-14 sm:py-8 lg:px-20 lg:py-10 max-w-screen-2xl mx-auto pb-24 lg:pb-10">
             <Outlet />
           </div>
         </main>
