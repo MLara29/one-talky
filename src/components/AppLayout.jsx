@@ -79,12 +79,30 @@ export default function AppLayout() {
   // Heartbeat for tutors: keep last_seen updated on every page
   useEffect(() => {
     if (role !== "tutor" || !user?.id) return;
+
     const beat = async () => {
       await base44.functions.updateMyProfile({ last_seen: new Date().toISOString() });
     };
+
+    const clearOnline = async () => {
+      // Set last_seen to a past time so threshold check fails immediately
+      await base44.functions.updateMyProfile({ last_seen: new Date(0).toISOString() }).catch(() => {});
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") clearOnline();
+      else beat();
+    };
+
     beat();
-    const interval = setInterval(beat, 60 * 1000);
-    return () => clearInterval(interval);
+    const interval = setInterval(beat, 20 * 1000);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearOnline();
+    };
   }, [user?.id, role]);
 
   const handleLogout = () => {

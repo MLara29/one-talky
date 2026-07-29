@@ -20,7 +20,7 @@ export default function TutorProfilePage() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [inLesson, setInLesson] = useState(false);
 
-  const ONLINE_THRESHOLD_MS = 30 * 1000;
+  const ONLINE_THRESHOLD_MS = 45 * 1000;
   const isOnline = (t) => t?.last_seen && (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
   const isLive = (t) => t?.is_available_now && isOnline(t);
 
