@@ -20,6 +20,10 @@ export default function TutorProfilePage() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [inLesson, setInLesson] = useState(false);
 
+  const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
+  const isOnline = (t) => t?.last_seen && (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
+  const isLive = (t) => t?.is_available_now && isOnline(t);
+
   useEffect(() => { loadTutor(); }, [id]);
 
   const loadTutor = async () => {
@@ -129,7 +133,7 @@ export default function TutorProfilePage() {
                 alt={tutor.full_name}
                 className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-orange-500/20"
               />
-              {tutor.is_available_now && (
+              {isLive(tutor) && (
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 border-2 border-white rounded-full">
                   <span className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-60" />
                 </div>
@@ -195,7 +199,7 @@ export default function TutorProfilePage() {
 
         {/* Action buttons */}
         <div className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row gap-3">
-          {tutor.is_available_now && (
+          {isLive(tutor) && (
             <Button
               onClick={startInstantLesson} disabled={booking || inLesson}
               className={`flex-1 h-12 rounded-2xl border-0 shadow-lg transition-all ${
@@ -211,7 +215,7 @@ export default function TutorProfilePage() {
           <Button
             onClick={async () => { if (await checkCredits()) setShowSchedule(true); }} disabled={booking}
             className={`flex-1 h-12 rounded-2xl border-0 transition-all hover:scale-105 shadow-lg ${
-              tutor.is_available_now
+              isLive(tutor)
                 ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
                 : "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/20"
             }`}
