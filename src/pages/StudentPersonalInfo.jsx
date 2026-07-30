@@ -113,18 +113,6 @@ export default function StudentPersonalInfo() {
         </div>
 
         <div>
-          <Label className={labelCls}>Idioma que está aprendendo</Label>
-          <Select value={form.target_language} onValueChange={v => set("target_language", v)}>
-            <SelectTrigger className={selectTriggerCls}>
-              <SelectValue placeholder="Selecione o idioma" />
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map(l => <SelectItem key={l.value} value={l.value}>{l.flag} {l.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
           <Label className={labelCls}>Nível atual</Label>
           <Select value={form.level} onValueChange={v => set("level", v)}>
             <SelectTrigger className={selectTriggerCls}>
