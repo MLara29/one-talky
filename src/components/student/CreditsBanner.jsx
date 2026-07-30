@@ -59,15 +59,15 @@ function PlanShield({ plan }) {
       </svg>
     );
   }
-  // free (default)
+  // free (default) — green shield with lines
   return (
     <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
       <defs>
         <linearGradient id="freeFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#fdba74"/><stop offset="1" stopColor="#f97316"/>
+          <stop stopColor="#a7f3d0"/><stop offset="1" stopColor="#4ade80"/>
         </linearGradient>
       </defs>
-      <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#freeFill)" stroke="#ea580c" strokeWidth="0.7"/>
+      <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#freeFill)" stroke="#22c55e" strokeWidth="0.7"/>
       <path d="M9.5 8.6h5M9.5 11.6h5M9.5 14.6h3" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" fill="none"/>
     </svg>
   );
