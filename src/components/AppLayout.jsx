@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
 
 import { Button } from "@/components/ui/button";
+import useInactivityLogout from "@/hooks/useInactivityLogout";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import NotificationBell from "@/components/NotificationBell";
 import {
@@ -111,6 +112,8 @@ export default function AppLayout() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const role = user?.role || "student";
+
+  useInactivityLogout(role);
 
   const nav = role === "admin" ? ADMIN_NAV
     : role === "tutor" ? TUTOR_NAV
