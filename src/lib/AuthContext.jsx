@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
@@ -113,6 +113,28 @@ export const AuthProvider = ({ children }) => {
       }
     }
   };
+
+  // Tutor heartbeat — lives here so it never stops during navigation
+  const heartbeatRef = useRef(null);
+  useEffect(() => {
+    if (!user || user.role !== 'tutor') return;
+
+    const beat = () => {
+      base44.functions.updateMyProfile({ updates: { last_seen: new Date().toISOString() } }).catch(() => {});
+    };
+
+    beat(); // immediate on mount / role change
+    heartbeatRef.current = setInterval(beat, 20 * 1000);
+
+    const clearOnline = () => {
+      base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
+    };
+
+    return () => {
+      clearInterval(heartbeatRef.current);
+      clearOnline();
+    };
+  }, [user?.id, user?.role]);
 
   const logout = (shouldRedirect = true) => {
     setUser(null);

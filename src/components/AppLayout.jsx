@@ -117,27 +117,7 @@ export default function AppLayout() {
     : role === "affiliate" ? AFFILIATE_NAV
     : STUDENT_NAV(lang);
 
-  // Heartbeat for tutors
-  useEffect(() => {
-    if (role !== "tutor" || !user?.id) return;
-    const beat = async () => {
-      await base44.functions.updateMyProfile({ updates: { last_seen: new Date().toISOString() } });
-    };
-    const clearOnline = async () => {
-      await base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
-    };
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") beat();
-    };
-    beat();
-    const interval = setInterval(beat, 20 * 1000);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      clearOnline();
-    };
-  }, [user?.id, role]);
+
 
   const handleLogout = () => {
     base44.auth.logout("/");
