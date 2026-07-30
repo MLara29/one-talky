@@ -39,6 +39,7 @@ export default function Classroom() {
 
   const clientRef = useRef(null);
   const reconcileRef = useRef(null);
+  const joinGuardRef = useRef(false);
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
   const screenVideoTrackRef = useRef(null);
@@ -212,7 +213,20 @@ export default function Classroom() {
     return res.data;
   };
 
+  // Deterministic unique Agora UID per user — avoids collisions between
+  // participants (including when the same person holds two roles)
+  const uidFromUserId = (userId) => {
+    let h = 0;
+    for (let i = 0; i < String(userId).length; i++) {
+      h = (h * 31 + String(userId).charCodeAt(i)) % 2000000000;
+    }
+    return h || 1;
+  };
+
   const joinChannel = async (l) => {
+    if (joinGuardRef.current) return;
+    joinGuardRef.current = true;
+
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     clientRef.current = client;
 
@@ -236,7 +250,7 @@ export default function Classroom() {
 
     client.on("user-left", () => setRemoteVideoTrack(null));
 
-    const uid = (l.tutor_id === user?.id) ? 1 : 2;
+    const uid = uidFromUserId(user?.id);
     const channelName = id;
 
     const { token, appId } = await fetchAgoraToken(channelName, uid);
@@ -393,7 +407,11 @@ export default function Classroom() {
     }
     localAudioTrackRef.current?.close();
     localVideoTrackRef.current?.close();
-    await clientRef.current?.leave();
+    localAudioTrackRef.current = null;
+    localVideoTrackRef.current = null;
+    try { await clientRef.current?.leave(); } catch {}
+    clientRef.current = null;
+    joinGuardRef.current = false;
   };
 
   const toggleCamera = async () => {
