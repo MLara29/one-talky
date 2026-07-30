@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }) => {
       tutorActiveRef.current = true;
 
       const beat = () => {
-        base44.functions.updateMyProfile({ updates: { last_seen: new Date().toISOString(), is_available_now: true } }).catch(() => {});
+        base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date().toISOString(), is_available_now: true } }).catch(() => {});
       };
 
       beat();
@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
     if (!isTutor && tutorActiveRef.current) {
       tutorActiveRef.current = false;
       clearInterval(heartbeatRef.current);
-      base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
+      base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
     }
   }, [user?.id, user?.role]);
 
@@ -146,7 +146,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       if (tutorActiveRef.current) {
         clearInterval(heartbeatRef.current);
-        base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
+        base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
       }
     };
   }, []);
