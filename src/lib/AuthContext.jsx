@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }) => {
       tutorActiveRef.current = true;
 
       const beat = () => {
-        base44.functions.updateMyProfile({ updates: { last_seen: new Date().toISOString() } }).catch(() => {});
+        base44.functions.updateMyProfile({ updates: { last_seen: new Date().toISOString(), is_available_now: true } }).catch(() => {});
       };
 
       beat();
