@@ -121,10 +121,10 @@ export default function AppLayout() {
   useEffect(() => {
     if (role !== "tutor" || !user?.id) return;
     const beat = async () => {
-      await base44.functions.updateMyProfile({ last_seen: new Date().toISOString() });
+      await base44.functions.updateMyProfile({ updates: { last_seen: new Date().toISOString() } });
     };
     const clearOnline = async () => {
-      await base44.functions.updateMyProfile({ last_seen: new Date(0).toISOString() }).catch(() => {});
+      await base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
     };
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") beat();
