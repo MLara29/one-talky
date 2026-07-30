@@ -38,6 +38,7 @@ export default function Classroom() {
   const chatOpenRef = useRef(false);
 
   const clientRef = useRef(null);
+  const reconcileRef = useRef(null);
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
   const screenVideoTrackRef = useRef(null);
@@ -216,12 +217,16 @@ export default function Classroom() {
     clientRef.current = client;
 
     client.on("user-published", async (remoteAgoraUser, mediaType) => {
-      await client.subscribe(remoteAgoraUser, mediaType);
-      if (mediaType === "video" && remoteAgoraUser.videoTrack) {
-        setRemoteVideoTrack(remoteAgoraUser.videoTrack);
-      }
-      if (mediaType === "audio" && remoteAgoraUser.audioTrack) {
-        remoteAgoraUser.audioTrack.play();
+      try {
+        await client.subscribe(remoteAgoraUser, mediaType);
+        if (mediaType === "video" && remoteAgoraUser.videoTrack) {
+          setRemoteVideoTrack(remoteAgoraUser.videoTrack);
+        }
+        if (mediaType === "audio" && remoteAgoraUser.audioTrack) {
+          remoteAgoraUser.audioTrack.play();
+        }
+      } catch (e) {
+        console.error("[Agora] subscribe failed:", e);
       }
     });
 
@@ -244,24 +249,35 @@ export default function Classroom() {
 
     await client.join(appId, channelName, token, uid);
 
-    // Subscribe to any remote users already in the channel before we joined
-    for (const remoteUser of client.remoteUsers) {
-      if (remoteUser.hasVideo) {
-        await client.subscribe(remoteUser, "video");
-        if (remoteUser.videoTrack) setRemoteVideoTrack(remoteUser.videoTrack);
-      }
-      if (remoteUser.hasAudio) {
-        await client.subscribe(remoteUser, "audio");
-        remoteUser.audioTrack?.play();
-      }
-    }
-
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;
     localVideoTrackRef.current = videoTrack;
 
     await client.publish([audioTrack, videoTrack]);
     setJoined(true);
+
+    // Reconciliation: the "user-published" event is missed when the other side
+    // published before we finished joining. Re-check the channel periodically.
+    const reconcile = async () => {
+      for (const remoteUser of client.remoteUsers) {
+        try {
+          if (remoteUser.hasVideo && !remoteUser.videoTrack) {
+            await client.subscribe(remoteUser, "video");
+          }
+          if (remoteUser.videoTrack) {
+            setRemoteVideoTrack(prev => (prev === remoteUser.videoTrack ? prev : remoteUser.videoTrack));
+          }
+          if (remoteUser.hasAudio && !remoteUser.audioTrack) {
+            await client.subscribe(remoteUser, "audio");
+            remoteUser.audioTrack?.play();
+          }
+        } catch (e) {
+          console.error("[Agora] reconcile failed:", e);
+        }
+      }
+    };
+    reconcile();
+    reconcileRef.current = setInterval(reconcile, 2000);
 
     const playLocal = () => {
       if (localVideoDiv.current) {
@@ -363,6 +379,10 @@ export default function Classroom() {
   };
 
   const leaveChannel = async () => {
+    if (reconcileRef.current) {
+      clearInterval(reconcileRef.current);
+      reconcileRef.current = null;
+    }
     if (screenVideoTrackRef.current) {
       try { screenVideoTrackRef.current.close(); } catch {}
       screenVideoTrackRef.current = null;
