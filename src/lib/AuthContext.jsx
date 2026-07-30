@@ -116,25 +116,40 @@ export const AuthProvider = ({ children }) => {
 
   // Tutor heartbeat — lives here so it never stops during navigation
   const heartbeatRef = useRef(null);
+  const tutorActiveRef = useRef(false);
+
   useEffect(() => {
-    if (!user || user.role !== 'tutor') return;
+    const isTutor = user?.role === 'tutor';
 
-    const beat = () => {
-      base44.functions.updateMyProfile({ updates: { last_seen: new Date().toISOString() } }).catch(() => {});
-    };
+    // Start heartbeat when tutor logs in
+    if (isTutor && !tutorActiveRef.current) {
+      tutorActiveRef.current = true;
 
-    beat(); // immediate on mount / role change
-    heartbeatRef.current = setInterval(beat, 20 * 1000);
+      const beat = () => {
+        base44.functions.updateMyProfile({ updates: { last_seen: new Date().toISOString() } }).catch(() => {});
+      };
 
-    const clearOnline = () => {
-      base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
-    };
+      beat();
+      heartbeatRef.current = setInterval(beat, 20 * 1000);
+    }
 
-    return () => {
+    // Stop heartbeat when tutor logs out or role changes away from tutor
+    if (!isTutor && tutorActiveRef.current) {
+      tutorActiveRef.current = false;
       clearInterval(heartbeatRef.current);
-      clearOnline();
-    };
+      base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
+    }
   }, [user?.id, user?.role]);
+
+  // Cleanup on unmount (tab close / full reload)
+  useEffect(() => {
+    return () => {
+      if (tutorActiveRef.current) {
+        clearInterval(heartbeatRef.current);
+        base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
+      }
+    };
+  }, []);
 
   const logout = (shouldRedirect = true) => {
     setUser(null);
