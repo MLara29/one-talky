@@ -22,8 +22,15 @@ export default function MyLessons() {
   const [tutorProfile, setTutorProfile] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [cancellingLesson, setCancellingLesson] = useState(null);
+  const [tick, setTick] = useState(0);
 
   const T = (key) => t(lang, key);
+
+  // Tick every 30s to refresh countdown and join button visibility
+  useEffect(() => {
+    const interval = setInterval(() => setTick(n => n + 1), 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => { loadData(); }, [user]);
 
@@ -97,7 +104,8 @@ export default function MyLessons() {
     } finally { setActionLoading(false); }
   };
 
-  const now = Date.now();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const now = Date.now(); // refreshes on tick
   const upcoming = lessons
     .filter(l => l.status === "scheduled" && (!l.scheduled_at || new Date(l.scheduled_at).getTime() > now))
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
@@ -105,10 +113,19 @@ export default function MyLessons() {
   const inProgress = lessons.filter(l => l.status === "in_progress");
 
   const canJoin = (l) => {
-    if (user?.role !== "tutor") return true;
     if (!l.scheduled_at) return true;
-    const startsIn = new Date(l.scheduled_at).getTime() - now;
-    return startsIn <= 10 * 60 * 1000;
+    return new Date(l.scheduled_at).getTime() - now <= 10 * 60 * 1000;
+  };
+
+  const timeUntil = (scheduledAt) => {
+    const diff = new Date(scheduledAt).getTime() - now;
+    if (diff <= 0) return null;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60));
+    if (days > 0) return `in ${days}d ${hours}h`;
+    if (hours > 0) return `in ${hours}h ${mins}min`;
+    return `in ${mins}min`;
   };
 
   if (loading) return (
@@ -227,16 +244,17 @@ export default function MyLessons() {
                         {T("cancelBtn")}
                       </Button>
                     )}
-                    {canJoin(l) ? (
+                    {l.scheduled_at && !canJoin(l) && (
+                      <span className="text-xs text-gray-500 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 font-medium">
+                        {timeUntil(l.scheduled_at)}
+                      </span>
+                    )}
+                    {canJoin(l) && (
                       <Link to={`/classroom/${l.id}`}>
-                        <Button size="sm" className={user?.role === "tutor" ? "bg-emerald-500 hover:bg-emerald-600 text-white border-0" : "bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:opacity-90"}>
+                        <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white border-0">
                           {user?.role === "student" ? T("joinBtn") : "Join"}
                         </Button>
                       </Link>
-                    ) : (
-                      <span className="text-xs text-gray-500 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                        {(() => { const mins = Math.ceil((new Date(l.scheduled_at).getTime() - now) / 60000); return mins > 60 ? `in ${Math.ceil(mins/60)}h` : `in ${mins}min`; })()}
-                      </span>
                     )}
                   </div>
                 </div>
