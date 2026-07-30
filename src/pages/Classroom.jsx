@@ -244,6 +244,18 @@ export default function Classroom() {
 
     await client.join(appId, channelName, token, uid);
 
+    // Subscribe to any remote users already in the channel before we joined
+    for (const remoteUser of client.remoteUsers) {
+      if (remoteUser.hasVideo) {
+        await client.subscribe(remoteUser, "video");
+        if (remoteUser.videoTrack) setRemoteVideoTrack(remoteUser.videoTrack);
+      }
+      if (remoteUser.hasAudio) {
+        await client.subscribe(remoteUser, "audio");
+        remoteUser.audioTrack?.play();
+      }
+    }
+
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localAudioTrackRef.current = audioTrack;
     localVideoTrackRef.current = videoTrack;
