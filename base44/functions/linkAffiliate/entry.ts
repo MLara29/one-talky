@@ -49,19 +49,9 @@ Deno.serve(async (req) => {
       // Link coupon to affiliate id
       await base44.asServiceRole.entities.Coupon.update(coupon.id, { affiliate_id: preCreated.id });
     } else {
-      // Create new affiliate record
-      const newAffiliate = await base44.asServiceRole.entities.Affiliate.create({
-        user_id: user.id,
-        full_name,
-        email: user.email,
-        coupon_code: code,
-        commission_percent: 15,
-        status: 'active',
-        pix_key,
-        pix_key_type,
-        bank_info,
-      });
-      await base44.asServiceRole.entities.Coupon.update(coupon.id, { affiliate_id: newAffiliate.id });
+      // No pre-created affiliate record for this coupon or email.
+      // Block self-registration: only admin-pre-created affiliate records are allowed.
+      return Response.json({ error: 'Este cupom não está pré-autorizado para cadastro de afiliado. Entre em contato com o administrador.' }, { status: 403 });
     }
 
     // Update user role

@@ -40,13 +40,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // "allowed: true" — the actual auth result will be reported by the frontend
-    // via the recordAuthResult action flag on a subsequent call
-    const action = body.action; // "record_failure" | "record_success" | undefined
-
-    if (action === "record_failure") {
-      await recordAttempt(base44.asServiceRole, email, ip, false, false);
-    } else if (action === "record_success") {
+    // "allowed: true" — only the server records successes (via recordLoginAttempt function).
+    // "record_failure" is intentionally not accepted from the client to prevent
+    // DoS account lockout attacks by unauthenticated actors.
+    const action = body.action;
+    if (action === "record_success") {
       await recordAttempt(base44.asServiceRole, email, ip, true, false);
       cleanupOldAttempts(base44.asServiceRole); // fire-and-forget
     }
