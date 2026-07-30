@@ -201,7 +201,7 @@ export default function AppLayout() {
               </div>
             )}
             <NotificationBell />
-            <Link to="/profile">
+            <Link to={role === "student" ? "/student/personal-info" : "/profile"}>
               <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full text-gray-500">
                 <User className="w-4 h-4" />
               </Button>
