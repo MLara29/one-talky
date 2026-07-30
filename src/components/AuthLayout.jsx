@@ -7,9 +7,9 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
         <div className="text-center mb-10">
           <div className="flex flex-col items-center gap-3 mb-4">
             <img
-              src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/aa8d50b0c_image1.svg"
+              src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png"
               alt="One Talky"
-              className="h-14 w-auto object-contain"
+              className="h-20 w-auto object-contain"
             />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
