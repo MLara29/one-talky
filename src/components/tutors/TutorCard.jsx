@@ -232,9 +232,9 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
         )}
 
         {/* Action buttons */}
-        {(live || canSchedule) && !inLesson && (
+        {(live || canSchedule) && (
           <div className="mt-4 flex gap-2" style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: "14px" }}>
-            {live && (
+            {live && !inLesson && (
               <button
                 onClick={handleLessonNow}
                 disabled={booking}
@@ -248,13 +248,13 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
               <button
                 onClick={handleSchedule}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold transition-all hover:scale-105 shadow-lg ${
-                  live
+                  live && !inLesson
                     ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
                     : "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/20"
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
-                {live ? "Schedule" : "Schedule a lesson"}
+                {live && !inLesson ? "Schedule" : "Schedule a lesson"}
               </button>
             )}
           </div>

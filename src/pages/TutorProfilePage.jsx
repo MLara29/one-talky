@@ -199,17 +199,13 @@ export default function TutorProfilePage() {
 
         {/* Action buttons */}
         <div className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row gap-3">
-          {isLive(tutor) && (
+          {isLive(tutor) && !inLesson && (
             <Button
-              onClick={startInstantLesson} disabled={booking || inLesson}
-              className={`flex-1 h-12 rounded-2xl border-0 shadow-lg transition-all ${
-                inLesson
-                  ? "bg-red-500/10 border border-red-500/20 text-red-400 cursor-not-allowed opacity-60"
-                  : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-emerald-500/20 hover:scale-105"
-              }`}
+              onClick={startInstantLesson} disabled={booking}
+              className="flex-1 h-12 rounded-2xl border-0 shadow-lg transition-all bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-emerald-500/20 hover:scale-105"
             >
               <Video className="w-4 h-4 mr-2" />
-              {inLesson ? "Tutor is busy" : booking ? "Starting..." : "Lesson now"}
+              {booking ? "Starting..." : "Lesson now"}
             </Button>
           )}
           <Button
