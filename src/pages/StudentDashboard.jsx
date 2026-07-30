@@ -71,7 +71,7 @@ export default function StudentDashboard() {
     } catch { setTutors([]); } finally { setLoading(false); }
   };
 
-  const ONLINE_THRESHOLD_MS = 45 * 1000; // 45 seconds
+  const ONLINE_THRESHOLD_MS = 90 * 1000; // 90 seconds
   const isOnline = (t) => {
     if (!t.last_seen) return false;
     return (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;

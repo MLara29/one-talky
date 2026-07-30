@@ -7,7 +7,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 
-const ONLINE_THRESHOLD_MS = 45 * 1000;
+const ONLINE_THRESHOLD_MS = 90 * 1000;
 const isOnline = (t) => t.last_seen && (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
 const isLive = (t) => t.is_available_now && isOnline(t);
 const hasSchedule = (t) => t.availability && Object.keys(t.availability).some(day => t.availability[day]?.length > 0);
