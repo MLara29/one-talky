@@ -17,11 +17,14 @@ export default function AdminAffiliates() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [expanded, setExpanded] = useState(null);
-  const [editingCommission, setEditingCommission] = useState({}); // { [affiliateId]: string }
+  const [editingCommission, setEditingCommission] = useState({});
   const [savingCommission, setSavingCommission] = useState(null);
+  const [formMode, setFormMode] = useState("new"); // "new" | "link"
   const [form, setForm] = useState({
     full_name: "", email: "", coupon_code: "", commission_percent: 15, user_id: "",
   });
+  const [linkForm, setLinkForm] = useState({ affiliate_id: "", coupon_code: "" });
+  const [linking, setLinking] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -113,6 +116,38 @@ export default function AdminAffiliates() {
     } finally { setSavingCommission(null); }
   };
 
+  const handleLinkCoupon = async (e) => {
+    e.preventDefault();
+    setLinking(true);
+    try {
+      const code = linkForm.coupon_code.trim().toUpperCase();
+      if (!code || !linkForm.affiliate_id) throw new Error("Selecione um afiliado e informe o cupom");
+
+      const existingCoupons = await base44.entities.Coupon.filter({ code });
+      if (existingCoupons.length === 0) {
+        throw new Error(`Cupom "${code}" não existe. Crie o cupom em Cupons primeiro.`);
+      }
+
+      const affiliate = affiliates.find(a => a.id === linkForm.affiliate_id);
+      await base44.entities.Affiliate.create({
+        full_name: affiliate.full_name,
+        email: affiliate.email,
+        coupon_code: code,
+        commission_percent: affiliate.commission_percent,
+        status: "active",
+        user_id: affiliate.user_id || undefined,
+      }).then(async (newAff) => {
+        await base44.entities.Coupon.update(existingCoupons[0].id, { affiliate_id: newAff.id });
+      });
+
+      toast({ title: "Cupom vinculado! 🎉", description: `Cupom "${code}" vinculado ao afiliado "${affiliate.full_name}".` });
+      setLinkForm({ affiliate_id: "", coupon_code: "" });
+      loadData();
+    } catch (err) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally { setLinking(false); }
+  };
+
   const deleteAffiliate = async (aff) => {
     if (!confirm(`Excluir afiliado "${aff.full_name}"?`)) return;
     await base44.entities.Affiliate.delete(aff.id);
@@ -149,45 +184,101 @@ export default function AdminAffiliates() {
         </Button>
       </div>
 
-      {/* Create form */}
+      {/* Create / Link form */}
       <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-6">
-        <h2 className="theme-heading font-semibold mb-4">Novo Afiliado</h2>
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label className="theme-subtext text-sm mb-1 block">Nome completo *</Label>
-              <Input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
-                placeholder="João Silva" className="theme-input" required />
-            </div>
-            <div>
-              <Label className="theme-subtext text-sm mb-1 block">E-mail *</Label>
-              <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="joao@email.com" className="theme-input" required />
-            </div>
-            <div>
-              <Label className="theme-subtext text-sm mb-1 block">Código do Cupom (já existente) *</Label>
-              <Input value={form.coupon_code}
-                onChange={e => setForm(f => ({ ...f, coupon_code: e.target.value.toUpperCase() }))}
-                placeholder="JOAO15" className="theme-input font-mono uppercase" required />
-              <p className="text-xs text-gray-600 mt-1">Crie o cupom em Cupons antes de vincular aqui</p>
-            </div>
-            <div>
-              <Label className="theme-subtext text-sm mb-1 block">Comissão (%)</Label>
-              <Input type="number" min={1} max={50} value={form.commission_percent}
-                onChange={e => setForm(f => ({ ...f, commission_percent: e.target.value }))}
-                className="theme-input" />
-            </div>
-            <div className="sm:col-span-2">
-              <Label className="theme-subtext text-sm mb-1 block">User ID (opcional — para vincular ao login)</Label>
-              <Input value={form.user_id} onChange={e => setForm(f => ({ ...f, user_id: e.target.value }))}
-                placeholder="ID do usuário na plataforma" className="theme-input font-mono text-xs" />
-            </div>
-          </div>
-          <Button type="submit" disabled={creating}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20">
-            <Plus className="w-4 h-4 mr-1.5" /> {creating ? "Criando..." : "Criar Afiliado"}
-          </Button>
-        </form>
+        {/* Mode toggle */}
+        <div className="flex gap-2 mb-5">
+          <button
+            onClick={() => setFormMode("new")}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${formMode === "new" ? "bg-violet-600 text-white" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}
+          >
+            + Novo Afiliado
+          </button>
+          <button
+            onClick={() => setFormMode("link")}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${formMode === "link" ? "bg-violet-600 text-white" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}
+          >
+            🔗 Vincular Cupom a Afiliado Existente
+          </button>
+        </div>
+
+        {formMode === "new" ? (
+          <>
+            <h2 className="theme-heading font-semibold mb-4">Novo Afiliado</h2>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="theme-subtext text-sm mb-1 block">Nome completo *</Label>
+                  <Input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
+                    placeholder="João Silva" className="theme-input" required />
+                </div>
+                <div>
+                  <Label className="theme-subtext text-sm mb-1 block">E-mail *</Label>
+                  <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    placeholder="joao@email.com" className="theme-input" required />
+                </div>
+                <div>
+                  <Label className="theme-subtext text-sm mb-1 block">Código do Cupom (já existente) *</Label>
+                  <Input value={form.coupon_code}
+                    onChange={e => setForm(f => ({ ...f, coupon_code: e.target.value.toUpperCase() }))}
+                    placeholder="JOAO15" className="theme-input font-mono uppercase" required />
+                  <p className="text-xs text-gray-600 mt-1">Crie o cupom em Cupons antes de vincular aqui</p>
+                </div>
+                <div>
+                  <Label className="theme-subtext text-sm mb-1 block">Comissão (%)</Label>
+                  <Input type="number" min={1} max={50} value={form.commission_percent}
+                    onChange={e => setForm(f => ({ ...f, commission_percent: e.target.value }))}
+                    className="theme-input" />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label className="theme-subtext text-sm mb-1 block">User ID (opcional — para vincular ao login)</Label>
+                  <Input value={form.user_id} onChange={e => setForm(f => ({ ...f, user_id: e.target.value }))}
+                    placeholder="ID do usuário na plataforma" className="theme-input font-mono text-xs" />
+                </div>
+              </div>
+              <Button type="submit" disabled={creating}
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20">
+                <Plus className="w-4 h-4 mr-1.5" /> {creating ? "Criando..." : "Criar Afiliado"}
+              </Button>
+            </form>
+          </>
+        ) : (
+          <>
+            <h2 className="theme-heading font-semibold mb-1">Vincular Novo Cupom a Afiliado Existente</h2>
+            <p className="text-sm text-gray-500 mb-4">Cria um novo registro de afiliado com o mesmo nome/e-mail mas com um cupom diferente.</p>
+            <form onSubmit={handleLinkCoupon} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <Label className="theme-subtext text-sm mb-1 block">Selecionar Afiliado *</Label>
+                  <select
+                    value={linkForm.affiliate_id}
+                    onChange={e => setLinkForm(f => ({ ...f, affiliate_id: e.target.value }))}
+                    className="theme-input w-full h-9 rounded-md border px-3 text-sm bg-white/5 border-white/10"
+                    required
+                  >
+                    <option value="">— Escolha um afiliado —</option>
+                    {affiliates.map(a => (
+                      <option key={a.id} value={a.id}>{a.full_name} ({a.email}) — cupom atual: {a.coupon_code}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="theme-subtext text-sm mb-1 block">Novo Código de Cupom *</Label>
+                  <Input
+                    value={linkForm.coupon_code}
+                    onChange={e => setLinkForm(f => ({ ...f, coupon_code: e.target.value.toUpperCase() }))}
+                    placeholder="JOAO20" className="theme-input font-mono uppercase" required
+                  />
+                  <p className="text-xs text-gray-600 mt-1">Crie o cupom em Cupons antes de vincular aqui</p>
+                </div>
+              </div>
+              <Button type="submit" disabled={linking}
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20">
+                <Link className="w-4 h-4 mr-1.5" /> {linking ? "Vinculando..." : "Vincular Cupom"}
+              </Button>
+            </form>
+          </>
+        )}
       </div>
 
       {/* Affiliates list */}
