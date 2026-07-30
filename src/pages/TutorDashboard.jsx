@@ -170,6 +170,25 @@ export default function TutorDashboard() {
     { label: t(lang, "earnings"), value: `$${completedLessons.reduce((s, l) => s + (l.duration_minutes || 0) * (profile.price_per_minute || 0.9967), 0).toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
   ];
 
+  const now = Date.now();
+
+  const canJoinLesson = (l) => {
+    if (l.status === "in_progress") return true;
+    if (!l.scheduled_at) return true;
+    return new Date(l.scheduled_at).getTime() - now <= 10 * 60 * 1000;
+  };
+
+  const timeUntil = (scheduledAt) => {
+    const diff = new Date(scheduledAt).getTime() - now;
+    if (diff <= 0) return null;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60));
+    if (days > 0) return `in ${days}d ${hours}h`;
+    if (hours > 0) return `in ${hours}h ${mins}min`;
+    return `in ${mins}min`;
+  };
+
   return (
     <div>
       {upcomingAlert && (
@@ -295,11 +314,16 @@ export default function TutorDashboard() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Link to={`/classroom/${l.id}`}>
-                        <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-gradient-to-r from-orange-500 to-amber-500 shadow-orange-500/20"}`}>
-                          {l.status === "in_progress" ? t(lang, "joinNow") : t(lang, "join")}
-                        </Button>
-                      </Link>
+                      {l.scheduled_at && l.status !== "in_progress" && (
+                        <span className="text-xs text-gray-400 font-medium">{timeUntil(l.scheduled_at)}</span>
+                      )}
+                      {canJoinLesson(l) ? (
+                        <Link to={`/classroom/${l.id}`}>
+                          <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"}`}>
+                            {l.status === "in_progress" ? t(lang, "joinNow") : t(lang, "join")}
+                          </Button>
+                        </Link>
+                      ) : null}
                       <button
                         onClick={() => rejectLesson(l.id)}
                         className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 border border-red-500/20 transition-all hover:scale-105"
