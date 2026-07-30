@@ -83,23 +83,7 @@ export default function TutorDashboard() {
     return () => clearInterval(interval);
   }, [user]);
 
-  // Heartbeat: update last_seen every 2 min while tutor is logged in
-  useEffect(() => {
-    let profileId = null;
-    const beat = async () => {
-      if (!user?.id) return;
-      if (!profileId) {
-        const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) profileId = profiles[0].id;
-      }
-      if (profileId) {
-        await base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date().toISOString() } });
-      }
-    };
-    beat();
-    const interval = setInterval(beat, 2 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [user?.id]);
+
 
   const loadData = async () => {
     try {

@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }) => {
     heartbeatRef.current = setInterval(beat, 20 * 1000);
 
     const clearOnline = () => {
-      base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
+      base44.functions.updateMyProfile({ updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
     };
 
     return () => {
