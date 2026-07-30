@@ -195,17 +195,6 @@ const TUTORS = [
   { name: "Priya", country: "India", flag: "🇮🇳", line: "I like working real situations: work, travel, interviews.", photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face" },
 ];
 
-const SLIDER_IMAGES = [
-  "https://images.unsplash.com/photo-1518495973542-4542c06a5843?q=80&w=1974&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1472396961693-142e6e269027?q=80&w=2152&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1505142468610-359e7d316be0?q=80&w=2126&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1482881497185-d4a9ddbe4151?q=80&w=1965&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1524799526615-766a9833dec0?q=80&w=1935&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop",
-];
-
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 .ot-lp { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #17181C; background: #FDFBF9; -webkit-font-smoothing: antialiased; }
@@ -213,7 +202,6 @@ const CSS = `
 @keyframes ot-floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
 @keyframes ot-floaty2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(9px)} }
 @keyframes ot-floaty3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
-@keyframes ot-scroll-left { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
 
 /* Nav links: hide on small, show on large */
 .ot-nav-links { display:flex; gap:4px; justify-content:center; flex:1; }
@@ -494,17 +482,6 @@ export default function Landing() {
             </div>
           ))}
         </div>
-        {/* Image auto-slider */}
-        <div style={{ marginTop: 48, overflow: "hidden", borderRadius: 20, maskImage: "linear-gradient(90deg,transparent 0%,black 8%,black 92%,transparent 100%)", WebkitMaskImage: "linear-gradient(90deg,transparent 0%,black 8%,black 92%,transparent 100%)" }}>
-          <div style={{ display: "flex", gap: 16, width: "max-content", animation: "ot-scroll-left 28s linear infinite" }}>
-            {[...SLIDER_IMAGES, ...SLIDER_IMAGES].map((src, i) => (
-              <div key={i} style={{ flexShrink: 0, width: 220, height: 160, borderRadius: 14, overflow: "hidden", boxShadow: "0 8px 24px -12px rgba(23,24,28,.3)" }}>
-                <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #EEE7DD", borderRadius: 14, padding: "12px 18px" }}>
             <span style={{ width: 34, height: 34, borderRadius: 9, background: "#EAF1FB", display: "flex", alignItems: "center", justifyContent: "center" }}>🔒</span>
