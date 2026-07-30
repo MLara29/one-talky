@@ -260,11 +260,18 @@ export default function TutorDashboard() {
 
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
         <h2 className="theme-heading font-display font-bold text-white mb-5">{t(lang, "upcomingLessons")}</h2>
-        {lessons.length === 0 ? (
+        {lessons.filter(l => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() > Date.now()).length === 0 ? (
           <p className="theme-subtext text-sm text-gray-500 py-6 text-center">{t(lang, "noUpcomingLessons")}</p>
         ) : (
           <div className="space-y-3">
-            {lessons.map(l => {
+            {lessons
+              .filter(l => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() > Date.now())
+              .sort((a, b) => {
+                if (a.status === "in_progress") return -1;
+                if (b.status === "in_progress") return 1;
+                return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+              })
+              .map(l => {
               const sp = studentProfiles[l.student_id];
               return (
                 <div key={l.id} className="p-4 rounded-2xl bg-white/5 border border-white/5">
