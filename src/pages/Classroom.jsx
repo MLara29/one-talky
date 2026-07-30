@@ -40,6 +40,7 @@ export default function Classroom() {
   const clientRef = useRef(null);
   const reconcileRef = useRef(null);
   const joinGuardRef = useRef(false);
+  const autoToggleRef = useRef(false);
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
   const screenVideoTrackRef = useRef(null);
@@ -289,6 +290,27 @@ export default function Classroom() {
           console.error("[Agora] reconcile failed:", e);
         }
       }
+
+      // Once the other participant is in the room, the student's camera is
+      // automatically toggled off/on so the tutor always receives the video.
+      if (
+        user?.role !== "tutor" &&
+        client.remoteUsers.length > 0 &&
+        !autoToggleRef.current &&
+        localVideoTrackRef.current
+      ) {
+        autoToggleRef.current = true;
+        try {
+          await localVideoTrackRef.current.setEnabled(false);
+          setCameraOn(false);
+          await new Promise(r => setTimeout(r, 700));
+          await localVideoTrackRef.current.setEnabled(true);
+          setCameraOn(true);
+          if (localVideoDiv.current) localVideoTrackRef.current.play(localVideoDiv.current);
+        } catch (e) {
+          console.error("[Agora] auto camera toggle failed:", e);
+        }
+      }
     };
     reconcile();
     reconcileRef.current = setInterval(reconcile, 2000);
@@ -412,6 +434,7 @@ export default function Classroom() {
     try { await clientRef.current?.leave(); } catch {}
     clientRef.current = null;
     joinGuardRef.current = false;
+    autoToggleRef.current = false;
   };
 
   const toggleCamera = async () => {
