@@ -28,6 +28,12 @@ Deno.serve(async (req) => {
       started_at: new Date().toISOString(),
     });
 
+    // Mark tutor as in_lesson
+    const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
+    if (tutorProfiles.length > 0) {
+      await base44.asServiceRole.entities.TutorProfile.update(tutorProfiles[0].id, { in_lesson: true });
+    }
+
     // Notify the tutor
     await base44.asServiceRole.entities.Notification.create({
       user_id: lesson.tutor_id,

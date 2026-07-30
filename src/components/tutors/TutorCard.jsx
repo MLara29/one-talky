@@ -98,19 +98,12 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
   const live = isLive(tutor);
   const online = isOnline(tutor);
   const canSchedule = hasSchedule(tutor);
-  const [inLesson, setInLesson] = useState(false);
+  const inLesson = Boolean(tutor.in_lesson);
   const [booking, setBooking] = useState(false);
   const { lang } = useLang();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!tutor.user_id) return;
-    base44.entities.Lesson.filter({ tutor_id: tutor.user_id, status: "in_progress" }, "-created_date", 1)
-      .then(lessons => setInLesson(lessons.length > 0))
-      .catch(() => {});
-  }, [tutor.user_id]);
 
   const handleLessonNow = async (e) => {
     e.preventDefault();
@@ -132,6 +125,8 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
         language: tutor.native_languages?.[0] || "english",
         status: "in_progress", type: "instant", started_at: new Date().toISOString(),
       });
+      // Mark tutor as in_lesson
+      base44.functions.invoke('startLesson', { lesson_id: lesson.id }).catch(() => {});
       navigate(`/classroom/${lesson.id}`);
     } catch {
       toast({ title: "Erro", description: "Não foi possível iniciar a aula. Tente novamente.", variant: "destructive" });

@@ -79,6 +79,11 @@
       "type": "boolean",
       "default": false
     },
+    "in_lesson": {
+      "type": "boolean",
+      "default": false,
+      "description": "True while tutor is in an active video lesson"
+    },
     "last_seen": {
       "type": "string",
       "format": "date-time",

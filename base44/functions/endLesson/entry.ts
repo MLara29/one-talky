@@ -61,6 +61,7 @@ Deno.serve(async (req) => {
         total_earnings: Math.round(((tp.total_earnings ?? 0) + earnings) * 100) / 100,
         total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
         total_lessons: (tp.total_lessons ?? 0) + 1,
+        in_lesson: false,
       });
     }
 
