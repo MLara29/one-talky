@@ -97,9 +97,19 @@ export default function MyLessons() {
     } finally { setActionLoading(false); }
   };
 
-  const upcoming = lessons.filter(l => l.status === "scheduled");
+  const now = Date.now();
+  const upcoming = lessons
+    .filter(l => l.status === "scheduled" && (!l.scheduled_at || new Date(l.scheduled_at).getTime() > now))
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
   const completed = lessons.filter(l => l.status === "completed");
   const inProgress = lessons.filter(l => l.status === "in_progress");
+
+  const canJoin = (l) => {
+    if (user?.role !== "tutor") return true;
+    if (!l.scheduled_at) return true;
+    const startsIn = new Date(l.scheduled_at).getTime() - now;
+    return startsIn <= 10 * 60 * 1000;
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center py-24">
@@ -217,11 +227,17 @@ export default function MyLessons() {
                         {T("cancelBtn")}
                       </Button>
                     )}
-                    <Link to={`/classroom/${l.id}`}>
-                      <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:opacity-90">
-                        {user?.role === "student" ? T("joinBtn") : "Join"}
-                      </Button>
-                    </Link>
+                    {canJoin(l) ? (
+                      <Link to={`/classroom/${l.id}`}>
+                        <Button size="sm" className={user?.role === "tutor" ? "bg-emerald-500 hover:bg-emerald-600 text-white border-0" : "bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 hover:opacity-90"}>
+                          {user?.role === "student" ? T("joinBtn") : "Join"}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-gray-500 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
+                        {(() => { const mins = Math.ceil((new Date(l.scheduled_at).getTime() - now) / 60000); return mins > 60 ? `in ${Math.ceil(mins/60)}h` : `in ${mins}min`; })()}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
