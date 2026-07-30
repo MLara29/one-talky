@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import useInactivityLogout from "@/hooks/useInactivityLogout";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import NotificationBell from "@/components/NotificationBell";
+import LessonReminderPopup from "@/components/LessonReminderPopup";
 import {
   Search, Calendar, BarChart3, BookOpen, User, LogOut,
   GraduationCap, DollarSign, Star, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users, Bell
@@ -264,6 +265,7 @@ export default function AppLayout() {
       </main>
 
       <LiveNotificationToast />
+      <LessonReminderPopup />
 
       {/* Mobile bottom nav */}
       <nav

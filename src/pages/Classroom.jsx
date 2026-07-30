@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, Globe, X, User, AlertTriangle, Monitor, MonitorOff } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
+import LessonReminderPopup from "@/components/LessonReminderPopup";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
 
@@ -755,6 +756,8 @@ export default function Classroom() {
           <PhoneOff className="w-5 h-5" />
         </button>
       </div>
+
+      <LessonReminderPopup />
 
       {showReview && (
         <ReviewModal
