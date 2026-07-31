@@ -81,7 +81,22 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
         };
       }
 
-      // Check lesson count: max 1 lesson in this window
+      const unlockDate = sevenDaysAfterStart.toLocaleDateString("pt-BR", {
+        day: "2-digit", month: "2-digit", year: "numeric"
+      });
+      const blockedError = {
+        allowed: false,
+        httpStatus: 403,
+        error: `Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos. Novos agendamentos ficarão disponíveis a partir do dia ${unlockDate}.`,
+      };
+
+      // Fast-path: CAS lock field already set — block without querying Lessons
+      if (sp.first_week_lesson_id) {
+        console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_lock_set lesson_id=${sp.first_week_lesson_id}`);
+        return blockedError;
+      }
+
+      // Fallback count check (catches records created before this field existed)
       const existingLessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: studentId });
       const windowLessons = existingLessons.filter(l => {
         if (l.status === "cancelled") return false;
@@ -90,15 +105,8 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
       });
 
       if (windowLessons.length >= 1) {
-        const unlockDate = sevenDaysAfterStart.toLocaleDateString("pt-BR", {
-          day: "2-digit", month: "2-digit", year: "numeric"
-        });
         console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_lesson_limit count=${windowLessons.length}`);
-        return {
-          allowed: false,
-          httpStatus: 403,
-          error: `Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos. Novos agendamentos ficarão disponíveis a partir do dia ${unlockDate}.`,
-        };
+        return blockedError;
       }
     }
   }

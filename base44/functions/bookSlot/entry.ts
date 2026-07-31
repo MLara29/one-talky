@@ -69,7 +69,46 @@ export default async function(req) {
       }, { status: 409 });
     }
 
-    // ── RULE 3: Lock the tutor slot atomically ──
+    // ── RULE 3: First-week CAS lock — prevents race condition for cycle-1 students ──
+    // Two parallel requests can both pass validateBookingEligibility (read "0 lessons").
+    // We resolve this with a compare-and-swap on StudentProfile.first_week_lesson_id.
+    // updateMany only updates records where first_week_lesson_id is null/absent,
+    // so only ONE concurrent request will get updated=1; the other gets updated=0.
+    const spProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: studentId });
+    const sp = spProfiles[0];
+    if (sp) {
+      const subCycle = sp.subscription_cycle || 0;
+      const subStartDate = sp.subscription_start_date ? new Date(sp.subscription_start_date) : null;
+      if (subCycle === 1 && subStartDate) {
+        const sevenDaysAfterStart = new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const isInFirstWeek = new Date() < sevenDaysAfterStart;
+        if (isInFirstWeek) {
+          // Double-check lock field (second validation after eligibility pre-check)
+          if (sp.first_week_lesson_id) {
+            console.log(`[bookSlot] REJECTED student=${studentId} reason=first_week_cas_already_locked lesson_id=${sp.first_week_lesson_id}`);
+            return Response.json({
+              error: `Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos.`,
+            }, { status: 409 });
+          }
+          // CAS: set placeholder only if field is still null/absent
+          const casResult = await base44.asServiceRole.entities.StudentProfile.updateMany(
+            { user_id: studentId, first_week_lesson_id: { $exists: false } },
+            { $set: { first_week_lesson_id: '__pending__' } }
+          );
+          if (casResult.updated === 0) {
+            // Another concurrent request already claimed the lock
+            console.log(`[bookSlot] REJECTED student=${studentId} reason=first_week_cas_lost`);
+            return Response.json({
+              error: `Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos.`,
+            }, { status: 409 });
+          }
+          // We own the lock. Proceed — we'll write the real lesson_id after creation.
+          // On any failure below, rollback by clearing the field.
+        }
+      }
+    }
+
+    // ── RULE 4: Lock the tutor slot atomically ──
     // This is the serialization point: if two concurrent requests reach here,
     // the second will get 409 "Slot already booked" from the booked_slots check,
     // and no Lesson record will be created for it.
@@ -87,22 +126,46 @@ export default async function(req) {
     await base44.asServiceRole.entities.TutorProfile.update(tutor_profile_id, { booked_slots: updatedSlots });
 
     // ── Create the Lesson record server-side (after slot is secured) ──
-    // Moving creation here ensures: check eligibility → lock slot → create Lesson
-    // are all in the same server handler. A concurrent request that passes eligibility
-    // will fail on the slot lock above and never reach lesson creation.
     let lesson = null;
     if (tutor_user_id) {
-      lesson = await base44.asServiceRole.entities.Lesson.create({
-        tutor_id: tutor_user_id,
-        student_id: studentId,
-        tutor_name: tutor_name || '',
-        student_name: student_name || '',
-        language: language || 'english',
-        status: 'scheduled',
-        type: 'scheduled',
-        scheduled_at: scheduled_at,
-        duration_minutes: duration_minutes || 30,
-      });
+      try {
+        lesson = await base44.asServiceRole.entities.Lesson.create({
+          tutor_id: tutor_user_id,
+          student_id: studentId,
+          tutor_name: tutor_name || '',
+          student_name: student_name || '',
+          language: language || 'english',
+          status: 'scheduled',
+          type: 'scheduled',
+          scheduled_at: scheduled_at,
+          duration_minutes: duration_minutes || 30,
+        });
+      } catch (lessonErr) {
+        // Rollback the first-week CAS lock so the student is not permanently blocked
+        console.error('[bookSlot] Lesson creation failed — rolling back first_week_lesson_id', lessonErr.message);
+        await base44.asServiceRole.entities.StudentProfile.updateMany(
+          { user_id: studentId, first_week_lesson_id: '__pending__' },
+          { $unset: { first_week_lesson_id: '' } }
+        ).catch(() => {});
+        // Also release the tutor slot we just locked
+        await base44.asServiceRole.entities.TutorProfile.update(tutor_profile_id, { booked_slots: currentBooked }).catch(() => {});
+        throw lessonErr;
+      }
+
+      // Commit the first-week CAS lock with the real lesson ID
+      if (sp && lesson) {
+        const subCycle = sp.subscription_cycle || 0;
+        const subStartDate = sp.subscription_start_date ? new Date(sp.subscription_start_date) : null;
+        if (subCycle === 1 && subStartDate) {
+          const sevenDaysAfterStart = new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+          if (new Date() < sevenDaysAfterStart) {
+            await base44.asServiceRole.entities.StudentProfile.updateMany(
+              { user_id: studentId, first_week_lesson_id: '__pending__' },
+              { $set: { first_week_lesson_id: lesson.id } }
+            ).catch(() => {});
+          }
+        }
+      }
     }
 
     return Response.json({ success: true, booked_slots: updatedSlots, lesson });

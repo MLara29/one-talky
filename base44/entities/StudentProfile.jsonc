@@ -101,6 +101,10 @@
       "type": "number",
       "default": 0,
       "description": "N\u00famero do ciclo atual (0 = sem assinatura, 1 = primeiro m\u00eas, 2+ = meses seguintes)"
+    },
+    "first_week_lesson_id": {
+      "type": "string",
+      "description": "ID da Lesson agendada durante a janela dos primeiros 7 dias do ciclo 1. Usado como lock CAS para prevenir race conditions."
     }
   },
   "required": [
