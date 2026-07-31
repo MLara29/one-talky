@@ -26,11 +26,14 @@ export default function AffiliatePayoutTab({ affiliate, onSaved }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await base44.entities.Affiliate.update(affiliate.id, {
-        pix_key: form.pix_key,
-        pix_key_type: form.pix_key_type,
-        bank_info: form.bank_info,
+      const response = await base44.functions.invoke("updateMyAffiliateProfile", {
+        updates: {
+          pix_key: form.pix_key,
+          pix_key_type: form.pix_key_type,
+          bank_info: form.bank_info,
+        },
       });
+      if (response.data?.error) throw new Error(response.data.error);
       toast({ title: "Dados salvos! ✅", description: "Usaremos esses dados para o próximo repasse." });
       onSaved?.();
     } catch {

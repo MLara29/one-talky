@@ -328,9 +328,8 @@ export default function Classroom() {
 
   const sendScreenShareSignal = async (active) => {
     try {
-      await base44.entities.ClassroomMessage.create({
+      await base44.functions.invoke("sendClassroomMessage", {
         lesson_id: id,
-        sender_id: user?.id,
         sender_name: "__system",
         text: active ? "__SCREEN_SHARE:true" : "__SCREEN_SHARE:false",
       });
@@ -476,12 +475,12 @@ export default function Classroom() {
     }]);
 
     try {
-      await base44.entities.ClassroomMessage.create({
+      const response = await base44.functions.invoke("sendClassroomMessage", {
         lesson_id: id,
-        sender_id: user.id,
         sender_name: senderName,
         text,
       });
+      if (response.data?.error) throw new Error(response.data.error);
     } catch (e) {
       console.error("[Chat] sendMessage error:", e);
     }

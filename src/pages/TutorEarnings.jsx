@@ -95,24 +95,11 @@ export default function TutorEarnings() {
     if (!paidUnconfirmedWR) return;
     setRequesting(true);
     try {
-      await base44.entities.WithdrawalRequest.update(paidUnconfirmedWR.id, {
-        tutor_confirmed: true,
-        confirmed_at: new Date().toISOString(),
+      const response = await base44.functions.invoke("confirmWithdrawal", {
+        withdrawal_id: paidUnconfirmedWR.id,
       });
-      // Notify admins about payment confirmation
-      try {
-        const admins = await base44.entities.User.filter({ role: "admin" });
-        await base44.entities.Notification.bulkCreate(
-          admins.map(a => ({
-            user_id: a.id,
-            title: `✅ Pagamento confirmado: ${profile.full_name}`,
-            message: `Tutor ${profile.full_name} confirmou o recebimento de $${paidUnconfirmedWR.amount?.toFixed(2)}.`,
-            type: "general",
-            is_read: false,
-            link: "/admin/earnings",
-          }))
-        );
-      } catch {}
+      if (response.data?.error) throw new Error(response.data.error);
+      // Admin notification is handled server-side by confirmWithdrawal
       toast({ title: "Receipt confirmed! 🎉", description: "Thank you for confirming. Your earnings have been updated." });
       loadData();
     } catch {

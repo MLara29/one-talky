@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { X, ArrowUp, ArrowDown, XCircle, CheckCircle, Zap } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const PLANS = [
   { id: "free", label: "Free", minutes: 15, price: "R$ 0", color: "from-gray-500 to-gray-600" },
@@ -13,6 +14,7 @@ const PLANS = [
 const ORDER = ["free", "basic", "standard", "premium"];
 
 export default function PlanManageModal({ profile, onClose, onUpdated }) {
+  const { toast } = useToast();
   const currentIdx = ORDER.indexOf(profile.plan || "free");
   const [selected, setSelected] = useState(profile.plan || "free");
   const [saving, setSaving] = useState(false);
@@ -26,14 +28,26 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
   const handleConfirm = async () => {
     if (isSame) { onClose(); return; }
     setSaving(true);
-    const newPlan = PLANS.find(p => p.id === selected);
-    await base44.entities.StudentProfile.update(profile.id, {
-      plan: selected,
-      credits_minutes: newPlan.minutes,
-    });
-    setSaving(false);
-    setDone(true);
-    onUpdated({ ...profile, plan: selected, credits_minutes: newPlan.minutes });
+    try {
+      if (selected === "free") {
+        // Cancellation goes through the server — it enforces the "no free credits on cancel" rule
+        const response = await base44.functions.invoke("cancelMyPlan", {});
+        if (response.data?.error) throw new Error(response.data.error);
+        onUpdated({ ...profile, plan: "free", credits_minutes: 0, subscription_status: "cancelled" });
+      } else {
+        const newPlan = PLANS.find(p => p.id === selected);
+        await base44.entities.StudentProfile.update(profile.id, {
+          plan: selected,
+          credits_minutes: newPlan.minutes,
+        });
+        onUpdated({ ...profile, plan: selected, credits_minutes: newPlan.minutes });
+      }
+      setDone(true);
+    } catch (e) {
+      toast({ title: "Erro ao atualizar plano", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

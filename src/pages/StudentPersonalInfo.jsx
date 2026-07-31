@@ -62,13 +62,16 @@ export default function StudentPersonalInfo() {
     if (!profile?.id) return;
     setSaving(true);
     try {
-      await base44.entities.StudentProfile.update(profile.id, {
-        full_name: form.full_name,
-        target_language: form.target_language,
-        level: form.level,
-        objective: form.objective,
-        conversation_topics: form.conversation_topics,
+      const response = await base44.functions.invoke("updateMyProfile", {
+        updates: {
+          full_name: form.full_name,
+          target_language: form.target_language,
+          level: form.level,
+          objective: form.objective,
+          conversation_topics: form.conversation_topics,
+        },
       });
+      if (response.data?.error) throw new Error(response.data.error);
       await base44.auth.updateMe({ full_name: form.full_name });
       toast({ title: "Perfil atualizado! ✅" });
       loadProfile();
