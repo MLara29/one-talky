@@ -58,24 +58,11 @@ export default function AdminAffiliates() {
       const code = form.coupon_code.trim().toUpperCase();
       if (!code) throw new Error("Código do cupom obrigatório");
 
-      // Ensure a Coupon record exists with this code
-      const existingCoupons = await base44.entities.Coupon.filter({ code });
-      if (existingCoupons.length === 0) {
-        throw new Error(`Cupom "${code}" não existe. Crie o cupom em Cupons primeiro.`);
-      }
-
-      // Create affiliate
-      const affiliate = await base44.entities.Affiliate.create({
-        full_name: form.full_name,
-        email: form.email,
-        coupon_code: code,
-        commission_percent: Number(form.commission_percent),
-        status: "active",
-        user_id: form.user_id || undefined,
+      const response = await base44.functions.invoke("adminManageAffiliate", {
+        action: "create",
+        payload: { full_name: form.full_name, email: form.email, coupon_code: code, commission_percent: Number(form.commission_percent), user_id: form.user_id || undefined },
       });
-
-      // Link coupon to affiliate
-      await base44.entities.Coupon.update(existingCoupons[0].id, { affiliate_id: affiliate.id });
+      if (response.data?.error) throw new Error(response.data.error);
 
       toast({ title: "Afiliado criado! 🎉" });
       setForm({ full_name: "", email: "", coupon_code: "", commission_percent: 15, user_id: "" });
@@ -86,17 +73,20 @@ export default function AdminAffiliates() {
   };
 
   const toggleStatus = async (aff) => {
-    await base44.entities.Affiliate.update(aff.id, { status: aff.status === "active" ? "inactive" : "active" });
-    loadData();
+    try {
+      const response = await base44.functions.invoke("adminManageAffiliate", { action: "toggle_status", payload: { affiliate_id: aff.id } });
+      if (response.data?.error) throw new Error(response.data.error);
+      loadData();
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const markAsPaid = async (earningId) => {
-    await base44.entities.AffiliateEarning.update(earningId, {
-      status: "pago",
-      paid_at: new Date().toISOString(),
-    });
-    toast({ title: "Marcado como pago ✅" });
-    loadData();
+    try {
+      const response = await base44.functions.invoke("adminManageAffiliate", { action: "mark_earning_paid", payload: { earning_id: earningId } });
+      if (response.data?.error) throw new Error(response.data.error);
+      toast({ title: "Marcado como pago ✅" });
+      loadData();
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const saveCommission = async (aff) => {
@@ -107,7 +97,8 @@ export default function AdminAffiliates() {
     }
     setSavingCommission(aff.id);
     try {
-      await base44.entities.Affiliate.update(aff.id, { commission_percent: newPct });
+      const response = await base44.functions.invoke("adminManageAffiliate", { action: "update_commission", payload: { affiliate_id: aff.id, commission_percent: newPct } });
+      if (response.data?.error) throw new Error(response.data.error);
       toast({ title: "Comissão atualizada ✅" });
       setEditingCommission(prev => { const n = { ...prev }; delete n[aff.id]; return n; });
       loadData();
@@ -123,22 +114,12 @@ export default function AdminAffiliates() {
       const code = linkForm.coupon_code.trim().toUpperCase();
       if (!code || !linkForm.affiliate_id) throw new Error("Selecione um afiliado e informe o cupom");
 
-      const existingCoupons = await base44.entities.Coupon.filter({ code });
-      if (existingCoupons.length === 0) {
-        throw new Error(`Cupom "${code}" não existe. Crie o cupom em Cupons primeiro.`);
-      }
-
       const affiliate = affiliates.find(a => a.id === linkForm.affiliate_id);
-      await base44.entities.Affiliate.create({
-        full_name: affiliate.full_name,
-        email: affiliate.email,
-        coupon_code: code,
-        commission_percent: affiliate.commission_percent,
-        status: "active",
-        user_id: affiliate.user_id || undefined,
-      }).then(async (newAff) => {
-        await base44.entities.Coupon.update(existingCoupons[0].id, { affiliate_id: newAff.id });
+      const response = await base44.functions.invoke("adminManageAffiliate", {
+        action: "link_coupon",
+        payload: { affiliate_id: linkForm.affiliate_id, coupon_code: code },
       });
+      if (response.data?.error) throw new Error(response.data.error);
 
       toast({ title: "Cupom vinculado! 🎉", description: `Cupom "${code}" vinculado ao afiliado "${affiliate.full_name}".` });
       setLinkForm({ affiliate_id: "", coupon_code: "" });
@@ -150,8 +131,11 @@ export default function AdminAffiliates() {
 
   const deleteAffiliate = async (aff) => {
     if (!confirm(`Excluir afiliado "${aff.full_name}"?`)) return;
-    await base44.entities.Affiliate.delete(aff.id);
-    loadData();
+    try {
+      const response = await base44.functions.invoke("adminManageAffiliate", { action: "delete", payload: { affiliate_id: aff.id } });
+      if (response.data?.error) throw new Error(response.data.error);
+      loadData();
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const STATUS_CFG = {

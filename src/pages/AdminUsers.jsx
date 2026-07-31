@@ -43,38 +43,53 @@ export default function AdminUsers() {
   };
 
   const blockTutor = async (t) => {
-    const newStatus = t.status === "rejected" ? "approved" : "rejected";
-    await base44.entities.TutorProfile.update(t.id, { status: newStatus });
-    setTutors(prev => prev.map(x => x.id === t.id ? { ...x, status: newStatus } : x));
-    toast({ title: newStatus === "rejected" ? "Tutor bloqueado" : "Tutor desbloqueado" });
+    try {
+      const response = await base44.functions.invoke("adminManageTutor", { tutor_id: t.id, action: "toggle_block" });
+      if (response.data?.error) throw new Error(response.data.error);
+      const newStatus = response.data.status;
+      setTutors(prev => prev.map(x => x.id === t.id ? { ...x, status: newStatus } : x));
+      toast({ title: newStatus === "rejected" ? "Tutor bloqueado" : "Tutor desbloqueado" });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const deleteTutor = async (t) => {
     if (!confirm(`Deletar ${t.full_name}? Esta ação não pode ser desfeita.`)) return;
-    await base44.entities.TutorProfile.delete(t.id);
-    setTutors(prev => prev.filter(x => x.id !== t.id));
-    toast({ title: "Tutor deletado" });
+    try {
+      const response = await base44.functions.invoke("adminManageTutor", { tutor_id: t.id, action: "delete" });
+      if (response.data?.error) throw new Error(response.data.error);
+      setTutors(prev => prev.filter(x => x.id !== t.id));
+      toast({ title: "Tutor deletado" });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const toggleContractType = async (t) => {
-    const newType = t.contract_type === "upwork" ? "direct" : "upwork";
-    await base44.entities.TutorProfile.update(t.id, { contract_type: newType });
-    setTutors(prev => prev.map(x => x.id === t.id ? { ...x, contract_type: newType } : x));
-    toast({ title: `Contrato alterado para ${newType === "upwork" ? "Upwork" : "Direto"}` });
+    try {
+      const response = await base44.functions.invoke("adminManageTutor", { tutor_id: t.id, action: "toggle_contract_type" });
+      if (response.data?.error) throw new Error(response.data.error);
+      const newType = response.data.contract_type;
+      setTutors(prev => prev.map(x => x.id === t.id ? { ...x, contract_type: newType } : x));
+      toast({ title: `Contrato alterado para ${newType === "upwork" ? "Upwork" : "Direto"}` });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const blockStudent = async (s) => {
-    const newPlan = s.plan === "blocked" ? "free" : "blocked";
-    await base44.entities.StudentProfile.update(s.id, { plan: newPlan });
-    setStudents(prev => prev.map(x => x.id === s.id ? { ...x, plan: newPlan } : x));
-    toast({ title: newPlan === "blocked" ? "Aluno bloqueado" : "Aluno desbloqueado" });
+    try {
+      const response = await base44.functions.invoke("adminManageStudent", { student_id: s.id, action: "toggle_block" });
+      if (response.data?.error) throw new Error(response.data.error);
+      const newPlan = response.data.plan;
+      setStudents(prev => prev.map(x => x.id === s.id ? { ...x, plan: newPlan } : x));
+      toast({ title: newPlan === "blocked" ? "Aluno bloqueado" : "Aluno desbloqueado" });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const deleteStudent = async (s) => {
     if (!confirm(`Deletar ${s.full_name}? Esta ação não pode ser desfeita.`)) return;
-    await base44.entities.StudentProfile.delete(s.id);
-    setStudents(prev => prev.filter(x => x.id !== s.id));
-    toast({ title: "Aluno deletado" });
+    try {
+      const response = await base44.functions.invoke("adminManageStudent", { student_id: s.id, action: "delete" });
+      if (response.data?.error) throw new Error(response.data.error);
+      setStudents(prev => prev.filter(x => x.id !== s.id));
+      toast({ title: "Aluno deletado" });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const changeUserRole = async (userId, role) => {
@@ -95,21 +110,24 @@ export default function AdminUsers() {
       toast({ title: "Usuário não encontrado", description: "O afiliado precisa se registrar na plataforma primeiro.", variant: "destructive" });
       return;
     }
-    // Link user_id on affiliate record if missing
-    if (!a.user_id || a.user_id !== targetUser.id) {
-      await base44.entities.Affiliate.update(a.id, { user_id: targetUser.id });
+    try {
+      const response = await base44.functions.invoke("adminManageAffiliateUser", {
+        affiliate_id: a.id, action: "link_role", target_user_id: targetUser.id,
+      });
+      if (response.data?.error) throw new Error(response.data.error);
       setAffiliates(prev => prev.map(x => x.id === a.id ? { ...x, user_id: targetUser.id } : x));
-    }
-    // Set role = "affiliate" on the User record using the backend function
-    await base44.functions.invoke("setUserRole", { targetUserId: targetUser.id, role: "affiliate" });
-    toast({ title: "Role affiliate definida!", description: `${a.full_name} já tem acesso ao painel de afiliado.` });
+      toast({ title: "Role affiliate definida!", description: `${a.full_name} já tem acesso ao painel de afiliado.` });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const deleteAffiliate = async (a) => {
     if (!confirm(`Deletar afiliado ${a.full_name}?`)) return;
-    await base44.entities.Affiliate.delete(a.id);
-    setAffiliates(prev => prev.filter(x => x.id !== a.id));
-    toast({ title: "Afiliado deletado" });
+    try {
+      const response = await base44.functions.invoke("adminManageAffiliateUser", { affiliate_id: a.id, action: "delete" });
+      if (response.data?.error) throw new Error(response.data.error);
+      setAffiliates(prev => prev.filter(x => x.id !== a.id));
+      toast({ title: "Afiliado deletado" });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   const [selectedStudent, setSelectedStudent] = useState(null);

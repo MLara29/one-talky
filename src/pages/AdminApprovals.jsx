@@ -22,14 +22,11 @@ export default function AdminApprovals() {
 
   const handleDecision = async (tutor, decision) => {
     try {
-      await base44.entities.TutorProfile.update(tutor.id, { status: decision });
-      // Update user role when approved so dashboard routing works correctly
-      if (decision === "approved" && tutor.user_id) {
-        await base44.entities.User.update(tutor.user_id, { role: "tutor" });
-      }
+      const response = await base44.functions.invoke("adminReviewTutorApplication", { tutor_id: tutor.id, decision });
+      if (response.data?.error) throw new Error(response.data.error);
       setTutors(prev => prev.filter(t => t.id !== tutor.id));
       toast({ title: decision === "approved" ? "Tutor approved ✅" : "Tutor rejected" });
-    } catch { toast({ title: "Error", variant: "destructive" }); }
+    } catch (err) { toast({ title: "Error", description: err.message, variant: "destructive" }); }
   };
 
   if (loading) return (

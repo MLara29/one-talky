@@ -59,36 +59,15 @@ export default function TutorEarnings() {
   };
 
   const requestWithdrawal = async () => {
-    const pioneerEmail = getPioneerEmail();
-    if (!pioneerEmail) {
-      toast({ title: "Payoneer email not set", description: "Please add your Payoneer email in Personal Info before requesting a withdrawal.", variant: "destructive" });
-      return;
-    }
     setRequesting(true);
-    const today = new Date();
-    const period = `${today.toLocaleString("en-US", { month: "long" })} ${today.getDate()}`;
-    await base44.entities.WithdrawalRequest.create({
-      tutor_id: profile.user_id, tutor_name: profile.full_name,
-      amount: totalEarned, period,
-      pioneer_email: pioneerEmail, status: "pending",
-    });
-    // Notify admins about withdrawal request
     try {
-      const admins = await base44.entities.User.filter({ role: "admin" });
-      await base44.entities.Notification.bulkCreate(
-        admins.map(a => ({
-          user_id: a.id,
-          title: `💸 Solicitação de pagamento: ${profile.full_name}`,
-          message: `Tutor ${profile.full_name} solicitou retirada de $${totalEarned.toFixed(2)} via ${profile.contract_type === "upwork" ? "Upwork" : "Payoneer"}.`,
-          type: "general",
-          is_read: false,
-          link: "/admin/earnings",
-        }))
-      );
-    } catch {}
-    toast({ title: "Withdrawal requested!", description: "We'll process your payment within 2 business days." });
-    setRequesting(false);
-    loadData();
+      const response = await base44.functions.invoke("requestWithdrawal", {});
+      if (response.data?.error) throw new Error(response.data.error);
+      toast({ title: "Withdrawal requested!", description: "We'll process your payment within 2 business days." });
+      loadData();
+    } catch (err) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally { setRequesting(false); }
   };
 
   const confirmReceipt = async () => {

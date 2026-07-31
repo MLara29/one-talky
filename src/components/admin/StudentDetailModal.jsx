@@ -34,11 +34,11 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
     }
     setAddingMinutes(true);
     try {
-      const newTotal = (student.credits_minutes ?? 0) + mins;
-      await base44.entities.StudentProfile.update(student.id, { credits_minutes: newTotal });
+      const response = await base44.functions.invoke("adminManageStudent", { student_id: student.id, action: "add_minutes", minutes: mins });
+      if (response.data?.error) throw new Error(response.data.error);
       toast({ title: `✅ ${mins} minutos adicionados para ${student.full_name}!` });
       setMinutesToAdd("");
-      onUpdated({ ...student, credits_minutes: newTotal });
+      onUpdated({ ...student, credits_minutes: response.data.credits_minutes });
     } catch (e) {
       toast({ title: "Erro", description: e?.message, variant: "destructive" });
     } finally { setAddingMinutes(false); }
@@ -47,8 +47,9 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
   const handleBlock = async () => {
     setBlocking(true);
     try {
-      const newPlan = student.plan === "blocked" ? "free" : "blocked";
-      await base44.entities.StudentProfile.update(student.id, { plan: newPlan });
+      const response = await base44.functions.invoke("adminManageStudent", { student_id: student.id, action: "toggle_block" });
+      if (response.data?.error) throw new Error(response.data.error);
+      const newPlan = response.data.plan;
       toast({ title: newPlan === "blocked" ? "Aluno bloqueado" : "Aluno desbloqueado" });
       onUpdated({ ...student, plan: newPlan });
       onClose();
@@ -59,10 +60,15 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
 
   const handleDelete = async () => {
     if (!confirm(`Deletar ${student.full_name}? Esta ação não pode ser desfeita.`)) return;
-    await base44.entities.StudentProfile.delete(student.id);
-    toast({ title: "Aluno deletado" });
-    onDeleted(student.id);
-    onClose();
+    try {
+      const response = await base44.functions.invoke("adminManageStudent", { student_id: student.id, action: "delete" });
+      if (response.data?.error) throw new Error(response.data.error);
+      toast({ title: "Aluno deletado" });
+      onDeleted(student.id);
+      onClose();
+    } catch (e) {
+      toast({ title: "Erro", description: e?.message, variant: "destructive" });
+    }
   };
 
   return (

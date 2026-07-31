@@ -44,87 +44,27 @@ export default function AdminEarnings() {
       .reduce((sum, l) => sum + (l.duration_minutes || 0) * (rate || 0), 0);
   };
 
-  const sendPaymentEmail = async (toEmail, subject, html) => {
-    try {
-      await base44.functions.sendEmail({ to: toEmail, subject, html });
-    } catch (e) {
-      console.warn("Email send failed:", e.message);
-    }
-  };
-
   const markProcessing = async (tutor) => {
     setProcessing(tutor.user_id + "_proc");
     try {
-      const existing = withdrawals.find(w => w.tutor_id === tutor.user_id && w.status === "pending");
-      const earned = getTutorEarned(tutor.user_id, tutor.price_per_minute);
-      const pioneerEmail = (() => { try { return JSON.parse(tutor.bank_info || "{}").pioneer_email || ""; } catch { return ""; } })();
-      if (existing) {
-        await base44.entities.WithdrawalRequest.update(existing.id, { status: "processing" });
-      } else {
-        await base44.entities.WithdrawalRequest.create({
-          tutor_id: tutor.user_id,
-          tutor_name: tutor.full_name,
-          amount: earned,
-          period: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-          pioneer_email: pioneerEmail,
-          status: "processing",
-        });
-      }
-
-      // Get tutor's user email
-      const users = await base44.entities.User.filter({ id: tutor.user_id });
-      const tutorEmail = users[0]?.email;
-      if (tutorEmail) {
-        await sendPaymentEmail(
-          tutorEmail,
-          "💸 Your payment is being processed – One Talky",
-          `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px">
-            <h2 style="color:#F26A1B;margin-bottom:8px">Hi, ${tutor.full_name}! 👋</h2>
-            <p style="color:#374151;font-size:16px">Your payment of <strong style="color:#10b981">$${earned.toFixed(2)}</strong> is currently being processed by the One Talky team.</p>
-            <p style="color:#374151;font-size:15px">You will receive another email once the payment has been sent to your account.</p>
-            <p style="color:#6b7280;font-size:13px;margin-top:24px">If you have any questions, please reach out through the platform support.</p>
-            <p style="color:#6b7280;font-size:13px">The One Talky Team 🧡</p>
-          </div>`
-        );
-      }
-
+      const response = await base44.functions.invoke("adminManageWithdrawal", { tutor_id: tutor.user_id, action: "mark_processing" });
+      if (response.data?.error) throw new Error(response.data.error);
       toast({ title: "Payment processing notified ✅", description: `${tutor.full_name} will see the processing status.` });
       loadData();
-    } catch {
-      toast({ title: "Error", variant: "destructive" });
+    } catch (err) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally { setProcessing(null); }
   };
 
   const markPaid = async (tutor) => {
     setProcessing(tutor.user_id + "_paid");
     try {
-      const wr = withdrawals.find(w => w.tutor_id === tutor.user_id && w.status === "processing");
-      if (wr) {
-        await base44.entities.WithdrawalRequest.update(wr.id, { status: "paid" });
-      }
-
-      // Get tutor's user email
-      const users = await base44.entities.User.filter({ id: tutor.user_id });
-      const tutorEmail = users[0]?.email;
-      if (tutorEmail) {
-        await sendPaymentEmail(
-          tutorEmail,
-          "✅ Payment sent! Please confirm receipt – One Talky",
-          `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px">
-            <h2 style="color:#F26A1B;margin-bottom:8px">Hi, ${tutor.full_name}! 🎉</h2>
-            <p style="color:#374151;font-size:16px">Your payment of <strong style="color:#10b981">$${(wr?.amount || 0).toFixed(2)}</strong> has been successfully sent!</p>
-            <p style="color:#374151;font-size:15px">Please log in to <strong>One Talky</strong> and confirm receipt in your earnings section.</p>
-            <a href="https://onetalky.base44.app/earnings" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#F26A1B;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px">Confirm receipt →</a>
-            <p style="color:#6b7280;font-size:13px;margin-top:24px">If you have any questions, please reach out through the platform support.</p>
-            <p style="color:#6b7280;font-size:13px">The One Talky Team 🧡</p>
-          </div>`
-        );
-      }
-
+      const response = await base44.functions.invoke("adminManageWithdrawal", { tutor_id: tutor.user_id, action: "mark_paid" });
+      if (response.data?.error) throw new Error(response.data.error);
       toast({ title: "Marked as paid ✅", description: `${tutor.full_name} will be asked to confirm receipt.` });
       loadData();
-    } catch {
-      toast({ title: "Error", variant: "destructive" });
+    } catch (err) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally { setProcessing(null); }
   };
 

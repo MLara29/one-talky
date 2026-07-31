@@ -132,15 +132,15 @@ export default function AdminCosts() {
   const saveTutorRates = async () => {
     setSavingRates(true);
     try {
-      await Promise.all(
-        tutors.map(t => {
-          const perHour = tutorRatesHour[t.id] ?? globals.default_tutor_rate_hour;
-          return base44.entities.TutorProfile.update(t.id, { price_per_minute: perHour / 60 });
-        })
-      );
+      const rates = tutors.map(t => ({
+        tutor_id: t.id,
+        price_per_minute: (tutorRatesHour[t.id] ?? globals.default_tutor_rate_hour) / 60,
+      }));
+      const response = await base44.functions.invoke("adminSetTutorRate", { rates });
+      if (response.data?.error) throw new Error(response.data.error);
       toast({ title: "Rates saved successfully!" });
-    } catch {
-      toast({ title: "Error saving rates", variant: "destructive" });
+    } catch (err) {
+      toast({ title: "Error saving rates", description: err.message, variant: "destructive" });
     } finally {
       setSavingRates(false);
     }

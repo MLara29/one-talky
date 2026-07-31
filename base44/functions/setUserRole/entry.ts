@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { requireOtp } from '../../shared/requireOtp.js';
+import { grantRole } from '../../shared/grantRole.js';
 
 Deno.serve(async (req) => {
   try {
@@ -19,14 +20,14 @@ Deno.serve(async (req) => {
       }
       const otpGate = await requireOtp(base44, req, user);
       if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
-      await base44.asServiceRole.entities.User.update(targetUserId, { role });
+      await grantRole(base44, targetUserId, role);
     } else {
       // Self-update: only allow non-privileged roles (tutor/affiliate require admin approval)
       const SELF_ASSIGNABLE_ROLES = ['student'];
       if (!SELF_ASSIGNABLE_ROLES.includes(role)) {
         return Response.json({ error: 'Forbidden: privileged role requires admin assignment' }, { status: 403 });
       }
-      await base44.asServiceRole.entities.User.update(user.id, { role });
+      await grantRole(base44, user.id, role);
     }
 
     return Response.json({ success: true });
