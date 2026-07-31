@@ -36,7 +36,7 @@ export default async function(req) {
     const eligibility = await validateBookingEligibility(base44, user.id, nowIso, FIRST_WEEK_DURATION_MINUTES);
     if (!eligibility.allowed) {
       console.log(`[startInstantLesson] REJECTED student=${user.id} reason=${eligibility.error}`);
-      return Response.json({ error: eligibility.error }, { status: eligibility.httpStatus || 403 });
+      return Response.json({ error: eligibility.error, error_code: eligibility.error_code }, { status: eligibility.httpStatus || 403 });
     }
 
     // ── RULE 2: Real credit balance (server-side, never trust the client) ──────
@@ -44,7 +44,10 @@ export default async function(req) {
     const sp = spProfiles[0];
     const credits = sp?.credits_minutes ?? 0;
     if (credits < MIN_CREDIT_MINUTES) {
-      return Response.json({ error: 'Você não tem minutos suficientes para iniciar uma aula. Adicione créditos para continuar.' }, { status: 403 });
+      return Response.json({
+        error_code: 'insufficient_credits',
+        error: 'Você não tem minutos suficientes para iniciar uma aula. Adicione créditos para continuar.',
+      }, { status: 403 });
     }
 
     // ── RULE 3: First-week CAS lock (shared with bookSlot) ──────────────────────

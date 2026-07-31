@@ -66,7 +66,7 @@ export default async function(req) {
     const eligibility = await validateBookingEligibility(base44, studentId, scheduled_at, duration_minutes);
     if (!eligibility.allowed) {
       console.log(`[bookSlot] REJECTED student=${studentId} scheduled_at=${scheduled_at} reason=${eligibility.error}`);
-      return Response.json({ error: eligibility.error }, { status: eligibility.httpStatus || 403 });
+      return Response.json({ error: eligibility.error, error_code: eligibility.error_code }, { status: eligibility.httpStatus || 403 });
     }
 
     // ── RULE 2: No double-booking same slot different tutor ────────────────────

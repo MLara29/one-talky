@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Star, Globe, Clock, MapPin, Video, Calendar, ChevronLeft } from "lucide-react";
-import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
+import { getCountryFlag, getLanguageLabel, REDIRECT_TO_PLANS_ERROR_CODES } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import ScheduleModal from "@/components/tutors/ScheduleModal";
 
@@ -59,7 +59,8 @@ export default function TutorProfilePage() {
       navigate(`/classroom/${res.data.lesson.id}`);
     } catch (err) {
       const message = err?.response?.data?.error || err?.message;
-      if (message?.includes("minutos")) navigate("/plans");
+      const errorCode = err?.response?.data?.error_code;
+      if (REDIRECT_TO_PLANS_ERROR_CODES.includes(errorCode)) navigate("/plans");
       toast({ title: "Não foi possível iniciar a aula", description: message || "Tente novamente.", variant: "destructive" });
     } finally { setBooking(false); }
   };
@@ -87,6 +88,9 @@ export default function TutorProfilePage() {
 
       if (bookRes.data?.error) {
         toast({ title: "Agendamento bloqueado", description: bookRes.data.error, variant: "destructive" });
+        if (REDIRECT_TO_PLANS_ERROR_CODES.includes(bookRes.data?.error_code)) {
+          navigate("/plans");
+        }
         return;
       }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Star, Video, Calendar } from "lucide-react";
-import { getCountryFlag, getLanguageLabel } from "@/lib/constants";
+import { getCountryFlag, getLanguageLabel, REDIRECT_TO_PLANS_ERROR_CODES } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 import { useLang } from "@/lib/LanguageContext";
 import { useAuth } from "@/lib/AuthContext";
@@ -116,7 +116,8 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
       navigate(`/classroom/${res.data.lesson.id}`);
     } catch (e) {
       const message = e?.response?.data?.error || e?.message;
-      if (message?.includes("minutos")) {
+      const errorCode = e?.response?.data?.error_code;
+      if (REDIRECT_TO_PLANS_ERROR_CODES.includes(errorCode)) {
         navigate("/plans");
       }
       toast({ title: "Não foi possível iniciar a aula", description: message || "Tente novamente.", variant: "destructive" });

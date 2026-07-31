@@ -38,14 +38,19 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
   const subStartDate = sp.subscription_start_date ? new Date(sp.subscription_start_date) : null;
   const subValidUntil = sp.subscription_valid_until ? new Date(sp.subscription_valid_until) : null;
 
-  // ── RULE 1: No subscription at all ──
+  // ── RULE 1: No subscription at all — but allow if the student has standalone credits ──
   if (subStatus === "none" || subCycle === 0) {
-    console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=no_active_subscription status=${subStatus}`);
-    return {
-      allowed: false,
-      httpStatus: 403,
-      error: "Você não possui uma assinatura ativa. Assine um plano para agendar aulas.",
-    };
+    const credits = sp.credits_minutes ?? 0;
+    if (credits <= 0) {
+      console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=no_active_subscription status=${subStatus}`);
+      return {
+        allowed: false,
+        httpStatus: 403,
+        error_code: "insufficient_credits",
+        error: "Você não possui minutos disponíveis. Assine um plano ou adicione créditos para agendar aulas.",
+      };
+    }
+    return { allowed: true };
   }
 
   // ── RULE 2: Cancelled or expired — check if still within paid period ──
@@ -58,6 +63,7 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
       return {
         allowed: false,
         httpStatus: 403,
+        error_code: "subscription_inactive",
         error: "Sua assinatura está cancelada/inativa. Reative seu plano para agendar novas aulas.",
       };
     }
@@ -77,6 +83,7 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
         return {
           allowed: false,
           httpStatus: 403,
+          error_code: "first_week_wrong_duration",
           error: "Durante os primeiros 7 dias da sua assinatura, a aula deve ter 30 minutos.",
         };
       }
@@ -87,6 +94,7 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
       const blockedError = {
         allowed: false,
         httpStatus: 403,
+        error_code: "first_week_limit",
         error: `Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos. Novos agendamentos ficarão disponíveis a partir do dia ${unlockDate}.`,
       };
 

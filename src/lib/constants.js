@@ -1,3 +1,10 @@
+// Error codes returned by booking-related backend functions (bookSlot,
+// startInstantLesson) that mean "the block is about money/subscription" —
+// the frontend should redirect to /plans for these. Other error codes
+// (e.g. first_week_wrong_duration, first_week_limit) are about timing/limits
+// and must NOT redirect.
+export const REDIRECT_TO_PLANS_ERROR_CODES = ["insufficient_credits", "subscription_inactive"];
+
 export const LANGUAGES = [
   { value: "english", label: "English", flag: "🇬🇧" },
   { value: "spanish", label: "Español", flag: "🇪🇸" },
