@@ -92,13 +92,16 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
 
       // Fast-path: CAS lock field already set
       if (sp.first_week_lesson_id) {
-        if (sp.first_week_lesson_id !== '__pending__') {
+        const isPending = sp.first_week_lesson_id.startsWith('__pending__:');
+
+        if (!isPending) {
           // A real lesson ID is committed — hard block.
           console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_lock_committed lesson_id=${sp.first_week_lesson_id}`);
           return blockedError;
         }
-        // '__pending__': check TTL — stale locks are orphans, let bookSlot overwrite them.
-        const CAS_LOCK_TTL_MS = 30_000;
+
+        // Pending token: check TTL — stale = orphan, let bookSlot overwrite via exact-token CAS.
+        const CAS_LOCK_TTL_MS = 90_000;
         const lockAge = sp.first_week_lock_at
           ? Date.now() - new Date(sp.first_week_lock_at).getTime()
           : CAS_LOCK_TTL_MS + 1;

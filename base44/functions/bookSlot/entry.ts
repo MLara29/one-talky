@@ -6,8 +6,9 @@ const normalizeSlot = (iso) => {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}T${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
 };
 
-// How long a '__pending__' lock is considered valid before being treated as orphaned.
-const CAS_LOCK_TTL_MS = 30_000;
+// How long a pending lock is considered valid before being treated as orphaned.
+// 90s covers: TutorProfile.get + update + Lesson.create + multiple network hops.
+const CAS_LOCK_TTL_MS = 90_000;
 
 export default async function(req) {
   try {
@@ -84,6 +85,10 @@ export default async function(req) {
     const sp = spProfiles[0];
 
     let casLockAcquired = false;
+    // Unique token for THIS request's lock — used in all CAS conditions so that
+    // rollback/commit never accidentally touch a lock owned by a different request.
+    const casLockToken = crypto.randomUUID();
+    const myPendingValue = `__pending__:${casLockToken}`;
 
     const isFirstWeekBooking = (() => {
       if (!sp) return false;
@@ -96,8 +101,9 @@ export default async function(req) {
 
     if (isFirstWeekBooking) {
       const existingLock = sp.first_week_lesson_id;
+      const isPending = existingLock && existingLock.startsWith('__pending__:');
 
-      if (existingLock && existingLock !== '__pending__') {
+      if (existingLock && !isPending) {
         // A real lesson ID is committed — hard block.
         console.log(`[bookSlot] REJECTED student=${studentId} reason=first_week_cas_committed lesson_id=${existingLock}`);
         return Response.json({
@@ -105,36 +111,36 @@ export default async function(req) {
         }, { status: 409 });
       }
 
-      if (existingLock === '__pending__') {
-        // Check TTL: if lock is fresh, another request is in-flight — block.
-        // If expired, treat as orphan and allow overwrite (CAS below will claim it).
+      if (isPending) {
+        // Lock is pending — check TTL. Fresh = in-flight, block. Stale = orphan, allow overwrite.
         const lockAge = sp.first_week_lock_at
           ? Date.now() - new Date(sp.first_week_lock_at).getTime()
           : CAS_LOCK_TTL_MS + 1; // no timestamp = treat as expired
         if (lockAge < CAS_LOCK_TTL_MS) {
-          console.log(`[bookSlot] REJECTED student=${studentId} reason=first_week_cas_pending age_ms=${lockAge}`);
+          console.log(`[bookSlot] REJECTED student=${studentId} reason=first_week_cas_pending age_ms=${lockAge} token=${existingLock}`);
           return Response.json({
             error: 'Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos.',
           }, { status: 409 });
         }
-        // Lock is stale — fall through to overwrite it with a fresh CAS below.
-        console.log(`[bookSlot] INFO student=${studentId} stale pending lock (age_ms=${lockAge}) — overwriting`);
+        // Stale lock — will overwrite using the EXACT stale value as CAS condition below.
+        console.log(`[bookSlot] INFO student=${studentId} stale pending lock (age_ms=${lockAge} token=${existingLock}) — overwriting`);
       }
 
-      // CAS: claim the lock.
-      // Condition covers both "field absent" AND "field is stale __pending__" (TTL expired).
-      // For stale pending, we use updateMany without the $exists filter so it overwrites.
-      const casCondition = existingLock === '__pending__'
-        ? { user_id: studentId, first_week_lesson_id: '__pending__' }
+      // CAS: claim the lock with our unique token.
+      // - No existing lock: match $exists:false
+      // - Stale pending lock: match the exact stale token value (not a generic string),
+      //   ensuring another request can't have already claimed it between our read and this write.
+      const casCondition = isPending
+        ? { user_id: studentId, first_week_lesson_id: existingLock } // exact stale value
         : { user_id: studentId, first_week_lesson_id: { $exists: false } };
 
       const casResult = await base44.asServiceRole.entities.StudentProfile.updateMany(
         casCondition,
-        { $set: { first_week_lesson_id: '__pending__', first_week_lock_at: new Date().toISOString() } }
+        { $set: { first_week_lesson_id: myPendingValue, first_week_lock_at: new Date().toISOString() } }
       );
 
       if (casResult.updated === 0) {
-        // Another concurrent request just claimed the lock between our read and this write.
+        // Lock was claimed by someone else between our read and this write.
         console.log(`[bookSlot] REJECTED student=${studentId} reason=first_week_cas_lost`);
         return Response.json({
           error: 'Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos.',
@@ -144,12 +150,13 @@ export default async function(req) {
       casLockAcquired = true;
     }
 
-    // Helper: rolls back the CAS lock — called on ANY failure after lock acquisition.
+    // Helper: rolls back OUR lock specifically — condition uses our token so we never
+    // accidentally unset a lock that was already taken over by another request.
     const rollbackCasLock = async () => {
       if (!casLockAcquired) return;
       try {
         await base44.asServiceRole.entities.StudentProfile.updateMany(
-          { user_id: studentId, first_week_lesson_id: '__pending__' },
+          { user_id: studentId, first_week_lesson_id: myPendingValue },
           { $unset: { first_week_lesson_id: '', first_week_lock_at: '' } }
         );
       } catch (e) {
@@ -211,27 +218,43 @@ export default async function(req) {
     }
 
     // ── Commit the CAS lock with the real lesson ID ────────────────────────────
-    // Lesson was created successfully. Commit or log critical audit entry.
+    // Condition uses OUR token — if another request has already overwritten our lock
+    // (via TTL takeover), updated=0 and we do NOT corrupt their state.
     if (casLockAcquired && lesson) {
-      const commitUpdate = async () =>
+      const commitUpdate = () =>
         base44.asServiceRole.entities.StudentProfile.updateMany(
-          { user_id: studentId, first_week_lesson_id: '__pending__' },
+          { user_id: studentId, first_week_lesson_id: myPendingValue },
           { $set: { first_week_lesson_id: lesson.id }, $unset: { first_week_lock_at: '' } }
         );
 
       try {
         const result = await commitUpdate();
-        if (result.updated === 0) throw new Error('updateMany matched 0 records');
+        if (result.updated === 0) {
+          // Our token is gone — another request claimed the lock after TTL expiry.
+          // The Lesson we created is real and in the DB; the student's aula exists.
+          // No state corruption: the current lock owner's commit will handle their own lesson.
+          // This indicates TTL may be too short for current network latency — investigate.
+          console.warn(
+            `[bookSlot] WARN: CAS commit token mismatch (updated=0). student=${studentId} ` +
+            `lesson_id=${lesson.id} token=${myPendingValue}. Lock was taken over by another request via TTL. ` +
+            `Lesson is valid but first_week_lesson_id was not committed by this request. ` +
+            `If TTL takeover is frequent, increase CAS_LOCK_TTL_MS above ${CAS_LOCK_TTL_MS}ms.`
+          );
+        }
       } catch (e1) {
         console.error('[bookSlot] CAS commit attempt 1 failed — retrying', e1.message);
         try {
-          await commitUpdate();
+          const result2 = await commitUpdate();
+          if (result2.updated === 0) {
+            console.warn(
+              `[bookSlot] WARN: CAS commit retry also got updated=0 (token mismatch). student=${studentId} ` +
+              `lesson_id=${lesson.id} token=${myPendingValue}. Lock taken over by another request.`
+            );
+          }
         } catch (e2) {
-          // Lesson EXISTS but lock is not committed — TTL will auto-recover within 30s.
-          // Log for audit trail in case manual reconciliation is needed.
           console.error(
-            `[bookSlot] CRITICAL: CAS commit failed after retry. student=${studentId} lesson_id=${lesson.id} ` +
-            `first_week_lesson_id is still '__pending__'. TTL will expire in ${CAS_LOCK_TTL_MS / 1000}s. ` +
+            `[bookSlot] CRITICAL: CAS commit failed after retry (network error). student=${studentId} ` +
+            `lesson_id=${lesson.id} token=${myPendingValue}. TTL will expire in ${CAS_LOCK_TTL_MS / 1000}s. ` +
             `Manual check: verify Lesson ${lesson.id} exists and set first_week_lesson_id=${lesson.id} on StudentProfile.`,
             e2.message
           );
