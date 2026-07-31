@@ -89,6 +89,18 @@ Deno.serve(async (req) => {
     if (action === 'mark_earning_paid') {
       const { earning_id } = payload;
       if (!earning_id) return Response.json({ error: 'earning_id required' }, { status: 400 });
+
+      const earning = await base44.asServiceRole.entities.AffiliateEarning.get(earning_id);
+      if (!earning) return Response.json({ error: 'Earning not found' }, { status: 404 });
+
+      if (earning.status !== 'liberado') {
+        return Response.json({
+          error: earning.status === 'pago'
+            ? 'Esta comissão já foi paga'
+            : 'Esta comissão ainda está aguardando o período de liberação de 7 dias e não pode ser marcada como paga',
+        }, { status: 400 });
+      }
+
       await base44.asServiceRole.entities.AffiliateEarning.update(earning_id, {
         status: 'pago',
         paid_at: new Date().toISOString(),

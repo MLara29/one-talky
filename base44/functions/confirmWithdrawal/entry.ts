@@ -34,6 +34,13 @@ Deno.serve(async (req) => {
       confirmed_at: new Date().toISOString(),
     });
 
+    // Release the CAS lock — the withdrawal cycle is now fully closed, so the
+    // tutor is free to request a new one for subsequent earnings.
+    const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: user.id });
+    if (tutorProfiles[0]) {
+      await base44.asServiceRole.entities.TutorProfile.update(tutorProfiles[0].id, { has_pending_withdrawal: false });
+    }
+
     // Notify admins about payment confirmation
     try {
       const admins = await base44.asServiceRole.entities.User.filter({ role: "admin" });

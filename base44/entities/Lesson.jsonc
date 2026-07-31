@@ -60,6 +60,14 @@
       "default": false,
       "description": "True once tutor earnings have been credited for this lesson \u2014 CAS guard to prevent double-payment."
     },
+    "rate_applied": {
+      "type": "number",
+      "description": "Tutor's price_per_minute at the moment this lesson's earnings were finalized \u2014 historical rate, never recalculated later."
+    },
+    "earned_amount": {
+      "type": "number",
+      "description": "Tutor earnings for this lesson, computed once from rate_applied at finalization time. This is the auditable source of truth for tutor payouts \u2014 always sum this field, never re-derive with a tutor's current rate."
+    },
     "flagged_for_review": {
       "type": "boolean",
       "default": false,

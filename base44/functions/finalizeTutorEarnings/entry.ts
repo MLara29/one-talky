@@ -53,10 +53,17 @@ Deno.serve(async (req) => {
 
     const tp = tutorProfiles[0];
     const rate = tp.price_per_minute ?? 0.9967;
-    const earningsSecs = durationSeconds * (rate / 60);
+    const earnings = Math.round(durationSeconds * (rate / 60) * 100) / 100;
+
+    // Record the historical rate + resulting amount on the Lesson itself — this is
+    // the auditable source of truth for payouts, immune to later rate changes.
+    await base44.asServiceRole.entities.Lesson.update(lesson_id, {
+      rate_applied: rate,
+      earned_amount: earnings,
+    });
 
     await base44.asServiceRole.entities.TutorProfile.update(tp.id, {
-      total_earnings: Math.round(((tp.total_earnings ?? 0) + earningsSecs) * 100) / 100,
+      total_earnings: Math.round(((tp.total_earnings ?? 0) + earnings) * 100) / 100,
       total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
       total_lessons: (tp.total_lessons ?? 0) + 1,
     });

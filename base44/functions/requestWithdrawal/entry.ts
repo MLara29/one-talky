@@ -23,21 +23,34 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Payoneer email not set. Please add it in Personal Info first.' }, { status: 400 });
     }
 
-    const { earned, withdrawals } = await computeTutorEarned(base44, user.id, profile.price_per_minute);
+    const { earned } = await computeTutorEarned(base44, user.id);
     if (earned <= 0) {
       return Response.json({ error: 'No available balance to withdraw' }, { status: 400 });
     }
-    if (withdrawals.some(w => w.status === 'pending')) {
+
+    // CAS guard: atomically flip has_pending_withdrawal false -> true. If two
+    // requests race, only one wins this update — the other gets updated: 0.
+    const cas = await base44.asServiceRole.entities.TutorProfile.updateMany(
+      { id: profile.id, has_pending_withdrawal: { $ne: true } },
+      { $set: { has_pending_withdrawal: true } }
+    );
+    if (cas.updated === 0) {
       return Response.json({ error: 'A withdrawal request is already pending' }, { status: 400 });
     }
 
     const today = new Date();
     const period = `${today.toLocaleString('en-US', { month: 'long' })} ${today.getDate()}`;
 
-    await base44.asServiceRole.entities.WithdrawalRequest.create({
-      tutor_id: user.id, tutor_name: profile.full_name,
-      amount: earned, period, pioneer_email: pioneerEmail, status: 'pending',
-    });
+    try {
+      await base44.asServiceRole.entities.WithdrawalRequest.create({
+        tutor_id: user.id, tutor_name: profile.full_name,
+        amount: earned, period, pioneer_email: pioneerEmail, status: 'pending',
+      });
+    } catch (createErr) {
+      // Roll back the lock if creation failed, so the tutor isn't stuck locked out.
+      await base44.asServiceRole.entities.TutorProfile.update(profile.id, { has_pending_withdrawal: false });
+      throw createErr;
+    }
 
     try {
       const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });

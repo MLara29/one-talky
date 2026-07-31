@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     };
 
     if (action === 'mark_processing') {
-      const { earned } = await computeTutorEarned(base44, tutor_id, tutor.price_per_minute);
+      const { earned } = await computeTutorEarned(base44, tutor_id);
       const existing = await base44.asServiceRole.entities.WithdrawalRequest.filter({ tutor_id, status: 'pending' });
 
       if (existing[0]) {
@@ -55,6 +55,8 @@ Deno.serve(async (req) => {
           period: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
           pioneer_email: pioneerEmail || '', status: 'processing',
         });
+        // Keep the CAS lock consistent — admin proactively started a withdrawal cycle.
+        await base44.asServiceRole.entities.TutorProfile.update(tutor.id, { has_pending_withdrawal: true });
       }
 
       await sendPaymentEmail(

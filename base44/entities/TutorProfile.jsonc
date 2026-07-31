@@ -131,6 +131,11 @@
     },
     "bank_info": {
       "type": "string"
+    },
+    "has_pending_withdrawal": {
+      "type": "boolean",
+      "default": false,
+      "description": "CAS guard: true while a WithdrawalRequest (pending/processing) is outstanding for this tutor. Flips false->true atomically via updateMany in requestWithdrawal to prevent duplicate concurrent requests; cleared once the tutor confirms receipt (confirmWithdrawal)."
     }
   },
   "required": [

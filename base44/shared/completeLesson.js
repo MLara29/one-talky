@@ -74,7 +74,13 @@ export async function completeLesson(base44, lesson, { isRecorded = false, ended
 
   if (earningsCas.updated > 0 && tp) {
     const rate = tp.price_per_minute ?? 0.9967;
-    const earnings = durationSeconds * (rate / 60);
+    const earnings = Math.round(durationSeconds * (rate / 60) * 100) / 100;
+    // Record the historical rate + resulting amount on the Lesson itself — this is
+    // the auditable source of truth for payouts, immune to later rate changes.
+    await base44.asServiceRole.entities.Lesson.update(lessonId, {
+      rate_applied: rate,
+      earned_amount: earnings,
+    });
     await base44.asServiceRole.entities.TutorProfile.update(tp.id, {
       total_earnings: Math.round(((tp.total_earnings ?? 0) + earnings) * 100) / 100,
       total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
