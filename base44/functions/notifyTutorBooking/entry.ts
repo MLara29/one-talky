@@ -149,7 +149,9 @@ Deno.serve(async (req) => {
     // Verify a real Lesson exists matching this id and that the caller is a
     // participant — prevents anyone from triggering fake "new lesson" emails
     // to arbitrary tutors.
-    const lesson = await base44.asServiceRole.entities.Lesson.get(lesson_id);
+    // Use filter (returns []) instead of get (throws) so a bad id cleanly 404s.
+    const lessons = await base44.asServiceRole.entities.Lesson.filter({ id: lesson_id });
+    const lesson = lessons[0];
     if (!lesson) {
       return Response.json({ error: 'Lesson not found' }, { status: 404 });
     }
