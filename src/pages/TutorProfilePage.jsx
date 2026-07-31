@@ -74,26 +74,23 @@ export default function TutorProfilePage() {
 
       // Call bookSlot FIRST — it performs all server-side validations
       // (first-month restriction + time conflict). Only create the Lesson record if it succeeds.
+      // bookSlot handles: eligibility check + slot lock + Lesson creation — all server-side.
+      // This prevents race conditions from double-clicks or concurrent requests.
       const bookRes = await base44.functions.invoke('bookSlot', {
         tutor_profile_id: tutor.id,
         scheduled_at: scheduledAt,
         action: 'book',
         duration_minutes: 30,
+        tutor_user_id: tutor.user_id,
+        tutor_name: tutor.full_name,
+        student_name: sp?.full_name || user.full_name,
+        language: tutor.native_languages?.[0] || 'english',
       });
 
       if (bookRes.data?.error) {
         toast({ title: "Agendamento bloqueado", description: bookRes.data.error, variant: "destructive" });
         return;
       }
-
-      await base44.entities.Lesson.create({
-        tutor_id: tutor.user_id, student_id: user.id,
-        tutor_name: tutor.full_name, student_name: sp?.full_name || user.full_name,
-        language: tutor.native_languages?.[0] || "english",
-        status: "scheduled", type: "scheduled",
-        scheduled_at: scheduledAt,
-        duration_minutes: 30,
-      });
 
       // Refresh tutor with updated booked_slots so modal stays accurate
       if (bookRes.data?.booked_slots) {

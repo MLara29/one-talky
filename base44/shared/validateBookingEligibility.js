@@ -70,9 +70,10 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
     const isInFirstWeek = now < sevenDaysAfterStart;
 
     if (isInFirstWeek) {
-      // Check duration: must be exactly 30 minutes in the first week
-      if (durationMinutes && durationMinutes !== 30) {
-        console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_wrong_duration duration=${durationMinutes}`);
+      // Check duration: must be exactly 30 minutes in the first week.
+      // Treat missing/null/0 as a violation — no silent pass-through.
+      if (durationMinutes !== 30) {
+        console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_wrong_duration duration=${durationMinutes ?? "undefined"}`);
         return {
           allowed: false,
           httpStatus: 403,
