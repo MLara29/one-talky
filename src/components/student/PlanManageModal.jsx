@@ -1,53 +1,88 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { X, ArrowUp, ArrowDown, XCircle, CheckCircle, Zap } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { PLANS as CATALOG_PLANS } from "@/lib/constants";
+import CheckoutModal from "@/components/checkout/CheckoutModal";
 
+const PLAN_COLORS = {
+  free: "from-gray-500 to-gray-600",
+  basic: "from-blue-500 to-cyan-500",
+  standard: "from-orange-500 to-amber-500",
+  premium: "from-amber-400 to-orange-500",
+};
+
+// Display list — minutes/price shown here are informational only; the real
+// amount charged and credited always comes from the server-side catalog
+// (mpProcessPayment / mpConfirmPayment), never written directly by the client.
 const PLANS = [
-  { id: "free", label: "Free", minutes: 15, price: "R$ 0", color: "from-gray-500 to-gray-600" },
-  { id: "basic", label: "Basic", minutes: 60, price: "R$ 49/mês", color: "from-blue-500 to-cyan-500" },
-  { id: "standard", label: "Standard", minutes: 200, price: "R$ 129/mês", color: "from-orange-500 to-amber-500" },
-  { id: "premium", label: "Premium", minutes: 600, price: "R$ 299/mês", color: "from-amber-400 to-orange-500" },
+  { id: "free", label: "Free", minutes: 15, price: "R$ 0", color: PLAN_COLORS.free },
+  ...CATALOG_PLANS.map(p => ({
+    id: p.id,
+    label: p.name,
+    minutes: p.minutes,
+    price: `R$ ${p.price_monthly.toFixed(2).replace(".", ",")}/mês`,
+    color: PLAN_COLORS[p.id],
+  })),
 ];
 
 const ORDER = ["free", "basic", "standard", "premium"];
 
 export default function PlanManageModal({ profile, onClose, onUpdated }) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const currentIdx = ORDER.indexOf(profile.plan || "free");
   const [selected, setSelected] = useState(profile.plan || "free");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [checkoutItem, setCheckoutItem] = useState(null);
 
   const selectedIdx = ORDER.indexOf(selected);
   const isUpgrade = selectedIdx > currentIdx;
   const isDowngrade = selectedIdx < currentIdx;
   const isSame = selected === profile.plan;
 
-  const handleConfirm = async () => {
-    if (isSame) { onClose(); return; }
+  const cancelPlan = async () => {
     setSaving(true);
     try {
-      if (selected === "free") {
-        // Cancellation goes through the server — it enforces the "no free credits on cancel" rule
-        const response = await base44.functions.invoke("cancelMyPlan", {});
-        if (response.data?.error) throw new Error(response.data.error);
-        onUpdated({ ...profile, plan: "free", credits_minutes: 0, subscription_status: "cancelled" });
-      } else {
-        const newPlan = PLANS.find(p => p.id === selected);
-        await base44.entities.StudentProfile.update(profile.id, {
-          plan: selected,
-          credits_minutes: newPlan.minutes,
-        });
-        onUpdated({ ...profile, plan: selected, credits_minutes: newPlan.minutes });
-      }
+      // Cancellation goes through the server — it enforces the "no free credits on cancel" rule
+      const response = await base44.functions.invoke("cancelMyPlan", {});
+      if (response.data?.error) throw new Error(response.data.error);
+      onUpdated({ ...profile, plan: "free", credits_minutes: 0, subscription_status: "cancelled" });
       setDone(true);
     } catch (e) {
-      toast({ title: "Erro ao atualizar plano", description: e?.message || "Tente novamente.", variant: "destructive" });
+      toast({ title: "Erro ao cancelar plano", description: e?.message || "Tente novamente.", variant: "destructive" });
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleConfirm = () => {
+    if (isSame) { onClose(); return; }
+    if (selected === "free") {
+      cancelPlan();
+      return;
+    }
+    // Upgrading or switching to a paid plan requires real payment — open real checkout
+    const catalogPlan = CATALOG_PLANS.find(p => p.id === selected);
+    setCheckoutItem({
+      title: `One Talky — Plano ${catalogPlan.name} (${catalogPlan.minutes} min/mês)`,
+      price: catalogPlan.price_monthly,
+      external_reference: `plan:${catalogPlan.id}`,
+    });
+  };
+
+  const handleCheckoutSuccess = async () => {
+    setCheckoutItem(null);
+    try {
+      const profiles = await base44.entities.StudentProfile.filter({ user_id: profile.user_id });
+      if (profiles.length > 0) onUpdated(profiles[0]);
+    } catch (e) {
+      console.error("[PlanManageModal] failed to refresh profile:", e);
+    }
+    setDone(true);
   };
 
   return (
@@ -110,7 +145,9 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
                 isDowngrade ? "bg-amber-500/10 border border-amber-500/20 text-amber-600" : ""
               }`}>
                 {isUpgrade ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
-                {isUpgrade ? `Upgrade para ${selected} — você ganhará mais minutos` : `Downgrade para ${selected} — seus minutos serão ajustados`}
+                {selected === "free"
+                  ? "Cancelar plano — seus minutos serão zerados"
+                  : isUpgrade ? `Upgrade para ${selected} — pagamento necessário` : `Downgrade para ${selected} — pagamento necessário`}
               </div>
             )}
 
@@ -130,12 +167,22 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
                 disabled={saving || isSame}
                 className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20"
               >
-                {saving ? "Salvando..." : isSame ? "Nenhuma alteração" : isUpgrade ? "Fazer upgrade" : "Fazer downgrade"}
+                {saving ? "Salvando..." : isSame ? "Nenhuma alteração" : selected === "free" ? "Cancelar plano" : isUpgrade ? "Fazer upgrade" : "Fazer downgrade"}
               </Button>
             </div>
           </>
         )}
       </div>
+
+      {checkoutItem && (
+        <CheckoutModal
+          item={checkoutItem}
+          userEmail={user?.email}
+          onClose={() => setCheckoutItem(null)}
+          onSuccess={handleCheckoutSuccess}
+          affiliateCoupon={profile?.coupon_code}
+        />
+      )}
     </div>
   );
 }
