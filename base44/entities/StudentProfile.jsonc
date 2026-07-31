@@ -134,11 +134,6 @@
         },
         {
           "user_condition": {
-            "role": "tutor"
-          }
-        },
-        {
-          "user_condition": {
             "role": "admin"
           }
         },
