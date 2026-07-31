@@ -10,6 +10,8 @@ import ReviewModal from "@/components/classroom/ReviewModal";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
+const MAX_REPUBLISH_ATTEMPTS = 3;
+const REPUBLISH_RETRY_INTERVAL_MS = 5000;
 
 export default function Classroom() {
   const { id } = useParams();
@@ -41,7 +43,9 @@ export default function Classroom() {
   const clientRef = useRef(null);
   const reconcileRef = useRef(null);
   const joinGuardRef = useRef(false);
-  const autoToggleRef = useRef(false);
+  const autoRepublishAttemptsRef = useRef(0);
+  const lastRepublishAtRef = useRef(0);
+  const remoteVideoTrackRef = useRef(null);
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
   const screenVideoTrackRef = useRef(null);
@@ -160,8 +164,10 @@ export default function Classroom() {
     try {
       const l = await base44.entities.Lesson.get(id);
       setLesson(l);
-      await notifyTutor(l);
-      await joinChannel(l);
+      await Promise.all([
+        notifyTutor(l).catch(() => {}),
+        joinChannel(l),
+      ]);
 
       let scheduledMins = l.duration_minutes || 30;
 
@@ -228,6 +234,11 @@ export default function Classroom() {
     return h || 1;
   };
 
+  const setRemoteTrack = (track) => {
+    remoteVideoTrackRef.current = track;
+    setRemoteVideoTrack(track);
+  };
+
   const joinChannel = async (l) => {
     if (joinGuardRef.current) return;
     joinGuardRef.current = true;
@@ -239,7 +250,7 @@ export default function Classroom() {
       try {
         await client.subscribe(remoteAgoraUser, mediaType);
         if (mediaType === "video" && remoteAgoraUser.videoTrack) {
-          setRemoteVideoTrack(remoteAgoraUser.videoTrack);
+          setRemoteTrack(remoteAgoraUser.videoTrack);
         }
         if (mediaType === "audio" && remoteAgoraUser.audioTrack) {
           remoteAgoraUser.audioTrack.play();
@@ -250,10 +261,10 @@ export default function Classroom() {
     });
 
     client.on("user-unpublished", (_, mediaType) => {
-      if (mediaType === "video") setRemoteVideoTrack(null);
+      if (mediaType === "video") setRemoteTrack(null);
     });
 
-    client.on("user-left", () => setRemoteVideoTrack(null));
+    client.on("user-left", () => setRemoteTrack(null));
 
     const uid = uidFromUserId(user?.id);
     const channelName = id;
@@ -283,8 +294,8 @@ export default function Classroom() {
           if (remoteUser.hasVideo && !remoteUser.videoTrack) {
             await client.subscribe(remoteUser, "video");
           }
-          if (remoteUser.videoTrack) {
-            setRemoteVideoTrack(prev => (prev === remoteUser.videoTrack ? prev : remoteUser.videoTrack));
+          if (remoteUser.videoTrack && remoteVideoTrackRef.current !== remoteUser.videoTrack) {
+            setRemoteTrack(remoteUser.videoTrack);
           }
           if (remoteUser.hasAudio && !remoteUser.audioTrack) {
             await client.subscribe(remoteUser, "audio");
@@ -295,24 +306,33 @@ export default function Classroom() {
         }
       }
 
-      // Once the other participant is in the room, the student's camera is
-      // automatically toggled off/on so the tutor always receives the video.
+      // Symmetric republish reconciliation (runs for both tutor and student):
+      // if the other participant is in the room but we still haven't received
+      // their video after REPUBLISH_RETRY_INTERVAL_MS, force a full republish
+      // (unpublish + publish) of our own video track. This forces Agora to
+      // fully renegotiate the publication and re-fire "user-published" on the
+      // other side — more reliable than just muting/unmuting the track.
+      // Retries up to MAX_REPUBLISH_ATTEMPTS times if the remote video still
+      // doesn't show up.
       if (
-        user?.role !== "tutor" &&
         client.remoteUsers.length > 0 &&
-        !autoToggleRef.current &&
-        localVideoTrackRef.current
+        !remoteVideoTrackRef.current &&
+        autoRepublishAttemptsRef.current < MAX_REPUBLISH_ATTEMPTS &&
+        localVideoTrackRef.current &&
+        Date.now() - lastRepublishAtRef.current > REPUBLISH_RETRY_INTERVAL_MS
       ) {
-        autoToggleRef.current = true;
+        autoRepublishAttemptsRef.current += 1;
+        lastRepublishAtRef.current = Date.now();
+        const attempt = autoRepublishAttemptsRef.current;
+        const videoTrack = localVideoTrackRef.current;
         try {
-          await localVideoTrackRef.current.setEnabled(false);
-          setCameraOn(false);
-          await new Promise(r => setTimeout(r, 700));
-          await localVideoTrackRef.current.setEnabled(true);
-          setCameraOn(true);
-          if (localVideoDiv.current) localVideoTrackRef.current.play(localVideoDiv.current);
+          await client.unpublish(videoTrack);
+          await new Promise(r => setTimeout(r, 300));
+          await client.publish(videoTrack);
+          if (localVideoDiv.current) videoTrack.play(localVideoDiv.current);
+          console.log(`[Agora] auto-republish attempt ${attempt}/${MAX_REPUBLISH_ATTEMPTS} completed (role=${user?.role})`);
         } catch (e) {
-          console.error("[Agora] auto camera toggle failed:", e);
+          console.error(`[Agora][CRITICAL] auto-republish attempt ${attempt}/${MAX_REPUBLISH_ATTEMPTS} FAILED (role=${user?.role}) — the other participant may still not receive video`, e);
         }
       }
     };
@@ -437,7 +457,9 @@ export default function Classroom() {
     try { await clientRef.current?.leave(); } catch {}
     clientRef.current = null;
     joinGuardRef.current = false;
-    autoToggleRef.current = false;
+    autoRepublishAttemptsRef.current = 0;
+    lastRepublishAtRef.current = 0;
+    remoteVideoTrackRef.current = null;
   };
 
   const toggleCamera = async () => {
