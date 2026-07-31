@@ -24,6 +24,13 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, already_completed: true });
     }
 
+    // A lesson that never started (no started_at, status "scheduled") must be
+    // cancelled, not "completed" — completing it here would incorrectly bill
+    // the student and credit the tutor for a lesson that never happened.
+    if (lesson.status === "scheduled" || !lesson.started_at) {
+      return Response.json({ error: "Lesson has not started yet. Use cancelLesson instead." }, { status: 400 });
+    }
+
     // completeLesson() is CAS-guarded: if the tutor and student both call this at
     // the same time, only one of them actually debits/credits — the other gets
     // already_completed back with no double charge/payment.

@@ -119,10 +119,14 @@ export default function TutorDashboard() {
     setProfile({ ...profile, is_available_now: newVal });
   };
 
-  const rejectLesson = async (lessonId) => {
+  const rejectLesson = async (lesson) => {
     try {
-      await base44.functions.invoke('endLesson', { lesson_id: lessonId, is_recorded: false });
-      setLessons(prev => prev.filter(l => l.id !== lessonId));
+      if (lesson.status === "in_progress") {
+        await base44.functions.invoke('endLesson', { lesson_id: lesson.id, is_recorded: false });
+      } else {
+        await base44.functions.invoke('cancelLesson', { lesson_id: lesson.id });
+      }
+      setLessons(prev => prev.filter(l => l.id !== lesson.id));
       toast({ title: "Lesson cancelled" });
     } catch {
       toast({ title: "Error", variant: "destructive" });
@@ -325,7 +329,7 @@ export default function TutorDashboard() {
                         </Link>
                       ) : null}
                       <button
-                        onClick={() => rejectLesson(l.id)}
+                        onClick={() => rejectLesson(l)}
                         className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 border border-red-500/20 transition-all hover:scale-105"
                         title="Cancel lesson"
                       >
