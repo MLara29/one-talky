@@ -36,11 +36,14 @@ export default function TutorProfilePage() {
     } catch {} finally { setLoading(false); }
   };
 
+  // Client-side check kept only for UX (pre-emptively disabling the schedule
+  // button / redirecting to plans) — the real, final validation always happens
+  // server-side inside startInstantLesson / bookSlot.
   const checkCredits = async () => {
     if (user?.role !== "student") return true; // tutors/admins bypass
     const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
     const credits = profiles[0]?.credits_minutes ?? 0;
-    if (credits < 10 / 60) { // less than 10 seconds worth of credit
+    if (credits < 1) {
       navigate("/plans");
       toast({ title: "Sem minutos disponíveis", description: "Adicione créditos para continuar.", variant: "destructive" });
       return false;
@@ -51,18 +54,13 @@ export default function TutorProfilePage() {
   const startInstantLesson = async () => {
     setBooking(true);
     try {
-      if (!(await checkCredits())) { setBooking(false); return; }
-      const studentProfiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
-      const sp = studentProfiles[0];
-      const lesson = await base44.entities.Lesson.create({
-        tutor_id: tutor.user_id, student_id: user.id,
-        tutor_name: tutor.full_name, student_name: sp?.full_name || user.full_name,
-        language: tutor.native_languages?.[0] || "english",
-        status: "in_progress", type: "instant", started_at: new Date().toISOString(),
-      });
-      navigate(`/classroom/${lesson.id}`);
-    } catch {
-      toast({ title: "Error", description: "Could not start lesson.", variant: "destructive" });
+      const res = await base44.functions.invoke('startInstantLesson', { tutor_user_id: tutor.user_id });
+      if (res.data?.error) throw new Error(res.data.error);
+      navigate(`/classroom/${res.data.lesson.id}`);
+    } catch (err) {
+      const message = err?.response?.data?.error || err?.message;
+      if (message?.includes("minutos")) navigate("/plans");
+      toast({ title: "Não foi possível iniciar a aula", description: message || "Tente novamente.", variant: "destructive" });
     } finally { setBooking(false); }
   };
 
