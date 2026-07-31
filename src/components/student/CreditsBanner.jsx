@@ -4,7 +4,9 @@ import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PREPAID_PACKS, PLANS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/lib/AuthContext";
 import { Link } from "react-router-dom";
+import CheckoutModal from "@/components/checkout/CheckoutModal";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -75,8 +77,9 @@ function PlanShield({ plan }) {
 
 export default function CreditsBanner({ profile, onUpdate }) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [showTopup, setShowTopup] = useState(false);
-  const [processing, setProcessing] = useState(false);
+  const [checkoutItem, setCheckoutItem] = useState(null);
 
   const mins = profile?.credits_minutes || 0;
   const plan = profile?.plan || "free";
@@ -84,19 +87,23 @@ export default function CreditsBanner({ profile, onUpdate }) {
   const isLow = mins < 30;
   const pct = Math.min(100, Math.round((mins / 120) * 100));
 
-  const buyPack = async (pack) => {
-    if (processing) return;
-    setProcessing(true);
+  const buyPack = (pack) => {
+    setCheckoutItem({
+      title: `One Talky — ${pack.label}`,
+      price: pack.price_brl,
+      external_reference: `pack:${pack.id}`,
+    });
+  };
+
+  const handleCheckoutSuccess = async () => {
+    toast({ title: "Pagamento aprovado! 🎉", description: "Seus créditos foram adicionados." });
+    setShowTopup(false);
     try {
-      toast({ title: "Redirecionando para pagamento…" });
-      await new Promise(r => setTimeout(r, 800));
-      await base44.entities.StudentProfile.update(profile.id, { credits_minutes: mins + pack.minutes });
-      onUpdate({ ...profile, credits_minutes: mins + pack.minutes });
-      toast({ title: `+${pack.minutes} minutos adicionados! ⏱️` });
-      setShowTopup(false);
-    } catch {
-      toast({ title: "Erro ao processar", variant: "destructive" });
-    } finally { setProcessing(false); }
+      const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+      if (profiles.length > 0) onUpdate(profiles[0]);
+    } catch (e) {
+      console.error("[CreditsBanner] failed to refresh profile:", e);
+    }
   };
 
   return (
@@ -193,7 +200,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
               <button
                 key={pack.id}
                 onClick={() => buyPack(pack)}
-                disabled={processing}
+                disabled={!!checkoutItem}
                 className="flex flex-col items-center gap-1 p-3 rounded-xl bg-orange-50 border border-orange-100 hover:border-orange-400 hover:bg-orange-100 transition-all text-center"
               >
                 <span className="font-bold text-gray-900 text-sm">{pack.label}</span>
@@ -202,8 +209,18 @@ export default function CreditsBanner({ profile, onUpdate }) {
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-gray-400 mt-3 text-center">Créditos não expiram · Pagamento via Stripe</p>
+          <p className="text-[10px] text-gray-400 mt-3 text-center">Créditos não expiram · Pagamento via Mercado Pago</p>
         </div>
+      )}
+
+      {checkoutItem && (
+        <CheckoutModal
+          item={checkoutItem}
+          userEmail={user?.email}
+          onClose={() => setCheckoutItem(null)}
+          onSuccess={handleCheckoutSuccess}
+          affiliateCoupon={profile?.coupon_code}
+        />
       )}
     </div>
   );

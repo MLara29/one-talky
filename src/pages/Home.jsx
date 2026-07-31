@@ -38,8 +38,15 @@ export default function Home() {
         if (affiliates.length === 0 && user.email) {
           affiliates = await base44.entities.Affiliate.filter({ email: user.email });
           if (affiliates.length > 0) {
-            // Self-heal: link user_id to this affiliate record
-            await base44.entities.Affiliate.update(affiliates[0].id, { user_id: user.id });
+            // Self-heal: link user_id via the validated backend function (RLS forbids direct client updates)
+            const response = await base44.functions.invoke("linkAffiliate", {
+              coupon_code: affiliates[0].coupon_code,
+              full_name: user.full_name,
+            });
+            if (response.data?.error) {
+              console.error("checkProfile: linkAffiliate self-heal failed:", response.data.error);
+              affiliates = [];
+            }
           }
         }
         if (affiliates.length > 0) {

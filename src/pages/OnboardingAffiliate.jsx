@@ -39,8 +39,15 @@ export default function OnboardingAffiliate() {
       if (existing.length === 0 && me.email) {
         existing = await base44.entities.Affiliate.filter({ email: me.email });
         if (existing.length > 0) {
-          // Link user_id and redirect
-          await base44.entities.Affiliate.update(existing[0].id, { user_id: me.id });
+          // Link user_id via the validated backend function (RLS forbids direct client updates)
+          const response = await base44.functions.invoke("linkAffiliate", {
+            coupon_code: existing[0].coupon_code,
+            full_name: me.full_name,
+          });
+          if (response.data?.error) {
+            console.error("[OnboardingAffiliate] linkAffiliate failed:", response.data.error);
+            return;
+          }
           await base44.auth.updateMe({ role: "affiliate" });
           window.location.href = "/affiliate";
           return;
@@ -50,7 +57,9 @@ export default function OnboardingAffiliate() {
         await base44.auth.updateMe({ role: "affiliate" });
         window.location.href = "/affiliate";
       }
-    }).catch(() => {});
+    }).catch((e) => {
+      console.error("[OnboardingAffiliate] init check failed:", e);
+    });
   }, []);
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
