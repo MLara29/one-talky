@@ -33,30 +33,25 @@ export default function AdminSupport() {
     const reply = replyText[msg.id]?.trim();
     if (!reply) return;
     setSending(msg.id);
-    await base44.entities.SupportMessage.update(msg.id, {
-      admin_reply: reply,
-      status: "replied",
-      replied_at: new Date().toISOString(),
-    });
-    // Create a notification so the message appears in the user's My Messages page
     try {
-      await base44.entities.Notification.create({
-        user_id: msg.sender_id,
-        title: `Resposta ao seu chamado: ${msg.subject}`,
-        message: reply,
-        type: "general",
-        is_read: false,
-        link: "/my-messages",
-      });
-    } catch {}
-    toast({ title: "Reply sent!" });
-    setSending(null);
-    setReplyText(prev => ({ ...prev, [msg.id]: "" }));
-    load();
+      const response = await base44.functions.invoke("adminReplySupportTicket", { message_id: msg.id, action: "reply", reply });
+      if (response.data?.error) throw new Error(response.data.error);
+      toast({ title: "Reply sent!" });
+      setReplyText(prev => ({ ...prev, [msg.id]: "" }));
+      load();
+    } catch (e) {
+      toast({ title: "Erro", description: e?.message, variant: "destructive" });
+    } finally {
+      setSending(null);
+    }
   };
 
   const closeTicket = async (id) => {
-    await base44.entities.SupportMessage.update(id, { status: "closed" });
+    const response = await base44.functions.invoke("adminReplySupportTicket", { message_id: id, action: "close" });
+    if (response.data?.error) {
+      toast({ title: "Erro", description: response.data.error, variant: "destructive" });
+      return;
+    }
     load();
   };
 

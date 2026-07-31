@@ -51,14 +51,13 @@ export default function AdminCoupons() {
         discount_type: form.discount_percent > 0 ? form.discount_type : "none",
         max_uses: Number(form.max_uses),
         description: form.description,
-        used_count: 0,
-        is_active: true,
       };
       if (form.discount_type === "period") {
         payload.discount_start = form.discount_start || undefined;
         payload.discount_end = form.discount_end || undefined;
       }
-      await base44.entities.Coupon.create(payload);
+      const response = await base44.functions.invoke("adminManageCoupon", { action: "create", payload });
+      if (response.data?.error) throw new Error(response.data.error);
       setForm(EMPTY_FORM);
       toast({ title: "Cupom criado! 🎟️" });
       loadCoupons();
@@ -68,13 +67,21 @@ export default function AdminCoupons() {
   };
 
   const toggleActive = async (coupon) => {
-    await base44.entities.Coupon.update(coupon.id, { is_active: !coupon.is_active });
+    const response = await base44.functions.invoke("adminManageCoupon", { action: "toggle_active", payload: { coupon_id: coupon.id } });
+    if (response.data?.error) {
+      toast({ title: "Erro", description: response.data.error, variant: "destructive" });
+      return;
+    }
     loadCoupons();
   };
 
   const deleteCoupon = async (coupon) => {
     if (!confirm(`Excluir cupom "${coupon.code}"?`)) return;
-    await base44.entities.Coupon.delete(coupon.id);
+    const response = await base44.functions.invoke("adminManageCoupon", { action: "delete", payload: { coupon_id: coupon.id } });
+    if (response.data?.error) {
+      toast({ title: "Erro", description: response.data.error, variant: "destructive" });
+      return;
+    }
     loadCoupons();
   };
 

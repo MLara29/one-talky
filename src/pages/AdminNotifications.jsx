@@ -92,29 +92,14 @@ export default function AdminNotifications() {
 
     setSending(true);
     try {
-      if (target === "all") {
-        const records = tutors.map(t => ({
-          user_id: t.user_id,
-          title: title.trim(),
-          message: message.trim(),
-          type: "general",
-          is_read: false,
-          link: "/my-messages",
-        }));
-        await base44.entities.Notification.bulkCreate(records);
-        setSent(tutors.length);
-      } else {
-        const tutor = tutors.find(t => t.id === selectedTutor);
-        await base44.entities.Notification.create({
-          user_id: tutor.user_id,
-          title: title.trim(),
-          message: message.trim(),
-          type: "general",
-          is_read: false,
-          link: "/my-messages",
-        });
-        setSent(1);
-      }
+      const response = await base44.functions.invoke("adminSendNotification", {
+        target,
+        tutor_id: target === "specific" ? selectedTutor : undefined,
+        title: title.trim(),
+        message: message.trim(),
+      });
+      if (response.data?.error) throw new Error(response.data.error);
+      setSent(response.data.sent);
       toast({ title: "Notificação enviada!" });
       setTitle("");
       setMessage("");
