@@ -78,16 +78,15 @@ export const COUNTRIES = [
 // Preço base: R$29,90 por 30 minutos (R$0,9967/min)
 export const PRICE_PER_MIN_BRL = 0.9967;
 
-// Básico:   1 aula/semana × 4 semanas = 4 × R$29,90 = R$119,60/mês
-// Standard: 2 aulas/semana × 4 = 8 × R$29,90 = R$239,20 → 5% off = R$227,24/mês
-// Premium:  4 aulas/semana × 4 = 16 × R$29,90 = R$478,40 → 10% off = R$430,56/mês
-// Básico: 60 min · 2 aulas de 30min
-// Standard: 120 min · 4 aulas de 30min ou 2 de 1h
-// Premium: 240 min · 8 aulas de 30min ou 4 de 1h
+// Valores alinhados ao catálogo server-side (mpConfirmPayment/mpProcessPayment/
+// mpCreatePixPayment) — fonte da verdade para o que é realmente cobrado/creditado.
+// Básico:   1 aula/semana × 4 semanas = 4 × R$29,90 = R$119,60/mês · 120 min
+// Standard: 2 aulas/semana × 4 = 8 × R$29,90 = R$239,20 → 5% off = R$227,24/mês · 240 min
+// Premium:  4 aulas/semana × 4 = 16 × R$29,90 = R$478,40 → 10% off = R$430,56/mês · 480 min
 export const PLANS = [
-  { id: "basic",    name: "Básico",   minutes: 60,  price_brl: 59.80,  price_weekly: 29.90, price_monthly: 59.80,  description: "60 min/mês · 2 aulas de 30 min",  popular: false, sessions_per_week: 0.5 },
-  { id: "standard", name: "Standard", minutes: 120, price_brl: 119.60, price_weekly: 29.90, price_monthly: 119.60, description: "120 min/mês · 4×30 min ou 2×1h",     popular: true,  sessions_per_week: 1 },
-  { id: "premium",  name: "Premium",  minutes: 240, price_brl: 227.24, price_weekly: 56.81, price_monthly: 227.24, description: "240 min/mês · 8×30 min ou 4×1h",     popular: false, sessions_per_week: 2 },
+  { id: "basic",    name: "Básico",   minutes: 120, price_brl: 119.60, price_weekly: 29.90,  price_monthly: 119.60, description: "120 min/mês · 4 aulas de 30 min",  popular: false, sessions_per_week: 1 },
+  { id: "standard", name: "Standard", minutes: 240, price_brl: 227.24, price_weekly: 56.81,  price_monthly: 227.24, description: "240 min/mês · 8×30 min ou 4×1h",     popular: true,  sessions_per_week: 2 },
+  { id: "premium",  name: "Premium",  minutes: 480, price_brl: 430.56, price_weekly: 107.64, price_monthly: 430.56, description: "480 min/mês · 16×30 min ou 8×1h",    popular: false, sessions_per_week: 4 },
 ];
 
 // Pacotes pré-pagos (sem mensalidade) — base R$29,90/30min
