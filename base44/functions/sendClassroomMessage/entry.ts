@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
+import { requireNotBlocked } from "../../shared/requireNotBlocked.js";
 
 // Creates a ClassroomMessage only after verifying the sender is a participant
 // (tutor or student) of the referenced lesson — prevents posting into lessons
@@ -17,6 +18,11 @@ Deno.serve(async (req) => {
     const lesson = await base44.asServiceRole.entities.Lesson.get(lesson_id);
     if (!lesson || (lesson.tutor_id !== user.id && lesson.student_id !== user.id)) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    if (lesson.student_id === user.id) {
+      const blockedGate = await requireNotBlocked(base44, user.id);
+      if (!blockedGate.ok) return Response.json({ error: blockedGate.error }, { status: blockedGate.status });
     }
 
     const message = await base44.asServiceRole.entities.ClassroomMessage.create({

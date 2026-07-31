@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { validateBookingEligibility } from '../../shared/validateBookingEligibility.js';
 import { normalizeSlot } from '../../shared/slotUtils.js';
 import { requireOtp } from '../../shared/requireOtp.js';
+import { requireNotBlocked } from '../../shared/requireNotBlocked.js';
 
 // How long a pending lock is considered valid before being treated as orphaned.
 // 90s covers: TutorProfile.get + update + Lesson.create + multiple network hops.
@@ -59,6 +60,10 @@ export default async function(req) {
     const studentId = user.role === 'admin' && req.headers.get('x-student-id')
       ? req.headers.get('x-student-id')
       : user.id;
+
+    // ── RULE 0: Blocked students cannot book ────────────────────────────────────
+    const blockedGate = await requireNotBlocked(base44, studentId);
+    if (!blockedGate.ok) return Response.json({ error: blockedGate.error }, { status: blockedGate.status });
 
     // ── RULE 1: Eligibility ────────────────────────────────────────────────────
     const eligibility = await validateBookingEligibility(base44, studentId, scheduled_at, duration_minutes);
