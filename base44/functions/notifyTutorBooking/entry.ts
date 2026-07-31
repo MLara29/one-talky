@@ -140,10 +140,29 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const { tutor_id, student_id, scheduled_at } = body;
+    const { lesson_id } = body;
+
+    if (!lesson_id) {
+      return Response.json({ error: 'Missing lesson_id' }, { status: 400 });
+    }
+
+    // Verify a real Lesson exists matching this id and that the caller is a
+    // participant — prevents anyone from triggering fake "new lesson" emails
+    // to arbitrary tutors.
+    const lesson = await base44.asServiceRole.entities.Lesson.get(lesson_id);
+    if (!lesson) {
+      return Response.json({ error: 'Lesson not found' }, { status: 404 });
+    }
+    if (lesson.tutor_id !== user.id && lesson.student_id !== user.id && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const tutor_id = lesson.tutor_id;
+    const student_id = lesson.student_id;
+    const scheduled_at = lesson.scheduled_at;
 
     if (!tutor_id || !scheduled_at) {
-      return Response.json({ error: 'Missing tutor_id or scheduled_at' }, { status: 400 });
+      return Response.json({ error: 'Lesson is missing tutor_id or scheduled_at' }, { status: 400 });
     }
 
     const smtpHost = Deno.env.get('SMTP_HOST');
@@ -170,7 +189,7 @@ Deno.serve(async (req) => {
 
     if (!tutorEmail) return Response.json({ error: 'Could not determine tutor email' }, { status: 404 });
 
-    let studentName = body.student_name || 'Student';
+    let studentName = lesson.student_name || 'Student';
     let level = 'beginner';
     let topics: string[] = [];
     let objective = '';

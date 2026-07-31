@@ -98,13 +98,13 @@ export default function TutorProfilePage() {
       }
       setShowSchedule(false);
       toast({ title: "Lesson scheduled! 📅", description: "Check 'My Lessons' to see your booking." });
-      // Notify tutor via email (fire and forget)
-      base44.functions.invoke('notifyTutorBooking', {
-        tutor_id: tutor.user_id,
-        student_id: user.id,
-        student_name: sp?.full_name || user.full_name,
-        scheduled_at: scheduledAt,
-      }).catch(() => {});
+      // Notify tutor via email (fire and forget) — pass the real lesson_id so the
+      // backend can verify the lesson exists instead of trusting client fields.
+      if (bookRes.data?.lesson?.id) {
+        base44.functions.invoke('notifyTutorBooking', {
+          lesson_id: bookRes.data.lesson.id,
+        }).catch(() => {});
+      }
     } catch (err) {
       const msg = err?.response?.data?.error || err?.message || "Could not schedule.";
       toast({ title: "Agendamento bloqueado", description: msg, variant: "destructive" });

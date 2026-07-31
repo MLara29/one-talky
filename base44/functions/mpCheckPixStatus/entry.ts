@@ -1,19 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
-
-// Server-side catalog — minutes and plan NEVER come from client
-const CATALOG = {
-  "plan:basic:2":  { minutes: 60,  plan: "basic" },
-  "plan:basic:4":  { minutes: 120, plan: "basic" },
-  "plan:basic":    { minutes: 120, plan: "basic" },
-  "plan:standard": { minutes: 240, plan: "standard" },
-  "plan:premium":  { minutes: 480, plan: "premium" },
-  "pack:teste":    { minutes: 1 },
-  "pack:pp_30":    { minutes: 30 },
-  "pack:pp_60":    { minutes: 60 },
-  "pack:pp_120":   { minutes: 120 },
-  "pack:pp_300":   { minutes: 300 },
-  "pack:pp_600":   { minutes: 600 },
-};
+import { CATALOG } from "../../shared/paymentCatalog.js";
 
 Deno.serve(async (req) => {
   try {

@@ -1,32 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
-
-// Server-side price catalog for affiliate commission calculation
-const PRICE_CATALOG: Record<string, number> = {
-  "plan:basic":    59.80,
-  "plan:standard": 119.60,
-  "plan:premium":  227.24,
-  "pack:teste":    2.00,
-  "pack:pp_30":    29.90,
-  "pack:pp_60":    56.81,
-  "pack:pp_120":   107.64,
-  "pack:pp_300":   254.15,
-  "pack:pp_600":   478.40,
-};
-
-// Server-side catalog — minutes and plan NEVER come from client.
-// Kept in sync with PLANS/PREPAID_PACKS in src/lib/constants.js — the frontend
-// display values are the source of truth (confirmed with product 2026-07-30).
-const CATALOG: Record<string, { minutes: number; plan?: string }> = {
-  "plan:basic":    { minutes: 60,  plan: "basic" },
-  "plan:standard": { minutes: 120, plan: "standard" },
-  "plan:premium":  { minutes: 240, plan: "premium" },
-  "pack:teste":    { minutes: 1 },
-  "pack:pp_30":    { minutes: 30 },
-  "pack:pp_60":    { minutes: 60 },
-  "pack:pp_120":   { minutes: 120 },
-  "pack:pp_300":   { minutes: 300 },
-  "pack:pp_600":   { minutes: 600 },
-};
+import { CATALOG, PRICE_CATALOG } from "../../shared/paymentCatalog.js";
 
 Deno.serve(async (req) => {
   try {
