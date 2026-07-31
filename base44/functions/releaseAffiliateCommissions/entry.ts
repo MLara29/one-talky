@@ -2,11 +2,12 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 
 Deno.serve(async (req) => {
   try {
+    // No authenticated user in this context — invoked directly by the scheduled
+    // workflow (cron), which carries no user session. Safe without auth because:
+    // this function takes no input from the caller, and only acts on earnings
+    // whose release_date has already objectively passed — there's no way to
+    // release a commission early by calling this out of schedule.
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
     // Fetch all earnings still waiting the 7-day window
     const pending = await base44.asServiceRole.entities.AffiliateEarning.filter({

@@ -7,11 +7,12 @@ const STALE_THRESHOLD_MS = 3 * 60 * 60 * 1000; // 3 hours
 
 Deno.serve(async (req) => {
   try {
+    // No authenticated user in this context — invoked directly by the scheduled
+    // workflow (cron), which carries no user session. Safe without auth because:
+    // this function takes no input from the caller, and only acts on lessons
+    // that are objectively in_progress for longer than STALE_THRESHOLD_MS —
+    // there's no way to force-close a lesson before it's actually stale.
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
     const inProgress = await base44.asServiceRole.entities.Lesson.filter({ status: 'in_progress' });
     const now = Date.now();
