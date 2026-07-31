@@ -1,11 +1,11 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 
+// Kept in sync with PLANS/PREPAID_PACKS in src/lib/constants.js — the frontend
+// display values are the source of truth (confirmed with product 2026-07-30).
 const CATALOG = {
-  "plan:basic:2":  { price: 59.80,  title: "Plano Básico (2 aulas)",  minutes: 60,  plan: "basic" },
-  "plan:basic:4":  { price: 119.60, title: "Plano Básico (4 aulas)",  minutes: 120, plan: "basic" },
-  "plan:basic":    { price: 119.60, title: "Plano Básico",   minutes: 120, plan: "basic" },
-  "plan:standard": { price: 227.24, title: "Plano Standard", minutes: 240, plan: "standard" },
-  "plan:premium":  { price: 430.56, title: "Plano Premium",  minutes: 480, plan: "premium" },
+  "plan:basic":    { price: 59.80,  title: "Plano Básico",    minutes: 60,  plan: "basic" },
+  "plan:standard": { price: 119.60, title: "Plano Standard",  minutes: 120, plan: "standard" },
+  "plan:premium":  { price: 227.24, title: "Plano Premium",   minutes: 240, plan: "premium" },
   "pack:teste":    { price: 2.00,   title: "One Talky - Teste de Cobrança", minutes: 1 },
   "pack:pp_30":    { price: 29.90,  title: "Pack 30 min",    minutes: 30 },
   "pack:pp_60":    { price: 56.81,  title: "Pack 60 min",    minutes: 60 },
