@@ -75,6 +75,27 @@
     "coupon_code": {
       "type": "string",
       "description": "C\u00f3digo do cupom usado no onboarding (para aplicar comiss\u00e3o de afiliado em compras futuras)"
+    },
+    "subscription_start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de in\u00edcio do primeiro ciclo de assinatura ativa"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "active",
+        "cancelled",
+        "expired"
+      ],
+      "default": "none",
+      "description": "Status atual da assinatura"
+    },
+    "subscription_cycle": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero do ciclo atual (0 = sem assinatura, 1 = primeiro m\u00eas, 2+ = meses seguintes)"
     }
   },
   "required": [

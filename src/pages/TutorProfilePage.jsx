@@ -71,19 +71,29 @@ export default function TutorProfilePage() {
     try {
       const studentProfiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
       const sp = studentProfiles[0];
+
+      // Call bookSlot FIRST — it performs all server-side validations
+      // (first-month restriction + time conflict). Only create the Lesson record if it succeeds.
+      const bookRes = await base44.functions.invoke('bookSlot', {
+        tutor_profile_id: tutor.id,
+        scheduled_at: scheduledAt,
+        action: 'book',
+      });
+
+      if (bookRes.data?.error) {
+        toast({ title: "Agendamento bloqueado", description: bookRes.data.error, variant: "destructive" });
+        return;
+      }
+
       await base44.entities.Lesson.create({
         tutor_id: tutor.user_id, student_id: user.id,
         tutor_name: tutor.full_name, student_name: sp?.full_name || user.full_name,
         language: tutor.native_languages?.[0] || "english",
         status: "scheduled", type: "scheduled",
         scheduled_at: scheduledAt,
+        duration_minutes: 30,
       });
-      // Mark the slot as booked via backend function (bypasses RLS for student)
-      const bookRes = await base44.functions.invoke('bookSlot', {
-        tutor_profile_id: tutor.id,
-        scheduled_at: scheduledAt,
-        action: 'book',
-      });
+
       // Refresh tutor with updated booked_slots so modal stays accurate
       if (bookRes.data?.booked_slots) {
         setTutor(prev => ({ ...prev, booked_slots: bookRes.data.booked_slots }));
@@ -97,8 +107,9 @@ export default function TutorProfilePage() {
         student_name: sp?.full_name || user.full_name,
         scheduled_at: scheduledAt,
       }).catch(() => {});
-    } catch {
-      toast({ title: "Error", description: "Could not schedule.", variant: "destructive" });
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || "Could not schedule.";
+      toast({ title: "Agendamento bloqueado", description: msg, variant: "destructive" });
     } finally { setBooking(false); }
   };
 
