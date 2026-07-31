@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
     if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-    const otpGate = requireOtp(user);
+    const otpGate = await requireOtp(base44, req, user);
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const body = await req.json().catch(() => ({}));

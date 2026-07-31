@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const otpGate = requireOtp(user);
+    const otpGate = await requireOtp(base44, req, user);
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const { withdrawal_id } = await req.json();

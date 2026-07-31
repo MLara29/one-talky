@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
       if (user.role !== 'admin') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
-      const otpGate = requireOtp(user);
+      const otpGate = await requireOtp(base44, req, user);
       if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
       await base44.asServiceRole.entities.User.update(targetUserId, { role });
     } else {

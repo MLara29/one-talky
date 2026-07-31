@@ -47,7 +47,7 @@ export default async function(req) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
     if (user.role === 'admin') {
-      const otpGate = requireOtp(user);
+      const otpGate = await requireOtp(base44, req, user);
       if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
     }
 

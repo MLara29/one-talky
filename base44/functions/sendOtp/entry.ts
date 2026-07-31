@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import nodemailer from 'npm:nodemailer@6.9.14';
+import { getSessionHash } from '../../shared/sessionHash.js';
 
 Deno.serve(async (req) => {
   try {
@@ -12,34 +13,32 @@ Deno.serve(async (req) => {
       return Response.json({ required: false });
     }
 
+    const session = await getSessionHash(req);
+    if (!session?.hash) return Response.json({ error: 'Invalid session' }, { status: 400 });
+
     // Generate a 6-digit OTP
     const code = String(Math.floor(100000 + Math.random() * 900000));
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
 
-    // New session token for this login attempt — invalidates any previous
-    // verification (otp_verified_at is cleared) so a past login can never
-    // grant access to a new one. Every call to sendOtp (initial send or
-    // resend) rotates this token.
-    const sessionToken = crypto.randomUUID();
-    await base44.asServiceRole.entities.User.update(user.id, {
-      otp_session_token: sessionToken,
-      otp_verified_at: null,
+    // Invalidate old unused OTPs issued for THIS session only — never touches
+    // OTPs belonging to other tabs/devices logged in as the same user.
+    const existingOtps = await base44.asServiceRole.entities.OtpCode.filter({
+      user_id: user.id,
+      used: false,
+      session_token: session.hash,
     });
-
-    // Invalidate old OTPs for this user (service role)
-    const existingOtps = await base44.asServiceRole.entities.OtpCode.filter({ user_id: user.id, used: false });
     for (const otp of existingOtps) {
       await base44.asServiceRole.entities.OtpCode.update(otp.id, { used: true });
     }
 
-    // Store the new OTP, bound to this session token
+    // Store the new OTP, bound to this session's token hash
     await base44.asServiceRole.entities.OtpCode.create({
       user_id: user.id,
       email: user.email,
       code,
       expires_at: expiresAt,
       used: false,
-      session_token: sessionToken,
+      session_token: session.hash,
     });
 
     // Send via SMTP

@@ -164,11 +164,6 @@ export const AuthProvider = ({ children }) => {
     base44.auth.redirectToLogin(safeReturn);
   };
 
-  // Complementary client-side 2FA gate: admin/tutor accounts must have a fresh
-  // otp_verified_at for their current login session (server-side functions are
-  // the real enforcement — this only controls what routes render in the UI).
-  const otpPending = !!user && (user.role === 'admin' || user.role === 'tutor') && !user.otp_verified_at;
-
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -178,7 +173,6 @@ export const AuthProvider = ({ children }) => {
       authError,
       appPublicSettings,
       authChecked,
-      otpPending,
       logout,
       navigateToLogin,
       checkUserAuth,

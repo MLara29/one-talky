@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const role = user.role;
 
     if (role === "tutor") {
-      const otpGate = requireOtp(user);
+      const otpGate = await requireOtp(base44, req, user);
       if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
       // Strip any fields not in the allowed list — financial fields are never touched

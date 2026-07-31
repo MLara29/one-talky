@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const otpGate = requireOtp(user);
+    const otpGate = await requireOtp(base44, req, user);
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     if (lesson.status !== "scheduled") {
