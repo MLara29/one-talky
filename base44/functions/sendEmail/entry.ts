@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import nodemailer from 'npm:nodemailer@6.9.14';
+import { requireOtp } from '../../shared/requireOtp.js';
 
 Deno.serve(async (req) => {
   try {
@@ -11,6 +12,9 @@ Deno.serve(async (req) => {
     if (user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    const otpGate = await requireOtp(base44, req, user);
+    if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const { to, subject, html, text } = await req.json();
     if (!to || !subject || (!html && !text)) {
