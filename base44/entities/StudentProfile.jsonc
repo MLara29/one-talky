@@ -74,7 +74,7 @@
     },
     "coupon_code": {
       "type": "string",
-      "description": "C\u00f3digo do cupom usado no onboarding (para aplicar comiss\u00e3o de afiliado em compras futuras)"
+      "description": "C\u00f3digo do cupom usado no onboarding"
     },
     "subscription_start_date": {
       "type": "string",
@@ -84,7 +84,7 @@
     "subscription_valid_until": {
       "type": "string",
       "format": "date-time",
-      "description": "Data at\u00e9 quando o acesso \u00e9 v\u00e1lido ap\u00f3s cancelamento fora da janela de 7 dias. Null = sem prazo especial."
+      "description": "Data at\u00e9 quando o acesso \u00e9 v\u00e1lido ap\u00f3s cancelamento fora da janela de 7 dias."
     },
     "subscription_status": {
       "type": "string",
@@ -104,7 +104,12 @@
     },
     "first_week_lesson_id": {
       "type": "string",
-      "description": "ID da Lesson agendada durante a janela dos primeiros 7 dias do ciclo 1. Usado como lock CAS para prevenir race conditions."
+      "description": "ID da Lesson agendada na janela dos primeiros 7 dias do ciclo 1. '__pending__' enquanto em andamento; ID real ap\u00f3s commit. Lock CAS anti-race-condition."
+    },
+    "first_week_lock_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de aquisi\u00e7\u00e3o do lock '__pending__'. Locks com mais de 30s s\u00e3o tratados como \u00f3rf\u00e3os (TTL de autorrecupera\u00e7\u00e3o)."
     }
   },
   "required": [

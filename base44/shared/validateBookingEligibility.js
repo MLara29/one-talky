@@ -90,10 +90,24 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
         error: `Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos. Novos agendamentos ficarão disponíveis a partir do dia ${unlockDate}.`,
       };
 
-      // Fast-path: CAS lock field already set — block without querying Lessons
+      // Fast-path: CAS lock field already set
       if (sp.first_week_lesson_id) {
-        console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_lock_set lesson_id=${sp.first_week_lesson_id}`);
-        return blockedError;
+        if (sp.first_week_lesson_id !== '__pending__') {
+          // A real lesson ID is committed — hard block.
+          console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_lock_committed lesson_id=${sp.first_week_lesson_id}`);
+          return blockedError;
+        }
+        // '__pending__': check TTL — stale locks are orphans, let bookSlot overwrite them.
+        const CAS_LOCK_TTL_MS = 30_000;
+        const lockAge = sp.first_week_lock_at
+          ? Date.now() - new Date(sp.first_week_lock_at).getTime()
+          : CAS_LOCK_TTL_MS + 1;
+        if (lockAge < CAS_LOCK_TTL_MS) {
+          console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_lock_pending age_ms=${lockAge}`);
+          return blockedError;
+        }
+        // Stale pending lock — fall through to count check; bookSlot will overwrite it.
+        console.log(`[validateBookingEligibility] INFO student=${studentId} stale pending lock (age_ms=${lockAge}) — passing through`);
       }
 
       // Fallback count check (catches records created before this field existed)
