@@ -26,9 +26,11 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'toggle_block') {
-      const newPlan = student.plan === 'blocked' ? 'free' : 'blocked';
-      await base44.asServiceRole.entities.StudentProfile.update(student_id, { plan: newPlan });
-      return Response.json({ success: true, plan: newPlan });
+      // Blocking is a dedicated flag — it never touches `plan`, which must
+      // always remain one of the real plan values (free/basic/standard/premium).
+      const newBlocked = !student.is_blocked;
+      await base44.asServiceRole.entities.StudentProfile.update(student_id, { is_blocked: newBlocked });
+      return Response.json({ success: true, is_blocked: newBlocked });
     }
 
     if (action === 'add_minutes') {

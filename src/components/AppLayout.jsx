@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
+import BlockedScreen from "@/components/BlockedScreen";
 
 import { Button } from "@/components/ui/button";
 import useInactivityLogout from "@/hooks/useInactivityLogout";
@@ -115,6 +116,20 @@ export default function AppLayout() {
   const role = user?.role || "student";
 
   useInactivityLogout(role);
+
+  // Students blocked by an admin (StudentProfile.is_blocked) are denied access
+  // to the entire app — checked here since AppLayout wraps every protected page.
+  const [studentBlocked, setStudentBlocked] = useState(false);
+  useEffect(() => {
+    if (role !== "student" || !user?.id) return;
+    base44.entities.StudentProfile.filter({ user_id: user.id }).then(profiles => {
+      if (profiles[0]?.is_blocked) setStudentBlocked(true);
+    }).catch(() => {});
+  }, [role, user?.id]);
+
+  if (studentBlocked) {
+    return <BlockedScreen />;
+  }
 
   const nav = role === "admin" ? ADMIN_NAV
     : role === "tutor" ? TUTOR_NAV

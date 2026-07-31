@@ -12,7 +12,6 @@ const PLAN_COLORS = {
   basic:    "bg-blue-500/10 border-blue-500/20 text-blue-400",
   standard: "bg-violet-500/10 border-violet-500/20 text-violet-400",
   premium:  "bg-amber-500/10 border-amber-500/20 text-amber-400",
-  blocked:  "bg-red-500/10 border-red-500/20 text-red-400",
 };
 
 export default function StudentDetailModal({ student, userEmail, open, onClose, onUpdated, onDeleted }) {
@@ -49,9 +48,9 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
     try {
       const response = await base44.functions.invoke("adminManageStudent", { student_id: student.id, action: "toggle_block" });
       if (response.data?.error) throw new Error(response.data.error);
-      const newPlan = response.data.plan;
-      toast({ title: newPlan === "blocked" ? "Aluno bloqueado" : "Aluno desbloqueado" });
-      onUpdated({ ...student, plan: newPlan });
+      const newBlocked = response.data.is_blocked;
+      toast({ title: newBlocked ? "Aluno bloqueado" : "Aluno desbloqueado" });
+      onUpdated({ ...student, is_blocked: newBlocked });
       onClose();
     } catch (e) {
       toast({ title: "Erro", description: e?.message, variant: "destructive" });
@@ -167,10 +166,10 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
             onClick={handleBlock}
             disabled={blocking}
             variant="ghost"
-            className={`flex-1 ${student.plan === "blocked" ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"}`}
+            className={`flex-1 ${student.is_blocked ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"}`}
           >
-            {student.plan === "blocked" ? <CheckCircle className="w-4 h-4 mr-1.5" /> : <Ban className="w-4 h-4 mr-1.5" />}
-            {student.plan === "blocked" ? "Desbloquear" : "Bloquear"}
+            {student.is_blocked ? <CheckCircle className="w-4 h-4 mr-1.5" /> : <Ban className="w-4 h-4 mr-1.5" />}
+            {student.is_blocked ? "Desbloquear" : "Bloquear"}
           </Button>
           <Button
             onClick={handleDelete}

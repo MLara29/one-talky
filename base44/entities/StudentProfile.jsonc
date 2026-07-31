@@ -110,6 +110,11 @@
       "type": "string",
       "format": "date-time",
       "description": "Timestamp de aquisi\u00e7\u00e3o do lock pendente. Locks expirados (TTL) s\u00e3o tratados como \u00f3rf\u00e3os e podem ser sobrescritos."
+    },
+    "is_blocked": {
+      "type": "boolean",
+      "default": false,
+      "description": "True quando o admin bloqueou o acesso do aluno \u00e0 plataforma. Independente do campo plan \u2014 nunca usar plan para representar bloqueio."
     }
   },
   "required": [

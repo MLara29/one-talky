@@ -12,7 +12,6 @@ const PLAN_COLORS = {
   basic:    "bg-blue-500/10 border-blue-500/20 text-blue-400",
   standard: "bg-violet-500/10 border-violet-500/20 text-violet-400",
   premium:  "bg-amber-500/10 border-amber-500/20 text-amber-400",
-  blocked:  "bg-red-500/10 border-red-500/20 text-red-400",
 };
 
 export default function AdminUsers() {
@@ -76,9 +75,9 @@ export default function AdminUsers() {
     try {
       const response = await base44.functions.invoke("adminManageStudent", { student_id: s.id, action: "toggle_block" });
       if (response.data?.error) throw new Error(response.data.error);
-      const newPlan = response.data.plan;
-      setStudents(prev => prev.map(x => x.id === s.id ? { ...x, plan: newPlan } : x));
-      toast({ title: newPlan === "blocked" ? "Aluno bloqueado" : "Aluno desbloqueado" });
+      const newBlocked = response.data.is_blocked;
+      setStudents(prev => prev.map(x => x.id === s.id ? { ...x, is_blocked: newBlocked } : x));
+      toast({ title: newBlocked ? "Aluno bloqueado" : "Aluno desbloqueado" });
     } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
@@ -271,6 +270,11 @@ export default function AdminUsers() {
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium border capitalize ${planColor}`}>
                         {planKey}
                       </span>
+                      {s.is_blocked && (
+                        <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-red-500/10 border-red-500/20 text-red-400">
+                          Bloqueado
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
