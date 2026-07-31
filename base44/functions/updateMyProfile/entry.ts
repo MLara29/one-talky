@@ -10,7 +10,7 @@ const TUTOR_ALLOWED_FIELDS = new Set([
 // Fields that students are allowed to update on their own profile
 const STUDENT_ALLOWED_FIELDS = new Set([
   "full_name", "photo_url", "nationality", "accent_preference",
-  "conversation_topics", "objective", "level",
+  "conversation_topics", "objective", "level", "target_language",
 ]);
 
 Deno.serve(async (req) => {
