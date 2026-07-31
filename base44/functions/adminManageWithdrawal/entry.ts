@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const { tutor_id, action } = await req.json();
-    if (!tutor_id || !['mark_processing', 'mark_paid'].includes(action)) {
+    if (!tutor_id || !['mark_processing', 'mark_paid', 'mark_rejected'].includes(action)) {
       return Response.json({ error: 'tutor_id and valid action are required' }, { status: 400 });
     }
 
@@ -91,6 +91,20 @@ Deno.serve(async (req) => {
           <p style="color:#6b7280;font-size:13px">The One Talky Team 🧡</p>
         </div>`
       );
+
+      return Response.json({ success: true });
+    }
+
+    if (action === 'mark_rejected') {
+      const wrList = await base44.asServiceRole.entities.WithdrawalRequest.filter({ tutor_id, status: { $in: ['pending', 'processing'] } });
+      const wr = wrList[0];
+      if (wr) {
+        await base44.asServiceRole.entities.WithdrawalRequest.update(wr.id, { status: 'rejected' });
+      }
+
+      // Release the CAS lock, same as confirmWithdrawal does on the success path,
+      // so the tutor can submit a new withdrawal request.
+      await base44.asServiceRole.entities.TutorProfile.update(tutor.id, { has_pending_withdrawal: false });
 
       return Response.json({ success: true });
     }
