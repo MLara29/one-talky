@@ -190,10 +190,13 @@ export default function Classroom() {
 
       let studentCredits = scheduledMins;
       try {
-        const studentId = user?.role === "student" ? user.id : l.student_id;
-        const profiles = await base44.entities.StudentProfile.filter({ user_id: studentId });
-        if (profiles.length > 0) {
-          studentCredits = profiles[0].credits_minutes ?? 0;
+        if (user?.role === "student") {
+          const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+          if (profiles.length > 0) studentCredits = profiles[0].credits_minutes ?? 0;
+        } else {
+          const res = await base44.functions.invoke('getMyStudentsProfiles', { student_ids: [l.student_id] });
+          const profiles = res.data?.profiles || [];
+          if (profiles.length > 0) studentCredits = profiles[0].credits_minutes ?? 0;
         }
       } catch {}
 
