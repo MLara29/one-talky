@@ -111,25 +111,15 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
     if (booking || inLesson) return;
     setBooking(true);
     try {
-      const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
-      const sp = profiles[0];
-      const credits = sp?.credits_minutes ?? 0;
-      if (credits < 10 / 60) {
+      const res = await base44.functions.invoke('startInstantLesson', { tutor_user_id: tutor.user_id });
+      if (res.data?.error) throw new Error(res.data.error);
+      navigate(`/classroom/${res.data.lesson.id}`);
+    } catch (e) {
+      const message = e?.response?.data?.error || e?.message;
+      if (message?.includes("minutos")) {
         navigate("/plans");
-        toast({ title: "Sem minutos disponíveis", description: "Adicione créditos para continuar.", variant: "destructive" });
-        return;
       }
-      const lesson = await base44.entities.Lesson.create({
-        tutor_id: tutor.user_id, student_id: user.id,
-        tutor_name: tutor.full_name, student_name: sp?.full_name || user.full_name,
-        language: tutor.native_languages?.[0] || "english",
-        status: "in_progress", type: "instant", started_at: new Date().toISOString(),
-      });
-      // Mark tutor as in_lesson
-      base44.functions.invoke('startLesson', { lesson_id: lesson.id }).catch(() => {});
-      navigate(`/classroom/${lesson.id}`);
-    } catch {
-      toast({ title: "Erro", description: "Não foi possível iniciar a aula. Tente novamente.", variant: "destructive" });
+      toast({ title: "Não foi possível iniciar a aula", description: message || "Tente novamente.", variant: "destructive" });
     } finally {
       setBooking(false);
     }
