@@ -70,7 +70,7 @@
     },
     "credits_minutes": {
       "type": "number",
-      "default": 15
+      "default": 0
     },
     "coupon_code": {
       "type": "string",

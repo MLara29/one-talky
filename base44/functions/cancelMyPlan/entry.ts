@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
       plan: "free",
-      credits_minutes: 15,
+      credits_minutes: 0,
       subscription_status: "cancelled",
     });
 
