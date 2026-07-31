@@ -55,6 +55,16 @@
       "type": "boolean",
       "default": false
     },
+    "earnings_finalized": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once tutor earnings have been credited for this lesson \u2014 CAS guard to prevent double-payment."
+    },
+    "flagged_for_review": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the charged duration was capped (lesson ran or stayed open unusually long) \u2014 needs manual review."
+    },
     "notes": {
       "type": "string"
     }

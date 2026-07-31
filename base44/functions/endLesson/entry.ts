@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
+import { completeLesson } from "../../shared/completeLesson.js";
 
 Deno.serve(async (req) => {
   try {
@@ -19,53 +20,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // If already completed, just return success (idempotent)
     if (lesson.status === "completed") {
       return Response.json({ success: true, already_completed: true });
     }
 
-    const now = new Date().toISOString();
-    const startedAt = lesson.started_at ? new Date(lesson.started_at).getTime() : Date.now();
-    const endedAt = Date.now();
-    const durationSeconds = Math.max(1, (endedAt - startedAt) / 1000);
-    const durationMinutes = durationSeconds / 60;
+    // completeLesson() is CAS-guarded: if the tutor and student both call this at
+    // the same time, only one of them actually debits/credits — the other gets
+    // already_completed back with no double charge/payment.
+    const result = await completeLesson(base44, lesson, { isRecorded: is_recorded });
 
-    // Mark lesson as completed server-side
-    await base44.asServiceRole.entities.Lesson.update(lesson_id, {
-      status: "completed",
-      ended_at: now,
-      duration_minutes: Math.round(durationMinutes),
-      is_recorded: Boolean(is_recorded),
+    if (result.alreadyCompleted) {
+      return Response.json({ success: true, already_completed: true });
+    }
+
+    return Response.json({
+      success: true,
+      duration_minutes: Math.round(result.durationMinutes * 100) / 100,
+      flagged_for_review: result.flagged,
     });
-
-    // Debit student credits server-side
-    const studentProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: lesson.student_id });
-    if (studentProfiles.length > 0) {
-      const sp = studentProfiles[0];
-      const newCredits = Math.max(0, (sp.credits_minutes ?? 0) - durationMinutes);
-      await base44.asServiceRole.entities.StudentProfile.update(sp.id, {
-        credits_minutes: Math.round(newCredits * 100) / 100,
-        total_minutes: Math.round(((sp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
-        total_lessons: (sp.total_lessons ?? 0) + 1,
-        last_practice_date: now.split("T")[0],
-      });
-    }
-
-    // Credit tutor earnings server-side
-    const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
-    if (tutorProfiles.length > 0) {
-      const tp = tutorProfiles[0];
-      const rate = tp.price_per_minute ?? 0.9967;
-      const earnings = durationSeconds * (rate / 60);
-      await base44.asServiceRole.entities.TutorProfile.update(tp.id, {
-        total_earnings: Math.round(((tp.total_earnings ?? 0) + earnings) * 100) / 100,
-        total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
-        total_lessons: (tp.total_lessons ?? 0) + 1,
-        in_lesson: false,
-      });
-    }
-
-    return Response.json({ success: true, duration_minutes: Math.round(durationMinutes * 100) / 100 });
   } catch (error) {
     console.error('[endLesson]', error.message);
     return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });

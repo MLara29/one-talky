@@ -1,10 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { validateBookingEligibility } from '../../shared/validateBookingEligibility.js';
-
-const normalizeSlot = (iso) => {
-  const d = new Date(iso);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}T${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
-};
+import { normalizeSlot } from '../../shared/slotUtils.js';
 
 // How long a pending lock is considered valid before being treated as orphaned.
 // 90s covers: TutorProfile.get + update + Lesson.create + multiple network hops.

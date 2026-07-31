@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
+import { normalizeSlot } from "../../shared/slotUtils.js";
 
 Deno.serve(async (req) => {
   try {
@@ -29,13 +30,44 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Only scheduled lessons can be rescheduled" }, { status: 400 });
     }
 
-    // Update booked slots on tutor profile: release old, book new
+    const normalizedNew = normalizeSlot(new_scheduled_at);
+    const normalizedOld = normalizeSlot(lesson.scheduled_at);
+
+    // ── Reject if the tutor already has a DIFFERENT lesson at the new time ──
+    const tutorLessons = await base44.asServiceRole.entities.Lesson.filter({ tutor_id: lesson.tutor_id });
+    const tutorConflict = tutorLessons.find((l: any) =>
+      l.id !== lesson_id && l.status !== "cancelled" && l.scheduled_at && normalizeSlot(l.scheduled_at) === normalizedNew
+    );
+    if (tutorConflict) {
+      return Response.json({ error: "Novo horário já está ocupado" }, { status: 409 });
+    }
+
+    // ── Reject if the student already has a DIFFERENT lesson (any tutor) at the new time ──
+    const studentLessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: lesson.student_id });
+    const studentConflict = studentLessons.find((l: any) =>
+      l.id !== lesson_id && l.status !== "cancelled" && l.scheduled_at && normalizeSlot(l.scheduled_at) === normalizedNew
+    );
+    if (studentConflict) {
+      return Response.json({ error: "O aluno já tem outra aula agendada nesse horário" }, { status: 409 });
+    }
+
     const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
-    if (tutorProfiles.length > 0) {
-      const tp = tutorProfiles[0];
-      let booked = (tp.booked_slots || []).filter((s: string) => s !== lesson.scheduled_at);
-      if (!booked.includes(new_scheduled_at)) booked.push(new_scheduled_at);
-      await base44.asServiceRole.entities.TutorProfile.update(tp.id, { booked_slots: booked });
+    if (tutorProfiles.length === 0) return Response.json({ error: "Tutor profile not found" }, { status: 404 });
+    const tp = tutorProfiles[0];
+
+    const newSlotFull = `${normalizedNew}:00Z`;
+    const oldSlotFull = (tp.booked_slots || []).find((s: string) => normalizeSlot(s) === normalizedOld) || `${normalizedOld}:00Z`;
+
+    // Atomic slot move: only succeeds if the new slot isn't already booked on the
+    // tutor profile at the moment of the write — protects against a concurrent
+    // booking/reschedule claiming the same slot between our read and this update.
+    const casResult = await base44.asServiceRole.entities.TutorProfile.updateMany(
+      { id: tp.id, booked_slots: { $nin: [newSlotFull] } },
+      { $addToSet: { booked_slots: newSlotFull }, $pull: { booked_slots: oldSlotFull } }
+    );
+
+    if (casResult.updated === 0) {
+      return Response.json({ error: "Novo horário já está ocupado" }, { status: 409 });
     }
 
     await base44.asServiceRole.entities.Lesson.update(lesson_id, { scheduled_at: new_scheduled_at });

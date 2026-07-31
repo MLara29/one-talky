@@ -24,6 +24,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Lesson not completed yet' }, { status: 400 });
     }
 
+    // CAS guard: endLesson already finalizes earnings when it completes the lesson.
+    // Only proceed if no one has finalized earnings for this lesson yet — otherwise
+    // this would double-pay the tutor.
+    const earningsCas = await base44.asServiceRole.entities.Lesson.updateMany(
+      { id: lesson_id, earnings_finalized: { $ne: true } },
+      { $set: { earnings_finalized: true } }
+    );
+
+    if (earningsCas.updated === 0) {
+      return Response.json({ success: true, already_finalized: true });
+    }
+
     // Calculate duration from server-recorded timestamps
     const startedAt = lesson.started_at ? new Date(lesson.started_at).getTime() : null;
     const endedAt = lesson.ended_at ? new Date(lesson.ended_at).getTime() : null;
