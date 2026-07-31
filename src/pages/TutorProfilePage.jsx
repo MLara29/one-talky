@@ -78,6 +78,7 @@ export default function TutorProfilePage() {
         tutor_profile_id: tutor.id,
         scheduled_at: scheduledAt,
         action: 'book',
+        duration_minutes: 30,
       });
 
       if (bookRes.data?.error) {

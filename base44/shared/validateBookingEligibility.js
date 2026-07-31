@@ -4,73 +4,102 @@
  * Central server-side validation for lesson scheduling rules.
  * MUST be called from every booking entry point (bookSlot, admin, future integrations).
  *
- * RULE — FIRST MONTH RESTRICTION:
- *   - During the first 7 days of the first subscription cycle (subscription_cycle === 1):
- *     the student may schedule at most 1 lesson of 30 minutes.
- *   - After day 7: full scheduling freedom (if subscription is active).
- *   - If subscription is cancelled/expired at any point: no new bookings.
- *   - From cycle 2 onwards: no restrictions apply.
+ * RULES:
  *
- * @param {object} base44         - base44 service-role client
- * @param {string} studentId      - User ID of the student
- * @param {string} scheduledAt    - ISO datetime of the proposed lesson
+ * 1. subscription_status = "none" → BLOCKED (no active subscription)
+ * 2. subscription_status = "cancelled" or "expired":
+ *    - If subscription_valid_until is set and still in the future → ALLOWED (paid period not over)
+ *    - Otherwise → BLOCKED
+ * 3. subscription_status = "active", cycle = 1, within first 7 days:
+ *    - Max 1 lesson, max 30 minutes. Beyond that → BLOCKED.
+ * 4. All other active cases → ALLOWED.
+ *
+ * Cancellation policy (set by payment webhook / admin):
+ *   - Cancelled within 7 days of first cycle → immediate block (subscription_valid_until = null)
+ *   - Cancelled after 7 days → access until subscription_valid_until (end of paid billing period)
+ *
+ * @param {object} base44           - base44 service-role client
+ * @param {string} studentId        - User ID of the student
+ * @param {string} scheduledAt      - ISO datetime of the proposed lesson
+ * @param {number} [durationMinutes] - Duration of the lesson in minutes (required for cycle-1 window check)
  * @returns {{ allowed: boolean, error?: string, httpStatus?: number }}
  */
-export async function validateBookingEligibility(base44, studentId, scheduledAt) {
+export async function validateBookingEligibility(base44, studentId, scheduledAt, durationMinutes) {
   // Fetch student profile with service role to avoid RLS interference
   const profiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: studentId });
   if (profiles.length === 0) {
-    return { allowed: true }; // No profile yet — don't block (profile created on onboarding)
+    // No profile yet — don't block (profile created on onboarding)
+    return { allowed: true };
   }
   const sp = profiles[0];
 
   const subStatus = sp.subscription_status || "none";
   const subCycle = sp.subscription_cycle || 0;
   const subStartDate = sp.subscription_start_date ? new Date(sp.subscription_start_date) : null;
+  const subValidUntil = sp.subscription_valid_until ? new Date(sp.subscription_valid_until) : null;
 
-  // If student has no active subscription and is not in the first cycle, allow
-  // (free-plan students without subscription can still book — credits are the gate elsewhere)
+  // ── RULE 1: No subscription at all ──
+  if (subStatus === "none" || subCycle === 0) {
+    console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=no_active_subscription status=${subStatus}`);
+    return {
+      allowed: false,
+      httpStatus: 403,
+      error: "Você não possui uma assinatura ativa. Assine um plano para agendar aulas.",
+    };
+  }
+
+  // ── RULE 2: Cancelled or expired — check if still within paid period ──
   if (subStatus === "cancelled" || subStatus === "expired") {
-    return {
-      allowed: false,
-      httpStatus: 403,
-      error: "Sua assinatura está cancelada/inativa. Reative seu plano para agendar novas aulas.",
-    };
+    if (subValidUntil && new Date() < subValidUntil) {
+      // Still within paid billing period — allow scheduling (credits are the gate)
+      // Fall through to further checks below
+    } else {
+      console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=subscription_${subStatus} valid_until=${subValidUntil?.toISOString() || "none"}`);
+      return {
+        allowed: false,
+        httpStatus: 403,
+        error: "Sua assinatura está cancelada/inativa. Reative seu plano para agendar novas aulas.",
+      };
+    }
   }
 
-  // Only apply first-month restriction during cycle 1
-  if (subCycle !== 1 || !subStartDate) {
-    return { allowed: true };
-  }
+  // ── RULE 3: First-month (cycle 1) restriction within first 7 days ──
+  if (subCycle === 1 && subStartDate) {
+    const now = new Date();
+    const sevenDaysAfterStart = new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const isInFirstWeek = now < sevenDaysAfterStart;
 
-  const now = new Date();
-  const sevenDaysAfterStart = new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const isInFirstWeek = now < sevenDaysAfterStart;
+    if (isInFirstWeek) {
+      // Check duration: must be exactly 30 minutes in the first week
+      if (durationMinutes && durationMinutes !== 30) {
+        console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_wrong_duration duration=${durationMinutes}`);
+        return {
+          allowed: false,
+          httpStatus: 403,
+          error: "Durante os primeiros 7 dias da sua assinatura, a aula deve ter 30 minutos.",
+        };
+      }
 
-  if (!isInFirstWeek) {
-    // Past 7-day window — allow freely (subscription already verified active above)
-    return { allowed: true };
-  }
+      // Check lesson count: max 1 lesson in this window
+      const existingLessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: studentId });
+      const windowLessons = existingLessons.filter(l => {
+        if (l.status === "cancelled") return false;
+        const lessonDate = new Date(l.scheduled_at || l.created_date || l.started_at);
+        return lessonDate >= subStartDate && lessonDate < sevenDaysAfterStart;
+      });
 
-  // Within first 7 days: check how many lessons exist (scheduled, in_progress, or completed)
-  const existingLessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: studentId });
-
-  // Count lessons created or scheduled within the first 7-day window
-  const windowLessons = existingLessons.filter(l => {
-    if (l.status === "cancelled") return false;
-    const lessonDate = new Date(l.scheduled_at || l.created_date || l.started_at);
-    return lessonDate >= subStartDate && lessonDate < sevenDaysAfterStart;
-  });
-
-  if (windowLessons.length >= 1) {
-    const unlockDate = sevenDaysAfterStart.toLocaleDateString("pt-BR", {
-      day: "2-digit", month: "2-digit", year: "numeric"
-    });
-    return {
-      allowed: false,
-      httpStatus: 403,
-      error: `Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos. Novos agendamentos ficarão disponíveis a partir do dia ${unlockDate}.`,
-    };
+      if (windowLessons.length >= 1) {
+        const unlockDate = sevenDaysAfterStart.toLocaleDateString("pt-BR", {
+          day: "2-digit", month: "2-digit", year: "numeric"
+        });
+        console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=first_week_lesson_limit count=${windowLessons.length}`);
+        return {
+          allowed: false,
+          httpStatus: 403,
+          error: `Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos. Novos agendamentos ficarão disponíveis a partir do dia ${unlockDate}.`,
+        };
+      }
+    }
   }
 
   return { allowed: true };

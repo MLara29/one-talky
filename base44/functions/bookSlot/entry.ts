@@ -12,7 +12,7 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    let { tutor_profile_id, scheduled_at, action, lesson_id } = await req.json();
+    let { tutor_profile_id, scheduled_at, action, lesson_id, duration_minutes } = await req.json();
     if (!tutor_profile_id || !scheduled_at) return Response.json({ error: 'Missing params' }, { status: 400 });
 
     // For 'release' action, verify the lesson belongs to the calling user
@@ -37,7 +37,7 @@ export default async function(req) {
         : user.id;
 
       // ── RULE 1: First-month subscription restriction (server-side, tamper-proof) ──
-      const eligibility = await validateBookingEligibility(base44, studentId, scheduled_at);
+      const eligibility = await validateBookingEligibility(base44, studentId, scheduled_at, duration_minutes);
       if (!eligibility.allowed) {
         console.log(`[bookSlot] REJECTED student=${studentId} scheduled_at=${scheduled_at} reason=${eligibility.error}`);
         return Response.json({ error: eligibility.error }, { status: eligibility.httpStatus || 403 });

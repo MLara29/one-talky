@@ -81,6 +81,11 @@
       "format": "date-time",
       "description": "Data de in\u00edcio do primeiro ciclo de assinatura ativa"
     },
+    "subscription_valid_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data at\u00e9 quando o acesso \u00e9 v\u00e1lido ap\u00f3s cancelamento fora da janela de 7 dias. Null = sem prazo especial."
+    },
     "subscription_status": {
       "type": "string",
       "enum": [
