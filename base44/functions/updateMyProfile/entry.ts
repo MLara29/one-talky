@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
+import { requireOtp } from "../../shared/requireOtp.js";
 
 // Fields that tutors are allowed to update on their own profile
 const TUTOR_ALLOWED_FIELDS = new Set([
@@ -27,6 +28,9 @@ Deno.serve(async (req) => {
     const role = user.role;
 
     if (role === "tutor") {
+      const otpGate = requireOtp(user);
+      if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
+
       // Strip any fields not in the allowed list — financial fields are never touched
       const safeUpdates: Record<string, unknown> = {};
       for (const key of Object.keys(updates)) {

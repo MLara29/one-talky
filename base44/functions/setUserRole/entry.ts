@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { requireOtp } from '../../shared/requireOtp.js';
 
 Deno.serve(async (req) => {
   try {
@@ -16,6 +17,8 @@ Deno.serve(async (req) => {
       if (user.role !== 'admin') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
+      const otpGate = requireOtp(user);
+      if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
       await base44.asServiceRole.entities.User.update(targetUserId, { role });
     } else {
       // Self-update: only allow non-privileged roles (tutor/affiliate require admin approval)

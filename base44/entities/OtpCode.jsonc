@@ -18,6 +18,10 @@
     "used": {
       "type": "boolean",
       "default": false
+    },
+    "session_token": {
+      "type": "string",
+      "description": "The otp_session_token active on the User at the moment this code was issued. verifyOtp requires this to match the User's current otp_session_token, so a code from a superseded login session can never verify a newer one."
     }
   },
   "required": [

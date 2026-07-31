@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { validateBookingEligibility } from '../../shared/validateBookingEligibility.js';
 import { normalizeSlot } from '../../shared/slotUtils.js';
+import { requireOtp } from '../../shared/requireOtp.js';
 
 // How long a pending lock is considered valid before being treated as orphaned.
 // 90s covers: TutorProfile.get + update + Lesson.create + multiple network hops.
@@ -44,6 +45,10 @@ export default async function(req) {
     // ── BOOK action ────────────────────────────────────────────────────────────
     if (user.role !== 'student' && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if (user.role === 'admin') {
+      const otpGate = requireOtp(user);
+      if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
     }
 
     // Validate tutor_user_id BEFORE acquiring any lock.

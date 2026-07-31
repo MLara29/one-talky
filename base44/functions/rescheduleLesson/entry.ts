@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { normalizeSlot } from "../../shared/slotUtils.js";
+import { requireOtp } from "../../shared/requireOtp.js";
 
 Deno.serve(async (req) => {
   try {
@@ -25,6 +26,9 @@ Deno.serve(async (req) => {
     if (user.id !== lesson.tutor_id) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    const otpGate = requireOtp(user);
+    if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     if (lesson.status !== "scheduled") {
       return Response.json({ error: "Only scheduled lessons can be rescheduled" }, { status: 400 });

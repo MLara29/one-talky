@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { requireOtp } from '../../shared/requireOtp.js';
 
 Deno.serve(async (req) => {
   try {
@@ -7,6 +8,8 @@ Deno.serve(async (req) => {
     if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
+    const otpGate = requireOtp(user);
+    if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const body = await req.json().catch(() => ({}));
     const { from_date, to_date, force_refresh } = body;

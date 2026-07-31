@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import nodemailer from 'npm:nodemailer@6.9.14';
+import { requireOtp } from '../../shared/requireOtp.js';
 
 function formatDateTime(isoString) {
   const d = new Date(isoString);
@@ -165,6 +166,8 @@ Deno.serve(async (req) => {
     if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Admin only' }, { status: 403 });
     }
+    const otpGate = requireOtp(user);
+    if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const body = await req.json().catch(() => ({}));
     const tutorMinutes = Number(body.tutor_minutes) || 60;

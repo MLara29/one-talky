@@ -16,19 +16,30 @@ Deno.serve(async (req) => {
     const code = String(Math.floor(100000 + Math.random() * 900000));
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
 
+    // New session token for this login attempt — invalidates any previous
+    // verification (otp_verified_at is cleared) so a past login can never
+    // grant access to a new one. Every call to sendOtp (initial send or
+    // resend) rotates this token.
+    const sessionToken = crypto.randomUUID();
+    await base44.asServiceRole.entities.User.update(user.id, {
+      otp_session_token: sessionToken,
+      otp_verified_at: null,
+    });
+
     // Invalidate old OTPs for this user (service role)
     const existingOtps = await base44.asServiceRole.entities.OtpCode.filter({ user_id: user.id, used: false });
     for (const otp of existingOtps) {
       await base44.asServiceRole.entities.OtpCode.update(otp.id, { used: true });
     }
 
-    // Store the new OTP
+    // Store the new OTP, bound to this session token
     await base44.asServiceRole.entities.OtpCode.create({
       user_id: user.id,
       email: user.email,
       code,
       expires_at: expiresAt,
       used: false,
+      session_token: sessionToken,
     });
 
     // Send via SMTP

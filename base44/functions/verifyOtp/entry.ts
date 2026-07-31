@@ -21,8 +21,20 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, message: 'Código inválido ou expirado.' }, { status: 400 });
     }
 
+    // The code must belong to the session that's CURRENTLY pending on the user —
+    // if a newer sendOtp call has since rotated otp_session_token, this code is
+    // for a superseded session and must not verify it.
+    if (!user.otp_session_token || validOtp.session_token !== user.otp_session_token) {
+      return Response.json({ success: false, message: 'Código inválido ou expirado.' }, { status: 400 });
+    }
+
     // Mark as used
     await base44.asServiceRole.entities.OtpCode.update(validOtp.id, { used: true });
+
+    // Grant OTP-verified status to THIS session only
+    await base44.asServiceRole.entities.User.update(user.id, {
+      otp_verified_at: new Date().toISOString(),
+    });
 
     return Response.json({ success: true });
   } catch (error) {

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import TwoFactorModal from '@/components/TwoFactorModal';
 
 const DefaultFallback = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -10,7 +11,7 @@ const DefaultFallback = () => (
 );
 
 export default function ProtectedRoute({ fallback = <DefaultFallback />, unauthenticatedElement }) {
-  const { isAuthenticated, isLoadingAuth, authChecked, authError, checkUserAuth } = useAuth();
+  const { isAuthenticated, isLoadingAuth, authChecked, authError, checkUserAuth, otpPending, user } = useAuth();
 
   useEffect(() => {
     if (!authChecked && !isLoadingAuth) {
@@ -31,6 +32,13 @@ export default function ProtectedRoute({ fallback = <DefaultFallback />, unauthe
 
   if (!isAuthenticated) {
     return unauthenticatedElement;
+  }
+
+  // Complementary client-side guard: admin/tutor accounts that haven't
+  // completed 2FA for this login session never see protected pages — they're
+  // held on the OTP screen. Server-side requireOtp() is the real enforcement.
+  if (otpPending) {
+    return <TwoFactorModal email={user.email} onVerified={() => window.location.reload()} />;
   }
 
   return <Outlet />;

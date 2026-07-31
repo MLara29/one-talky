@@ -24,6 +24,15 @@
     "privacy_policy_accepted": {
       "type": "boolean",
       "default": false
+    },
+    "otp_verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last successful OTP (2FA) verification. Reset to null on every new password login for admin/tutor accounts \u2014 must be set again before privileged server actions are allowed."
+    },
+    "otp_session_token": {
+      "type": "string",
+      "description": "Identifier of the current login session's pending 2FA challenge, generated on each password login. Binds OTP verification to that specific session so a stale verification can never validate a new one."
     }
   }
 }
