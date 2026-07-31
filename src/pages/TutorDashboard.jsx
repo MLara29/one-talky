@@ -103,9 +103,9 @@ export default function TutorDashboard() {
         // Load student profiles for upcoming lessons
         const studentIds = [...new Set(allLessons.map(l => l.student_id).filter(Boolean))];
         if (studentIds.length > 0) {
-          const studentProfs = await base44.entities.StudentProfile.filter({});
+          const res = await base44.functions.invoke('getMyStudentsProfiles', { student_ids: studentIds });
           const map = {};
-          studentProfs.forEach(sp => { map[sp.user_id] = sp; });
+          (res.data?.profiles || []).forEach(sp => { map[sp.user_id] = sp; });
           setStudentProfiles(map);
         }
       }
