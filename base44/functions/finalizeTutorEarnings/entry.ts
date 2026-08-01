@@ -14,6 +14,12 @@ Deno.serve(async (req) => {
     if (lessons.length === 0) return Response.json({ error: 'Lesson not found' }, { status: 404 });
     const lesson = lessons[0];
 
+    // Guard against acting on a lesson that never started — eliminates any race
+    // with processNoShow, which only acts on lessons still in "scheduled" status.
+    if (lesson.status === 'scheduled' || !lesson.started_at) {
+      return Response.json({ error: 'Lesson has not started yet.' }, { status: 400 });
+    }
+
     // Only the tutor or the student of this lesson can trigger this
     if (user.id !== lesson.tutor_id && user.id !== lesson.student_id && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
