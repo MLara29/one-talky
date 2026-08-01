@@ -42,6 +42,7 @@ export default function Classroom() {
   // Received by student: true when tutor is sharing screen
   const [remoteIsScreenSharing, setRemoteIsScreenSharing] = useState(false);
   const [totalDurationMins, setTotalDurationMins] = useState(null);
+  const [studentLevel, setStudentLevel] = useState(null);
   const chatOpenRef = useRef(false);
 
   const clientRef = useRef(null);
@@ -202,11 +203,17 @@ export default function Classroom() {
       try {
         if (user?.role === "student") {
           const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
-          if (profiles.length > 0) studentCredits = profiles[0].credits_minutes ?? 0;
+          if (profiles.length > 0) {
+            studentCredits = profiles[0].credits_minutes ?? 0;
+            setStudentLevel(profiles[0].level || null);
+          }
         } else {
           const res = await base44.functions.invoke('getMyStudentsProfiles', { student_ids: [l.student_id] });
           const profiles = res.data?.profiles || [];
-          if (profiles.length > 0) studentCredits = profiles[0].credits_minutes ?? 0;
+          if (profiles.length > 0) {
+            studentCredits = profiles[0].credits_minutes ?? 0;
+            setStudentLevel(profiles[0].level || null);
+          }
         }
       } catch {}
 
@@ -567,6 +574,7 @@ export default function Classroom() {
   const screenShareActive = user?.role === "student" && remoteIsScreenSharing;
 
   const otherPersonName = user?.role === "tutor" ? lesson?.student_name : lesson?.tutor_name;
+  const isLowTime = minsRemaining !== null && minsRemaining <= 2;
 
   if (loading) return (
     <div className="fixed inset-0 flex items-center justify-center bg-ot-bg font-jakarta">
@@ -608,15 +616,17 @@ export default function Classroom() {
           </div>
           <div className="min-w-0">
             <p className="text-ot-text text-[15px] font-bold truncate">{otherPersonName}</p>
-            <p className="text-ot-text-secondary text-[12.5px] font-semibold capitalize truncate">{lesson?.language} · {lesson?.level || "session"}</p>
+            <p className="text-ot-text-secondary text-[12.5px] font-semibold capitalize truncate">{lesson?.language} · {studentLevel || "session"}</p>
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-ot-primary/20 bg-ot-tint">
-            <Clock className="w-4 h-4 text-ot-primary" />
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-colors ${
+            isLowTime ? "border-red-300 bg-red-50 animate-pulse" : "border-ot-primary/20 bg-ot-tint"
+          }`}>
+            <Clock className={`w-4 h-4 ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`} />
             <div className="leading-none">
-              <p className="text-[9px] font-bold text-ot-primary/70 uppercase tracking-wide">Restante</p>
-              <p className="text-[16px] font-extrabold text-ot-primary tabular-nums">{formatTime(displaySeconds)}</p>
+              <p className={`text-[9px] font-bold uppercase tracking-wide ${isLowTime ? "text-ot-danger/70" : "text-ot-primary/70"}`}>Restante</p>
+              <p className={`text-[16px] font-extrabold tabular-nums ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`}>{formatTime(displaySeconds)}</p>
             </div>
           </div>
           <button
@@ -663,26 +673,28 @@ export default function Classroom() {
               <span>{lesson?.tutor_name || "Tutor"} está compartilhando a tela</span>
             </div>
           )}
-        </div>
 
-        {/* Local video (PiP) — shrinks when watching screen share */}
-        <div
-          className={`absolute rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-[#1C1917] z-20 transition-all duration-300 ${
-            screenShareActive
-              ? "bottom-2 right-2 w-[72px] h-[104px] sm:w-[130px] sm:h-[78px]"
-              : "bottom-4 right-4 w-[104px] h-[150px] sm:w-[200px] sm:h-[120px]"
-          }`}
-        >
+          {/* Local video (PiP) — nested inside the remote video area so it stays
+              positioned relative to the video stage, not the whole layout
+              (including the chat panel) — shrinks when watching screen share */}
           <div
-            ref={localVideoDiv}
-            className="w-full h-full"
-            style={{ display: cameraOn ? "block" : "none" }}
-          />
-          {!cameraOn && (
-            <div className="w-full h-full bg-[#1C1917] flex items-center justify-center">
-              <VideoOff className="w-5 h-5 text-white/40" />
-            </div>
-          )}
+            className={`absolute rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-[#1C1917] z-20 transition-all duration-300 ${
+              screenShareActive
+                ? "bottom-2 right-2 w-[72px] h-[104px] sm:w-[130px] sm:h-[78px]"
+                : "bottom-4 right-4 w-[104px] h-[150px] sm:w-[200px] sm:h-[120px]"
+            }`}
+          >
+            <div
+              ref={localVideoDiv}
+              className="w-full h-full"
+              style={{ display: cameraOn ? "block" : "none" }}
+            />
+            {!cameraOn && (
+              <div className="w-full h-full bg-[#1C1917] flex items-center justify-center">
+                <VideoOff className="w-5 h-5 text-white/40" />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Chat panel — desktop: fixed column beside video; mobile: bottom sheet */}
