@@ -35,7 +35,7 @@ const sections = [
       <ul style={{ marginTop: 0, paddingLeft: 20 }}>
         <li>The default payment cycle is <strong>weekly</strong>. The tutor may choose to be paid <strong>biweekly</strong> or <strong>monthly</strong> instead, at any time, through their dashboard — the change takes effect starting from the next cycle.</li>
         <li><strong>Approval:</strong> One Talky's finance team reviews the balance before payout.</li>
-        <li><strong>Payout:</strong> the audited amount is transferred to the tutor according to the tutor's chosen cycle, through Upwork's payment mechanism linked to the active contract.</li>
+        <li><strong>Payout:</strong> the audited amount is transferred to the tutor according to the weekly cycle described above, through Upwork's payment mechanism linked to the active contract.</li>
         <li>Tutors contracted directly (not via Upwork) are paid via Payoneer, following the same review cycle.</li>
       </ul>
     ),
