@@ -791,21 +791,15 @@ export default function Classroom() {
           {/* Local video (PiP) — nested inside the remote video area so it stays
               positioned relative to the video stage, not the whole layout
               (including the chat panel) — shrinks when watching screen share */}
-          {(cameraError || micError) ? (
+          {cameraError && micError ? (
             <div className="absolute bottom-4 right-4 z-20 w-[260px] max-w-[90vw] bg-white rounded-2xl shadow-lg border border-ot-border p-4">
               <div className="flex items-start gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-ot-danger mt-0.5 shrink-0" />
                 <div className="text-xs text-ot-text-secondary space-y-1.5">
-                  {cameraError && <p>{cameraError}</p>}
-                  {micError && <p>{micError}</p>}
+                  <p>{cameraError}</p>
+                  <p>{micError}</p>
                 </div>
               </div>
-              {cameraError && !micError && (
-                <p className="text-[11px] text-ot-online font-semibold mb-2">Você ainda pode participar por áudio/texto.</p>
-              )}
-              {micError && !cameraError && (
-                <p className="text-[11px] text-ot-online font-semibold mb-2">Você ainda pode participar por vídeo/texto.</p>
-              )}
               <button
                 onClick={retryDeviceAccess}
                 className="w-full bg-ot-primary text-white text-xs font-bold py-2 rounded-xl hover:brightness-95 transition-all"
@@ -814,24 +808,56 @@ export default function Classroom() {
               </button>
             </div>
           ) : (
-            <div
-              className={`absolute rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-[#1C1917] z-20 transition-all duration-300 ${
-                screenShareActive
-                  ? "bottom-2 right-2 w-[72px] h-[104px] sm:w-[130px] sm:h-[78px]"
-                  : "bottom-4 right-4 w-[104px] h-[150px] sm:w-[200px] sm:h-[120px]"
-              }`}
-            >
+            <>
               <div
-                ref={localVideoDiv}
-                className="w-full h-full"
-                style={{ display: cameraOn ? "block" : "none" }}
-              />
-              {!cameraOn && (
-                <div className="w-full h-full bg-[#1C1917] flex items-center justify-center">
-                  <VideoOff className="w-5 h-5 text-white/40" />
+                className={`absolute rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-[#1C1917] z-20 transition-all duration-300 ${
+                  screenShareActive
+                    ? "bottom-2 right-2 w-[72px] h-[104px] sm:w-[130px] sm:h-[78px]"
+                    : "bottom-4 right-4 w-[104px] h-[150px] sm:w-[200px] sm:h-[120px]"
+                }`}
+              >
+                {cameraError ? (
+                  <div className="w-full h-full bg-white flex flex-col items-center justify-center text-center p-2 gap-1.5">
+                    <AlertTriangle className="w-4 h-4 text-ot-danger shrink-0" />
+                    <p className="text-[10px] text-ot-text-secondary leading-tight line-clamp-3">{cameraError}</p>
+                    <button
+                      onClick={retryDeviceAccess}
+                      className="text-[10px] font-bold text-ot-primary underline underline-offset-2"
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      ref={localVideoDiv}
+                      className="w-full h-full"
+                      style={{ display: cameraOn ? "block" : "none" }}
+                    />
+                    {!cameraOn && (
+                      <div className="w-full h-full bg-[#1C1917] flex items-center justify-center">
+                        <VideoOff className="w-5 h-5 text-white/40" />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {micError && (
+                <div className="absolute bottom-4 right-[112px] sm:right-[208px] z-20 max-w-[180px] bg-white rounded-xl shadow-lg border border-ot-border p-2.5 flex items-start gap-1.5">
+                  <MicOff className="w-3.5 h-3.5 text-ot-danger mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-ot-text-secondary leading-tight">{micError}</p>
+                    <button
+                      onClick={retryDeviceAccess}
+                      className="text-[10px] font-bold text-ot-primary underline underline-offset-2 mt-0.5"
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
 
