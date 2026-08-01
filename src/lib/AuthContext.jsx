@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect, useRef } from 'r
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import { TIMEOUT_BY_ROLE, LAST_ACTIVITY_KEY } from '@/hooks/useInactivityLogout';
 
 const AuthContext = createContext();
 
@@ -94,6 +95,18 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+
+      // Simulate session expiration even if the browser was closed and
+      // reopened after the role's inactivity window — the timestamp is
+      // persisted in localStorage by useInactivityLogout while the app is open.
+      const lastActivity = parseInt(localStorage.getItem(LAST_ACTIVITY_KEY) || "0", 10);
+      const roleTimeout = TIMEOUT_BY_ROLE[currentUser.role] ?? 40 * 60 * 1000;
+      if (lastActivity && Date.now() - lastActivity > roleTimeout) {
+        localStorage.removeItem(LAST_ACTIVITY_KEY);
+        base44.auth.logout("/landing");
+        return;
+      }
+
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);

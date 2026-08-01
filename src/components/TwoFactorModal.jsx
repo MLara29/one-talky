@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, Loader2, RefreshCw } from "lucide-react";
 
 export default function TwoFactorModal({ email, onVerified }) {
+  const handleNotYou = () => {
+    base44.auth.logout("/landing");
+  };
+
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -125,6 +129,13 @@ export default function TwoFactorModal({ email, onVerified }) {
         >
           <RefreshCw className={`w-3.5 h-3.5 ${resending ? "animate-spin" : ""}`} />
           {countdown > 0 ? `Reenviar em ${countdown}s` : "Reenviar código"}
+        </button>
+
+        <button
+          onClick={handleNotYou}
+          className="block w-full text-xs text-gray-400 hover:text-red-500 transition-colors mt-4"
+        >
+          Não é você? Sair
         </button>
       </div>
     </div>
