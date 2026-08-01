@@ -158,16 +158,9 @@ export default function Plans() {
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
                       <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{plan.minutes} minutos/mês
                     </li>
-                    {plan.id === "standard" && (
-                      <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
-                        <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>4×30 min ou 2×1 hora
-                      </li>
-                    )}
-                    {plan.id === "premium" && (
-                      <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
-                        <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>8×30 min ou 4×1 hora
-                      </li>
-                    )}
+                    <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
+                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{plan.description}
+                    </li>
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
                       <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>Todos os tutores nativos
                     </li>
