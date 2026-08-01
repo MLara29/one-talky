@@ -9,6 +9,7 @@ import { LanguageProvider } from '@/lib/LanguageContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
@@ -139,7 +140,9 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <ScrollToTop />
-            <AuthenticatedApp />
+            <ErrorBoundary>
+              <AuthenticatedApp />
+            </ErrorBoundary>
           </Router>
           <Toaster />
         </QueryClientProvider>
