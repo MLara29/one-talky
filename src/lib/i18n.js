@@ -73,6 +73,7 @@ export const TRANSLATIONS = {
     welcomeDesc: "Your profile has been created.",
     errorMsg: "Something went wrong. Please try again.",
     uiLanguage: "Interface language",
+    noShowBadge: "No-show",
   },
   pt_br: {
     // Dashboard - Student
@@ -147,6 +148,7 @@ export const TRANSLATIONS = {
     welcomeDesc: "Seu perfil foi criado.",
     errorMsg: "Algo deu errado. Tente novamente.",
     uiLanguage: "Idioma da interface",
+    noShowBadge: "Não compareceu",
   },
   pt_pt: {
     // Dashboard - Student
@@ -221,6 +223,7 @@ export const TRANSLATIONS = {
     welcomeDesc: "O seu perfil foi criado.",
     errorMsg: "Algo correu mal. Tente novamente.",
     uiLanguage: "Idioma da interface",
+    noShowBadge: "Não compareceu",
   },
   es: {
     // Dashboard - Student
@@ -295,6 +298,7 @@ export const TRANSLATIONS = {
     welcomeDesc: "Tu perfil ha sido creado.",
     errorMsg: "Algo salió mal. Por favor intenta de nuevo.",
     uiLanguage: "Idioma de interfaz",
+    noShowBadge: "No se presentó",
   },
   fr: {
     // Dashboard - Student
@@ -369,6 +373,7 @@ export const TRANSLATIONS = {
     welcomeDesc: "Votre profil a été créé.",
     errorMsg: "Quelque chose s'est mal passé. Veuillez réessayer.",
     uiLanguage: "Langue de l'interface",
+    noShowBadge: "Non-présentation",
   },
   de: {
     // Dashboard - Student
@@ -443,6 +448,7 @@ export const TRANSLATIONS = {
     welcomeDesc: "Dein Profil wurde erstellt.",
     errorMsg: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     uiLanguage: "Oberflächensprache",
+    noShowBadge: "Nicht erschienen",
   },
   it: {
     // Dashboard - Student
@@ -517,6 +523,7 @@ export const TRANSLATIONS = {
     welcomeDesc: "Il tuo profilo è stato creato.",
     errorMsg: "Qualcosa è andato storto. Riprova.",
     uiLanguage: "Lingua interfaccia",
+    noShowBadge: "Assente",
   },
 };
 

@@ -41,7 +41,7 @@ export default function TutorEarnings() {
         const p = profiles[0];
         setProfile(p);
         const [l, w] = await Promise.all([
-          base44.entities.Lesson.filter({ tutor_id: p.user_id, status: "completed" }, "-created_date", 100),
+          base44.entities.Lesson.filter({ tutor_id: p.user_id, status: { $in: ["completed", "no_show"] } }, "-created_date", 100),
           base44.entities.WithdrawalRequest.filter({ tutor_id: p.user_id }, "-created_date", 10),
         ]);
         setLessons(l);
@@ -99,7 +99,7 @@ export default function TutorEarnings() {
     ? lessons.filter(l => new Date(l.ended_at || l.updated_date || l.created_date) > cutoff)
     : lessons;
 
-  const totalEarned = unpaidLessons.reduce((sum, l) => sum + (l.duration_minutes || 0) * rate, 0);
+  const totalEarned = unpaidLessons.reduce((sum, l) => sum + (l.earned_amount ?? (l.duration_minutes || 0) * rate), 0);
 
   // Build per-day map for the calendar
   const dayDataMap = {};
@@ -107,7 +107,7 @@ export default function TutorEarnings() {
     const date = new Date(l.ended_at || l.created_date);
     const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
     if (!dayDataMap[key]) dayDataMap[key] = { earnings: 0, lessons: 0, lessonList: [] };
-    dayDataMap[key].earnings += (l.duration_minutes || 0) * rate;
+    dayDataMap[key].earnings += l.earned_amount ?? ((l.duration_minutes || 0) * rate);
     dayDataMap[key].lessons += 1;
     dayDataMap[key].lessonList.push(l);
   });
@@ -266,6 +266,9 @@ export default function TutorEarnings() {
                   <div className="mt-1 w-full">
                     <p className="text-xs font-bold text-emerald-400 leading-tight">${data.earnings.toFixed(2)}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{data.lessons} aula{data.lessons !== 1 ? "s" : ""}</p>
+                    {data.lessonList.some(l => l.status === "no_show") && (
+                      <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" title="Has no-show" />
+                    )}
                   </div>
                 )}
               </button>
@@ -284,12 +287,19 @@ export default function TutorEarnings() {
                 {selectedDayData.lessonList.map(l => (
                   <div key={l.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
                     <div>
-                      <p className="theme-heading font-medium text-sm text-white">{l.student_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="theme-heading font-medium text-sm text-white">{l.student_name}</p>
+                        {l.status === "no_show" && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/30 text-red-400">
+                            No-show
+                          </span>
+                        )}
+                      </div>
                       <p className="theme-subtext text-xs text-gray-500">
                         {l.duration_minutes || 0} min · {new Date(l.ended_at || l.created_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
-                    <span className="text-sm font-bold text-emerald-500">+${((l.duration_minutes || 0) * rate).toFixed(2)}</span>
+                    <span className="text-sm font-bold text-emerald-500">+${(l.earned_amount ?? ((l.duration_minutes || 0) * rate)).toFixed(2)}</span>
                   </div>
                 ))}
               </div>

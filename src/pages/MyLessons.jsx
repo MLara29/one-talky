@@ -127,7 +127,7 @@ export default function MyLessons() {
   const upcoming = lessons
     .filter(l => l.status === "scheduled" && (!l.scheduled_at || new Date(l.scheduled_at).getTime() + LESSON_JOIN_GRACE_PERIOD_MS > now))
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
-  const completed = lessons.filter(l => l.status === "completed");
+  const completed = lessons.filter(l => l.status === "completed" || l.status === "no_show");
   const inProgress = lessons.filter(l => l.status === "in_progress");
 
   const canJoin = (l) => {
@@ -294,7 +294,14 @@ export default function MyLessons() {
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-4 h-4 text-emerald-400" />
                     <div>
-                      <p className="theme-heading font-semibold text-white">{user?.role === "tutor" ? l.student_name : l.tutor_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="theme-heading font-semibold text-white">{user?.role === "tutor" ? l.student_name : l.tutor_name}</p>
+                        {l.status === "no_show" && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/30 text-red-400">
+                            {T("noShowBadge")}
+                          </span>
+                        )}
+                      </div>
                       <p className="theme-subtext text-sm text-gray-500">{getLanguageLabel(l.language)} · {l.duration_minutes || 0} min{l.is_recorded && " · Recorded"}</p>
                     </div>
                   </div>
