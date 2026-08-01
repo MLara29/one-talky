@@ -39,6 +39,14 @@ const sections = [
         <li>Tutors contracted directly (not via Upwork) are paid via Payoneer, following the same review cycle.</li>
       </ul>
     ),
+    extra: (
+      <>
+        <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "#111827", margin: "18px 0 8px" }}>4.1 Payout Frequency Options</h3>
+        <p>
+          By default, all tutors are paid weekly, following the cycle described above. Tutors may choose to switch to a biweekly or monthly payout cycle at any time through their dashboard. The change takes effect from the next payout cycle onward and does not affect earnings already accrued.
+        </p>
+      </>
+    ),
   },
   {
     title: "5. Cancellations and No-Shows — Tutor Side",
@@ -131,6 +139,7 @@ export default function TutorAgreement() {
               </h2>
               <div style={{ fontSize: 15.5, color: "#374151", lineHeight: 1.75 }}>
                 {s.content}
+                {s.extra}
               </div>
             </div>
           ))}
