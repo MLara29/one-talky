@@ -6,8 +6,11 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { profile } = await req.json();
+    const { profile, agreementAccepted } = await req.json();
     if (!profile) return Response.json({ error: "profile required" }, { status: 400 });
+    if (!agreementAccepted) {
+      return Response.json({ error: "You must accept the Tutor Service Agreement" }, { status: 400 });
+    }
 
     // Prevent duplicate profiles
     const existing = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: user.id });
@@ -33,6 +36,7 @@ Deno.serve(async (req) => {
       total_minutes: 0,
       average_rating: 0,
       total_reviews: 0,
+      tutor_agreement_accepted_at: new Date().toISOString(),
     });
 
     // Assign tutor role server-side (client cannot self-assign privileged roles)

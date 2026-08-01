@@ -65,8 +65,11 @@ const sections = [
             Cancelamentos tardios e ausências sem aviso (no-show) resultarão no <strong>débito integral dos minutos</strong> correspondentes à duração da aula agendada.
           </li>
           <li>Os minutos debitados por cancelamento tardio ou no-show remuneram o tutor que reservou aquele horário em sua agenda.</li>
-          <li>Tutores podem cancelar aulas com até 4 horas de antecedência sem penalidade. Cancelamentos recorrentes por parte de tutores podem resultar em suspensão da conta.</li>
         </ul>
+        <p style={{ marginTop: 10 }}>
+          Regras específicas de cancelamento e no-show do lado do tutor, bem como pagamento e demais condições da prestação de serviço, estão descritas no{" "}
+          <Link to="/tutor-agreement" style={{ color: ACCENT, fontWeight: 700 }}>Contrato de Prestação de Serviço para Tutores</Link>.
+        </p>
       </>
     ),
   },

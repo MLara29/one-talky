@@ -41,6 +41,9 @@ import AdminAgoraUsage from '@/pages/AdminAgoraUsage';
 import AffiliateDashboard from '@/pages/AffiliateDashboard';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
+import TutorAgreement from '@/pages/TutorAgreement';
+import FAQ from '@/pages/FAQ';
+import RefundPolicy from '@/pages/RefundPolicy';
 import OnboardingAffiliate from '@/pages/OnboardingAffiliate';
 import Notifications from '@/pages/Notifications';
 import MyMessages from '@/pages/MyMessages';
@@ -48,7 +51,7 @@ import Profile from '@/pages/Profile';
 import StudentPersonalInfo from '@/pages/StudentPersonalInfo';
 import AppLayout from '@/components/AppLayout';
 
-const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/landing', '/privacidade', '/privacy', '/termos'];
+const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/landing', '/privacidade', '/privacy', '/termos', '/tutor-agreement', '/faq', '/reembolso'];
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -78,6 +81,9 @@ const AuthenticatedApp = () => {
       <Route path="/privacidade" element={<PrivacyPolicy />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/termos" element={<TermsOfUse />} />
+      <Route path="/tutor-agreement" element={<TutorAgreement />} />
+      <Route path="/faq" element={<FAQ />} />
+      <Route path="/reembolso" element={<RefundPolicy />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

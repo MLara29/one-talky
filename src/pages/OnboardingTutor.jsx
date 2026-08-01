@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ export default function OnboardingTutor() {
     interests: [],
     price_per_minute: 0.0833,
   });
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
 
 
 
@@ -57,6 +59,7 @@ export default function OnboardingTutor() {
           interests: form.interests,
           intro_video_url: form.intro_video_url || undefined,
         },
+        agreementAccepted: true,
       });
       await base44.auth.updateMe({ profile_completed: true });
       base44.functions.invoke('notifyAdminNewUser', {
@@ -220,6 +223,22 @@ export default function OnboardingTutor() {
                   ))}
                 </div>
               </div>
+
+              <label className="flex items-start gap-2.5 p-3 rounded-xl bg-gray-50 border border-gray-200 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreementAccepted}
+                  onChange={e => setAgreementAccepted(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span className="text-xs text-gray-600 leading-snug">
+                  Li e aceito o{" "}
+                  <Link to="/tutor-agreement" target="_blank" className="text-orange-600 font-semibold underline">
+                    Contrato de Prestação de Serviço para Tutores
+                  </Link>.
+                </span>
+              </label>
+
               <div className="flex gap-3 mt-2">
                 <Button type="button" variant="outline" onClick={() => setStep(2)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
                   <ChevronLeft className="w-4 h-4 mr-1" /> Back
@@ -227,7 +246,7 @@ export default function OnboardingTutor() {
                 <Button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={form.interests.length === 0 || saving}
+                  disabled={form.interests.length === 0 || !agreementAccepted || saving}
                   className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 hover:scale-105 transition-all"
                 >
                   {saving ? "Submitting..." : "Submit application"}

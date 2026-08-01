@@ -141,6 +141,11 @@
       "type": "number",
       "default": 0,
       "description": "Anteced\u00eancia m\u00ednima (em horas) exigida para um aluno agendar uma aula com este tutor. 0 = sem anteced\u00eancia m\u00ednima."
+    },
+    "tutor_agreement_accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de aceite expl\u00edcito do Contrato de Presta\u00e7\u00e3o de Servi\u00e7o para Tutores, feito no onboarding. Separado do terms_accepted gen\u00e9rico do User."
     }
   },
   "required": [

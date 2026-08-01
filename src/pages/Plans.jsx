@@ -7,6 +7,7 @@ import { PLANS, PREPAID_PACKS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
+import CancelPlanModal from "@/components/student/CancelPlanModal";
 
 const ACCENT = "#F26A1B";
 
@@ -20,6 +21,7 @@ export default function Plans() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checkoutItem, setCheckoutItem] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => { loadProfile(); }, [user]);
 
@@ -75,6 +77,14 @@ export default function Plans() {
           onClose={() => setCheckoutItem(null)}
           onSuccess={handleSuccess}
           affiliateCoupon={affiliateCoupon}
+        />
+      )}
+
+      {showCancelModal && (
+        <CancelPlanModal
+          profile={profile}
+          onClose={() => setShowCancelModal(false)}
+          onCancelled={() => setProfile(prev => ({ ...prev, plan: "free", credits_minutes: 0, subscription_status: "cancelled" }))}
         />
       )}
 
@@ -184,10 +194,23 @@ export default function Plans() {
                     <CreditCard className="inline w-4 h-4 mr-2 mb-0.5" />
                     {isCurrent ? "✓ Plano atual" : "Assinar agora"}
                   </button>
+
+                  {isCurrent && plan.id !== "free" && (
+                    <button
+                      onClick={() => setShowCancelModal(true)}
+                      style={{ textAlign: "center", padding: "8px 0", fontWeight: 600, fontSize: 13, background: "transparent", color: "#ef4444", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      Cancelar assinatura
+                    </button>
+                  )}
                 </div>
               );
             })}
           </div>
+
+          <p className="text-center text-xs mt-6" style={{ color: "#A29A8C" }}>
+            Você pode cancelar a qualquer momento, sem multa. Ao cancelar, seu plano volta para Free imediatamente e os minutos restantes do ciclo atual são zerados — eles não são reembolsados nem aproveitados depois.
+          </p>
         </TabsContent>
 
         {/* ── PRÉ-PAGO ── */}

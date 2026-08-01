@@ -10,6 +10,7 @@ import useInactivityLogout, { LAST_ACTIVITY_KEY } from "@/hooks/useInactivityLog
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import NotificationBell from "@/components/NotificationBell";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
+import Footer from "@/components/Footer";
 import {
   Search, Calendar, BarChart3, BookOpen, User, LogOut,
   GraduationCap, DollarSign, Star, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users, Bell
@@ -275,9 +276,10 @@ export default function AppLayout() {
 
       {/* Main content */}
       <main style={{ paddingTop: headerHeight }} className="min-h-screen">
-        <div className="px-8 py-6 sm:px-14 sm:py-8 lg:px-20 lg:py-10 max-w-screen-2xl mx-auto pb-24 lg:pb-10">
+        <div className="px-8 py-6 sm:px-14 sm:py-8 lg:px-20 lg:py-10 max-w-screen-2xl mx-auto pb-8 lg:pb-4">
           <Outlet />
         </div>
+        <Footer />
       </main>
 
       <LiveNotificationToast />
