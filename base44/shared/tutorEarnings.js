@@ -13,7 +13,7 @@ export async function computeTutorEarned(base44, tutorUserId) {
   const last = confirmed.sort((a, b) => new Date(b.confirmed_at || b.created_date) - new Date(a.confirmed_at || a.created_date))[0];
   const cutoff = last ? new Date(last.confirmed_at || last.created_date) : null;
 
-  const lessons = await base44.asServiceRole.entities.Lesson.filter({ tutor_id: tutorUserId, status: "completed", earnings_finalized: true }, "-created_date", 500);
+  const lessons = await base44.asServiceRole.entities.Lesson.filter({ tutor_id: tutorUserId, status: { $in: ["completed", "no_show"] }, earnings_finalized: true }, "-created_date", 500);
   const unpaid = lessons.filter(l => {
     if (!cutoff) return true;
     const d = new Date(l.ended_at || l.updated_date || l.created_date);
