@@ -7,6 +7,12 @@ import { processNoShow } from "../../shared/processNoShow.js";
 // src/lib/constants.js — the same 10-minute join tolerance shown in the UI.
 const GRACE_PERIOD_MS = 10 * 60 * 1000;
 
+// Safety ceiling: only lessons overdue by up to this much are treated as a real
+// no-show. Anything older is stale data (e.g. pre-dating this feature) and must
+// go through the separate one-time cleanupStaleScheduledLessons routine instead —
+// never auto-debited/credited as if it just happened.
+const MAX_AGE_MS = 48 * 60 * 60 * 1000; // 48 hours
+
 Deno.serve(async (req) => {
   try {
     // No authenticated user in this context — invoked directly by the scheduled
@@ -21,7 +27,8 @@ Deno.serve(async (req) => {
 
     const overdue = scheduled.filter((l) => {
       if (!l.scheduled_at) return false;
-      return now - new Date(l.scheduled_at).getTime() > GRACE_PERIOD_MS;
+      const overdueMs = now - new Date(l.scheduled_at).getTime();
+      return overdueMs > GRACE_PERIOD_MS && overdueMs <= MAX_AGE_MS;
     });
 
     let processed = 0;

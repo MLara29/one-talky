@@ -8,7 +8,7 @@
 
 export async function processNoShow(base44, lesson) {
   const lessonId = lesson.id;
-  const durationMinutes = lesson.duration_minutes || 30;
+  const durationMinutes = (lesson.duration_minutes && lesson.duration_minutes > 0) ? lesson.duration_minutes : 30;
   const nowIso = new Date().toISOString();
 
   // CAS: only the caller that flips scheduled -> no_show processes this lesson.
