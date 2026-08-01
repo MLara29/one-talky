@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+/* Plus Jakarta Sans is already loaded above and mapped to the `font-jakarta` Tailwind class (see tailwind.config.js) — used by the Classroom video call screen's One Talky brand redesign. */
 
 @tailwind base;
 @tailwind components;

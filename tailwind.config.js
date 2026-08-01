@@ -59,13 +59,28 @@ module.exports = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			},
+  			'ot-primary': '#F26A1B',
+  			'ot-primary-dark': '#D9560E',
+  			'ot-tint': '#FFF3EA',
+  			'ot-text': '#1C1917',
+  			'ot-text-secondary': '#6B655F',
+  			'ot-bg': '#EFECE8',
+  			'ot-surface': '#FFFFFF',
+  			'ot-border': '#F0EBE5',
+  			'ot-canvas': '#EAE4DC',
+  			'ot-danger': '#E5484D',
+  			'ot-warn-bg': '#FFF4E4',
+  			'ot-warn-border': '#F6C98A',
+  			'ot-warn-text': '#8A4200',
+  			'ot-online': '#2ECC71'
   		},
   		fontFamily: {
   			heading: ['var(--font-heading)'],
   			body: ['var(--font-body)'],
   			display: ['var(--font-display)'],
-  			mono: ['var(--font-mono)']
+  			mono: ['var(--font-mono)'],
+  			jakarta: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif']
   		},
   		keyframes: {
   			'float': {

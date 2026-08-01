@@ -4,11 +4,15 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, Globe, X, User, AlertTriangle, Monitor, MonitorOff } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, AlertTriangle, Monitor, MonitorOff } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
+import { Image } from "@/components/ui/image";
 import AgoraRTC from "agora-rtc-sdk-ng";
+
+const ONE_TALKY_LOGO_URL = "https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png";
+const initialsOf = (name) => (name || "").trim().slice(0, 2).toUpperCase() || "??";
 
 const MAX_REPUBLISH_ATTEMPTS = 3;
 const REPUBLISH_RETRY_INTERVAL_MS = 5000;
@@ -562,66 +566,75 @@ export default function Classroom() {
   // Student sees the remote (tutor) video enlarged when screen sharing is active
   const screenShareActive = user?.role === "student" && remoteIsScreenSharing;
 
+  const otherPersonName = user?.role === "tutor" ? lesson?.student_name : lesson?.tutor_name;
+
   if (loading) return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white">
-      <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+    <div className="fixed inset-0 flex items-center justify-center bg-ot-bg font-jakarta">
+      <div className="w-9 h-9 border-[3px] border-ot-primary/20 border-t-ot-primary rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col z-50">
+    <div className="fixed inset-0 bg-ot-bg flex flex-col z-50 font-jakarta">
       {/* Credit warning banner */}
       {showCreditWarning && minsRemaining !== null && minsRemaining > 0 && (
-        <div className="flex items-center justify-between gap-3 px-5 py-3 bg-amber-500/20 border-b border-amber-500/30">
-          <div className="flex items-center gap-2 text-amber-400 text-sm font-semibold">
-            <AlertTriangle className="w-4 h-4" />
-            Atenção: apenas {Math.ceil(minsRemaining)} minuto{Math.ceil(minsRemaining) !== 1 ? "s" : ""} restante{Math.ceil(minsRemaining) !== 1 ? "s" : ""} na aula!
+        <div className="flex items-center justify-between gap-3 px-5 py-3 bg-ot-warn-bg border-b border-ot-warn-border">
+          <div className="flex items-center gap-2 text-ot-warn-text text-sm font-semibold min-w-0">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span className="truncate">
+              Restam {Math.ceil(minsRemaining)} minuto{Math.ceil(minsRemaining) !== 1 ? "s" : ""} de crédito nesta aula
+            </span>
           </div>
-          <button onClick={() => setShowCreditWarning(false)} className="text-amber-400/70 hover:text-amber-400">
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => navigate("/plans")}
+              className="bg-gradient-to-br from-ot-primary to-[#FB9A3C] hover:brightness-95 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+            >
+              Adicionar créditos
+            </button>
+            <button onClick={() => setShowCreditWarning(false)} className="text-ot-warn-text/60 hover:text-ot-warn-text">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <MessageCircle className="w-4 h-4 text-white" />
+      <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-ot-border shadow-sm gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <Image src={ONE_TALKY_LOGO_URL} alt="One Talky" className="w-9 h-9 shrink-0" fittingType="fit" />
+          <div className="w-10 h-10 rounded-xl bg-ot-tint text-ot-primary flex items-center justify-center font-bold text-sm shrink-0">
+            {initialsOf(otherPersonName)}
           </div>
-          <div>
-            <p className="text-gray-900 text-sm font-semibold">
-              {user?.role === "tutor" ? lesson?.student_name : lesson?.tutor_name}
-            </p>
-            <p className="text-gray-500 text-xs capitalize">{lesson?.language} session</p>
+          <div className="min-w-0">
+            <p className="text-ot-text text-[15px] font-bold truncate">{otherPersonName}</p>
+            <p className="text-ot-text-secondary text-[12.5px] font-semibold capitalize truncate">{lesson?.language} · {lesson?.level || "session"}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className={`flex items-center gap-2 font-mono text-sm px-3 py-1.5 rounded-xl border ${
-            minsRemaining !== null && minsRemaining <= 2
-              ? "bg-red-100 border-red-300 text-red-600"
-              : "bg-gray-100 border-gray-200 text-gray-700"
-          }`}>
-            <Clock className="w-3.5 h-3.5 text-violet-500" />
-            <span className="font-semibold">{formatTime(displaySeconds)}</span>
-            <span className="text-xs text-gray-400 ml-1">restante</span>
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-ot-primary/20 bg-ot-tint">
+            <Clock className="w-4 h-4 text-ot-primary" />
+            <div className="leading-none">
+              <p className="text-[9px] font-bold text-ot-primary/70 uppercase tracking-wide">Restante</p>
+              <p className="text-[16px] font-extrabold text-ot-primary tabular-nums">{formatTime(displaySeconds)}</p>
+            </div>
           </div>
           <button
             onClick={() => setIsRecording(!isRecording)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-              isRecording ? "bg-red-100 border-red-300 text-red-600" : "bg-gray-100 border-gray-200 text-gray-500 hover:text-gray-700"
+            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+              isRecording ? "bg-red-50 border-red-300 text-red-600" : "bg-[#F7F5F2] border-ot-border text-ot-text-secondary hover:text-ot-text"
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${isRecording ? "bg-red-400 animate-pulse" : "bg-gray-600"}`} />
-            {isRecording ? "REC" : "Record"}
+            <span className={`w-2 h-2 rounded-full ${isRecording ? "bg-red-500 animate-pulse" : "bg-ot-text-secondary/50"}`} />
+            {isRecording ? "REC" : "Gravar"}
           </button>
         </div>
       </div>
 
       {/* Video area */}
       <div className="flex-1 flex relative overflow-hidden">
-        {/* Remote video — full area */}
-        <div className="flex-1 relative bg-black">
+        {/* Remote video — full area, shrinks when chat panel is open on desktop */}
+        <div className={`flex-1 relative ${screenShareActive ? "bg-[#1C1917]" : "bg-ot-canvas"}`}>
           <div
             ref={remoteVideoDiv}
             className="w-full h-full"
@@ -629,37 +642,36 @@ export default function Classroom() {
           />
           {!remoteVideoTrack && (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-violet-600/5 blur-3xl pointer-events-none" />
-              <div className="text-center relative z-10">
-                <div className="w-28 h-28 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
-                  <User className="w-12 h-12 text-gray-700" />
+              <div className="text-center">
+                <div className="relative w-24 h-24 mx-auto mb-5">
+                  <div className="absolute inset-0 rounded-full border-4 border-ot-primary/20 border-t-ot-primary animate-spin" />
+                  <div className="absolute inset-2 rounded-full bg-ot-tint flex items-center justify-center text-ot-primary font-bold text-lg">
+                    {initialsOf(otherPersonName)}
+                  </div>
                 </div>
-                <p className="text-gray-500 text-sm font-medium">
-                  Waiting for {user?.role === "tutor" ? "student" : "tutor"} to connect...
+                <p className="text-ot-text-secondary text-sm font-semibold">
+                  Aguardando {user?.role === "tutor" ? "o aluno" : "o tutor"} conectar…
                 </p>
-                {joined && <p className="text-emerald-500 text-xs mt-1">✓ You're connected to the channel</p>}
+                {joined && <p className="text-ot-online text-xs mt-1.5 font-semibold">● Você está conectado</p>}
               </div>
             </div>
           )}
           {/* Badge shown to student when tutor is sharing screen */}
           {screenShareActive && remoteVideoTrack && (
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/60 text-white text-xs px-2.5 py-1 rounded-lg backdrop-blur-sm">
-              <Monitor className="w-3.5 h-3.5 text-blue-400" />
-              <span>Compartilhando tela</span>
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/70 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg backdrop-blur-sm">
+              <Monitor className="w-3.5 h-3.5" />
+              <span>{lesson?.tutor_name || "Tutor"} está compartilhando a tela</span>
             </div>
           )}
         </div>
 
-        {/* Local video (PiP) — shrinks when student is watching screen share */}
+        {/* Local video (PiP) — shrinks when watching screen share */}
         <div
-          className="absolute rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black"
-          style={{
-            transition: "all 0.3s ease",
-            bottom: screenShareActive ? 8 : 16,
-            right: screenShareActive ? 8 : 16,
-            width: screenShareActive ? 96 : 144,
-            aspectRatio: "16/9",
-          }}
+          className={`absolute rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-[#1C1917] z-20 transition-all duration-300 ${
+            screenShareActive
+              ? "bottom-2 right-2 w-[72px] h-[104px] sm:w-[130px] sm:h-[78px]"
+              : "bottom-4 right-4 w-[104px] h-[150px] sm:w-[200px] sm:h-[120px]"
+          }`}
         >
           <div
             ref={localVideoDiv}
@@ -667,54 +679,58 @@ export default function Classroom() {
             style={{ display: cameraOn ? "block" : "none" }}
           />
           {!cameraOn && (
-            <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-              <VideoOff className="w-6 h-6 text-gray-700" />
+            <div className="w-full h-full bg-[#1C1917] flex items-center justify-center">
+              <VideoOff className="w-5 h-5 text-white/40" />
             </div>
           )}
         </div>
 
-        {/* Chat sidebar */}
+        {/* Chat panel — desktop: fixed column beside video; mobile: bottom sheet */}
         {chatOpen && (
-          <div className="absolute top-0 right-0 bottom-0 w-72 sm:w-80 bg-white border-l border-gray-200 flex flex-col z-10 shadow-xl">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <div className="flex items-center gap-2 text-gray-800 text-sm font-semibold">
-                <Globe className="w-4 h-4 text-emerald-500" /> Chat
-              </div>
-              <button onClick={() => { chatOpenRef.current = false; setChatOpen(false); }} className="text-gray-400 hover:text-gray-700 transition-colors">
+          <div className="flex flex-col bg-white z-30 absolute inset-x-0 bottom-0 h-[70%] rounded-t-3xl shadow-2xl border-t border-ot-border md:static md:inset-auto md:h-full md:w-[360px] md:rounded-none md:shadow-none md:border-t-0 md:border-l">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-ot-border">
+              <p className="text-ot-text text-sm font-bold">Chat da aula</p>
+              <button
+                onClick={() => { chatOpenRef.current = false; setChatOpen(false); }}
+                className="w-8 h-8 rounded-lg bg-[#F7F5F2] flex items-center justify-center text-ot-text-secondary hover:text-ot-text transition-colors"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
               {messages.map((m, i) => {
                 const isMe = m.sender_id === user?.id;
+                const timeStr = new Date(m.ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
                 return (
-                  <div key={m.id || i} className={isMe ? "flex justify-end" : "flex justify-start"}>
-                    <div className={`px-3 py-2 rounded-2xl text-sm max-w-[85%] ${
+                  <div key={m.id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                    <div className={`px-3.5 py-2.5 text-sm leading-[1.45] font-medium max-w-[85%] ${
                       isMe
-                        ? "bg-gradient-to-br from-violet-600 to-indigo-600 text-white"
-                        : "bg-white border border-gray-200 text-gray-800"
+                        ? "bg-gradient-to-br from-ot-primary to-[#FB9A3C] text-white rounded-2xl rounded-br-[4px]"
+                        : "bg-[#F7F5F2] text-ot-text rounded-2xl rounded-bl-[4px]"
                     }`}>
-                      {!isMe && <p className="text-xs text-gray-400 mb-0.5">{m.sender_name?.split("@")[0]}</p>}
                       {m.text}
                     </div>
+                    <p className="text-[11px] text-ot-text-secondary mt-1 px-1">
+                      {isMe ? "Você" : m.sender_name?.split("@")[0]} · {timeStr}
+                    </p>
                   </div>
                 );
               })}
               {messages.length === 0 && (
-                <p className="text-gray-400 text-xs text-center mt-4">No messages yet</p>
+                <p className="text-ot-text-secondary text-xs text-center mt-4">Nenhuma mensagem ainda</p>
               )}
               <div ref={chatBottomRef} />
             </div>
-            <div className="p-3 border-t border-gray-100 bg-white">
+            <div className="p-3 border-t border-ot-border bg-white">
               <div className="flex gap-2">
                 <Input
                   value={msgInput}
                   onChange={e => setMsgInput(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && sendMessage()}
-                  placeholder="Type a message..."
-                  className="bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-400 text-sm"
+                  placeholder="Digite uma mensagem..."
+                  className="bg-[#F7F5F2] border-ot-border text-ot-text placeholder:text-ot-text-secondary text-sm"
                 />
-                <Button size="icon" onClick={sendMessage} className="bg-gradient-to-br from-violet-600 to-indigo-600 text-white border-0 shrink-0">
+                <Button size="icon" onClick={sendMessage} className="bg-gradient-to-br from-ot-primary to-[#FB9A3C] hover:brightness-95 text-white border-0 shrink-0">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
@@ -724,61 +740,58 @@ export default function Classroom() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-4 py-5 px-4 bg-white border-t border-gray-200">
-        <button
-          onClick={toggleMic}
-          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow ${
-            micOn ? "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200" : "bg-red-100 border border-red-300 text-red-600"
-          }`}
-          style={{ width: 52, height: 52 }}
-        >
-          {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-        </button>
-        <button
-          onClick={toggleCamera}
-          className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow ${
-            cameraOn ? "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200" : "bg-red-100 border border-red-300 text-red-600"
-          }`}
-          style={{ width: 52, height: 52 }}
-        >
-          {cameraOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-        </button>
-        <button
-          onClick={() => { const next = !chatOpenRef.current; chatOpenRef.current = next; setChatOpen(next); if (next) setUnreadCount(0); }}
-          className={`relative rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow ${
-            chatOpen ? "bg-violet-100 border border-violet-300 text-violet-600" : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
-          }`}
-          style={{ width: 52, height: 52 }}
-        >
-          <MessageCircle className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </button>
-        {user?.role === "tutor" && (
+      <div className="flex items-center justify-center py-4 px-4">
+        <div className="flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-[22px] px-3 py-2.5 shadow-lg border border-ot-border">
           <button
-            onClick={toggleScreenShare}
-            title={isScreenSharing ? "Parar compartilhamento" : "Compartilhar tela"}
-            className={`hidden sm:flex rounded-2xl items-center justify-center transition-all hover:scale-105 shadow ${
-              isScreenSharing
-                ? "bg-blue-100 border border-blue-300 text-blue-600"
-                : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+            onClick={toggleMic}
+            className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
+              micOn ? "bg-[#F7F5F2] hover:bg-ot-bg text-ot-text" : "bg-red-50 border border-red-200 text-red-600"
             }`}
-            style={{ width: 52, height: 52 }}
           >
-            {isScreenSharing ? <MonitorOff className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
+            {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
           </button>
-        )}
-        <button
-          onClick={endLesson}
-          disabled={lessonEnding}
-          className="bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-xl shadow-red-500/30 disabled:opacity-50"
-          style={{ width: 56, height: 52 }}
-        >
-          <PhoneOff className="w-5 h-5" />
-        </button>
+          <button
+            onClick={toggleCamera}
+            className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
+              cameraOn ? "bg-[#F7F5F2] hover:bg-ot-bg text-ot-text" : "bg-red-50 border border-red-200 text-red-600"
+            }`}
+          >
+            {cameraOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={() => { const next = !chatOpenRef.current; chatOpenRef.current = next; setChatOpen(next); if (next) setUnreadCount(0); }}
+            className={`relative rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
+              chatOpen ? "bg-ot-tint border border-ot-primary/30 text-ot-primary" : "bg-[#F7F5F2] hover:bg-ot-bg text-ot-text"
+            }`}
+          >
+            <MessageCircle className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-ot-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+          {user?.role === "tutor" && (
+            <button
+              onClick={toggleScreenShare}
+              title={isScreenSharing ? "Parar compartilhamento" : "Compartilhar tela"}
+              className={`hidden sm:flex rounded-2xl items-center justify-center transition-all hover:scale-105 w-14 h-14 ${
+                isScreenSharing
+                  ? "bg-ot-tint border border-ot-primary/30 text-ot-primary"
+                  : "bg-[#F7F5F2] hover:bg-ot-bg text-ot-text"
+              }`}
+            >
+              {isScreenSharing ? <MonitorOff className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
+            </button>
+          )}
+          <button
+            onClick={endLesson}
+            disabled={lessonEnding}
+            className="bg-ot-danger hover:brightness-95 text-white rounded-2xl flex items-center justify-center transition-all hover:scale-105 disabled:opacity-50 w-14 h-[52px] sm:h-14"
+          >
+            <PhoneOff className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       <LessonReminderPopup />
