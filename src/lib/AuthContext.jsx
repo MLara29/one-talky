@@ -101,9 +101,17 @@ export const AuthProvider = ({ children }) => {
       // persisted in localStorage by useInactivityLogout while the app is open.
       const lastActivity = parseInt(localStorage.getItem(LAST_ACTIVITY_KEY) || "0", 10);
       const roleTimeout = TIMEOUT_BY_ROLE[currentUser.role] ?? 40 * 60 * 1000;
-      if (lastActivity && Date.now() - lastActivity > roleTimeout) {
+      const isStale = lastActivity && (Date.now() - lastActivity > roleTimeout);
+
+      if (isStale) {
         localStorage.removeItem(LAST_ACTIVITY_KEY);
-        base44.auth.logout("/landing");
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+        // No automatic redirect here — isAuthenticated is now false, so
+        // AuthenticatedApp naturally falls through to the Landing/Login flow.
+        await base44.auth.logout();
         return;
       }
 
