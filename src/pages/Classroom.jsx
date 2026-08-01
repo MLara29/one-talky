@@ -8,7 +8,6 @@ import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, 
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
-import { Image } from "@/components/ui/image";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
 const ONE_TALKY_LOGO_URL = "https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png";
@@ -143,7 +142,10 @@ export default function Classroom() {
             text: m.text,
             ts: new Date(m.created_date).getTime(),
           }]);
-          if (!chatOpenRef.current) setUnreadCount(c => c + 1);
+          if (!chatOpenRef.current) {
+            setUnreadCount(c => c + 1);
+            playMessageAlert();
+          }
         });
       } catch {}
     };
@@ -156,6 +158,27 @@ export default function Classroom() {
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const audioCtxRef = useRef(null);
+  const playMessageAlert = () => {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+      const ctx = audioCtxRef.current;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.3);
+    } catch {}
+  };
 
   const notifyTutor = async (l) => {
     try {
@@ -608,9 +631,12 @@ export default function Classroom() {
       )}
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-ot-border shadow-sm gap-3">
+      <div className="relative flex items-center justify-between px-5 py-2 bg-white border-b border-ot-border shadow-sm gap-3">
+        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center pointer-events-none">
+          <img src={ONE_TALKY_LOGO_URL} alt="One Talky" className="w-auto object-contain" style={{ height: 72 }} />
+        </div>
         <div className="flex items-center gap-3 min-w-0">
-          <Image src={ONE_TALKY_LOGO_URL} alt="One Talky" className="w-9 h-9 shrink-0" fittingType="fit" />
+          <img src={ONE_TALKY_LOGO_URL} alt="One Talky" className="w-auto object-contain md:hidden shrink-0" style={{ height: 40 }} />
           <div className="w-10 h-10 rounded-xl bg-ot-tint text-ot-primary flex items-center justify-center font-bold text-sm shrink-0">
             {initialsOf(otherPersonName)}
           </div>
