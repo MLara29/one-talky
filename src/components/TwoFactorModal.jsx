@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Loader2, RefreshCw } from "lucide-react";
+import { LAST_ACTIVITY_KEY } from "@/hooks/useInactivityLogout";
 
 export default function TwoFactorModal({ email, onVerified }) {
   const handleNotYou = () => {
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
     base44.auth.logout("/landing");
   };
 
@@ -52,6 +54,7 @@ export default function TwoFactorModal({ email, onVerified }) {
     try {
       const res = await base44.functions.invoke("verifyOtp", { code });
       if (res.data?.success) {
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
         onVerified();
       } else {
         setError(res.data?.message || "Código inválido ou expirado.");

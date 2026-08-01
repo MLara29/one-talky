@@ -6,7 +6,7 @@ import { useLang } from "@/lib/LanguageContext";
 import BlockedScreen from "@/components/BlockedScreen";
 
 import { Button } from "@/components/ui/button";
-import useInactivityLogout from "@/hooks/useInactivityLogout";
+import useInactivityLogout, { LAST_ACTIVITY_KEY } from "@/hooks/useInactivityLogout";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import NotificationBell from "@/components/NotificationBell";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
@@ -139,6 +139,7 @@ export default function AppLayout() {
 
 
   const handleLogout = () => {
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
     base44.auth.logout("/");
   };
 

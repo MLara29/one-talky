@@ -8,6 +8,7 @@ import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import TwoFactorModal from "@/components/TwoFactorModal";
+import { LAST_ACTIVITY_KEY } from "@/hooks/useInactivityLogout";
 
 
 export default function Login() {
@@ -48,11 +49,13 @@ export default function Login() {
       // 4. Check if 2FA is required (admin or tutor)
       const otpRes = await base44.functions.invoke("sendOtp", {});
       if (otpRes.data?.required) {
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
         setShow2FA(true);
         setLoading(false);
         return;
       }
 
+      localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
       window.location.href = "/";
     } catch (err) {
       setError("E-mail ou senha inválidos.");

@@ -167,6 +167,7 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
     base44.auth.logout(shouldRedirect ? "/" : undefined);
   };
 
