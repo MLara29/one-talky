@@ -6,84 +6,108 @@ const ACCENT = "#F26A1B";
 
 const sections = [
   {
-    title: "1. Natureza da Relação — Prestador de Serviço Independente",
+    title: "1. Nature of the Relationship — Independent Service Provider",
     content: (
       <p>
-        O tutor que atua na One Talky faz isso como <strong>prestador de serviço autônomo e independente</strong>, e não como empregado, sócio ou representante da One Talky. Este Contrato aplica-se a tutores de qualquer país e não cria vínculo empregatício, previdenciário ou societário de nenhuma espécie entre o tutor e a One Talky, independentemente da legislação local do país de residência do tutor.
+        Tutors working with One Talky do so as an <strong>independent, self-employed service provider</strong>, not as an employee, partner, or representative of One Talky. This Agreement applies to tutors of any country and does not create an employment, social security, or corporate relationship of any kind between the tutor and One Talky, regardless of the local laws of the tutor's country of residence.
       </p>
     ),
   },
   {
-    title: "2. Impostos e Obrigações Fiscais",
+    title: "2. Taxes and Fiscal Obligations",
     content: (
       <p>
-        O tutor é <strong>o único responsável</strong> por declarar e recolher quaisquer impostos, contribuições previdenciárias ou obrigações fiscais aplicáveis aos valores recebidos através da plataforma, de acordo com a legislação do seu país de residência. A One Talky <strong>não retém, não recolhe e não declara impostos em nome do tutor</strong> em nenhuma jurisdição.
+        The tutor is <strong>solely responsible</strong> for declaring and paying any taxes, social security contributions, or fiscal obligations applicable to the amounts received through the platform, in accordance with the laws of their country of residence. One Talky <strong>does not withhold, collect, or file taxes on the tutor's behalf</strong> in any jurisdiction.
       </p>
     ),
   },
   {
-    title: "3. Estrutura de Pagamento",
+    title: "3. Contract Type (Upwork Contract Model)",
     content: (
       <>
-        <p>Os pagamentos aos tutores seguem a estrutura abaixo, de acordo com o tipo de contrato vinculado ao perfil do tutor:</p>
+        <p>Tutors contracted through Upwork are engaged under the following contract structure:</p>
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
-          <li><strong>Contrato direto:</strong> pagamentos realizados via <strong>Payoneer</strong>.</li>
-          <li><strong>Contrato via Upwork:</strong> pagamentos processados através da própria plataforma <strong>Upwork</strong>, conforme os termos daquela plataforma.</li>
-          <li>Os saques são processados em duas janelas mensais, nos dias <strong>15 e 30</strong> de cada mês, referentes aos minutos de aula já concluídos e confirmados no período.</li>
-          <li>Um saque só pode ser solicitado quando não houver outro saque pendente ou em processamento na conta do tutor.</li>
-          <li>O valor devido ao tutor é calculado com base na taxa por minuto (price_per_minute) vigente no momento em que cada aula foi concluída — nunca recalculado retroativamente.</li>
+          <li><strong>Contract model:</strong> Hourly Contract.</li>
+          <li><strong>Weekly limit:</strong> strictly fixed at <strong>0 hours</strong>.</li>
+          <li>
+            This limit exists so the tutor's Upwork desktop app (Upwork Time Tracker) cannot take automatic screenshots or generate automatic charges on One Talky's credit card. It has no effect on the tutor's actual teaching hours or earnings, which are tracked entirely by One Talky (see Section 4).
+          </li>
         </ul>
       </>
     ),
   },
   {
-    title: "4. Cancelamento e No-Show — Lado do Tutor",
+    title: "4. Time Tracking Architecture",
+    content: (
+      <ul style={{ marginTop: 0, paddingLeft: 20 }}>
+        <li>Time tracking is done <strong>100% internally</strong>, on One Talky's own servers — not through Upwork's time tracker.</li>
+        <li>The system measures the actual face-to-face lesson time in seconds, converting it into decimal minutes as soon as the video room is closed.</li>
+        <li>Minutes generated are computed and instantly synced to the tutor's individual Tutor Dashboard.</li>
+      </ul>
+    ),
+  },
+  {
+    title: "5. Payment Cycle and Payout Workflow",
     content: (
       <>
         <ul style={{ marginTop: 0, paddingLeft: 20 }}>
-          <li>O tutor pode cancelar uma aula agendada com até <strong>4 horas de antecedência</strong> em relação ao horário marcado, sem penalidade.</li>
-          <li>Cancelamentos recorrentes ou de última hora por parte do tutor podem resultar em advertência ou <strong>suspensão da conta</strong>, a critério da One Talky.</li>
-          <li>Se o tutor não comparecer a uma aula agendada (no-show do tutor) e o aluno estiver presente na sala, o aluno não é penalizado e a aula não gera pagamento ao tutor.</li>
-          <li>Cancelamentos tardios ou ausências recorrentes são monitorados pela equipe de qualidade da One Talky.</li>
+          <li><strong>Cycle close:</strong> the balance accumulated on the platform is automatically consolidated every <strong>Sunday night (Brasília time)</strong>.</li>
+          <li><strong>Approval:</strong> One Talky's finance team reviews the server-generated logs and reports.</li>
+          <li>
+            <strong>Payout trigger:</strong> the exact audited amount is manually transferred to the tutor every <strong>Monday morning</strong>, through Upwork's <strong>Manual Bonus Tool</strong>, linked to the active 0-hour Hourly Contract.
+          </li>
+          <li>Tutors contracted directly (not via Upwork) are paid via Payoneer, following the same weekly review cycle.</li>
         </ul>
       </>
     ),
   },
   {
-    title: "5. Propriedade Intelectual de Materiais Didáticos",
+    title: "6. Cancellations and No-Shows — Tutor Side",
+    content: (
+      <ul style={{ marginTop: 0, paddingLeft: 20 }}>
+        <li>The tutor may cancel a scheduled lesson up to <strong>4 hours</strong> before the scheduled time without penalty.</li>
+        <li>Repeated or last-minute cancellations by the tutor may result in a warning or <strong>account suspension</strong>, at One Talky's discretion.</li>
+        <li>If the tutor does not show up for a scheduled lesson (tutor no-show) and the student is present in the room, the student is not penalized and the lesson does not generate payment for the tutor.</li>
+        <li>Late cancellations or repeated absences are monitored by One Talky's quality team.</li>
+      </ul>
+    ),
+  },
+  {
+    title: "7. Intellectual Property of Teaching Materials",
     content: (
       <p>
-        Materiais didáticos, roteiros de aula, exercícios ou qualquer conteúdo produzido pelo tutor especificamente para uso nas aulas da One Talky podem ser utilizados livremente pelo próprio tutor. A One Talky não reivindica propriedade sobre o conteúdo pedagógico autoral do tutor, mas reserva-se o direito de remover materiais que violem direitos autorais de terceiros ou as diretrizes de conduta da plataforma.
+        Teaching materials, lesson scripts, exercises, or any content produced by the tutor specifically for use in One Talky lessons may be freely used by the tutor. One Talky does not claim ownership of the tutor's authored pedagogical content, but reserves the right to remove materials that violate third-party copyrights or the platform's conduct guidelines.
       </p>
     ),
   },
   {
-    title: "6. Código de Conduta do Tutor",
+    title: "8. Tutor Code of Conduct",
     content: (
       <>
-        <p>Como prestador de serviço em contato direto com alunos, o tutor se compromete a:</p>
+        <p>As a service provider in direct contact with students, the tutor agrees to:</p>
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
-          <li>Manter conduta profissional, respeitosa e livre de qualquer forma de assédio, discriminação ou linguagem ofensiva durante as aulas;</li>
-          <li>Comparecer pontualmente aos horários agendados em sua disponibilidade;</li>
-          <li>Não solicitar pagamentos, dados de contato pessoal ou qualquer forma de negociação fora da plataforma para contornar a estrutura de pagamento da One Talky;</li>
-          <li>Manter a qualidade pedagógica esperada pela plataforma.</li>
+          <li>Maintain professional, respectful conduct free from any form of harassment, discrimination, or offensive language during lessons;</li>
+          <li>Show up punctually for the time slots in their availability;</li>
+          <li>Not request off-platform payments, personal contact details, or any form of negotiation aimed at bypassing One Talky's payment structure;</li>
+          <li>Maintain the pedagogical quality expected by the platform.</li>
         </ul>
       </>
     ),
   },
   {
-    title: "7. Suspensão e Desligamento",
+    title: "9. Suspension and Termination",
     content: (
       <p>
-        A One Talky pode suspender ou encerrar o acesso do tutor à plataforma em caso de violação deste Contrato, das políticas de conduta gerais, fraude, ausências recorrentes não justificadas, ou avaliações consistentemente negativas dos alunos. Em caso de banimento por violação grave (assédio, discriminação, conduta imprópria), o tutor perde o direito a qualquer saque pendente relacionado ao período da violação, sem prejuízo de valores já confirmados e pagos anteriormente.
+        One Talky may suspend or terminate the tutor's access to the platform in case of a violation of this Agreement, general conduct policies, fraud, unjustified repeated absences, or consistently negative student reviews. In the event of a ban due to a serious violation (harassment, discrimination, improper conduct), the tutor forfeits the right to any pending payout related to the period of the violation, without prejudice to amounts already confirmed and paid previously.
       </p>
     ),
   },
   {
-    title: "8. Disposições Gerais",
+    title: "10. General Provisions",
     content: (
       <p>
-        Este Contrato complementa os <Link to="/termos" style={{ color: ACCENT, fontWeight: 700 }}>Termos de Uso gerais</Link> da One Talky, aplicáveis a todos os usuários. Em caso de conflito entre este Contrato e os Termos gerais, prevalece este Contrato para as matérias específicas da relação entre a One Talky e o tutor como prestador de serviço.
+        This Agreement supplements One Talky's general{" "}
+        <Link to="/termos" style={{ color: ACCENT, fontWeight: 700 }}>Terms of Use</Link>, applicable to all users. In case of conflict between this Agreement and the general Terms, this Agreement prevails for matters specific to the relationship between One Talky and the tutor as a service provider.
       </p>
     ),
   },
@@ -96,7 +120,7 @@ export default function TutorAgreement() {
         <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link to="/landing" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "#374151" }}>
             <ArrowLeft size={18} />
-            <span style={{ fontSize: 14, fontWeight: 500 }}>Voltar</span>
+            <span style={{ fontSize: 14, fontWeight: 500 }}>Back</span>
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${ACCENT}, #e05a10)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -110,13 +134,13 @@ export default function TutorAgreement() {
       <main style={{ maxWidth: 860, margin: "0 auto", padding: "48px 24px 80px" }}>
         <div style={{ marginBottom: 40 }}>
           <div style={{ display: "inline-block", background: `${ACCENT}18`, color: ACCENT, fontWeight: 700, fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 999, padding: "4px 14px", marginBottom: 16 }}>
-            Última atualização: julho de 2025
+            Last updated: August 2026
           </div>
           <h1 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 800, color: "#111827", lineHeight: 1.15, margin: 0 }}>
-            Contrato de Prestação de Serviço para Tutores
+            Tutor Service Agreement
           </h1>
           <p style={{ marginTop: 12, fontSize: 15.5, color: "#6b7280", lineHeight: 1.6 }}>
-            Este Contrato regula especificamente a relação entre a <strong>One Talky</strong> e os <strong>tutores</strong> que prestam aulas na plataforma, como prestadores de serviço independentes. Ele complementa — e não substitui — os Termos de Uso gerais aplicáveis a todos os usuários.
+            This Agreement specifically governs the relationship between <strong>One Talky</strong> and the <strong>tutors</strong> who teach lessons on the platform, as independent service providers. It supplements — and does not replace — the general Terms of Use applicable to all users.
           </p>
         </div>
 
@@ -134,7 +158,7 @@ export default function TutorAgreement() {
         </div>
 
         <p style={{ marginTop: 40, fontSize: 13, color: "#9ca3af", textAlign: "center" }}>
-          © {new Date().getFullYear()} One Talky · Este Contrato pode ser atualizado. Notificaremos por e-mail com antecedência mínima de 15 dias.
+          © {new Date().getFullYear()} One Talky · This Agreement may be updated. We will notify tutors by email at least 15 days in advance.
         </p>
       </main>
     </div>
