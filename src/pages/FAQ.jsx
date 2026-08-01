@@ -12,14 +12,6 @@ const STUDENT_FAQS = [
   { q: "O que acontece se eu me atrasar para a aula?", a: "Você tem até 10 minutos de tolerância após o horário marcado para entrar na sala. Depois disso, se o tutor estiver presente, a aula é registrada como falta e os minutos são debitados." },
 ];
 
-const TUTOR_FAQS = [
-  { q: "Como funciona o pagamento dos tutores?", a: "O pagamento é feito via Payoneer (contrato direto) ou pela própria Upwork (contrato via Upwork), em duas janelas mensais: dias 15 e 30, referentes às aulas já concluídas no período." },
-  { q: "Como eu defino minha disponibilidade?", a: "Na tela 'Schedule', você marca os horários da semana em que está disponível para aulas, e pode ativar o status 'disponível agora' para receber aulas instantâneas." },
-  { q: "Existe antecedência mínima para agendamento?", a: "Cada tutor pode configurar sua própria antecedência mínima de agendamento (em horas) na tela de agenda, para evitar aulas marcadas em cima da hora." },
-  { q: "O que acontece se um aluno faltar?", a: "Se o aluno não comparecer dentro da tolerância de 10 minutos e você estiver presente na sala, a aula é registrada como falta do aluno e você recebe normalmente pelos minutos agendados." },
-  { q: "Posso cancelar uma aula agendada?", a: "Sim, com até 4 horas de antecedência sem penalidade. Cancelamentos recorrentes ou de última hora podem levar a advertências. Veja o Contrato de Prestação de Serviço para Tutores para detalhes completos." },
-];
-
 function FaqList({ items, prefix }) {
   const [open, setOpen] = useState(-1);
   return (
@@ -44,8 +36,6 @@ function FaqList({ items, prefix }) {
 }
 
 export default function FAQ() {
-  const [tab, setTab] = useState("student");
-
   return (
     <div style={{ minHeight: "100vh", background: "#f9fafb", fontFamily: "'Inter', sans-serif" }}>
       <header style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "16px 24px" }}>
@@ -69,26 +59,11 @@ export default function FAQ() {
             Perguntas Frequentes
           </h1>
           <p style={{ marginTop: 12, fontSize: 15.5, color: "#6b7280" }}>
-            Dúvidas comuns de alunos e tutores sobre a One Talky.
+            Dúvidas comuns de alunos sobre a One Talky.
           </p>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 28 }}>
-          <button
-            onClick={() => setTab("student")}
-            style={{ padding: "9px 20px", borderRadius: 999, fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", fontFamily: "inherit", background: tab === "student" ? ACCENT : "#fff", color: tab === "student" ? "#fff" : "#374151", boxShadow: tab === "student" ? "none" : "0 0 0 1px #e5e7eb" }}
-          >
-            Para Alunos
-          </button>
-          <button
-            onClick={() => setTab("tutor")}
-            style={{ padding: "9px 20px", borderRadius: 999, fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", fontFamily: "inherit", background: tab === "tutor" ? ACCENT : "#fff", color: tab === "tutor" ? "#fff" : "#374151", boxShadow: tab === "tutor" ? "none" : "0 0 0 1px #e5e7eb" }}
-          >
-            Para Tutores
-          </button>
-        </div>
-
-        {tab === "student" ? <FaqList items={STUDENT_FAQS} prefix="student" /> : <FaqList items={TUTOR_FAQS} prefix="tutor" />}
+        <FaqList items={STUDENT_FAQS} prefix="student" />
 
         <p style={{ marginTop: 40, fontSize: 13, color: "#9ca3af", textAlign: "center" }}>
           Não encontrou sua resposta? Fale com o <Link to="/my-messages" style={{ color: ACCENT }}>Suporte</Link>.
