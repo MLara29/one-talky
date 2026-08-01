@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
+import { requireOtp } from '../../shared/requireOtp.js';
 
 // ONE-TIME, admin-triggered cleanup — NOT wired to any cron/workflow.
 // Marks "scheduled" lessons whose scheduled_at is older than MAX_AGE_MS (the same
@@ -15,6 +16,9 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+    const otpGate = await requireOtp(base44, req, user);
+    if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const scheduled = await base44.asServiceRole.entities.Lesson.filter({ status: 'scheduled' });
     const now = Date.now();
