@@ -42,6 +42,8 @@ export default function Classroom() {
   const [remoteIsScreenSharing, setRemoteIsScreenSharing] = useState(false);
   const [totalDurationMins, setTotalDurationMins] = useState(null);
   const [studentLevel, setStudentLevel] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
+  const [micError, setMicError] = useState(null);
   const chatOpenRef = useRef(false);
 
   const clientRef = useRef(null);
@@ -273,6 +275,94 @@ export default function Classroom() {
     setRemoteVideoTrack(track);
   };
 
+  // Classifies a camera/mic creation error into a friendly reason
+  const classifyDeviceError = (e) => {
+    const code = e?.code;
+    const msg = e?.message || "";
+    if (code === "DEVICE_NOT_FOUND" || msg.includes("NotFoundError") || e?.name === "NotFoundError") return "not_found";
+    if (code === "PERMISSION_DENIED" || msg.includes("NotAllowedError") || e?.name === "NotAllowedError") return "permission_denied";
+    return "unknown";
+  };
+
+  const deviceErrorMessage = (device, kind) => {
+    const label = device === "camera" ? "Câmera" : "Microfone";
+    if (kind === "not_found") {
+      return `${label} não encontrado(a). Verifique se está conectado(a) e não está sendo usado por outro programa (Zoom, Teams, etc).`;
+    }
+    if (kind === "permission_denied") {
+      return `Permissão de ${device === "camera" ? "câmera" : "microfone"} negada. Verifique as permissões do navegador para este site.`;
+    }
+    return `Não foi possível acessar ${device === "camera" ? "sua câmera" : "seu microfone"}.`;
+  };
+
+  // Creates the local mic/camera tracks independently (one device failing
+  // never blocks the other) and publishes whichever succeeded.
+  const createAndPublishLocalTracks = async () => {
+    const client = clientRef.current;
+    let audioTrack = null;
+    let videoTrack = null;
+
+    try {
+      audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      setMicError(null);
+    } catch (e) {
+      console.error("[Classroom] microphone error:", e);
+      setMicError(deviceErrorMessage("microphone", classifyDeviceError(e)));
+    }
+
+    try {
+      videoTrack = await AgoraRTC.createCameraVideoTrack();
+      setCameraError(null);
+    } catch (e) {
+      console.error("[Classroom] camera error:", e);
+      setCameraError(deviceErrorMessage("camera", classifyDeviceError(e)));
+    }
+
+    localAudioTrackRef.current = audioTrack;
+    localVideoTrackRef.current = videoTrack;
+    setMicOn(!!audioTrack);
+    setCameraOn(!!videoTrack);
+
+    const tracksToPublish = [audioTrack, videoTrack].filter(Boolean);
+    if (tracksToPublish.length > 0) {
+      await client.publish(tracksToPublish);
+    }
+  };
+
+  // Retries creating whichever device(s) previously failed, without
+  // rejoining the channel or reloading the page.
+  const retryDeviceAccess = async () => {
+    const client = clientRef.current;
+    if (!client) return;
+
+    if (micError) {
+      try {
+        const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        localAudioTrackRef.current = audioTrack;
+        await client.publish(audioTrack);
+        setMicError(null);
+        setMicOn(true);
+      } catch (e) {
+        console.error("[Classroom] microphone retry error:", e);
+        setMicError(deviceErrorMessage("microphone", classifyDeviceError(e)));
+      }
+    }
+
+    if (cameraError) {
+      try {
+        const videoTrack = await AgoraRTC.createCameraVideoTrack();
+        localVideoTrackRef.current = videoTrack;
+        await client.publish(videoTrack);
+        setCameraError(null);
+        setCameraOn(true);
+        if (localVideoDiv.current) videoTrack.play(localVideoDiv.current);
+      } catch (e) {
+        console.error("[Classroom] camera retry error:", e);
+        setCameraError(deviceErrorMessage("camera", classifyDeviceError(e)));
+      }
+    }
+  };
+
   const joinChannel = async (l) => {
     if (joinGuardRef.current) return;
     joinGuardRef.current = true;
@@ -313,11 +403,7 @@ export default function Classroom() {
 
     await client.join(appId, channelName, token, uid);
 
-    const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-    localAudioTrackRef.current = audioTrack;
-    localVideoTrackRef.current = videoTrack;
-
-    await client.publish([audioTrack, videoTrack]);
+    await createAndPublishLocalTracks();
     setJoined(true);
 
     // Reconciliation: the "user-published" event is missed when the other side
@@ -374,6 +460,8 @@ export default function Classroom() {
     reconcileRef.current = setInterval(reconcile, 2000);
 
     const playLocal = () => {
+      const videoTrack = localVideoTrackRef.current;
+      if (!videoTrack) return;
       if (localVideoDiv.current) {
         videoTrack.play(localVideoDiv.current);
       } else {
@@ -703,24 +791,48 @@ export default function Classroom() {
           {/* Local video (PiP) — nested inside the remote video area so it stays
               positioned relative to the video stage, not the whole layout
               (including the chat panel) — shrinks when watching screen share */}
-          <div
-            className={`absolute rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-[#1C1917] z-20 transition-all duration-300 ${
-              screenShareActive
-                ? "bottom-2 right-2 w-[72px] h-[104px] sm:w-[130px] sm:h-[78px]"
-                : "bottom-4 right-4 w-[104px] h-[150px] sm:w-[200px] sm:h-[120px]"
-            }`}
-          >
-            <div
-              ref={localVideoDiv}
-              className="w-full h-full"
-              style={{ display: cameraOn ? "block" : "none" }}
-            />
-            {!cameraOn && (
-              <div className="w-full h-full bg-[#1C1917] flex items-center justify-center">
-                <VideoOff className="w-5 h-5 text-white/40" />
+          {(cameraError || micError) ? (
+            <div className="absolute bottom-4 right-4 z-20 w-[260px] max-w-[90vw] bg-white rounded-2xl shadow-lg border border-ot-border p-4">
+              <div className="flex items-start gap-2 mb-2">
+                <AlertTriangle className="w-4 h-4 text-ot-danger mt-0.5 shrink-0" />
+                <div className="text-xs text-ot-text-secondary space-y-1.5">
+                  {cameraError && <p>{cameraError}</p>}
+                  {micError && <p>{micError}</p>}
+                </div>
               </div>
-            )}
-          </div>
+              {cameraError && !micError && (
+                <p className="text-[11px] text-ot-online font-semibold mb-2">Você ainda pode participar por áudio/texto.</p>
+              )}
+              {micError && !cameraError && (
+                <p className="text-[11px] text-ot-online font-semibold mb-2">Você ainda pode participar por vídeo/texto.</p>
+              )}
+              <button
+                onClick={retryDeviceAccess}
+                className="w-full bg-ot-primary text-white text-xs font-bold py-2 rounded-xl hover:brightness-95 transition-all"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          ) : (
+            <div
+              className={`absolute rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-[#1C1917] z-20 transition-all duration-300 ${
+                screenShareActive
+                  ? "bottom-2 right-2 w-[72px] h-[104px] sm:w-[130px] sm:h-[78px]"
+                  : "bottom-4 right-4 w-[104px] h-[150px] sm:w-[200px] sm:h-[120px]"
+              }`}
+            >
+              <div
+                ref={localVideoDiv}
+                className="w-full h-full"
+                style={{ display: cameraOn ? "block" : "none" }}
+              />
+              {!cameraOn && (
+                <div className="w-full h-full bg-[#1C1917] flex items-center justify-center">
+                  <VideoOff className="w-5 h-5 text-white/40" />
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Chat panel — desktop: fixed column beside video; mobile: bottom sheet */}
