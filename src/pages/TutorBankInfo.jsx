@@ -9,11 +9,18 @@ import { useToast } from "@/components/ui/use-toast";
 import { COUNTRIES } from "@/lib/constants";
 import { User, Mail, Globe, Phone, Save, Bell, BellOff, FileText } from "lucide-react";
 
+const PAYOUT_FREQUENCY_OPTIONS = [
+  { value: "weekly", label: "Semanal" },
+  { value: "biweekly", label: "Quinzenal" },
+  { value: "monthly", label: "Mensal" },
+];
+
 export default function TutorBankInfo() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [savingFrequency, setSavingFrequency] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
     nationality: "",
@@ -64,6 +71,18 @@ export default function TutorBankInfo() {
   };
 
   const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+
+  const changePayoutFrequency = async (value) => {
+    if (!profile) return;
+    setSavingFrequency(true);
+    try {
+      await base44.functions.invoke('updateMyProfile', { updates: { payout_frequency: value } });
+      setProfile(p => ({ ...p, payout_frequency: value }));
+      toast({ title: "Payout frequency updated! ✅" });
+    } catch (err) {
+      toast({ title: "Error saving", description: err?.message || "Please try again.", variant: "destructive" });
+    } finally { setSavingFrequency(false); }
+  };
 
   if (!profile) return (
     <div className="flex items-center justify-center py-24">
@@ -157,6 +176,31 @@ export default function TutorBankInfo() {
             </button>
           </div>
         
+
+          <div className="mb-5">
+            <p className="theme-heading text-sm font-semibold text-white mb-1">Payout frequency</p>
+            <p className="text-xs text-gray-600 mb-3">Less frequent payouts group more balance into each transfer.</p>
+            <div className="flex flex-wrap gap-2">
+              {PAYOUT_FREQUENCY_OPTIONS.map(opt => {
+                const active = (profile.payout_frequency || "weekly") === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => changePayoutFrequency(opt.value)}
+                    disabled={savingFrequency}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 ${
+                      active
+                        ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                        : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {profile.contract_type !== "upwork" && (
             <div>

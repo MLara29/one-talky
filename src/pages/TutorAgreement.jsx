@@ -33,10 +33,10 @@ const sections = [
     title: "4. Payment Cycle and Payout Workflow",
     content: (
       <ul style={{ marginTop: 0, paddingLeft: 20 }}>
-        <li><strong>Cycle close:</strong> the balance accumulated on the platform is automatically consolidated every <strong>Sunday night (Brasília time)</strong>.</li>
+        <li>The default payment cycle is <strong>weekly</strong>. The tutor may choose to be paid <strong>biweekly</strong> or <strong>monthly</strong> instead, at any time, through their dashboard — the change takes effect starting from the next cycle.</li>
         <li><strong>Approval:</strong> One Talky's finance team reviews the balance before payout.</li>
-        <li><strong>Payout:</strong> the audited amount is transferred to the tutor every <strong>Monday morning</strong>, through Upwork's payment mechanism linked to the active contract.</li>
-        <li>Tutors contracted directly (not via Upwork) are paid via Payoneer, following the same weekly review cycle.</li>
+        <li><strong>Payout:</strong> the audited amount is transferred to the tutor according to the tutor's chosen cycle, through Upwork's payment mechanism linked to the active contract.</li>
+        <li>Tutors contracted directly (not via Upwork) are paid via Payoneer, following the same review cycle.</li>
       </ul>
     ),
   },

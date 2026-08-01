@@ -1,0 +1,33 @@
+{
+  "name": "PayoutSettings",
+  "type": "object",
+  "properties": {
+    "sweep_weekday": {
+      "type": "number",
+      "default": 1,
+      "description": "Dia da semana (0=domingo...6=s\u00e1bado) em que o admin revisa e executa os pagamentos pendentes."
+    }
+  },
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
