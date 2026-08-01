@@ -33,6 +33,7 @@ export default function Classroom() {
   const [showReview, setShowReview] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
+  const [remoteUserPresent, setRemoteUserPresent] = useState(false);
   const [joined, setJoined] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
@@ -388,7 +389,12 @@ export default function Classroom() {
       if (mediaType === "video") setRemoteTrack(null);
     });
 
-    client.on("user-left", () => setRemoteTrack(null));
+    client.on("user-joined", () => setRemoteUserPresent(true));
+
+    client.on("user-left", () => {
+      setRemoteTrack(null);
+      setRemoteUserPresent((clientRef.current?.remoteUsers.length || 0) > 0);
+    });
 
     const uid = uidFromUserId(user?.id);
     const channelName = id;
@@ -409,6 +415,7 @@ export default function Classroom() {
     // Reconciliation: the "user-published" event is missed when the other side
     // published before we finished joining. Re-check the channel periodically.
     const reconcile = async () => {
+      setRemoteUserPresent(client.remoteUsers.length > 0);
       for (const remoteUser of client.remoteUsers) {
         try {
           if (remoteUser.hasVideo && !remoteUser.videoTrack) {
@@ -582,6 +589,7 @@ export default function Classroom() {
     autoRepublishAttemptsRef.current = 0;
     lastRepublishAtRef.current = 0;
     remoteVideoTrackRef.current = null;
+    setRemoteUserPresent(false);
   };
 
   const toggleCamera = async () => {
@@ -768,13 +776,17 @@ export default function Classroom() {
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
                 <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 rounded-full border-4 border-ot-primary/20 border-t-ot-primary animate-spin" />
+                  {!remoteUserPresent && (
+                    <div className="absolute inset-0 rounded-full border-4 border-ot-primary/20 border-t-ot-primary animate-spin" />
+                  )}
                   <div className="absolute inset-2 rounded-full bg-ot-tint flex items-center justify-center text-ot-primary font-bold text-lg">
                     {initialsOf(otherPersonName)}
                   </div>
                 </div>
                 <p className="text-ot-text-secondary text-sm font-semibold">
-                  Aguardando {user?.role === "tutor" ? "o aluno" : "o tutor"} conectar…
+                  {remoteUserPresent
+                    ? `${user?.role === "tutor" ? "Aluno" : "Tutor"} conectado (sem câmera)`
+                    : `Aguardando ${user?.role === "tutor" ? "o aluno" : "o tutor"} conectar…`}
                 </p>
                 {joined && <p className="text-ot-online text-xs mt-1.5 font-semibold">● Você está conectado</p>}
               </div>
