@@ -192,8 +192,8 @@ export default function TutorSchedule() {
 
       {/* Minimum booking notice */}
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 mb-5">
-        <p className="theme-heading font-semibold text-white mb-1">Selecione o tempo de antecedência para os agendamentos</p>
-        <p className="theme-subtext text-xs text-gray-500 mb-4">Alunos só poderão agendar aulas com você respeitando esta antecedência mínima.</p>
+        <p className="theme-heading font-semibold text-white mb-1">Minimum booking notice</p>
+        <p className="theme-subtext text-xs text-gray-500 mb-4">Students will only be able to book lessons with you respecting this minimum notice period.</p>
         <div className="flex flex-wrap gap-2">
           {NOTICE_OPTIONS.map(opt => {
             const active = (profile?.min_booking_notice_hours || 0) === opt.value;
