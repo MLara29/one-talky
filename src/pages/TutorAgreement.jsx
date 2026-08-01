@@ -22,47 +22,26 @@ const sections = [
     ),
   },
   {
-    title: "3. Contract Type (Upwork Contract Model)",
+    title: "3. Contract Type and Time Tracking (Upwork Contract Model)",
     content: (
-      <>
-        <p>Tutors contracted through Upwork are engaged under the following contract structure:</p>
-        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
-          <li><strong>Contract model:</strong> Hourly Contract.</li>
-          <li><strong>Weekly limit:</strong> strictly fixed at <strong>0 hours</strong>.</li>
-          <li>
-            This limit exists so the tutor's Upwork desktop app (Upwork Time Tracker) cannot take automatic screenshots or generate automatic charges on One Talky's credit card. It has no effect on the tutor's actual teaching hours or earnings, which are tracked entirely by One Talky (see Section 4).
-          </li>
-        </ul>
-      </>
+      <p>
+        Tutors contracted through Upwork are engaged under an <strong>Hourly Contract</strong>. Time tracking and payment calculation are handled entirely by One Talky's internal systems, based on actual lesson time recorded on the platform, and the resulting amount is passed on to the tutor through Upwork's payment mechanism linked to the contract.
+      </p>
     ),
   },
   {
-    title: "4. Time Tracking Architecture",
+    title: "4. Payment Cycle and Payout Workflow",
     content: (
       <ul style={{ marginTop: 0, paddingLeft: 20 }}>
-        <li>Time tracking is done <strong>100% internally</strong>, on One Talky's own servers — not through Upwork's time tracker.</li>
-        <li>The system measures the actual face-to-face lesson time in seconds, converting it into decimal minutes as soon as the video room is closed.</li>
-        <li>Minutes generated are computed and instantly synced to the tutor's individual Tutor Dashboard.</li>
+        <li><strong>Cycle close:</strong> the balance accumulated on the platform is automatically consolidated every <strong>Sunday night (Brasília time)</strong>.</li>
+        <li><strong>Approval:</strong> One Talky's finance team reviews the balance before payout.</li>
+        <li><strong>Payout:</strong> the audited amount is transferred to the tutor every <strong>Monday morning</strong>, through Upwork's payment mechanism linked to the active contract.</li>
+        <li>Tutors contracted directly (not via Upwork) are paid via Payoneer, following the same weekly review cycle.</li>
       </ul>
     ),
   },
   {
-    title: "5. Payment Cycle and Payout Workflow",
-    content: (
-      <>
-        <ul style={{ marginTop: 0, paddingLeft: 20 }}>
-          <li><strong>Cycle close:</strong> the balance accumulated on the platform is automatically consolidated every <strong>Sunday night (Brasília time)</strong>.</li>
-          <li><strong>Approval:</strong> One Talky's finance team reviews the server-generated logs and reports.</li>
-          <li>
-            <strong>Payout trigger:</strong> the exact audited amount is manually transferred to the tutor every <strong>Monday morning</strong>, through Upwork's <strong>Manual Bonus Tool</strong>, linked to the active 0-hour Hourly Contract.
-          </li>
-          <li>Tutors contracted directly (not via Upwork) are paid via Payoneer, following the same weekly review cycle.</li>
-        </ul>
-      </>
-    ),
-  },
-  {
-    title: "6. Cancellations and No-Shows — Tutor Side",
+    title: "5. Cancellations and No-Shows — Tutor Side",
     content: (
       <ul style={{ marginTop: 0, paddingLeft: 20 }}>
         <li>The tutor may cancel a scheduled lesson up to <strong>4 hours</strong> before the scheduled time without penalty.</li>
@@ -73,7 +52,7 @@ const sections = [
     ),
   },
   {
-    title: "7. Intellectual Property of Teaching Materials",
+    title: "6. Intellectual Property of Teaching Materials",
     content: (
       <p>
         Teaching materials, lesson scripts, exercises, or any content produced by the tutor specifically for use in One Talky lessons may be freely used by the tutor. One Talky does not claim ownership of the tutor's authored pedagogical content, but reserves the right to remove materials that violate third-party copyrights or the platform's conduct guidelines.
@@ -81,7 +60,7 @@ const sections = [
     ),
   },
   {
-    title: "8. Tutor Code of Conduct",
+    title: "7. Tutor Code of Conduct",
     content: (
       <>
         <p>As a service provider in direct contact with students, the tutor agrees to:</p>
@@ -95,7 +74,7 @@ const sections = [
     ),
   },
   {
-    title: "9. Suspension and Termination",
+    title: "8. Suspension and Termination",
     content: (
       <p>
         One Talky may suspend or terminate the tutor's access to the platform in case of a violation of this Agreement, general conduct policies, fraud, unjustified repeated absences, or consistently negative student reviews. In the event of a ban due to a serious violation (harassment, discrimination, improper conduct), the tutor forfeits the right to any pending payout related to the period of the violation, without prejudice to amounts already confirmed and paid previously.
@@ -103,7 +82,7 @@ const sections = [
     ),
   },
   {
-    title: "10. General Provisions",
+    title: "9. General Provisions",
     content: (
       <p>
         This Agreement supplements One Talky's general{" "}
