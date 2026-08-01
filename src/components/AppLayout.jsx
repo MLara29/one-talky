@@ -279,7 +279,7 @@ export default function AppLayout() {
         <div className="px-8 py-6 sm:px-14 sm:py-8 lg:px-20 lg:py-10 max-w-screen-2xl mx-auto pb-8 lg:pb-4">
           <Outlet />
         </div>
-        <Footer />
+        <Footer role={role} />
       </main>
 
       <LiveNotificationToast />

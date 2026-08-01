@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 // Compact legal footer shown at the bottom of every authenticated screen.
 // NOTE: company legal name / CNPJ below are placeholders — replace with the
 // real registered data before publishing.
-export default function Footer() {
+export default function Footer({ role }) {
   return (
     <footer className="pb-16 lg:pb-6 pt-6 mt-4">
       <div
@@ -17,6 +17,9 @@ export default function Footer() {
             <Link to="/privacidade" className="hover:underline">Política de Privacidade</Link>
             <Link to="/reembolso" className="hover:underline">Política de Reembolso</Link>
             <Link to="/faq" className="hover:underline">FAQ</Link>
+            {role === "tutor" && (
+              <Link to="/tutor-agreement" className="hover:underline">Contrato do Tutor</Link>
+            )}
             <Link to="/my-messages" className="hover:underline">Suporte</Link>
           </div>
           <p className="text-[11px]" style={{ color: "#b7b3ab" }}>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { COUNTRIES } from "@/lib/constants";
-import { User, Mail, Globe, Phone, Save, Bell, BellOff } from "lucide-react";
+import { User, Mail, Globe, Phone, Save, Bell, BellOff, FileText } from "lucide-react";
 
 export default function TutorBankInfo() {
   const { user } = useAuth();
@@ -73,7 +74,16 @@ export default function TutorBankInfo() {
   return (
     <div className="max-w-lg">
       <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-2">Personal Info</h1>
-      <p className="theme-subtext text-gray-500 text-sm mb-8">Update your contact details and payment information.</p>
+      <p className="theme-subtext text-gray-500 text-sm mb-4">Update your contact details and payment information.</p>
+
+      <Link
+        to="/tutor-agreement"
+        target="_blank"
+        className="flex items-center gap-2 text-sm font-medium text-orange-500 hover:underline mb-6 w-fit"
+      >
+        <FileText className="w-4 h-4" />
+        View Tutor Service Agreement
+      </Link>
 
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-5">
         <div>
