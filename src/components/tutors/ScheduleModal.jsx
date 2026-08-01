@@ -81,6 +81,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
   const tutorTz = tutor.timezone || null;
   const availability = tutor.availability || {};
   const bookedSlots = tutor.booked_slots || [];
+  const minNoticeMs = (tutor.min_booking_notice_hours || 0) * 60 * 60 * 1000;
 
   // Normalize booked ISO strings to UTC minute-precision keys
   const bookedSet = useMemo(() => new Set(
@@ -135,6 +136,9 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
 
         // Check not in the past
         if (utcDate < new Date()) continue;
+
+        // Check tutor's minimum booking notice
+        if (minNoticeMs > 0 && utcDate.getTime() - Date.now() < minNoticeMs) continue;
 
         slots.push({
           tutorSlot: slot,

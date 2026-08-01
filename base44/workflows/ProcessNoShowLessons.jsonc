@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "process_no_show_lessons",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "process_no_shows": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "processNoShowLessons",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Processar faltas (no-show)",
+            "description": "Debita aluno e paga tutor por aulas agendadas n\u00e3o iniciadas ap\u00f3s a toler\u00e2ncia"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Every 5 minutes, finds scheduled lessons whose scheduled_at + 10min grace period has passed with no one joining, and processes them as no-show: debits the student, credits the tutor.",
+  "name": "Process No-Show Lessons",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/5 * * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

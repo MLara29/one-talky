@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { LESSON_JOIN_GRACE_PERIOD_MS, getLessonTimeStatus } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
@@ -35,8 +36,32 @@ export default function TutorDashboard() {
   const prevLessonsRef = useRef([]);
   const shownUpcomingRef = useRef(new Set());
   const shownLiveRef = useRef(new Set());
+  const lessonsRef = useRef([]);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => { loadData(); }, [user]);
+
+  useEffect(() => { lessonsRef.current = lessons; }, [lessons]);
+
+  // Ticks every 30s normally, speeding up to every 1s while a lesson is inside
+  // its post-scheduled no-show grace window (negative countdown badge).
+  useEffect(() => {
+    let timeoutId;
+    const scheduleTick = () => {
+      const now = Date.now();
+      const anyInGrace = lessonsRef.current.some(l => {
+        if (l.status !== "scheduled" || !l.scheduled_at) return false;
+        const diff = now - new Date(l.scheduled_at).getTime();
+        return diff > 0 && diff <= LESSON_JOIN_GRACE_PERIOD_MS;
+      });
+      timeoutId = setTimeout(() => {
+        setTick(n => n + 1);
+        scheduleTick();
+      }, anyInGrace ? 1000 : 30_000);
+    };
+    scheduleTick();
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     const check = async () => {
@@ -182,16 +207,8 @@ export default function TutorDashboard() {
     return new Date(l.scheduled_at).getTime() - now <= 10 * 60 * 1000;
   };
 
-  const timeUntil = (scheduledAt) => {
-    const diff = new Date(scheduledAt).getTime() - now;
-    if (diff <= 0) return null;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60));
-    if (days > 0) return `in ${days}d ${hours}h`;
-    if (hours > 0) return `in ${hours}h ${mins}min`;
-    return `in ${mins}min`;
-  };
+  const isUpcoming = (l) => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() + LESSON_JOIN_GRACE_PERIOD_MS > now;
+  const upcomingLessons = lessons.filter(isUpcoming);
 
   return (
     <div>
@@ -283,12 +300,11 @@ export default function TutorDashboard() {
 
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
         <h2 className="theme-heading font-display font-bold text-white mb-5">{t(lang, "upcomingLessons")}</h2>
-        {lessons.filter(l => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() > Date.now()).length === 0 ? (
+        {upcomingLessons.length === 0 ? (
           <p className="theme-subtext text-sm text-gray-500 py-6 text-center">{t(lang, "noUpcomingLessons")}</p>
         ) : (
           <div className="space-y-3">
-            {lessons
-              .filter(l => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() > Date.now())
+            {upcomingLessons
               .sort((a, b) => {
                 if (a.status === "in_progress") return -1;
                 if (b.status === "in_progress") return 1;
@@ -318,9 +334,17 @@ export default function TutorDashboard() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {l.scheduled_at && l.status !== "in_progress" && (
-                        <span className="text-xs text-gray-400 font-medium">{timeUntil(l.scheduled_at)}</span>
-                      )}
+                      {l.scheduled_at && l.status !== "in_progress" && (() => {
+                        const status = getLessonTimeStatus(l.scheduled_at, now);
+                        if (!status.label) return null;
+                        return (
+                          <span className={status.negative
+                            ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-ot-danger/10 border border-ot-danger/30 text-ot-danger animate-pulse"
+                            : "text-xs text-gray-400 font-medium"}>
+                            {status.label}
+                          </span>
+                        );
+                      })()}
                       {canJoinLesson(l) ? (
                         <Link to={`/classroom/${l.id}`}>
                           <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"}`}>

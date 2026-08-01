@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video, Calendar, Clock, CheckCircle, Settings2, AlertTriangle } from "lucide-react";
-import { getLanguageLabel } from "@/lib/constants";
+import { getLanguageLabel, LESSON_JOIN_GRACE_PERIOD_MS, getLessonTimeStatus } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import CancelRescheduleModal from "@/components/lessons/CancelRescheduleModal";
 import StudentCancelModal from "@/components/lessons/StudentCancelModal";
@@ -23,13 +23,31 @@ export default function MyLessons() {
   const [actionLoading, setActionLoading] = useState(false);
   const [cancellingLesson, setCancellingLesson] = useState(null);
   const [tick, setTick] = useState(0);
+  const lessonsRef = useRef(lessons);
 
   const T = (key) => t(lang, key);
 
-  // Tick every 30s to refresh countdown and join button visibility
+  useEffect(() => { lessonsRef.current = lessons; }, [lessons]);
+
+  // Tick to refresh countdown and join button visibility — ticks every 30s
+  // normally, but speeds up to every 1s while a lesson is in its post-scheduled
+  // no-show grace window (negative countdown), then slows back down.
   useEffect(() => {
-    const interval = setInterval(() => setTick(n => n + 1), 30_000);
-    return () => clearInterval(interval);
+    let timeoutId;
+    const scheduleTick = () => {
+      const now = Date.now();
+      const anyInGrace = lessonsRef.current.some(l => {
+        if (l.status !== "scheduled" || !l.scheduled_at) return false;
+        const diff = now - new Date(l.scheduled_at).getTime();
+        return diff > 0 && diff <= LESSON_JOIN_GRACE_PERIOD_MS;
+      });
+      timeoutId = setTimeout(() => {
+        setTick(n => n + 1);
+        scheduleTick();
+      }, anyInGrace ? 1000 : 30_000);
+    };
+    scheduleTick();
+    return () => clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => { loadData(); }, [user]);
@@ -107,7 +125,7 @@ export default function MyLessons() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const now = Date.now(); // refreshes on tick
   const upcoming = lessons
-    .filter(l => l.status === "scheduled" && (!l.scheduled_at || new Date(l.scheduled_at).getTime() > now))
+    .filter(l => l.status === "scheduled" && (!l.scheduled_at || new Date(l.scheduled_at).getTime() + LESSON_JOIN_GRACE_PERIOD_MS > now))
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
   const completed = lessons.filter(l => l.status === "completed");
   const inProgress = lessons.filter(l => l.status === "in_progress");
@@ -115,17 +133,6 @@ export default function MyLessons() {
   const canJoin = (l) => {
     if (!l.scheduled_at) return true;
     return new Date(l.scheduled_at).getTime() - now <= 10 * 60 * 1000;
-  };
-
-  const timeUntil = (scheduledAt) => {
-    const diff = new Date(scheduledAt).getTime() - now;
-    if (diff <= 0) return null;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60));
-    if (days > 0) return `in ${days}d ${hours}h`;
-    if (hours > 0) return `in ${hours}h ${mins}min`;
-    return `in ${mins}min`;
   };
 
   if (loading) return (
@@ -244,11 +251,17 @@ export default function MyLessons() {
                         {T("cancelBtn")}
                       </Button>
                     )}
-                    {l.scheduled_at && !canJoin(l) && (
-                      <span className="text-xs text-gray-500 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 font-medium">
-                        {timeUntil(l.scheduled_at)}
-                      </span>
-                    )}
+                    {l.scheduled_at && (() => {
+                      const status = getLessonTimeStatus(l.scheduled_at, now);
+                      if (!status.label || (!status.negative && canJoin(l))) return null;
+                      return (
+                        <span className={status.negative
+                          ? "text-xs font-bold px-3 py-1.5 rounded-xl bg-ot-danger/10 border border-ot-danger/30 text-ot-danger animate-pulse"
+                          : "text-xs text-gray-500 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 font-medium"}>
+                          {status.label}
+                        </span>
+                      );
+                    })()}
                     {canJoin(l) && (
                       <Link to={`/classroom/${l.id}`}>
                         <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white border-0">

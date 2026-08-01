@@ -17,6 +17,16 @@ for (let h = 6; h < 24; h++) {
   HOURS.push(`${String(h).padStart(2, "0")}:30`);
 }
 
+const NOTICE_OPTIONS = [
+  { value: 0, label: "No minimum notice" },
+  { value: 1, label: "1 hour" },
+  { value: 2, label: "2 hours" },
+  { value: 6, label: "6 hours" },
+  { value: 12, label: "12 hours" },
+  { value: 24, label: "24 hours" },
+  { value: 48, label: "48 hours" },
+];
+
 const WEEKDAY_SHORT_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES_EN = [
   "January","February","March","April","May","June",
@@ -111,6 +121,19 @@ export default function TutorSchedule() {
     setProfile({ ...profile, is_available_now: !profile.is_available_now });
   };
 
+  const [savingNotice, setSavingNotice] = useState(false);
+  const changeMinNotice = async (value) => {
+    if (!profile) return;
+    setSavingNotice(true);
+    try {
+      await base44.functions.invoke('updateMyProfile', { updates: { min_booking_notice_hours: value } });
+      setProfile({ ...profile, min_booking_notice_hours: value });
+      toast({ title: "Booking notice updated! ✅" });
+    } catch (err) {
+      toast({ title: "Error saving", description: err?.message || "Please try again.", variant: "destructive" });
+    } finally { setSavingNotice(false); }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center py-24">
       <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
@@ -165,6 +188,31 @@ export default function TutorSchedule() {
           <strong className="text-violet-200">{tutorTz}</strong>. Students will see them automatically converted to their own timezone.
           {totalSlots > 0 && <span className="ml-2 text-violet-400">· {totalSlots} slot{totalSlots > 1 ? "s" : ""} configured this week</span>}
         </p>
+      </div>
+
+      {/* Minimum booking notice */}
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 mb-5">
+        <p className="theme-heading font-semibold text-white mb-1">Selecione o tempo de antecedência para os agendamentos</p>
+        <p className="theme-subtext text-xs text-gray-500 mb-4">Alunos só poderão agendar aulas com você respeitando esta antecedência mínima.</p>
+        <div className="flex flex-wrap gap-2">
+          {NOTICE_OPTIONS.map(opt => {
+            const active = (profile?.min_booking_notice_hours || 0) === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => changeMinNotice(opt.value)}
+                disabled={savingNotice}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 ${
+                  active
+                    ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                    : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

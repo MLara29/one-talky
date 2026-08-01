@@ -136,6 +136,11 @@
       "type": "boolean",
       "default": false,
       "description": "CAS guard: true while a WithdrawalRequest (pending/processing) is outstanding for this tutor. Flips false->true atomically via updateMany in requestWithdrawal to prevent duplicate concurrent requests; cleared once the tutor confirms receipt (confirmWithdrawal)."
+    },
+    "min_booking_notice_hours": {
+      "type": "number",
+      "default": 0,
+      "description": "Anteced\u00eancia m\u00ednima (em horas) exigida para um aluno agendar uma aula com este tutor. 0 = sem anteced\u00eancia m\u00ednima."
     }
   },
   "required": [

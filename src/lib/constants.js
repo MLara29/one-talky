@@ -5,6 +5,40 @@
 // and must NOT redirect.
 export const REDIRECT_TO_PLANS_ERROR_CODES = ["insufficient_credits", "subscription_inactive"];
 
+// Grace period a student/tutor has to join a scheduled lesson after its
+// scheduled_at time before it's considered a no-show. Used both for display
+// (keeping the lesson in "upcoming" lists + negative countdown) and by the
+// server-side processNoShowLessons cron — keep both in sync.
+export const LESSON_JOIN_GRACE_PERIOD_MS = 10 * 60 * 1000;
+
+// Shared "time until lesson" formatter for upcoming-lesson cards.
+// Before scheduled_at: returns a positive "in Xd Xh" / "in Xh Xmin" / "in Xmin" label.
+// After scheduled_at but still within the grace period: returns a negative
+// "-MM:SS" label (elapsed time since scheduled_at) with negative:true, so the
+// caller can style it as an urgent/red countdown.
+// Past the grace period: returns { label: null } (lesson should no longer show as upcoming).
+export function getLessonTimeStatus(scheduledAt, now = Date.now()) {
+  const diff = new Date(scheduledAt).getTime() - now;
+  if (diff > 0) {
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60));
+    let label;
+    if (days > 0) label = `in ${days}d ${hours}h`;
+    else if (hours > 0) label = `in ${hours}h ${mins}min`;
+    else label = `in ${mins}min`;
+    return { label, negative: false };
+  }
+  const elapsed = -diff;
+  if (elapsed <= LESSON_JOIN_GRACE_PERIOD_MS) {
+    const totalSecs = Math.floor(elapsed / 1000);
+    const mm = String(Math.floor(totalSecs / 60)).padStart(2, "0");
+    const ss = String(totalSecs % 60).padStart(2, "0");
+    return { label: `-${mm}:${ss}`, negative: true };
+  }
+  return { label: null, negative: false };
+}
+
 export const LANGUAGES = [
   { value: "english", label: "English", flag: "🇬🇧" },
   { value: "spanish", label: "Español", flag: "🇪🇸" },
