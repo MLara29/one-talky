@@ -704,7 +704,7 @@ export default function Classroom() {
   return (
     <div className="fixed inset-0 bg-ot-bg flex flex-col z-50 font-jakarta">
       {/* Credit warning banner */}
-      {showCreditWarning && minsRemaining !== null && minsRemaining > 0 && (
+      {user?.role === "student" && showCreditWarning && minsRemaining !== null && minsRemaining > 0 && (
         <div className="flex items-center justify-between gap-3 px-5 py-3 bg-ot-warn-bg border-b border-ot-warn-border">
           <div className="flex items-center gap-2 text-ot-warn-text text-sm font-semibold min-w-0">
             <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -928,8 +928,7 @@ export default function Classroom() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center py-4 px-4">
-        <div className="flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-[22px] px-3 py-2.5 shadow-lg border border-ot-border">
+      <div className="flex items-center justify-center gap-3 py-4 px-4">
           <button
             onClick={toggleMic}
             className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
@@ -979,7 +978,6 @@ export default function Classroom() {
           >
             <PhoneOff className="w-5 h-5" />
           </button>
-        </div>
       </div>
 
       <LessonReminderPopup />
