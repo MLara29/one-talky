@@ -150,6 +150,13 @@ export default function AdminAgoraUsage() {
         </p>
       )}
 
+      {/* App ID currently in use by this app, for comparison against the Agora console */}
+      {import.meta.env.VITE_AGORA_APP_ID && (
+        <p className="text-xs mb-6" style={{ color: "var(--app-text-muted)" }}>
+          App ID em uso neste app: <span className="font-mono">{import.meta.env.VITE_AGORA_APP_ID}</span>
+        </p>
+      )}
+
       {/* Error */}
       {error && (
         <div className="rounded-2xl p-4 mb-6 flex items-start gap-3 bg-red-500/10 border border-red-500/20">
