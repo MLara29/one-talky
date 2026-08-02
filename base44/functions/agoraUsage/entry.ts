@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
     const fromDate = from_date || fmt(firstOfMonth);
     const toDate = to_date || fmt(today);
     const cacheKey = `${fromDate}_${toDate}`;
+    const projectId = Deno.env.get('AGORA_PROJECT_ID');
 
     // Check cache (30 min TTL) unless force_refresh
     if (!force_refresh) {
@@ -35,6 +36,7 @@ Deno.serve(async (req) => {
             total_video_minutes: c.total_video_minutes,
             fetched_at: c.fetched_at,
             from_cache: true,
+            project_id_used: projectId,
           });
         }
       }
@@ -43,7 +45,6 @@ Deno.serve(async (req) => {
     // Build Agora API request
     const customerId = Deno.env.get('AGORA_CUSTOMER_ID');
     const customerSecret = Deno.env.get('AGORA_CUSTOMER_SECRET');
-    const projectId = Deno.env.get('AGORA_PROJECT_ID');
 
     if (!customerId || !customerSecret || !projectId) {
       return Response.json({ error: 'AGORA_PROJECT_ID not configured' }, { status: 500 });
@@ -108,6 +109,7 @@ Deno.serve(async (req) => {
       total_video_minutes: totalVideo,
       fetched_at: fetchedAt,
       from_cache: false,
+      project_id_used: projectId,
     });
   } catch (error) {
     console.error('[agoraUsage]', error.message);

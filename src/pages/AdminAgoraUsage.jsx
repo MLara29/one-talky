@@ -146,6 +146,7 @@ export default function AdminAgoraUsage() {
         <p className="text-xs mb-4 flex items-center gap-1.5" style={{ color: "var(--app-text-muted)" }}>
           <Clock className="w-3 h-3" />
           {data.from_cache ? "Dados em cache" : "Dados atualizados"} · {minutesAgo(data.fetched_at)}
+          {data.project_id_used && <span className="ml-2">· Project ID: {data.project_id_used}</span>}
         </p>
       )}
 
