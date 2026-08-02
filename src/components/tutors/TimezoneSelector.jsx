@@ -41,9 +41,9 @@ export default function TimezoneSelector({ currentTz, onSaved }) {
       <SelectTrigger className="w-auto min-w-[220px] h-8 text-xs bg-violet-500/10 border-violet-500/30 text-violet-200">
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-white border-gray-200">
         {options.map(tz => (
-          <SelectItem key={tz} value={tz} className="text-xs">{tz}</SelectItem>
+          <SelectItem key={tz} value={tz} className="text-xs text-gray-900 focus:bg-violet-50 focus:text-violet-700">{tz}</SelectItem>
         ))}
       </SelectContent>
     </Select>

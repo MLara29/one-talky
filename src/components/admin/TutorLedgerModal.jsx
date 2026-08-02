@@ -84,24 +84,24 @@ export default function TutorLedgerModal({ tutor, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-gray-950 border border-white/10 rounded-2xl w-full max-w-2xl max-h-[88vh] flex flex-col">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
+      <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-white/10 rounded-2xl w-full max-w-2xl max-h-[88vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-white/10 shrink-0">
           <div>
-            <span className="text-white font-semibold text-sm">Extrato de aulas</span>
+            <span className="text-gray-900 dark:text-white font-semibold text-sm">Extrato de aulas</span>
             <p className="text-xs text-gray-500">{tutor.full_name}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-white">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="px-5 py-3 border-b border-white/10 shrink-0 space-y-2">
+        <div className="px-5 py-3 border-b border-gray-200 dark:border-white/10 shrink-0 space-y-2">
           <div className="flex flex-wrap gap-1.5">
             {SHORTCUTS.map((s) => (
               <button
                 key={s.label}
                 onClick={() => applyShortcut(s)}
-                className="text-xs px-2.5 py-1 rounded-lg border bg-white/5 border-white/10 text-gray-400 hover:border-violet-500/40 hover:text-white transition-all"
+                className="text-xs px-2.5 py-1 rounded-lg border bg-gray-100 dark:bg-white/5 border-gray-300 dark:border-white/10 text-gray-700 dark:text-gray-400 hover:border-violet-500/40 hover:text-violet-700 dark:hover:text-white transition-all"
               >
                 {s.label}
               </button>
@@ -112,14 +112,14 @@ export default function TutorLedgerModal({ tutor, onClose }) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="bg-white/5 border border-white/10 text-white text-xs rounded-lg px-2 py-1.5"
+              className="bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white text-xs rounded-lg px-2 py-1.5"
             />
-            <span className="text-gray-600 text-xs">até</span>
+            <span className="text-gray-500 text-xs">até</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="bg-white/5 border border-white/10 text-white text-xs rounded-lg px-2 py-1.5"
+              className="bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white text-xs rounded-lg px-2 py-1.5"
             />
             <button
               onClick={applyCustomRange}
@@ -139,7 +139,7 @@ export default function TutorLedgerModal({ tutor, onClose }) {
             <p className="text-center text-sm text-gray-500 py-16">Erro ao carregar o extrato.</p>
           ) : (
             <>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 px-5 py-4 border-b border-white/10">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 px-5 py-4 border-b border-gray-200 dark:border-white/10">
                 <Stat label="Total" value={data.summary.total_lessons} />
                 <Stat label="Concluídas" value={data.summary.completed_count} color="text-emerald-400" />
                 <Stat label="Faltas" value={data.summary.no_show_count} color="text-amber-400" />
@@ -148,7 +148,7 @@ export default function TutorLedgerModal({ tutor, onClose }) {
                 <Stat label="Ganho" value={`$${data.summary.total_earned.toFixed(2)}`} color="text-emerald-400" />
               </div>
 
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-gray-200 dark:divide-white/5">
                 {data.lessons.length === 0 && (
                   <p className="text-center text-sm text-gray-500 py-12">Nenhuma aula neste período</p>
                 )}
@@ -156,7 +156,7 @@ export default function TutorLedgerModal({ tutor, onClose }) {
                   <div key={l.id} className="flex items-center justify-between gap-3 px-5 py-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-white text-sm font-medium truncate">{l.student_name || "—"}</p>
+                        <p className="text-gray-900 dark:text-white text-sm font-medium truncate">{l.student_name || "—"}</p>
                         {l.flagged_for_review && (
                           <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" titleAccess="Duração capada por anomalia — revisar" />
                         )}
@@ -185,9 +185,9 @@ export default function TutorLedgerModal({ tutor, onClose }) {
   );
 }
 
-function Stat({ label, value, color = "text-white" }) {
+function Stat({ label, value, color = "text-gray-900 dark:text-white" }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-center">
+    <div className="bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-2.5 text-center">
       <p className={`text-sm font-bold ${color}`}>{value}</p>
       <p className="text-[10px] text-gray-500 mt-0.5">{label}</p>
     </div>
