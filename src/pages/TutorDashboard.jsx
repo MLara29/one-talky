@@ -27,7 +27,6 @@ export default function TutorDashboard() {
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [lessons, setLessons] = useState([]);
-  const [completedLessons, setCompletedLessons] = useState([]);
   const [studentProfiles, setStudentProfiles] = useState({});
   const [loading, setLoading] = useState(true);
   const [liveAlert, setLiveAlert] = useState(null);
@@ -115,15 +114,13 @@ export default function TutorDashboard() {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
         setProfile(profiles[0]);
-        const [live, sched, completed] = await Promise.all([
+        const [live, sched] = await Promise.all([
           base44.entities.Lesson.filter({ tutor_id: user.id, status: "in_progress" }),
           base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" }),
-          base44.entities.Lesson.filter({ tutor_id: user.id, status: "completed" }, "-created_date", 100),
         ]);
         const allLessons = [...live, ...sched];
         prevLessonsRef.current = allLessons;
         setLessons(allLessons);
-        setCompletedLessons(completed);
 
         // Load student profiles for upcoming lessons
         const studentIds = [...new Set(allLessons.map(l => l.student_id).filter(Boolean))];
@@ -196,7 +193,7 @@ export default function TutorDashboard() {
     { label: t(lang, "totalLessons"), value: profile.total_lessons || 0, icon: Users, gradient: "from-orange-500 to-amber-500" },
     { label: t(lang, "minutesTaught"), value: profile.total_minutes || 0, icon: Clock, gradient: "from-blue-500 to-cyan-500" },
     { label: t(lang, "rating"), value: profile.average_rating?.toFixed(1) || "N/A", icon: Star, gradient: "from-amber-400 to-orange-500" },
-    { label: t(lang, "earnings"), value: `$${completedLessons.reduce((s, l) => s + (l.duration_minutes || 0) * (profile.price_per_minute || 0.9967), 0).toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
+    { label: t(lang, "earnings"), value: `$${(profile.total_earnings || 0).toFixed(2)}`, icon: DollarSign, gradient: "from-emerald-500 to-teal-500" },
   ];
 
   const now = Date.now();
