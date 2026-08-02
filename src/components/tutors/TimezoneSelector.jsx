@@ -38,7 +38,7 @@ export default function TimezoneSelector({ currentTz, onSaved }) {
 
   return (
     <Select value={currentTz} onValueChange={changeTimezone} disabled={saving}>
-      <SelectTrigger className="w-auto min-w-[220px] h-8 text-xs bg-violet-500/10 border-violet-500/30 text-violet-200">
+      <SelectTrigger className="w-auto min-w-[220px] h-8 text-xs bg-white border-gray-300 text-gray-900">
         <SelectValue />
       </SelectTrigger>
       <SelectContent className="bg-white border-gray-200">
