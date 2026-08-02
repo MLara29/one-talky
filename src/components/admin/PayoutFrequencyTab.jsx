@@ -3,9 +3,11 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
+const FREQUENCY_LABELS = { weekly: "Semanal", biweekly: "Quinzenal", monthly: "Mensal" };
+
 // Renders one payout-frequency tab's list of due tutors, reusing the
 // existing adminManageWithdrawal action buttons (mark_processing / mark_paid).
-export default function PayoutFrequencyTab({ tutors, onChanged }) {
+export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBadge = false, onTutorClick }) {
   const { toast } = useToast();
   const [processing, setProcessing] = useState(null);
 
@@ -56,10 +58,23 @@ export default function PayoutFrequencyTab({ tutors, onChanged }) {
                 <div className="flex items-center gap-2">
                   <p className="theme-heading font-semibold text-white text-sm">{t.full_name}</p>
                   <span className="text-xs px-2 py-0.5 rounded-full border bg-white/5 border-white/10 text-gray-500 capitalize">{t.contract_type || "direct"}</span>
+                  {showFrequencyBadge && (
+                    <span className="text-xs px-2 py-0.5 rounded-full border bg-violet-500/10 border-violet-500/25 text-violet-300">
+                      {FREQUENCY_LABELS[t.payout_frequency] || t.payout_frequency}
+                    </span>
+                  )}
                 </div>
                 <p className="theme-subtext text-xs text-gray-600">
                   {t.days_since_paid === null ? "Never paid before" : `${t.days_since_paid} day${t.days_since_paid === 1 ? "" : "s"} since last payment`}
                 </p>
+                {onTutorClick && (
+                  <button
+                    onClick={() => onTutorClick(t)}
+                    className="text-xs text-violet-400 hover:text-violet-300 underline underline-offset-2 mt-1"
+                  >
+                    Ver histórico
+                  </button>
+                )}
               </div>
             </div>
 
