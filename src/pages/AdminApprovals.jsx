@@ -25,8 +25,8 @@ export default function AdminApprovals() {
       const response = await base44.functions.invoke("adminReviewTutorApplication", { tutor_id: tutor.id, decision });
       if (response.data?.error) throw new Error(response.data.error);
       setTutors(prev => prev.filter(t => t.id !== tutor.id));
-      toast({ title: decision === "approved" ? "Tutor approved ✅" : "Tutor rejected" });
-    } catch (err) { toast({ title: "Error", description: err.message, variant: "destructive" }); }
+      toast({ title: decision === "approved" ? "Tutor aprovado ✅" : "Tutor rejeitado" });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
   if (loading) return (
@@ -37,14 +37,14 @@ export default function AdminApprovals() {
 
   return (
     <div>
-      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-1">Tutor Approvals</h1>
-      <p className="theme-subtext text-gray-500 text-sm mb-8">{tutors.length} pending applications</p>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-1">Aprovações de Tutores</h1>
+      <p className="theme-subtext text-gray-500 text-sm mb-8">{tutors.length} candidatura(s) pendente(s)</p>
 
       {tutors.length === 0 ? (
         <div className="theme-empty text-center py-20 bg-white/3 border border-white/5 rounded-3xl">
           <Check className="w-12 h-12 text-emerald-500/50 mx-auto mb-4" />
-          <h3 className="theme-heading font-display font-bold text-white mb-1">All caught up!</h3>
-          <p className="theme-subtext text-sm text-gray-600">No pending tutor applications</p>
+          <h3 className="theme-heading font-display font-bold text-white mb-1">Tudo em dia!</h3>
+          <p className="theme-subtext text-sm text-gray-600">Nenhuma candidatura de tutor pendente</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -75,7 +75,7 @@ export default function AdminApprovals() {
                         <video src={t.intro_video_url} controls autoPlay className="w-full max-w-md rounded-xl" />
                       ) : (
                         <button onClick={() => setVideoPreview(t.id)} className="flex items-center gap-2 text-sm text-violet-400 hover:text-violet-300 font-medium transition-colors">
-                          <Play className="w-4 h-4" /> Watch intro video
+                          <Play className="w-4 h-4" /> Assistir vídeo de apresentação
                         </button>
                       )}
                     </div>
@@ -83,10 +83,10 @@ export default function AdminApprovals() {
 
                   <div className="flex gap-3 mt-5">
                     <Button onClick={() => handleDecision(t, "approved")} className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/30" size="sm">
-                      <Check className="w-4 h-4 mr-1" /> Approve
+                      <Check className="w-4 h-4 mr-1" /> Aprovar
                     </Button>
                     <Button onClick={() => handleDecision(t, "rejected")} size="sm" className="bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/30">
-                      <X className="w-4 h-4 mr-1" /> Reject
+                      <X className="w-4 h-4 mr-1" /> Rejeitar
                     </Button>
                   </div>
                 </div>

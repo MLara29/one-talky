@@ -30,15 +30,15 @@ export default function AdminDashboard() {
   );
 
   const cards = [
-    { label: "Active tutors", value: stats.tutors, icon: GraduationCap, gradient: "from-violet-500 to-indigo-500" },
-    { label: "Students", value: stats.students, icon: Users, gradient: "from-blue-500 to-cyan-500" },
-    { label: "Completed lessons", value: stats.lessons, icon: BookOpen, gradient: "from-emerald-500 to-teal-500" },
-    { label: "In progress now", value: stats.inProgress, icon: Video, gradient: "from-orange-500 to-red-500" },
+    { label: "Tutores ativos", value: stats.tutors, icon: GraduationCap, gradient: "from-violet-500 to-indigo-500" },
+    { label: "Alunos", value: stats.students, icon: Users, gradient: "from-blue-500 to-cyan-500" },
+    { label: "Aulas concluídas", value: stats.lessons, icon: BookOpen, gradient: "from-emerald-500 to-teal-500" },
+    { label: "Em andamento agora", value: stats.inProgress, icon: Video, gradient: "from-orange-500 to-red-500" },
   ];
 
   return (
     <div>
-      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">Admin Dashboard</h1>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-8">Painel do Administrador</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map(c => (
@@ -57,12 +57,12 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-amber-500" />
             <div>
-              <p className="font-semibold text-amber-600">{stats.pending} pending application{stats.pending > 1 ? "s" : ""}</p>
-              <p className="theme-subtext text-sm text-amber-600/70">Review and approve new tutors</p>
+              <p className="font-semibold text-amber-600">{stats.pending} candidatura{stats.pending > 1 ? "s" : ""} pendente{stats.pending > 1 ? "s" : ""}</p>
+              <p className="theme-subtext text-sm text-amber-600/70">Revise e aprove novos tutores</p>
             </div>
           </div>
           <Link to="/admin/approvals">
-            <Button size="sm" className="bg-amber-500 text-white border-0 hover:bg-amber-600">Review</Button>
+            <Button size="sm" className="bg-amber-500 text-white border-0 hover:bg-amber-600">Revisar</Button>
           </Link>
         </div>
       )}

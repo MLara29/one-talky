@@ -16,10 +16,10 @@ export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBad
     try {
       const response = await base44.functions.invoke("adminManageWithdrawal", { tutor_id: tutor.user_id, action: "mark_processing" });
       if (response.data?.error) throw new Error(response.data.error);
-      toast({ title: "Payment processing notified ✅", description: `${tutor.full_name} will see the processing status.` });
+      toast({ title: "Pagamento em processamento notificado ✅", description: `${tutor.full_name} verá o status de processamento.` });
       onChanged?.();
     } catch (err) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
     } finally { setProcessing(null); }
   };
 
@@ -28,17 +28,17 @@ export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBad
     try {
       const response = await base44.functions.invoke("adminManageWithdrawal", { tutor_id: tutor.user_id, action: "mark_paid" });
       if (response.data?.error) throw new Error(response.data.error);
-      toast({ title: "Marked as paid ✅", description: `${tutor.full_name} will be asked to confirm receipt.` });
+      toast({ title: "Marcado como pago ✅", description: `${tutor.full_name} será solicitado a confirmar o recebimento.` });
       onChanged?.();
     } catch (err) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
     } finally { setProcessing(null); }
   };
 
   if (tutors.length === 0) {
     return (
       <div className="theme-empty text-center py-16 bg-white/3 border border-white/5 rounded-3xl mt-4">
-        <p className="theme-subtext text-gray-600 text-sm">No tutors due for payout in this group</p>
+        <p className="theme-subtext text-gray-600 text-sm">Nenhum tutor com pagamento pendente neste grupo</p>
       </div>
     );
   }
@@ -65,7 +65,7 @@ export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBad
                   )}
                 </div>
                 <p className="theme-subtext text-xs text-gray-600">
-                  {t.days_since_paid === null ? "Never paid before" : `${t.days_since_paid} day${t.days_since_paid === 1 ? "" : "s"} since last payment`}
+                  {t.days_since_paid === null ? "Nunca recebeu pagamento" : `${t.days_since_paid} dia${t.days_since_paid === 1 ? "" : "s"} desde o último pagamento`}
                 </p>
                 {onTutorClick && (
                   <button
@@ -86,7 +86,7 @@ export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBad
                 disabled={!!processing}
                 className="bg-blue-500/20 border border-blue-500/30 text-blue-300 hover:bg-blue-500/30"
               >
-                {processing === t.user_id + "_proc" ? "..." : "Mark as processing"}
+                {processing === t.user_id + "_proc" ? "..." : "Marcar como processando"}
               </Button>
               <Button
                 size="sm"
@@ -94,7 +94,7 @@ export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBad
                 disabled={!!processing}
                 className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30"
               >
-                {processing === t.user_id + "_paid" ? "..." : "Mark as paid"}
+                {processing === t.user_id + "_paid" ? "..." : "Marcar como pago"}
               </Button>
             </div>
           </div>

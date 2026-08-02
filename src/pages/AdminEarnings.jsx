@@ -28,8 +28,8 @@ export default function AdminEarnings() {
 
   return (
     <div>
-      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-1">Earnings & Payments</h1>
-      <p className="theme-subtext text-gray-500 text-sm mb-6">Manage tutor earnings and payment processing</p>
+      <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white mb-1">Ganhos e Pagamentos</h1>
+      <p className="theme-subtext text-gray-500 text-sm mb-6">Gerencie os ganhos dos tutores e o processamento de pagamentos</p>
 
       <PayoutSweepDaySelector />
 

@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const { message_id, action, reply } = await req.json();
-    if (!message_id || !['reply', 'close'].includes(action)) {
+    if (!message_id || !['reply', 'close', 'delete'].includes(action)) {
       return Response.json({ error: 'message_id and valid action are required' }, { status: 400 });
     }
 
@@ -48,6 +48,11 @@ Deno.serve(async (req) => {
     if (action === 'close') {
       await base44.asServiceRole.entities.SupportMessage.update(message_id, { status: 'closed' });
       return Response.json({ success: true });
+    }
+
+    if (action === 'delete') {
+      await base44.asServiceRole.entities.SupportMessage.delete(message_id);
+      return Response.json({ success: true, deleted: true });
     }
   } catch (error) {
     console.error('[adminReplySupportTicket]', error.message);

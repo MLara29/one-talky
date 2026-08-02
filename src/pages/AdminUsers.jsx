@@ -2,10 +2,15 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck } from "lucide-react";
+import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck, Search } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import StudentDetailModal from "@/components/admin/StudentDetailModal";
+
+const sortByName = (arr) => [...arr].sort((a, b) =>
+  (a.full_name || "").localeCompare(b.full_name || "", "pt-BR")
+);
 
 const PLAN_COLORS = {
   free:     "bg-gray-500/10 border-gray-500/20 text-gray-400",
@@ -34,9 +39,9 @@ export default function AdminUsers() {
       ]);
       const userMap = {};
       allUsers.forEach(u => { userMap[u.id] = u; });
-      setTutors(t);
-      setStudents(s);
-      setAffiliates(a);
+      setTutors(sortByName(t));
+      setStudents(sortByName(s));
+      setAffiliates(sortByName(a));
       setUsers(userMap);
     } catch {} finally { setLoading(false); }
   };
@@ -131,6 +136,22 @@ export default function AdminUsers() {
 
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [searchTutor, setSearchTutor] = useState("");
+  const [searchStudent, setSearchStudent] = useState("");
+  const [searchAffiliate, setSearchAffiliate] = useState("");
+
+  const filteredTutors = tutors.filter(t => {
+    const q = searchTutor.toLowerCase();
+    return !q || t.full_name?.toLowerCase().includes(q) || users[t.user_id]?.email?.toLowerCase().includes(q);
+  });
+  const filteredStudents = students.filter(s => {
+    const q = searchStudent.toLowerCase();
+    return !q || s.full_name?.toLowerCase().includes(q) || users[s.user_id]?.email?.toLowerCase().includes(q);
+  });
+  const filteredAffiliates = affiliates.filter(a => {
+    const q = searchAffiliate.toLowerCase();
+    return !q || a.full_name?.toLowerCase().includes(q) || a.email?.toLowerCase().includes(q);
+  });
   const tutorInviteLink = `${window.location.origin}/register?role=tutor`;
   const copyInviteLink = () => {
     navigator.clipboard.writeText(tutorInviteLink);
@@ -148,7 +169,7 @@ export default function AdminUsers() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Users</h1>
+        <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">Usuários</h1>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 min-w-0">
             <Link2 className="w-4 h-4 text-violet-400 shrink-0" />
@@ -168,20 +189,29 @@ export default function AdminUsers() {
       <Tabs defaultValue="tutors">
         <TabsList className="mb-6 bg-white/5 border border-white/10">
           <TabsTrigger value="tutors" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
-            Tutors ({tutors.length})
+            Tutores ({tutors.length})
           </TabsTrigger>
           <TabsTrigger value="students" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
-            Students ({students.length})
+            Alunos ({students.length})
           </TabsTrigger>
           <TabsTrigger value="affiliates" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
-            Affiliates ({affiliates.length})
+            Afiliados ({affiliates.length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="tutors">
+          <div className="relative mb-4 max-w-sm">
+            <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Input
+              value={searchTutor}
+              onChange={e => setSearchTutor(e.target.value)}
+              placeholder="Buscar por nome ou e-mail..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 pl-9"
+            />
+          </div>
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
             <div className="divide-y divide-white/5">
-              {tutors.map(t => (
+              {filteredTutors.map(t => (
                 <div key={t.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/3 transition-all">
                   <div className="flex items-center gap-3 min-w-0">
                     <img src={t.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
@@ -199,8 +229,8 @@ export default function AdminUsers() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="tutor">Tutor</SelectItem>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="affiliate">Affiliate</SelectItem>
+                        <SelectItem value="student">Aluno</SelectItem>
+                        <SelectItem value="affiliate">Afiliado</SelectItem>
                       </SelectContent>
                     </Select>
                     {/* Contract type badge + toggle */}
@@ -239,15 +269,24 @@ export default function AdminUsers() {
                   </div>
                 </div>
               ))}
-              {tutors.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">No tutors yet</p>}
+              {filteredTutors.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">Nenhum tutor ainda</p>}
             </div>
           </div>
         </TabsContent>
 
         <TabsContent value="students">
+          <div className="relative mb-4 max-w-sm">
+            <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Input
+              value={searchStudent}
+              onChange={e => setSearchStudent(e.target.value)}
+              placeholder="Buscar por nome ou e-mail..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 pl-9"
+            />
+          </div>
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
             <div className="divide-y divide-white/5">
-              {students.map(s => {
+              {filteredStudents.map(s => {
                 const planKey = s.plan || "free";
                 const planColor = PLAN_COLORS[planKey] || PLAN_COLORS.free;
                 return (
@@ -279,7 +318,7 @@ export default function AdminUsers() {
                   </div>
                 );
               })}
-              {students.length === 0 && <p className="text-center text-sm text-gray-500 py-8">Nenhum aluno ainda</p>}
+              {filteredStudents.length === 0 && <p className="text-center text-sm text-gray-500 py-8">Nenhum aluno ainda</p>}
             </div>
           </div>
           <StudentDetailModal
@@ -299,9 +338,18 @@ export default function AdminUsers() {
         </TabsContent>
 
         <TabsContent value="affiliates">
+          <div className="relative mb-4 max-w-sm">
+            <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Input
+              value={searchAffiliate}
+              onChange={e => setSearchAffiliate(e.target.value)}
+              placeholder="Buscar por nome ou e-mail..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 pl-9"
+            />
+          </div>
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
             <div className="divide-y divide-white/5">
-              {affiliates.map(a => {
+              {filteredAffiliates.map(a => {
                 const linkedUser = users[a.user_id] || (a.email ? Object.values(users).find(u => u.email === a.email) : null);
                 return (
                   <div key={a.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/3 transition-all">
@@ -340,7 +388,7 @@ export default function AdminUsers() {
                   </div>
                 );
               })}
-              {affiliates.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">No affiliates yet</p>}
+              {filteredAffiliates.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">Nenhum afiliado ainda</p>}
             </div>
           </div>
         </TabsContent>

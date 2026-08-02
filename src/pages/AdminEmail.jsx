@@ -172,7 +172,7 @@ export default function AdminEmail() {
   const closePreview = () => setPreviewHtml(null);
 
   const handleTestEmail = async () => {
-    if (!testTo) return toast({ title: "Enter a recipient email", variant: "destructive" });
+    if (!testTo) return toast({ title: "Informe um e-mail de destino", variant: "destructive" });
     setSending(true);
     setTestResult(null);
     try {
@@ -182,10 +182,10 @@ export default function AdminEmail() {
         html: getLessonReminderTutorHtml(),
       });
       setTestResult({ ok: true, data: res.data });
-      toast({ title: "Test email sent!" });
+      toast({ title: "E-mail de teste enviado!" });
     } catch (e) {
       setTestResult({ ok: false, error: e.message });
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
     setSending(false);
   };
@@ -199,36 +199,36 @@ export default function AdminEmail() {
         student_minutes: studentMinutes,
       });
       setReminderResult({ ok: true, data: res.data });
-      toast({ title: `Reminders sent: ${res.data.sent}` });
+      toast({ title: `Lembretes enviados: ${res.data.sent}` });
     } catch (e) {
       setReminderResult({ ok: false, error: e.message });
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
     setReminding(false);
   };
 
   const handleSaveAdminEmail = async () => {
-    if (!adminNotifEmail) return toast({ title: "Enter an email", variant: "destructive" });
+    if (!adminNotifEmail) return toast({ title: "Informe um e-mail", variant: "destructive" });
     setSavingAdminEmail(true);
     try {
       // Store via a backend function invocation — saves to ADMIN_EMAIL secret note
       // For now, we just show instruction to set the ADMIN_EMAIL secret in the dashboard
-      toast({ title: "✅ To apply this email, set ADMIN_EMAIL in your app secrets with this value.", description: adminNotifEmail });
+      toast({ title: "✅ Para aplicar este e-mail, configure o secret ADMIN_EMAIL com este valor.", description: adminNotifEmail });
     } catch (e) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
     setSavingAdminEmail(false);
   };
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="font-display font-bold text-2xl text-white mb-1">Email & Notifications</h1>
-      <p className="text-gray-500 text-sm mb-7">Configure and test all automated email notifications.</p>
+      <h1 className="font-display font-bold text-2xl text-white mb-1">E-mails e Notificações</h1>
+      <p className="text-gray-500 text-sm mb-7">Configure e teste todas as notificações automáticas por e-mail.</p>
 
       <ComposeEmailSection />
 
       {/* ── SECTION 1: Admin Notification Email ─────────────────────────── */}
-      <Section icon={UserPlus} iconColor="text-orange-400" title="New User Notifications" description="Email address that receives alerts when a new student or tutor registers.">
+      <Section icon={UserPlus} iconColor="text-orange-400" title="Notificações de Novo Usuário" description="Endereço de e-mail que recebe alertas quando um novo aluno ou tutor se cadastra.">
         <div className="flex gap-2 mb-3">
           <Input
             value={adminNotifEmail}
@@ -238,97 +238,97 @@ export default function AdminEmail() {
             className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 flex-1"
           />
           <Button onClick={handleSaveAdminEmail} disabled={savingAdminEmail} className="bg-orange-600 hover:bg-orange-700 text-white shrink-0">
-            Save
+            Salvar
           </Button>
         </div>
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-3 text-xs text-amber-300">
-          ⚙️ Set the <code className="bg-amber-500/20 px-1 rounded">ADMIN_EMAIL</code> secret in your app dashboard with the desired address. The function already reads from this secret.
+          ⚙️ Configure o secret <code className="bg-amber-500/20 px-1 rounded">ADMIN_EMAIL</code> no painel do app com o endereço desejado. A função já lê esse secret.
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => openPreview(getNewUserNotifHtml(), "📬 New User Notification Email")}
             className="text-xs flex items-center gap-1.5 text-orange-400 hover:text-orange-300 border border-orange-500/20 px-3 py-1.5 rounded-lg bg-orange-500/5 hover:bg-orange-500/10 transition-all"
           >
-            <Eye className="w-3.5 h-3.5" /> Preview template
+            <Eye className="w-3.5 h-3.5" /> Ver modelo
           </button>
         </div>
       </Section>
 
       {/* ── SECTION 2: Booking Notification ────────────────────────────── */}
-      <Section icon={Calendar} iconColor="text-violet-400" title="Booking Notification to Tutor" description="Sent automatically to the tutor when a student schedules a lesson. Includes student name, level, topics, objective, and date/time.">
+      <Section icon={Calendar} iconColor="text-violet-400" title="Notificação de Agendamento ao Tutor" description="Enviado automaticamente ao tutor quando um aluno agenda uma aula. Inclui nome do aluno, nível, tópicos, objetivo e data/hora.">
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div className="bg-white/5 border border-white/8 rounded-xl p-3 text-xs text-gray-300">
-            <div className="font-semibold text-white mb-1">What's included:</div>
+            <div className="font-semibold text-white mb-1">O que está incluído:</div>
             <ul className="space-y-0.5 text-gray-400">
-              <li>✓ Student name</li>
-              <li>✓ Date & time (Brasília timezone)</li>
-              <li>✓ Student's English level</li>
-              <li>✓ Learning objective</li>
-              <li>✓ Conversation topics</li>
+              <li>✓ Nome do aluno</li>
+              <li>✓ Data e hora (horário de Brasília)</li>
+              <li>✓ Nível de inglês do aluno</li>
+              <li>✓ Objetivo de aprendizado</li>
+              <li>✓ Tópicos de conversação</li>
             </ul>
           </div>
           <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3 text-xs text-violet-300">
-            <div className="font-semibold text-white mb-1">Trigger:</div>
-            <p className="text-gray-400">Sent automatically by the <code className="bg-violet-500/20 px-1 rounded text-violet-300">notifyTutorBooking</code> function when a lesson is scheduled.</p>
+            <div className="font-semibold text-white mb-1">Gatilho:</div>
+            <p className="text-gray-400">Enviado automaticamente pela função <code className="bg-violet-500/20 px-1 rounded text-violet-300">notifyTutorBooking</code> quando uma aula é agendada.</p>
           </div>
         </div>
         <button
           onClick={() => openPreview(getBookingNotificationHtml(), "📅 Booking Notification Email")}
           className="text-xs flex items-center gap-1.5 text-violet-400 hover:text-violet-300 border border-violet-500/20 px-3 py-1.5 rounded-lg bg-violet-500/5 hover:bg-violet-500/10 transition-all"
         >
-          <Eye className="w-3.5 h-3.5" /> Preview template
+          <Eye className="w-3.5 h-3.5" /> Ver modelo
         </button>
       </Section>
 
       {/* ── SECTION 3: Lesson Reminders ─────────────────────────────────── */}
-      <Section icon={Bell} iconColor="text-indigo-400" title="Lesson Reminders" description="Configure how far in advance tutors and students receive a reminder email before their lesson.">
+      <Section icon={Bell} iconColor="text-indigo-400" title="Lembretes de Aula" description="Configure com quanta antecedência tutores e alunos recebem um e-mail de lembrete antes da aula.">
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-violet-400" />
-              <p className="text-sm font-medium text-white">Tutors</p>
+              <p className="text-sm font-medium text-white">Tutores</p>
             </div>
-            <p className="text-xs text-gray-500 mb-2">Send reminder before:</p>
+            <p className="text-xs text-gray-500 mb-2">Enviar lembrete antes de:</p>
             <TimeSelector value={tutorMinutes} onChange={setTutorMinutes} color="violet" />
           </div>
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-indigo-400" />
-              <p className="text-sm font-medium text-white">Students</p>
+              <p className="text-sm font-medium text-white">Alunos</p>
             </div>
-            <p className="text-xs text-gray-500 mb-2">Send reminder before:</p>
+            <p className="text-xs text-gray-500 mb-2">Enviar lembrete antes de:</p>
             <TimeSelector value={studentMinutes} onChange={setStudentMinutes} color="indigo" />
           </div>
         </div>
 
         <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3 mb-4 text-xs text-violet-300">
-          Tutors receive reminder <strong>{TIME_OPTIONS.find(o => o.value === tutorMinutes)?.label}</strong> before · Students receive <strong>{TIME_OPTIONS.find(o => o.value === studentMinutes)?.label}</strong> before
+          Tutores recebem o lembrete <strong>{TIME_OPTIONS.find(o => o.value === tutorMinutes)?.label}</strong> antes · Alunos recebem <strong>{TIME_OPTIONS.find(o => o.value === studentMinutes)?.label}</strong> antes
         </div>
 
         <div className="flex gap-2 mb-3">
           <Button onClick={handleSendReminders} disabled={reminding} variant="outline" className="flex-1 border-white/10 text-white hover:bg-white/10">
-            {reminding ? "Sending..." : "Send reminders now"}
+            {reminding ? "Enviando..." : "Enviar lembretes agora"}
           </Button>
           <button
             onClick={() => openPreview(getLessonReminderTutorHtml(), "🎙️ Lesson Reminder (Tutor)")}
             className="text-xs flex items-center gap-1.5 text-violet-400 hover:text-violet-300 border border-violet-500/20 px-3 py-1.5 rounded-lg bg-violet-500/5 hover:bg-violet-500/10 transition-all"
           >
-            <Eye className="w-3.5 h-3.5" /> Preview
+            <Eye className="w-3.5 h-3.5" /> Ver
           </button>
         </div>
 
         {reminderResult && (
           <div className={`text-xs p-3 rounded-lg flex items-start gap-2 ${reminderResult.ok ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
             {reminderResult.ok ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" /> : <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />}
-            <span>{reminderResult.ok ? `${reminderResult.data.sent} reminders sent.` : reminderResult.error}</span>
+            <span>{reminderResult.ok ? `${reminderResult.data.sent} lembretes enviados.` : reminderResult.error}</span>
           </div>
         )}
       </Section>
 
       {/* ── SECTION 4: SMTP Config & Test ───────────────────────────────── */}
-      <Section icon={Mail} iconColor="text-emerald-400" title="SMTP Configuration" description="Verify your SMTP credentials and send a test email.">
+      <Section icon={Mail} iconColor="text-emerald-400" title="Configuração SMTP" description="Verifique suas credenciais SMTP e envie um e-mail de teste.">
         <div className="grid grid-cols-2 gap-3 text-xs mb-4">
-          {[["Host", "Set via secret"], ["Port", "Set via secret"], ["User", "Set via secret"], ["From", "Set via secret"]].map(([label, val]) => (
+          {[["Host", "Definido via secret"], ["Porta", "Definido via secret"], ["Usuário", "Definido via secret"], ["De", "Definido via secret"]].map(([label, val]) => (
             <div key={label} className="bg-white/5 rounded-lg p-2.5">
               <p className="text-gray-500 mb-0.5">{label}</p>
               <p className="text-white font-medium truncate">{val}</p>
@@ -336,30 +336,30 @@ export default function AdminEmail() {
           ))}
         </div>
         <p className="text-xs text-emerald-400 mb-4 flex items-center gap-1.5">
-          <CheckCircle className="w-3.5 h-3.5" /> Secrets configured in the dashboard
+          <CheckCircle className="w-3.5 h-3.5" /> Secrets configurados no painel
         </p>
 
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Send test (lesson reminder template)</label>
+            <label className="text-xs text-gray-500 mb-1 block">Enviar teste (modelo de lembrete de aula)</label>
             <div className="flex gap-2">
               <Input
                 value={testTo}
                 onChange={e => setTestTo(e.target.value)}
-                placeholder="your@email.com"
+                placeholder="seu@email.com"
                 type="email"
                 className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 flex-1"
               />
               <Button onClick={handleTestEmail} disabled={sending} className="bg-violet-600 hover:bg-violet-700 text-white shrink-0">
                 <Send className="w-3.5 h-3.5 mr-1" />
-                {sending ? "Sending..." : "Send test"}
+                {sending ? "Enviando..." : "Enviar teste"}
               </Button>
             </div>
           </div>
           {testResult && (
             <div className={`text-xs p-3 rounded-lg flex items-start gap-2 ${testResult.ok ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
               {testResult.ok ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" /> : <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />}
-              <span>{testResult.ok ? `Sent! ID: ${testResult.data?.messageId || "ok"}` : testResult.error}</span>
+              <span>{testResult.ok ? `Enviado! ID: ${testResult.data?.messageId || "ok"}` : testResult.error}</span>
             </div>
           )}
         </div>

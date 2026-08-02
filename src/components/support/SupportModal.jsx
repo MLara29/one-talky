@@ -15,9 +15,20 @@ export default function SupportModal({ onClose }) {
   const handleSend = async () => {
     if (!subject.trim() || !message.trim()) return;
     setSending(true);
+
+    // Resolve the real profile name, never fall back to the email
+    let resolvedName = user.full_name;
+    if (!resolvedName) {
+      try {
+        const entity = user.role === "tutor" ? "TutorProfile" : "StudentProfile";
+        const profiles = await base44.entities[entity].filter({ user_id: user.id });
+        resolvedName = profiles[0]?.full_name || "Usuário";
+      } catch { resolvedName = "Usuário"; }
+    }
+
     await base44.entities.SupportMessage.create({
       sender_id: user.id,
-      sender_name: user.full_name || user.email,
+      sender_name: resolvedName,
       sender_role: user.role,
       subject: subject.trim(),
       message: message.trim(),
