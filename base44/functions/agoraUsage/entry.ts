@@ -43,14 +43,14 @@ Deno.serve(async (req) => {
     // Build Agora API request
     const customerId = Deno.env.get('AGORA_CUSTOMER_ID');
     const customerSecret = Deno.env.get('AGORA_CUSTOMER_SECRET');
-    const appId = Deno.env.get('VITE_AGORA_APP_ID');
+    const projectId = Deno.env.get('AGORA_PROJECT_ID');
 
-    if (!customerId || !customerSecret || !appId) {
-      return Response.json({ error: 'Agora credentials not configured' }, { status: 500 });
+    if (!customerId || !customerSecret || !projectId) {
+      return Response.json({ error: 'AGORA_PROJECT_ID not configured' }, { status: 500 });
     }
 
     const credentials = btoa(`${customerId}:${customerSecret}`);
-    const url = `https://api.agora.io/dev/v3/usage?project_id=${appId}&from_date=${fromDate}&to_date=${toDate}&business=default`;
+    const url = `https://api.agora.io/dev/v3/usage?project_id=${projectId}&from_date=${fromDate}&to_date=${toDate}&business=default`;
 
     const agoraRes = await fetch(url, {
       headers: {
