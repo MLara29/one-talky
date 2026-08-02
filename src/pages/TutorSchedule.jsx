@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, ChevronRight, Clock, Info } from "lucide-react";
+import TimezoneSelector from "@/components/tutors/TimezoneSelector";
 
 // Availability is stored as { "Monday": ["08:00","09:00",...], ... }
 // This is the format ScheduleModal reads to convert tutor-tz → student-tz
@@ -181,13 +182,20 @@ export default function TutorSchedule() {
       </div>
 
       {/* Timezone info banner */}
-      <div className="mb-5 flex items-start gap-2 px-4 py-3 rounded-2xl bg-violet-500/10 border border-violet-500/20">
-        <Info className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
-        <p className="text-xs text-violet-300">
-          Your slots are saved in your timezone:{" "}
-          <strong className="text-violet-200">{tutorTz}</strong>. Students will see them automatically converted to their own timezone.
-          {totalSlots > 0 && <span className="ml-2 text-violet-400">· {totalSlots} slot{totalSlots > 1 ? "s" : ""} configured this week</span>}
-        </p>
+      <div className="mb-5 flex flex-col sm:flex-row sm:items-start gap-3 px-4 py-3 rounded-2xl bg-violet-500/10 border border-violet-500/20">
+        <div className="flex items-start gap-2 flex-1">
+          <Info className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+          <p className="text-xs text-violet-300">
+            Your slots are saved in your timezone. Students will see them automatically converted to their own timezone.
+            {totalSlots > 0 && <span className="ml-2 text-violet-400">· {totalSlots} slot{totalSlots > 1 ? "s" : ""} configured this week</span>}
+            <br />
+            <span className="text-violet-400">Changing it does not reschedule already-booked lessons — it only affects future availability.</span>
+          </p>
+        </div>
+        <TimezoneSelector
+          currentTz={tutorTz}
+          onSaved={(tz) => setProfile(prev => ({ ...prev, timezone: tz }))}
+        />
       </div>
 
       {/* Minimum booking notice */}
