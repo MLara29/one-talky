@@ -269,7 +269,7 @@ export default function AdminUsers() {
                   </div>
                 </div>
               ))}
-              {filteredTutors.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">Nenhum tutor ainda</p>}
+              {filteredTutors.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">{searchTutor ? "Nenhum tutor encontrado para essa busca" : "Nenhum tutor ainda"}</p>}
             </div>
           </div>
         </TabsContent>
@@ -318,7 +318,7 @@ export default function AdminUsers() {
                   </div>
                 );
               })}
-              {filteredStudents.length === 0 && <p className="text-center text-sm text-gray-500 py-8">Nenhum aluno ainda</p>}
+              {filteredStudents.length === 0 && <p className="text-center text-sm text-gray-500 py-8">{searchStudent ? "Nenhum aluno encontrado para essa busca" : "Nenhum aluno ainda"}</p>}
             </div>
           </div>
           <StudentDetailModal
@@ -388,7 +388,7 @@ export default function AdminUsers() {
                   </div>
                 );
               })}
-              {filteredAffiliates.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">Nenhum afiliado ainda</p>}
+              {filteredAffiliates.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">{searchAffiliate ? "Nenhum afiliado encontrado para essa busca" : "Nenhum afiliado ainda"}</p>}
             </div>
           </div>
         </TabsContent>

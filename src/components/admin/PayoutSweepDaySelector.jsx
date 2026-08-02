@@ -34,9 +34,9 @@ export default function PayoutSweepDaySelector() {
       const response = await base44.functions.invoke("updatePayoutSettings", { sweep_weekday: weekday });
       if (response.data?.error) throw new Error(response.data.error);
       setSweepWeekday(weekday);
-      toast({ title: "Payout sweep day saved! ✅" });
+      toast({ title: "Dia de revisão de pagamentos salvo! ✅" });
     } catch (err) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
     } finally { setSaving(false); }
   };
 
