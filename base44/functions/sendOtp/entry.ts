@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import nodemailer from 'npm:nodemailer@6.9.14';
 import { getSessionHash } from '../../shared/sessionHash.js';
+import { getTransporter, SMTP_FROM } from '../../shared/mailer.js';
 
 Deno.serve(async (req) => {
   try {
@@ -42,15 +42,10 @@ Deno.serve(async (req) => {
     });
 
     // Send via SMTP
-    const transporter = nodemailer.createTransport({
-      host: Deno.env.get('SMTP_HOST'),
-      port: parseInt(Deno.env.get('SMTP_PORT') || '465'),
-      secure: parseInt(Deno.env.get('SMTP_PORT') || '465') === 465,
-      auth: { user: Deno.env.get('SMTP_USER'), pass: Deno.env.get('SMTP_PASS') },
-    });
+    const transporter = getTransporter();
 
     await transporter.sendMail({
-      from: Deno.env.get('SMTP_FROM'),
+      from: SMTP_FROM(),
       to: user.email,
       subject: 'Seu código de verificação — One Talky',
       html: `

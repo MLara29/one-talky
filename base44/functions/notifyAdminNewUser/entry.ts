@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
-import nodemailer from "npm:nodemailer@6.9.14";
+import { getTransporter, SMTP_FROM } from "../../shared/mailer.js";
 
 Deno.serve(async (req) => {
   try {
@@ -16,15 +16,10 @@ Deno.serve(async (req) => {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#x27;");
 
-    const smtpHost = Deno.env.get("SMTP_HOST");
-    const smtpPort = parseInt(Deno.env.get("SMTP_PORT") || "465");
-    const smtpUser = Deno.env.get("SMTP_USER");
-    const smtpPass = Deno.env.get("SMTP_PASS");
-    const smtpFrom = Deno.env.get("SMTP_FROM");
     // Admin receives at ADMIN_EMAIL if set, otherwise falls back to SMTP_USER
-    const adminEmail = Deno.env.get("ADMIN_EMAIL") || smtpUser;
+    const adminEmail = Deno.env.get("ADMIN_EMAIL") || Deno.env.get("SMTP_USER");
 
-    if (!smtpHost || !adminEmail) {
+    if (!Deno.env.get("SMTP_HOST") || !adminEmail) {
       return Response.json({ error: "SMTP not configured" }, { status: 500 });
     }
 
@@ -52,15 +47,10 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: { user: smtpUser, pass: smtpPass },
-    });
+    const transporter = getTransporter();
 
     await transporter.sendMail({
-      from: smtpFrom,
+      from: SMTP_FROM(),
       to: adminEmail,
       subject: `[One Talky] Novo ${roleLabel}: ${full_name}`,
       html,

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import nodemailer from 'npm:nodemailer@6.9.14';
 import { requireOtp } from '../../shared/requireOtp.js';
+import { getTransporter, SMTP_FROM } from '../../shared/mailer.js';
 
 function formatDateTime(isoString) {
   const d = new Date(isoString);
@@ -178,18 +178,7 @@ Deno.serve(async (req) => {
 
     const lessons = await base44.asServiceRole.entities.Lesson.filter({ status: 'scheduled' });
 
-    const smtpHost = Deno.env.get('SMTP_HOST');
-    const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '465');
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPass = Deno.env.get('SMTP_PASS');
-    const smtpFrom = Deno.env.get('SMTP_FROM');
-
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: { user: smtpUser, pass: smtpPass },
-    });
+    const transporter = getTransporter();
 
     const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({});
     const tutorMap = {};
@@ -226,7 +215,7 @@ Deno.serve(async (req) => {
         if (tutorEmail && reminderEnabled) {
           try {
             await transporter.sendMail({
-              from: smtpFrom,
+              from: SMTP_FROM(),
               to: tutorEmail,
               subject: `⏰ Your lesson with ${lesson.student_name} starts in ${labelFor(tutorMinutes)}`,
               html: tutorEmailHtml({
@@ -252,7 +241,7 @@ Deno.serve(async (req) => {
         if (studentEmail) {
           try {
             await transporter.sendMail({
-              from: smtpFrom,
+              from: SMTP_FROM(),
               to: studentEmail,
               subject: `🎙️ Your lesson with ${lesson.tutor_name} starts in ${labelFor(studentMinutes)}`,
               html: studentEmailHtml({

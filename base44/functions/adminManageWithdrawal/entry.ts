@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import nodemailer from 'npm:nodemailer@6.9.14';
 import { requireOtp } from '../../shared/requireOtp.js';
 import { computeTutorEarned, parsePioneerEmail } from '../../shared/tutorEarnings.js';
+import { getTransporter, SMTP_FROM } from '../../shared/mailer.js';
 
 // Admin-only tutor payment lifecycle: mark_processing / mark_paid.
 // The withdrawal amount is always computed server-side from lesson/withdrawal
@@ -27,16 +27,11 @@ Deno.serve(async (req) => {
 
     const tutorUser = await base44.asServiceRole.entities.User.get(tutor_id);
 
-    const transporter = nodemailer.createTransport({
-      host: Deno.env.get('SMTP_HOST'),
-      port: parseInt(Deno.env.get('SMTP_PORT') || '465'),
-      secure: parseInt(Deno.env.get('SMTP_PORT') || '465') === 465,
-      auth: { user: Deno.env.get('SMTP_USER'), pass: Deno.env.get('SMTP_PASS') },
-    });
+    const transporter = getTransporter();
     const sendPaymentEmail = async (subject, html) => {
       if (!tutorUser?.email) return;
       try {
-        await transporter.sendMail({ from: Deno.env.get('SMTP_FROM'), to: tutorUser.email, subject, html });
+        await transporter.sendMail({ from: SMTP_FROM(), to: tutorUser.email, subject, html });
       } catch (e) {
         console.warn('[adminManageWithdrawal] email failed:', e.message);
       }

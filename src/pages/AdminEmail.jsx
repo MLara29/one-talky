@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Send, Bell, CheckCircle, AlertCircle, Clock, Eye, UserPlus, Calendar } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import ComposeEmailSection from "@/components/admin/ComposeEmailSection";
 
 const TIME_OPTIONS = [
   { label: "15 min", value: 15 },
@@ -223,6 +224,8 @@ export default function AdminEmail() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="font-display font-bold text-2xl text-white mb-1">Email & Notifications</h1>
       <p className="text-gray-500 text-sm mb-7">Configure and test all automated email notifications.</p>
+
+      <ComposeEmailSection />
 
       {/* ── SECTION 1: Admin Notification Email ─────────────────────────── */}
       <Section icon={UserPlus} iconColor="text-orange-400" title="New User Notifications" description="Email address that receives alerts when a new student or tutor registers.">

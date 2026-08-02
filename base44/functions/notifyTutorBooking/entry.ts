@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import nodemailer from 'npm:nodemailer@6.9.14';
+import { getTransporter, SMTP_FROM } from '../../shared/mailer.js';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png';
 
@@ -167,13 +167,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Lesson is missing tutor_id or scheduled_at' }, { status: 400 });
     }
 
-    const smtpHost = Deno.env.get('SMTP_HOST');
-    const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '465');
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPass = Deno.env.get('SMTP_PASS');
-    const smtpFrom = Deno.env.get('SMTP_FROM');
-
-    if (!smtpHost) return Response.json({ error: 'SMTP not configured' }, { status: 500 });
+    if (!Deno.env.get('SMTP_HOST')) return Response.json({ error: 'SMTP not configured' }, { status: 500 });
 
     const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: tutor_id });
     const tutorProfile = tutorProfiles[0];
@@ -207,13 +201,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost, port: smtpPort, secure: smtpPort === 465,
-      auth: { user: smtpUser, pass: smtpPass },
-    });
+    const transporter = getTransporter();
 
     await transporter.sendMail({
-      from: smtpFrom,
+      from: SMTP_FROM(),
       to: tutorEmail,
       subject: `📅 New lesson booked with ${studentName} – One Talky`,
       html: buildEmail({

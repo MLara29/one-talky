@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import nodemailer from 'npm:nodemailer@6.9.14';
 import { requireOtp } from '../../shared/requireOtp.js';
+import { getTransporter, SMTP_FROM } from '../../shared/mailer.js';
 
 Deno.serve(async (req) => {
   try {
@@ -21,23 +21,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields: to, subject, html or text' }, { status: 400 });
     }
 
-    const smtpHost = Deno.env.get('SMTP_HOST');
-    const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '465');
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPass = Deno.env.get('SMTP_PASS');
-    const smtpFrom = Deno.env.get('SMTP_FROM');
-
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: { user: smtpUser, pass: smtpPass },
-    });
+    const transporter = getTransporter();
 
     const toList = Array.isArray(to) ? to : [to];
 
     const info = await transporter.sendMail({
-      from: smtpFrom,
+      from: SMTP_FROM(),
       to: toList.join(', '),
       subject,
       text: text || '',
