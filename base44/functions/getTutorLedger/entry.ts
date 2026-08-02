@@ -22,12 +22,14 @@ Deno.serve(async (req) => {
       { tutor_id: tutor_user_id }, "-scheduled_at", 1000
     );
 
+    const TZ_OFFSET_MS = 3 * 60 * 60 * 1000; // UTC-3 (Brasília, no DST since 2019)
+
     if (start_date) {
-      const start = new Date(start_date).getTime();
+      const start = new Date(start_date).getTime() + TZ_OFFSET_MS;
       lessons = lessons.filter(l => new Date(l.scheduled_at || l.created_date).getTime() >= start);
     }
     if (end_date) {
-      const end = new Date(end_date).getTime() + 24 * 60 * 60 * 1000; // include the full end day
+      const end = new Date(end_date).getTime() + TZ_OFFSET_MS + 24 * 60 * 60 * 1000; // include the full end day
       lessons = lessons.filter(l => new Date(l.scheduled_at || l.created_date).getTime() < end);
     }
 
