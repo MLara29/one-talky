@@ -34,6 +34,15 @@ export default function TutorEarnings() {
 
   useEffect(() => { loadData(); }, [user]);
 
+  // Realtime: admin payment status changes update this screen without a reload
+  useEffect(() => {
+    if (!user?.id) return;
+    const unsub = base44.entities.WithdrawalRequest.subscribe((event) => {
+      if (event.data?.tutor_id === user.id) loadData();
+    });
+    return unsub;
+  }, [user?.id]);
+
   const loadData = async () => {
     try {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });

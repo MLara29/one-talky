@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import useInactivityLogout, { LAST_ACTIVITY_KEY } from "@/hooks/useInactivityLogout";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import NotificationBell from "@/components/NotificationBell";
+import SupportBadge, { useUnreadSupportCount } from "@/components/SupportBadge";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
 import Footer from "@/components/Footer";
 import {
@@ -69,7 +70,7 @@ const LANG_OPTIONS = ["en", "pt_br"];
 const LANG_LABELS = { en: "EN", pt_br: "PT" };
 
 // Shared pill nav used by all roles
-function TopPillNav({ nav, location }) {
+function TopPillNav({ nav, location, supportCount }) {
   return (
     <nav className="hidden lg:flex items-center gap-1" style={{
       background: "rgba(255,255,255,0.7)",
@@ -102,6 +103,7 @@ function TopPillNav({ nav, location }) {
           >
             <item.icon style={{ width: 14, height: 14 }} />
             {item.label}
+            {item.path === "/admin/support" && <SupportBadge count={supportCount} />}
           </Link>
         );
       })}
@@ -117,6 +119,8 @@ export default function AppLayout() {
   const role = user?.role || "student";
 
   useInactivityLogout(role);
+
+  const supportCount = useUnreadSupportCount(role, user?.id);
 
   // Students blocked by an admin (StudentProfile.is_blocked) are denied access
   // to the entire app — checked here since AppLayout wraps every protected page.
@@ -190,7 +194,7 @@ export default function AppLayout() {
           </div>
 
           {/* Center: pill nav for all roles */}
-          <TopPillNav nav={nav} location={location} />
+          <TopPillNav nav={nav} location={location} supportCount={supportCount} />
 
           {/* Right: lang switcher (student only) + icons */}
           <div className="flex items-center gap-1">
@@ -266,6 +270,7 @@ export default function AppLayout() {
                   >
                     <item.icon className="w-4 h-4" style={{ color: active ? "#F26A1B" : "#aaa" }} />
                     {item.label}
+                    {item.path === "/admin/support" && <SupportBadge count={supportCount} />}
                   </Link>
                 );
               })}

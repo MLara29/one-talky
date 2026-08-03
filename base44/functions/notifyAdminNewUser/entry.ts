@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { getTransporter, SMTP_FROM } from "../../shared/mailer.js";
+import { getAdminNotificationEmail } from "../../shared/adminNotificationEmail.js";
 
 Deno.serve(async (req) => {
   try {
@@ -16,8 +17,8 @@ Deno.serve(async (req) => {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#x27;");
 
-    // Admin receives at ADMIN_EMAIL if set, otherwise falls back to SMTP_USER
-    const adminEmail = Deno.env.get("ADMIN_EMAIL") || Deno.env.get("SMTP_USER");
+    // Admin address configured in the UI, falling back to ADMIN_EMAIL / SMTP_USER
+    const adminEmail = await getAdminNotificationEmail(base44);
 
     if (!Deno.env.get("SMTP_HOST") || !adminEmail) {
       return Response.json({ error: "SMTP not configured" }, { status: 500 });

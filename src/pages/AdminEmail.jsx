@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -207,13 +207,19 @@ export default function AdminEmail() {
     setReminding(false);
   };
 
+  useEffect(() => {
+    base44.entities.PayoutSettings.list("-created_date", 1)
+      .then(s => { if (s[0]?.notification_email) setAdminNotifEmail(s[0].notification_email); })
+      .catch(() => {});
+  }, []);
+
   const handleSaveAdminEmail = async () => {
     if (!adminNotifEmail) return toast({ title: "Informe um e-mail", variant: "destructive" });
     setSavingAdminEmail(true);
     try {
-      // Store via a backend function invocation — saves to ADMIN_EMAIL secret note
-      // For now, we just show instruction to set the ADMIN_EMAIL secret in the dashboard
-      toast({ title: "✅ Para aplicar este e-mail, configure o secret ADMIN_EMAIL com este valor.", description: adminNotifEmail });
+      const response = await base44.functions.invoke("updatePayoutSettings", { notification_email: adminNotifEmail });
+      if (response.data?.error) throw new Error(response.data.error);
+      toast({ title: "✅ E-mail de notificações salvo!" });
     } catch (e) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
@@ -228,7 +234,7 @@ export default function AdminEmail() {
       <ComposeEmailSection />
 
       {/* ── SECTION 1: Admin Notification Email ─────────────────────────── */}
-      <Section icon={UserPlus} iconColor="text-orange-400" title="Notificações de Novo Usuário" description="Endereço de e-mail que recebe alertas quando um novo aluno ou tutor se cadastra.">
+      <Section icon={UserPlus} iconColor="text-orange-400" title="E-mail de Notificações do Admin" description="Endereço que recebe todos os alertas: novo aluno, novo tutor pendente de aprovação e novas mensagens de suporte.">
         <div className="flex gap-2 mb-3">
           <Input
             value={adminNotifEmail}
@@ -240,9 +246,6 @@ export default function AdminEmail() {
           <Button onClick={handleSaveAdminEmail} disabled={savingAdminEmail} className="bg-orange-600 hover:bg-orange-700 text-white shrink-0">
             Salvar
           </Button>
-        </div>
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-3 text-xs text-amber-300">
-          ⚙️ Configure o secret <code className="bg-amber-500/20 px-1 rounded">ADMIN_EMAIL</code> no painel do app com o endereço desejado. A função já lê esse secret.
         </div>
         <div className="flex gap-2">
           <button
