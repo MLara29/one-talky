@@ -168,6 +168,27 @@ export default function MyLessons() {
         </div>
       )}
 
+      {user?.role === "tutor" && (
+        <div className="mb-4 space-y-2">
+          {/* Cancellation policy — tutor side */}
+          <div className="flex gap-2 items-start rounded-2xl p-4 text-sm" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
+            <Clock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#F26A1B" }} />
+            <span style={{ color: "var(--app-text-primary)" }}>
+              <strong style={{ color: "#F26A1B" }}>Cancellation policy:</strong>{" "}
+              You may cancel a scheduled lesson up to 4 hours before its start time without penalty. Repeated late cancellations may result in account suspension.
+            </span>
+          </div>
+          {/* No-show policy — tutor side */}
+          <div className="flex gap-2 items-start rounded-2xl p-4 text-sm" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
+            <span style={{ color: "var(--app-text-primary)" }}>
+              <strong className="text-red-400">No-show policy:</strong>{" "}
+              If a student doesn't join within 10 minutes of the scheduled start and you were online and ready, you're paid for the full lesson automatically — no action needed on your side.
+            </span>
+          </div>
+        </div>
+      )}
+
       <Tabs defaultValue="upcoming">
         <TabsList className="mb-6 bg-white/5 border border-white/10">
           <TabsTrigger value="upcoming" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">

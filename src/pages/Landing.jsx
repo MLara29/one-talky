@@ -647,7 +647,6 @@ export default function Landing() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 20, fontSize: 13.5 }}>
             <Link to="/privacidade" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footPrivacy}</Link>
             <Link to="/termos" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footTerms}</Link>
-            <Link to="/tutor-agreement" style={{ color: "#B7B3AB", textDecoration: "none" }}>{lang === "pt" ? "Contrato do Tutor" : "Tutor Agreement"}</Link>
             <Link to="/faq" style={{ color: "#B7B3AB", textDecoration: "none" }}>FAQ</Link>
             <Link to="/reembolso" style={{ color: "#B7B3AB", textDecoration: "none" }}>{lang === "pt" ? "Reembolso" : "Refund Policy"}</Link>
             <a href="#" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footSupport}</a>

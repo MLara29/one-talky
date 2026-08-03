@@ -5,7 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronLeft, ChevronRight, Clock, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Info, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 import TimezoneSelector from "@/components/tutors/TimezoneSelector";
 
 // Availability is stored as { "Monday": ["08:00","09:00",...], ... }
@@ -180,6 +181,15 @@ export default function TutorSchedule() {
           <Switch checked={profile?.is_available_now} onCheckedChange={toggleAvailableNow} />
         </div>
       </div>
+
+      <Link
+        to="/tutor-agreement"
+        target="_blank"
+        className="flex items-center gap-2 text-sm font-medium text-orange-500 hover:underline mb-6 w-fit"
+      >
+        <FileText className="w-4 h-4" />
+        View Tutor Service Agreement
+      </Link>
 
       {/* Timezone info banner */}
       <div className="mb-5 flex flex-col sm:flex-row sm:items-start gap-3 px-4 py-3 rounded-2xl bg-violet-500/10 border border-violet-500/20">
