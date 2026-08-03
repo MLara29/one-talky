@@ -4,6 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import PayoutSweepDaySelector from "@/components/admin/PayoutSweepDaySelector";
 import PayoutFrequencyTab from "@/components/admin/PayoutFrequencyTab";
 import TutorLedgerModal from "@/components/admin/TutorLedgerModal";
+import { safeSubscribe } from "@/lib/safeSubscribe";
 
 export default function AdminEarnings() {
   const [groups, setGroups] = useState({ all: [], weekly: [], biweekly: [], monthly: [] });
@@ -14,11 +15,7 @@ export default function AdminEarnings() {
 
   // Realtime: any withdrawal status change refreshes the admin panel
   useEffect(() => {
-    let unsub;
-    try {
-      unsub = base44.entities.WithdrawalRequest.subscribe(() => { loadOverview(); });
-    } catch { /* realtime unavailable */ }
-    return () => { if (typeof unsub === "function") unsub(); };
+    return safeSubscribe(() => base44.entities.WithdrawalRequest.subscribe(() => { loadOverview(); }));
   }, []);
 
   const loadOverview = async () => {

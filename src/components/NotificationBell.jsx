@@ -3,6 +3,7 @@ import { Bell } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { safeSubscribe } from "@/lib/safeSubscribe";
 
 export default function NotificationBell() {
   const { user } = useAuth();
@@ -27,13 +28,9 @@ export default function NotificationBell() {
 
   useEffect(() => {
     load();
-    let unsub;
-    try {
-      unsub = base44.entities.Notification.subscribe((event) => {
-        if (event?.data?.user_id === user?.id) load();
-      });
-    } catch { /* realtime unavailable */ }
-    return () => { if (typeof unsub === "function") unsub(); };
+    return safeSubscribe(() => base44.entities.Notification.subscribe((event) => {
+      if (event?.data?.user_id === user?.id) load();
+    }));
   }, [user?.id]);
 
   // Close on outside click

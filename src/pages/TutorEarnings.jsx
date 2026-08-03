@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { DollarSign, Clock, TrendingUp, Calendar, AlertCircle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { safeSubscribe } from "@/lib/safeSubscribe";
 
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
@@ -37,13 +38,9 @@ export default function TutorEarnings() {
   // Realtime: admin payment status changes update this screen without a reload
   useEffect(() => {
     if (!user?.id) return;
-    let unsub;
-    try {
-      unsub = base44.entities.WithdrawalRequest.subscribe((event) => {
-        if (event?.data?.tutor_id === user.id) loadData();
-      });
-    } catch { /* realtime unavailable */ }
-    return () => { if (typeof unsub === "function") unsub(); };
+    return safeSubscribe(() => base44.entities.WithdrawalRequest.subscribe((event) => {
+      if (event?.data?.tutor_id === user.id) loadData();
+    }));
   }, [user?.id]);
 
   const loadData = async () => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { safeSubscribe } from "@/lib/safeSubscribe";
 
 // Counts unread admin notifications pointing at the support page — reuses the
 // exact same realtime mechanism as NotificationBell.
@@ -19,14 +20,9 @@ export function useUnreadSupportCount(role, userId) {
       } catch {}
     };
     load();
-    try {
-      const unsub = base44.entities.Notification.subscribe((event) => {
-        if (event?.data?.user_id === userId && event?.data?.link === "/admin/support") load();
-      });
-      return typeof unsub === "function" ? unsub : undefined;
-    } catch {
-      return undefined;
-    }
+    return safeSubscribe(() => base44.entities.Notification.subscribe((event) => {
+      if (event?.data?.user_id === userId && event?.data?.link === "/admin/support") load();
+    }));
   }, [role, userId]);
 
   return count;
