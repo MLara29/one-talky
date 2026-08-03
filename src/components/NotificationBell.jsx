@@ -27,10 +27,13 @@ export default function NotificationBell() {
 
   useEffect(() => {
     load();
-    const unsub = base44.entities.Notification.subscribe((event) => {
-      if (event.data?.user_id === user?.id) load();
-    });
-    return unsub;
+    let unsub;
+    try {
+      unsub = base44.entities.Notification.subscribe((event) => {
+        if (event?.data?.user_id === user?.id) load();
+      });
+    } catch { /* realtime unavailable */ }
+    return () => { if (typeof unsub === "function") unsub(); };
   }, [user?.id]);
 
   // Close on outside click
