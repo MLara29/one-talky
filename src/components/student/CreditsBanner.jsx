@@ -12,10 +12,10 @@ function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function PlanShield({ plan }) {
+function PlanShield({ plan, size = 42 }) {
   if (plan === "premium") {
     return (
-      <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
+      <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">
         <defs>
           <linearGradient id="blackFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
             <stop stopColor="#3a3a3a"/><stop offset="0.5" stopColor="#1a1a1a"/><stop offset="1" stopColor="#050505"/>
@@ -35,7 +35,7 @@ function PlanShield({ plan }) {
   }
   if (plan === "standard") {
     return (
-      <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
+      <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">
         <defs>
           <linearGradient id="bronzeFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
             <stop stopColor="#e8b487"/><stop offset="0.5" stopColor="#c17d3f"/><stop offset="1" stopColor="#8a4f22"/>
@@ -49,7 +49,7 @@ function PlanShield({ plan }) {
   }
   if (plan === "basic") {
     return (
-      <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
+      <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">
         <defs>
           <linearGradient id="basicFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
             <stop stopColor="#f1f3f6"/><stop offset="0.5" stopColor="#c3c8d1"/><stop offset="1" stopColor="#8f96a3"/>
@@ -63,7 +63,7 @@ function PlanShield({ plan }) {
   }
   // free (default) — green shield with lines
   return (
-    <svg width="52" height="58" viewBox="0 0 24 27" fill="none">
+    <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">
       <defs>
         <linearGradient id="freeFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
           <stop stopColor="#a7f3d0"/><stop offset="1" stopColor="#4ade80"/>
@@ -112,83 +112,87 @@ export default function CreditsBanner({ profile, onUpdate }) {
       style={{
         background: "rgba(255,255,255,0.92)",
         border: "1px solid rgba(249,115,22,0.14)",
-        borderRadius: 22,
-        padding: "18px 22px",
-        boxShadow: "0 14px 34px rgba(249,115,22,0.16)",
+        borderRadius: 20,
+        padding: "14px 16px",
+        boxShadow: "0 8px 24px rgba(249,115,22,0.12)",
       }}
     >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        {/* Left: shield + plan info */}
-        <div className="flex items-center gap-5">
-          <div className="shrink-0">
-            <PlanShield plan={plan} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap" }}>
-                {planObj?.name || "Plano Free"}
+      {/* Top row: shield + plan name + buttons */}
+      <div className="flex items-center gap-3">
+        {/* Shield */}
+        <div className="shrink-0" style={{ lineHeight: 0 }}>
+          <PlanShield plan={plan} />
+        </div>
+
+        {/* Plan name + low-credits badge */}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>
+              {planObj?.name || "Plano Free"}
+            </span>
+            {isLow && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316", whiteSpace: "nowrap", background: "#fff7ed", padding: "2px 7px", borderRadius: 999, border: "1px solid #fed7aa" }}>
+                ⚠ Baixo
               </span>
-              {isLow && (
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#f97316", whiteSpace: "nowrap" }}>
-                  ⚠ Créditos baixos
-                </span>
-              )}
-            </div>
-            <div style={{ fontSize: 13, color: "#6b7280", marginTop: 3 }}>R$ 2,20/min · 30 min = R$ 66</div>
+            )}
           </div>
+          <div style={{ fontSize: 11.5, color: "#9ca3af", marginTop: 1 }}>R$ 2,20/min</div>
         </div>
 
-        {/* Center: striped progress bar */}
-        <div className="hidden sm:flex flex-col items-center gap-2 flex-1 mx-6">
-          <div style={{
-            width: "100%", maxWidth: 260, height: 30, borderRadius: 999,
-            border: "1px solid rgba(249,115,22,0.3)",
-            background: "#fff5ee",
-            position: "relative", overflow: "hidden",
-          }}>
-            <div style={{
-              position: "absolute", inset: "0 auto 0 0",
-              width: `${Math.max(pct, 4)}%`,
-              background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
-              borderRadius: 999,
-              transition: "width 0.5s ease",
-            }} />
-            <span style={{
-              position: "absolute", left: "50%", top: "50%",
-              transform: "translate(-50%,-50%)",
-              fontSize: 13, fontWeight: 800, color: "#f97316",
-            }}>{pct}%</span>
-          </div>
-          <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap" }}>
-            {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>restantes</span>
-          </span>
-        </div>
-
-        {/* Right: buttons */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Buttons — compact on mobile */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setShowTopup(!showTopup)}
             style={{
-              display: "flex", alignItems: "center", gap: 8,
+              display: "flex", alignItems: "center", gap: 5,
               background: "linear-gradient(135deg, #fb923c, #f97316)",
-              color: "#fff", border: "none", padding: "12px 20px",
-              borderRadius: 999, fontFamily: "inherit", fontSize: 14, fontWeight: 700,
-              cursor: "pointer", boxShadow: "0 8px 20px rgba(249,115,22,0.3)",
+              color: "#fff", border: "none", padding: "8px 13px",
+              borderRadius: 999, fontFamily: "inherit", fontSize: 12, fontWeight: 700,
+              cursor: "pointer", boxShadow: "0 4px 12px rgba(249,115,22,0.3)",
+              whiteSpace: "nowrap",
             }}
           >
-            <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Adicionar minutos
+            <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
+            <span className="hidden sm:inline">Adicionar minutos</span>
+            <span className="sm:hidden">Minutos</span>
           </button>
           <Link to="/plans">
             <button style={{
-              display: "flex", alignItems: "center", gap: 8,
-              background: "#fff", color: "#1a1a1a",
-              border: "1px solid rgba(0,0,0,0.1)", padding: "12px 20px",
-              borderRadius: 999, fontFamily: "inherit", fontSize: 14, fontWeight: 700, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 5,
+              background: "#fff", color: "#374151",
+              border: "1px solid rgba(0,0,0,0.1)", padding: "8px 12px",
+              borderRadius: 999, fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer",
+              whiteSpace: "nowrap",
             }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="#f97316"><path d="M13 2L3 14h7v8l10-12h-7z"/></svg>
-              Ver planos
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#f97316"><path d="M13 2L3 14h7v8l10-12h-7z"/></svg>
+              <span className="hidden sm:inline">Ver planos</span>
+              <span className="sm:hidden">Planos</span>
             </button>
           </Link>
+        </div>
+      </div>
+
+      {/* Progress bar — always visible, full width */}
+      <div className="mt-3">
+        <div style={{
+          width: "100%", height: 22, borderRadius: 999,
+          border: "1px solid rgba(249,115,22,0.25)",
+          background: "#fff5ee",
+          position: "relative", overflow: "hidden",
+        }}>
+          <div style={{
+            position: "absolute", inset: "0 auto 0 0",
+            width: `${Math.max(pct, 3)}%`,
+            background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
+            borderRadius: 999,
+            transition: "width 0.5s ease",
+          }} />
+          <span style={{
+            position: "absolute", left: "50%", top: "50%",
+            transform: "translate(-50%,-50%)",
+            fontSize: 11, fontWeight: 800, color: "#f97316",
+            whiteSpace: "nowrap",
+          }}>{Math.floor(mins)} min restantes</span>
         </div>
       </div>
 
