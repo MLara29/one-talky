@@ -175,7 +175,7 @@ export default function MyLessons() {
             <Clock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#F26A1B" }} />
             <span style={{ color: "var(--app-text-primary)" }}>
               <strong style={{ color: "#F26A1B" }}>Cancellation policy:</strong>{" "}
-              You may cancel a scheduled lesson up to 4 hours before its start time without penalty. Repeated late cancellations may result in account suspension.
+              You may cancel a scheduled lesson up to 2 hours before its start time without penalty — just make sure to notify the student.
             </span>
           </div>
           {/* No-show policy — tutor side */}
@@ -183,7 +183,7 @@ export default function MyLessons() {
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
             <span style={{ color: "var(--app-text-primary)" }}>
               <strong className="text-red-400">No-show policy:</strong>{" "}
-              If a student doesn't join within 10 minutes of the scheduled start and you were online and ready, you're paid for the full lesson automatically — no action needed on your side.
+              3 no-shows without advance cancellation result in a 7-day suspension from scheduled bookings (instant lessons still allowed). A further no-show after that leads to permanent ban and contract termination.
             </span>
           </div>
         </div>

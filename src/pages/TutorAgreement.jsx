@@ -52,8 +52,9 @@ const sections = [
     title: "5. Cancellations and No-Shows — Tutor Side",
     content: (
       <ul style={{ marginTop: 0, paddingLeft: 20 }}>
-        <li>The tutor may cancel a scheduled lesson up to <strong>4 hours</strong> before the scheduled time without penalty.</li>
-        <li>Repeated or last-minute cancellations by the tutor may result in a warning or <strong>account suspension</strong>, at One Talky's discretion.</li>
+        <li>The tutor may cancel a scheduled lesson up to <strong>2 hours</strong> before the scheduled time without penalty, provided the student is notified of the cancellation.</li>
+        <li>If a tutor accumulates <strong>3 no-shows</strong> (failing to attend a scheduled lesson without cancelling in advance), the tutor becomes subject to a <strong>7-day penalty</strong>: no access to scheduling lessons with any student. During this period, the tutor may only take instant, unscheduled lessons ("Lesson now").</li>
+        <li>If a further no-show occurs after this penalty period, the tutor is subject to <strong>permanent ban from the platform and termination of this Agreement</strong>.</li>
         <li>If the tutor does not show up for a scheduled lesson (tutor no-show) and the student is present in the room, the student is not penalized and the lesson does not generate payment for the tutor.</li>
         <li>Late cancellations or repeated absences are monitored by One Talky's quality team.</li>
       </ul>

@@ -224,6 +224,15 @@ export default function OnboardingTutor() {
                 </div>
               </div>
 
+              <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-xs text-gray-700 leading-relaxed">
+                <p className="font-semibold text-amber-800 mb-1.5">⚠️ Cancellation & No-Show Policy</p>
+                <ul className="space-y-1 list-disc pl-4">
+                  <li>Cancel with at least <strong>2 hours</strong> notice, and always notify the student.</li>
+                  <li><strong>3 no-shows</strong> without prior cancellation → 7-day suspension from scheduled bookings (instant lessons only).</li>
+                  <li>A further no-show after that → <strong>permanent ban and contract termination</strong>.</li>
+                </ul>
+              </div>
+
               <label className="flex items-start gap-2.5 p-3 rounded-xl bg-gray-50 border border-gray-200 cursor-pointer">
                 <input
                   type="checkbox"
