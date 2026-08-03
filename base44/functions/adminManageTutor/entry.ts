@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const { tutor_id, action } = await req.json();
-    if (!tutor_id || !['toggle_block', 'delete', 'toggle_contract_type'].includes(action)) {
+    if (!tutor_id || !['toggle_block', 'delete', 'toggle_contract_type', 'dismiss_ban_suggestion'].includes(action)) {
       return Response.json({ error: 'tutor_id and valid action are required' }, { status: 400 });
     }
 
@@ -36,6 +36,11 @@ Deno.serve(async (req) => {
       const newType = tutor.contract_type === 'upwork' ? 'direct' : 'upwork';
       await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { contract_type: newType });
       return Response.json({ success: true, contract_type: newType });
+    }
+
+    if (action === 'dismiss_ban_suggestion') {
+      await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { ban_suggested: false });
+      return Response.json({ success: true, ban_suggested: false });
     }
   } catch (error) {
     console.error('[adminManageTutor]', error.message);

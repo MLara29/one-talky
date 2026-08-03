@@ -56,7 +56,8 @@ export default async function(req) {
 
     // ── Tutor's minimum booking notice ──────────────────────────────────────────
     const tutorProfileForNoticeCheck = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: tutor_user_id });
-    const minNoticeHours = tutorProfileForNoticeCheck[0]?.min_booking_notice_hours || 0;
+    const tutorProfileNotice = tutorProfileForNoticeCheck[0];
+    const minNoticeHours = tutorProfileNotice?.min_booking_notice_hours || 0;
     if (minNoticeHours > 0) {
       const minLeadMs = minNoticeHours * 60 * 60 * 1000;
       const leadTimeMs = new Date(scheduled_at).getTime() - Date.now();
@@ -64,6 +65,19 @@ export default async function(req) {
         return Response.json({
           error: `Este tutor exige agendamento com pelo menos ${minNoticeHours}h de antecedência.`,
         }, { status: 400 });
+      }
+    }
+
+    // ── Tutor scheduling suspension (no-show penalty) ───────────────────────────
+    // A tutor with scheduling_suspended_until in the future cannot have new scheduled
+    // lessons booked, but instant lessons remain available.
+    if (tutorProfileNotice?.scheduling_suspended_until) {
+      const suspendedUntil = new Date(tutorProfileNotice.scheduling_suspended_until);
+      if (suspendedUntil > new Date()) {
+        return Response.json({
+          error: `Este tutor está temporariamente indisponível para agendamentos (suspensão por faltas). Tente novamente após ${suspendedUntil.toLocaleDateString('pt-BR')}.`,
+          error_code: 'tutor_suspended',
+        }, { status: 403 });
       }
     }
 

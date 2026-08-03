@@ -156,6 +156,26 @@
       "type": "string",
       "format": "date-time",
       "description": "Timestamp de aceite expl\u00edcito do Contrato de Presta\u00e7\u00e3o de Servi\u00e7o para Tutores, feito no onboarding. Separado do terms_accepted gen\u00e9rico do User."
+    },
+    "no_show_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Contador de faltas (no-show) do tutor em aulas agendadas."
+    },
+    "no_show_suspension_applied": {
+      "type": "boolean",
+      "default": false,
+      "description": "True depois que a suspens\u00e3o de 7 dias j\u00e1 foi aplicada uma vez \u2014 uma falta seguinte n\u00e3o suspende de novo, s\u00f3 sinaliza para o admin decidir sobre banimento."
+    },
+    "scheduling_suspended_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data at\u00e9 a qual o agendamento de aulas est\u00e1 suspenso para o tutor (7 dias ap\u00f3s a 3\u00aa falta). Aulas instant\u00e2neas continuam liberadas."
+    },
+    "ban_suggested": {
+      "type": "boolean",
+      "default": false,
+      "description": "True quando o sistema sugere banimento ao admin \u2014 nunca aplicado automaticamente, apenas exibido como alerta."
     }
   },
   "required": [

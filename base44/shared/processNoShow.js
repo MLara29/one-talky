@@ -5,6 +5,10 @@
 // Business rule: student is debited the scheduled duration_minutes (never
 // capped/measured by elapsed time — nobody joined, so there's no "elapsed"),
 // and the tutor is credited normally, as if the lesson had actually happened.
+// After crediting, the tutor's no-show counter is incremented via
+// registerTutorNoShow (3 strikes → 7-day suspension; further → ban suggestion).
+
+import { registerTutorNoShow } from './registerTutorNoShow.js';
 
 export async function processNoShow(base44, lesson) {
   const lessonId = lesson.id;
@@ -40,6 +44,15 @@ export async function processNoShow(base44, lesson) {
       total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
       total_lessons: (tp.total_lessons ?? 0) + 1,
     });
+
+    // Increment no-show counter and apply escalation policy (suspension / ban suggestion).
+    // Tutor is still credited for the lesson — the no-show penalty is about scheduling,
+    // not earnings. Wrapped in try/catch so a failure here never blocks the lesson processing.
+    try {
+      await registerTutorNoShow(base44, lesson.tutor_id, lessonId, lesson.student_name);
+    } catch (e) {
+      console.error('[processNoShow] registerTutorNoShow failed:', e.message);
+    }
   }
 
   return { alreadyProcessed: false, durationMinutes };

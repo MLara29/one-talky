@@ -76,6 +76,15 @@ export default function AdminUsers() {
     } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
+  const dismissBanSuggestion = async (t) => {
+    try {
+      const response = await base44.functions.invoke("adminManageTutor", { tutor_id: t.id, action: "dismiss_ban_suggestion" });
+      if (response.data?.error) throw new Error(response.data.error);
+      setTutors(prev => prev.map(x => x.id === t.id ? { ...x, ban_suggested: false } : x));
+      toast({ title: "Sugestão de banimento ignorada" });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
+  };
+
   const blockStudent = async (s) => {
     try {
       const response = await base44.functions.invoke("adminManageStudent", { student_id: s.id, action: "toggle_block" });
@@ -211,64 +220,98 @@ export default function AdminUsers() {
           </div>
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
             <div className="divide-y divide-white/5">
-              {filteredTutors.map(t => (
-                <div key={t.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/3 transition-all">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <img src={t.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
-                    <div className="min-w-0">
-                      <p className="theme-heading font-medium text-sm text-white truncate">{t.full_name}</p>
-                      <p className="theme-subtext text-xs text-gray-500 truncate">
-                        {users[t.user_id]?.email || t.country || "—"}
-                      </p>
+              {filteredTutors.map(t => {
+                const isSuspended = t.scheduling_suspended_until && new Date(t.scheduling_suspended_until) > new Date();
+                return (
+                <div key={t.id} className="p-4 hover:bg-white/3 transition-all">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img src={t.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
+                      <div className="min-w-0">
+                        <p className="theme-heading font-medium text-sm text-white truncate">{t.full_name}</p>
+                        <p className="theme-subtext text-xs text-gray-500 truncate">
+                          {users[t.user_id]?.email || t.country || "—"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Select onValueChange={(role) => changeUserRole(users[t.user_id]?.id || t.user_id, role)}>
+                        <SelectTrigger className="h-7 text-xs w-28 bg-white/5 border-white/10 text-gray-300 hidden sm:flex">
+                          <SelectValue placeholder="Role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="tutor">Tutor</SelectItem>
+                          <SelectItem value="student">Aluno</SelectItem>
+                          <SelectItem value="affiliate">Afiliado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {/* Contract type badge + toggle */}
+                      <button
+                        onClick={() => toggleContractType(t)}
+                        title={`Contrato: ${t.contract_type === "upwork" ? "Upwork" : "Direto"} — clique para alterar`}
+                        className={`text-xs px-2.5 py-1 rounded-full font-medium border transition-colors cursor-pointer hidden sm:inline ${
+                          t.contract_type === "upwork"
+                            ? "bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20"
+                            : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"
+                        }`}
+                      >
+                        {t.contract_type === "upwork" ? "Upwork" : "Direto"}
+                      </button>
+                      {t.no_show_count > 0 && (
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
+                          t.ban_suggested ? "bg-red-500/10 border-red-500/20 text-red-400"
+                          : isSuspended ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                          : "bg-gray-500/10 border-gray-500/20 text-gray-400"
+                        }`}>
+                          {t.no_show_count} no-show{t.no_show_count > 1 ? "s" : ""}
+                          {isSuspended && " · suspenso"}
+                        </span>
+                      )}
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
+                        t.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" :
+                        t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
+                        "bg-red-500/10 border-red-500/20 text-red-600"
+                      }`}>{t.status}</span>
+                      <Button
+                        size="sm" variant="ghost"
+                        onClick={() => blockTutor(t)}
+                        className={`px-2 h-8 ${t.status === "rejected" ? "text-emerald-500 hover:text-emerald-400" : "text-amber-500 hover:text-amber-400"}`}
+                        title={t.status === "rejected" ? "Desbloquear" : "Bloquear"}
+                      >
+                        {t.status === "rejected" ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                      </Button>
+                      <Button
+                        size="sm" variant="ghost"
+                        onClick={() => deleteTutor(t)}
+                        className="px-2 h-8 text-red-500 hover:text-red-400"
+                        title="Deletar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Select onValueChange={(role) => changeUserRole(users[t.user_id]?.id || t.user_id, role)}>
-                      <SelectTrigger className="h-7 text-xs w-28 bg-white/5 border-white/10 text-gray-300 hidden sm:flex">
-                        <SelectValue placeholder="Role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="tutor">Tutor</SelectItem>
-                        <SelectItem value="student">Aluno</SelectItem>
-                        <SelectItem value="affiliate">Afiliado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {/* Contract type badge + toggle */}
-                    <button
-                      onClick={() => toggleContractType(t)}
-                      title={`Contrato: ${t.contract_type === "upwork" ? "Upwork" : "Direto"} — clique para alterar`}
-                      className={`text-xs px-2.5 py-1 rounded-full font-medium border transition-colors cursor-pointer hidden sm:inline ${
-                        t.contract_type === "upwork"
-                          ? "bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20"
-                          : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"
-                      }`}
-                    >
-                      {t.contract_type === "upwork" ? "Upwork" : "Direto"}
-                    </button>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
-                      t.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" :
-                      t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
-                      "bg-red-500/10 border-red-500/20 text-red-600"
-                    }`}>{t.status}</span>
-                    <Button
-                      size="sm" variant="ghost"
-                      onClick={() => blockTutor(t)}
-                      className={`px-2 h-8 ${t.status === "rejected" ? "text-emerald-500 hover:text-emerald-400" : "text-amber-500 hover:text-amber-400"}`}
-                      title={t.status === "rejected" ? "Desbloquear" : "Bloquear"}
-                    >
-                      {t.status === "rejected" ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-                    </Button>
-                    <Button
-                      size="sm" variant="ghost"
-                      onClick={() => deleteTutor(t)}
-                      className="px-2 h-8 text-red-500 hover:text-red-400"
-                      title="Deletar"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  {t.ban_suggested && (
+                    <div className="mt-2 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                      <span className="text-xs text-red-400 flex-1">
+                        ⚠️ Sugestão do sistema: avaliar banimento (faltas repetidas após suspensão)
+                      </span>
+                      <button
+                        onClick={() => blockTutor(t)}
+                        className="text-xs px-2.5 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 shrink-0"
+                      >
+                        Banir agora
+                      </button>
+                      <button
+                        onClick={() => dismissBanSuggestion(t)}
+                        className="text-xs px-2.5 py-1 rounded-lg bg-white/10 text-gray-300 hover:bg-white/20 shrink-0"
+                      >
+                        Ignorar
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
               {filteredTutors.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">{searchTutor ? "Nenhum tutor encontrado para essa busca" : "Nenhum tutor ainda"}</p>}
             </div>
           </div>
