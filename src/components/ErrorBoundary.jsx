@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 // Global safety net: catches any render error anywhere in the tree and shows
 // a friendly fallback instead of an unexplained white screen.
@@ -16,6 +17,14 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("[ErrorBoundary] Uncaught render error:", error, errorInfo);
+    // Fire and forget — never let the report itself break the fallback screen
+    try {
+      base44.functions.invoke("logClientError", {
+        message: error?.message || "Unknown error",
+        stack: error?.stack || errorInfo?.componentStack || "",
+        page_path: window.location.pathname,
+      }).catch(() => {});
+    } catch { /* ignore */ }
   }
 
   render() {

@@ -1,0 +1,49 @@
+{
+  "name": "ClientErrorLog",
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string"
+    },
+    "stack": {
+      "type": "string"
+    },
+    "page_path": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_role": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "browser_info": {
+      "type": "string",
+      "description": "Ex: 'Chrome 138 no Windows'"
+    }
+  },
+  "required": [
+    "message"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
