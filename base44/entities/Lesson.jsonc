@@ -24,7 +24,8 @@
         "in_progress",
         "completed",
         "cancelled",
-        "no_show"
+        "no_show",
+        "tutor_no_show"
       ],
       "default": "scheduled"
     },
@@ -39,6 +40,16 @@
     "ended_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "tutor_joined_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de quando o tutor entrou na sala (Agora). Usado pelo processNoShow para determinar culpa."
+    },
+    "student_joined_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de quando o aluno entrou na sala (Agora). Usado pelo processNoShow para determinar culpa."
     },
     "duration_minutes": {
       "type": "number",

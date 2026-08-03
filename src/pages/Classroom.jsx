@@ -412,6 +412,10 @@ export default function Classroom() {
     await createAndPublishLocalTracks();
     setJoined(true);
 
+    // Mark this participant as joined (presence tracking for no-show detection).
+    // Fire-and-forget — must never block the classroom UI.
+    base44.functions.invoke('markLessonJoined', { lesson_id: l.id }).catch(() => {});
+
     // Reconciliation: the "user-published" event is missed when the other side
     // published before we finished joining. Re-check the channel periodically.
     const reconcile = async () => {

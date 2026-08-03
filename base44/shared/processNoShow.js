@@ -1,12 +1,26 @@
 // Processes a scheduled Lesson whose scheduled_at + grace period has passed
-// without anyone joining. Same CAS pattern as completeLesson.js so that a
-// lesson can never be double-processed even if the cron overlaps itself.
+// without the lesson becoming in_progress. Branches by WHO actually joined the
+// classroom (tracked via tutor_joined_at / student_joined_at set by
+// markLessonJoined) so that blame is assigned correctly:
 //
-// Business rule: student is debited the scheduled duration_minutes (never
-// capped/measured by elapsed time — nobody joined, so there's no "elapsed"),
-// and the tutor is credited normally, as if the lesson had actually happened.
-// After crediting, the tutor's no-show counter is incremented via
-// registerTutorNoShow (3 strikes → 7-day suspension; further → ban suggestion).
+//   CASO A — tutor joined, student didn't  → student's fault (no_show)
+//     Student is debited, tutor is credited. Tutor's no-show counter is NOT
+//     touched. This is the pre-existing behavior, unchanged.
+//
+//   CASO B — student joined, tutor didn't  → tutor's fault (tutor_no_show)
+//     Student is NOT debited, tutor is NOT paid. Tutor's no-show counter is
+//     incremented via registerTutorNoShow (3 strikes → suspension, etc.).
+//
+//   CASO C — neither joined                → benefit of the doubt (cancelled)
+//     Nobody is charged. Lesson is cancelled with an explanatory note.
+//
+//   CASO D — both joined but never started  → flagged for manual review
+//     Rare edge case (e.g. both entered the Agora channel but the lesson never
+//     transitioned to in_progress). Flagged, no automatic debit/credit.
+//
+// Same CAS pattern as completeLesson.js: only the caller that flips
+// status='scheduled' → final status processes the lesson, so overlapping cron
+// runs never double-process.
 
 import { registerTutorNoShow } from './registerTutorNoShow.js';
 
@@ -15,45 +29,77 @@ export async function processNoShow(base44, lesson) {
   const durationMinutes = (lesson.duration_minutes && lesson.duration_minutes > 0) ? lesson.duration_minutes : 30;
   const nowIso = new Date().toISOString();
 
-  // CAS: only the caller that flips scheduled -> no_show processes this lesson.
-  const cas = await base44.asServiceRole.entities.Lesson.updateMany(
-    { id: lessonId, status: 'scheduled' },
-    { $set: { status: 'no_show', ended_at: nowIso, earnings_finalized: true } }
-  );
-  if (cas.updated === 0) return { alreadyProcessed: true };
+  const studentJoined = !!lesson.student_joined_at;
+  const tutorJoined = !!lesson.tutor_joined_at;
 
-  // Debit the student.
-  const studentProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: lesson.student_id });
-  if (studentProfiles.length > 0) {
-    const sp = studentProfiles[0];
-    const newCredits = Math.max(0, (sp.credits_minutes ?? 0) - durationMinutes);
-    await base44.asServiceRole.entities.StudentProfile.update(sp.id, {
-      credits_minutes: Math.round(newCredits * 100) / 100,
-    });
+  // ── CASO A: tutor entrou, aluno não → falta do ALUNO ──────────────────────
+  if (tutorJoined && !studentJoined) {
+    const cas = await base44.asServiceRole.entities.Lesson.updateMany(
+      { id: lessonId, status: 'scheduled' },
+      { $set: { status: 'no_show', ended_at: nowIso, earnings_finalized: true } }
+    );
+    if (cas.updated === 0) return { alreadyProcessed: true };
+
+    // Debit the student.
+    const studentProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: lesson.student_id });
+    if (studentProfiles.length > 0) {
+      const sp = studentProfiles[0];
+      const newCredits = Math.max(0, (sp.credits_minutes ?? 0) - durationMinutes);
+      await base44.asServiceRole.entities.StudentProfile.update(sp.id, {
+        credits_minutes: Math.round(newCredits * 100) / 100,
+      });
+    }
+
+    // Credit the tutor (same rate_applied/earned_amount pattern as completeLesson.js).
+    const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
+    const tp = tutorProfiles[0];
+    if (tp) {
+      const rate = tp.price_per_minute ?? 0.9967;
+      const earnings = Math.round(durationMinutes * rate * 100) / 100;
+      await base44.asServiceRole.entities.Lesson.update(lessonId, { rate_applied: rate, earned_amount: earnings });
+      await base44.asServiceRole.entities.TutorProfile.update(tp.id, {
+        total_earnings: Math.round(((tp.total_earnings ?? 0) + earnings) * 100) / 100,
+        total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
+        total_lessons: (tp.total_lessons ?? 0) + 1,
+      });
+    }
+
+    // IMPORTANT: do NOT call registerTutorNoShow here — this is the student's fault.
+    return { alreadyProcessed: false, durationMinutes, studentFault: true };
   }
 
-  // Credit the tutor (same rate_applied/earned_amount pattern as completeLesson.js).
-  const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
-  const tp = tutorProfiles[0];
-  if (tp) {
-    const rate = tp.price_per_minute ?? 0.9967;
-    const earnings = Math.round(durationMinutes * rate * 100) / 100;
-    await base44.asServiceRole.entities.Lesson.update(lessonId, { rate_applied: rate, earned_amount: earnings });
-    await base44.asServiceRole.entities.TutorProfile.update(tp.id, {
-      total_earnings: Math.round(((tp.total_earnings ?? 0) + earnings) * 100) / 100,
-      total_minutes: Math.round(((tp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
-      total_lessons: (tp.total_lessons ?? 0) + 1,
-    });
+  // ── CASO B: aluno entrou, tutor não → falta do TUTOR ──────────────────────
+  if (studentJoined && !tutorJoined) {
+    const cas = await base44.asServiceRole.entities.Lesson.updateMany(
+      { id: lessonId, status: 'scheduled' },
+      { $set: { status: 'tutor_no_show', ended_at: nowIso } }
+    );
+    if (cas.updated === 0) return { alreadyProcessed: true };
 
-    // Increment no-show counter and apply escalation policy (suspension / ban suggestion).
-    // Tutor is still credited for the lesson — the no-show penalty is about scheduling,
-    // not earnings. Wrapped in try/catch so a failure here never blocks the lesson processing.
+    // Aluno NÃO é debitado, tutor NÃO é pago.
+    // Increment tutor's no-show counter (3 strikes → suspension, further → ban suggestion).
     try {
       await registerTutorNoShow(base44, lesson.tutor_id, lessonId, lesson.student_name);
     } catch (e) {
       console.error('[processNoShow] registerTutorNoShow failed:', e.message);
     }
+
+    return { alreadyProcessed: false, tutorFault: true };
   }
 
-  return { alreadyProcessed: false, durationMinutes };
+  // ── CASO C: nenhum dos dois entrou → benefício da dúvida ──────────────────
+  if (!studentJoined && !tutorJoined) {
+    const cas = await base44.asServiceRole.entities.Lesson.updateMany(
+      { id: lessonId, status: 'scheduled' },
+      { $set: { status: 'cancelled', ended_at: nowIso, notes: 'Nenhum participante entrou na sala' } }
+    );
+    if (cas.updated === 0) return { alreadyProcessed: true };
+
+    // Ninguém é cobrado.
+    return { alreadyProcessed: false, mutual: true };
+  }
+
+  // ── CASO D: ambos entraram mas nunca virou in_progress → revisão manual ───
+  await base44.asServiceRole.entities.Lesson.update(lessonId, { flagged_for_review: true });
+  return { alreadyProcessed: false, needsReview: true };
 }
