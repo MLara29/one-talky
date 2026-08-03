@@ -19,10 +19,14 @@ export function useUnreadSupportCount(role, userId) {
       } catch {}
     };
     load();
-    const unsub = base44.entities.Notification.subscribe((event) => {
-      if (event.data?.user_id === userId && event.data?.link === "/admin/support") load();
-    });
-    return unsub;
+    try {
+      const unsub = base44.entities.Notification.subscribe((event) => {
+        if (event?.data?.user_id === userId && event?.data?.link === "/admin/support") load();
+      });
+      return typeof unsub === "function" ? unsub : undefined;
+    } catch {
+      return undefined;
+    }
   }, [role, userId]);
 
   return count;

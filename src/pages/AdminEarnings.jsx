@@ -14,8 +14,11 @@ export default function AdminEarnings() {
 
   // Realtime: any withdrawal status change refreshes the admin panel
   useEffect(() => {
-    const unsub = base44.entities.WithdrawalRequest.subscribe(() => { loadOverview(); });
-    return unsub;
+    let unsub;
+    try {
+      unsub = base44.entities.WithdrawalRequest.subscribe(() => { loadOverview(); });
+    } catch { /* realtime unavailable */ }
+    return () => { if (typeof unsub === "function") unsub(); };
   }, []);
 
   const loadOverview = async () => {

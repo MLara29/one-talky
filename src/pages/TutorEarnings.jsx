@@ -37,10 +37,13 @@ export default function TutorEarnings() {
   // Realtime: admin payment status changes update this screen without a reload
   useEffect(() => {
     if (!user?.id) return;
-    const unsub = base44.entities.WithdrawalRequest.subscribe((event) => {
-      if (event.data?.tutor_id === user.id) loadData();
-    });
-    return unsub;
+    let unsub;
+    try {
+      unsub = base44.entities.WithdrawalRequest.subscribe((event) => {
+        if (event?.data?.tutor_id === user.id) loadData();
+      });
+    } catch { /* realtime unavailable */ }
+    return () => { if (typeof unsub === "function") unsub(); };
   }, [user?.id]);
 
   const loadData = async () => {
