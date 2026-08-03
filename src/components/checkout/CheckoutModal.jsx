@@ -351,15 +351,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
                   <input type="text" inputMode="numeric" placeholder="000.000.000-00" required maxLength={14}
                     value={form.cpf} onChange={setField("cpf")} className={inputCls} />
                 </div>
-                <div>
-                  <Label className="theme-subtext text-xs mb-1 block">Parcelas</Label>
-                  <select value={form.installments} onChange={e => setForm(f => ({ ...f, installments: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 transition-colors theme-input">
-                    {[1, 2, 3, 6, 12].map(n => (
-                      <option key={n} value={n}>{n}x {fmtBRL(item.price / n)}{n === 1 ? " (sem juros)" : ""}</option>
-                    ))}
-                  </select>
-                </div>
+
                 <Button type="submit" className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 h-11 text-base font-semibold shadow-lg shadow-violet-500/20 hover:scale-[1.02] transition-all">
                   Pagar {fmtBRL(item.price)}
                 </Button>

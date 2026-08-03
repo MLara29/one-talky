@@ -12,7 +12,7 @@ function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function PlanShield({ plan, size = 42 }) {
+export function PlanShield({ plan, size = 42 }) {
   if (plan === "premium") {
     return (
       <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">

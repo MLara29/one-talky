@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Clock, CreditCard } from "lucide-react";
+import { PlanShield } from "@/components/student/CreditsBanner";
 import { PLANS, PREPAID_PACKS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -154,12 +155,15 @@ export default function Plans() {
                     <div style={{ fontSize: 12.5, color: "#8A8B94", marginTop: 2 }}>{plan.description}</div>
                   </div>
 
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>{fmtBRL(plan.price_weekly)}</span>
-                      <span style={{ fontSize: 13, color: "#8A8B94", fontWeight: 700 }}>/semana</span>
+                  <div className="flex items-center gap-4">
+                    <PlanShield plan={plan.id} size={44} />
+                    <div>
+                      <div className="flex items-baseline gap-1">
+                        <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>{fmtBRL(plan.price_monthly)}</span>
+                        <span style={{ fontSize: 13, color: "#8A8B94", fontWeight: 700 }}>/mês</span>
+                      </div>
+                      <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{fmtBRL(plan.price_weekly)}/semana</div>
                     </div>
-                    <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{fmtBRL(plan.price_monthly)}/mês</div>
                   </div>
 
                   <div style={{ height: 1, background: "#EEE7DD" }} />
