@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import CancelRescheduleModal from "@/components/lessons/CancelRescheduleModal";
 import StudentCancelModal from "@/components/lessons/StudentCancelModal";
 import RescheduleRequestCard from "@/components/lessons/RescheduleRequestCard";
+import { safeSubscribe } from "@/lib/safeSubscribe";
 
 export default function MyLessons() {
   const { user } = useAuth();
@@ -57,7 +58,7 @@ export default function MyLessons() {
   // Real-time refresh for LessonChangeRequest (proposals accepted/rejected/new message)
   useEffect(() => {
     if (!user) return;
-    const unsubscribe = base44.entities.LessonChangeRequest.subscribe((event) => {
+    return safeSubscribe(() => base44.entities.LessonChangeRequest.subscribe((event) => {
       const r = event.data;
       if (!r) return;
       if (user.role === "tutor" && r.tutor_id !== user.id) return;
@@ -66,8 +67,7 @@ export default function MyLessons() {
       if (event.type === "update" && r.status !== "pending") {
         loadData(); // lesson time may have changed on accept
       }
-    });
-    return unsubscribe;
+    }));
   }, [user?.id, user?.role]);
 
   const loadPendingRequests = async () => {
