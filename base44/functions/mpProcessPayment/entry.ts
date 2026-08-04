@@ -72,9 +72,18 @@ Deno.serve(async (req) => {
 
         // ── Increment coupon used_count (CAS) ──────────────────────────────────
         if (appliedCoupon) {
-          await base44.asServiceRole.entities.Coupon.update(appliedCoupon.id, {
-            used_count: (appliedCoupon.used_count || 0) + 1,
-          });
+          const casResult = await base44.asServiceRole.entities.Coupon.updateMany(
+            { id: appliedCoupon.id, used_count: appliedCoupon.used_count },
+            { $set: { used_count: (appliedCoupon.used_count || 0) + 1 } }
+          );
+          if (casResult.updated === 0) {
+            // Corrida detectada — outro pagamento simultâneo já incrementou o
+            // contador entre a leitura e esta escrita. O desconto/pagamento deste
+            // aluno já foi aprovado e não deve ser desfeito — só registrar para
+            // acompanhamento, já que o pior cenário aqui é o cupom passar 1 uso
+            // do limite em situação de corrida rara, não uma falha financeira.
+            console.warn(`[mpProcessPayment] CAS mismatch on Coupon.used_count for coupon ${appliedCoupon.code} — possible concurrent redemption.`);
+          }
         }
 
         // ── Affiliate commission logic (on FULL price — discount is a platform
