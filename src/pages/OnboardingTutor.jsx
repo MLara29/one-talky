@@ -241,9 +241,9 @@ export default function OnboardingTutor() {
                   className="mt-0.5"
                 />
                 <span className="text-xs text-gray-600 leading-snug">
-                  Li e aceito o{" "}
+                  I have read and agree to the{" "}
                   <Link to="/tutor-agreement" target="_blank" className="text-orange-600 font-semibold underline">
-                    Contrato de Prestação de Serviço para Tutores
+                    Tutor Service Agreement
                   </Link>.
                 </span>
               </label>
