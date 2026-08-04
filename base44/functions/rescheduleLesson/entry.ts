@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
-import { normalizeSlot } from "../../shared/slotUtils.js";
+import { checkRescheduleConflicts, performRescheduleSlotMove } from "../../shared/rescheduleLogic.js";
 import { requireOtp } from "../../shared/requireOtp.js";
 
 Deno.serve(async (req) => {
@@ -34,57 +34,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Only scheduled lessons can be rescheduled" }, { status: 400 });
     }
 
-    const normalizedNew = normalizeSlot(new_scheduled_at);
-    const normalizedOld = normalizeSlot(lesson.scheduled_at);
-
-    // ── Reject if the tutor already has a DIFFERENT lesson at the new time ──
-    const tutorLessons = await base44.asServiceRole.entities.Lesson.filter({ tutor_id: lesson.tutor_id });
-    const tutorConflict = tutorLessons.find((l: any) =>
-      l.id !== lesson_id && l.status !== "cancelled" && l.scheduled_at && normalizeSlot(l.scheduled_at) === normalizedNew
-    );
-    if (tutorConflict) {
-      return Response.json({ error: "Novo horário já está ocupado" }, { status: 409 });
-    }
-
-    // ── Reject if the student already has a DIFFERENT lesson (any tutor) at the new time ──
-    const studentLessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: lesson.student_id });
-    const studentConflict = studentLessons.find((l: any) =>
-      l.id !== lesson_id && l.status !== "cancelled" && l.scheduled_at && normalizeSlot(l.scheduled_at) === normalizedNew
-    );
-    if (studentConflict) {
-      return Response.json({ error: "O aluno já tem outra aula agendada nesse horário" }, { status: 409 });
-    }
+    // ── Check for tutor/student lesson conflicts at the new time ──────────────
+    const conflict = await checkRescheduleConflicts(base44, lesson, new_scheduled_at);
+    if (!conflict.ok) return Response.json({ error: conflict.error }, { status: conflict.status });
 
     const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
     if (tutorProfiles.length === 0) return Response.json({ error: "Tutor profile not found" }, { status: 404 });
     const tp = tutorProfiles[0];
 
-    const newSlotFull = `${normalizedNew}:00Z`;
-    const oldSlotFull = (tp.booked_slots || []).find((s: string) => normalizeSlot(s) === normalizedOld) || `${normalizedOld}:00Z`;
-
-    // Etapa 1: remover o slot antigo (seguro, idempotente — não precisa de CAS)
-    await base44.asServiceRole.entities.TutorProfile.updateMany(
-      { id: tp.id },
-      { $pull: { booked_slots: oldSlotFull } }
-    );
-
-    // Etapa 2: reivindicar o slot novo com proteção CAS (essa é a etapa que
-    // realmente protege contra corrida — dois reagendamentos simultâneos
-    // tentando pegar o mesmo horário novo)
-    const casResult = await base44.asServiceRole.entities.TutorProfile.updateMany(
-      { id: tp.id, booked_slots: { $nin: [newSlotFull] } },
-      { $addToSet: { booked_slots: newSlotFull } }
-    );
-
-    if (casResult.updated === 0) {
-      // Não conseguiu reivindicar o novo horário — devolve o slot antigo
-      // para não perder a disponibilidade original do tutor
-      await base44.asServiceRole.entities.TutorProfile.updateMany(
-        { id: tp.id },
-        { $addToSet: { booked_slots: oldSlotFull } }
-      );
-      return Response.json({ error: "Novo horário já está ocupado" }, { status: 409 });
-    }
+    // ── Perform the actual slot move (two-step CAS, shared logic) ─────────────
+    const move = await performRescheduleSlotMove(base44, tp, new_scheduled_at, lesson.scheduled_at);
+    if (!move.ok) return Response.json({ error: move.error }, { status: move.status });
 
     await base44.asServiceRole.entities.Lesson.update(lesson_id, { scheduled_at: new_scheduled_at });
 

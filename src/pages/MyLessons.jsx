@@ -11,6 +11,7 @@ import { getLanguageLabel, LESSON_JOIN_GRACE_PERIOD_MS, getLessonTimeStatus } fr
 import { useToast } from "@/components/ui/use-toast";
 import CancelRescheduleModal from "@/components/lessons/CancelRescheduleModal";
 import StudentCancelModal from "@/components/lessons/StudentCancelModal";
+import RescheduleRequestCard from "@/components/lessons/RescheduleRequestCard";
 
 export default function MyLessons() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function MyLessons() {
   const [tutorProfile, setTutorProfile] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [cancellingLesson, setCancellingLesson] = useState(null);
+  const [pendingRequests, setPendingRequests] = useState({});
   const [tick, setTick] = useState(0);
   const lessonsRef = useRef(lessons);
 
@@ -52,6 +54,37 @@ export default function MyLessons() {
 
   useEffect(() => { loadData(); }, [user]);
 
+  // Real-time refresh for LessonChangeRequest (proposals accepted/rejected/new message)
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = base44.entities.LessonChangeRequest.subscribe((event) => {
+      const r = event.data;
+      if (!r) return;
+      if (user.role === "tutor" && r.tutor_id !== user.id) return;
+      if (user.role === "student" && r.student_id !== user.id) return;
+      loadPendingRequests();
+      if (event.type === "update" && r.status !== "pending") {
+        loadData(); // lesson time may have changed on accept
+      }
+    });
+    return unsubscribe;
+  }, [user?.id, user?.role]);
+
+  const loadPendingRequests = async () => {
+    if (!user) return;
+    try {
+      let requests = [];
+      if (user.role === "tutor") {
+        requests = await base44.entities.LessonChangeRequest.filter({ tutor_id: user.id, status: "pending" });
+      } else if (user.role === "student") {
+        requests = await base44.entities.LessonChangeRequest.filter({ student_id: user.id, status: "pending" });
+      }
+      const map = {};
+      requests.forEach(r => { map[r.lesson_id] = r; });
+      setPendingRequests(map);
+    } catch {}
+  };
+
   // Real-time refresh for tutors
   useEffect(() => {
     if (user?.role !== "tutor") return;
@@ -80,6 +113,7 @@ export default function MyLessons() {
         data = await base44.entities.Lesson.filter({ student_id: user.id }, "-created_date");
       }
       setLessons(data || []);
+      loadPendingRequests();
     } catch {} finally { setLoading(false); }
   };
 
@@ -114,17 +148,20 @@ export default function MyLessons() {
   };
 
   const handleReschedule = async (newScheduledAt, message) => {
-    if (!managingLesson) return;
+    if (!managingLesson) return false;
     setActionLoading(true);
     try {
-      const response = await base44.functions.invoke('rescheduleLesson', { lesson_id: managingLesson.id, new_scheduled_at: newScheduledAt, message });
+      const response = await base44.functions.invoke('proposeReschedule', { lesson_id: managingLesson.id, proposed_scheduled_at: newScheduledAt, message });
       if (response.data?.error) throw new Error(response.data.error);
-      setLessons(prev => prev.map(l => l.id === managingLesson.id ? { ...l, scheduled_at: newScheduledAt } : l));
-      setManagingLesson(null);
-      toast({ title: "Lesson rescheduled! 📅", description: message ? "Message sent to student." : "" });
+      // Lesson stays at original time — don't update scheduled_at.
+      // Refresh pending requests so the card shows up on the lesson.
+      loadPendingRequests();
+      toast({ title: "Proposta enviada! 📅", description: "Aguardando resposta do aluno." });
+      return true;
     } catch (err) {
       const msg = err?.response?.data?.error || err?.message || "Please try again.";
-      toast({ title: "Error rescheduling", description: msg, variant: "destructive" });
+      toast({ title: "Error proposing reschedule", description: msg, variant: "destructive" });
+      return false;
     } finally { setActionLoading(false); }
   };
 
@@ -246,7 +283,15 @@ export default function MyLessons() {
           ) : (
             <div className="space-y-3">
               {upcoming.map(l => (
-                <div key={l.id} className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center justify-between hover:bg-white/8 transition-all">
+                <div key={l.id} className="space-y-2">
+                  {pendingRequests[l.id] && (
+                    <RescheduleRequestCard
+                      lesson={l}
+                      request={pendingRequests[l.id]}
+                      onResolved={() => { loadPendingRequests(); loadData(); }}
+                    />
+                  )}
+                  <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center justify-between hover:bg-white/8 transition-all">
                   <div className="flex items-center gap-3">
                     <Calendar className="w-4 h-4 text-violet-400" />
                     <div>
@@ -296,6 +341,7 @@ export default function MyLessons() {
                         </Button>
                       </Link>
                     )}
+                  </div>
                   </div>
                 </div>
               ))}

@@ -19,6 +19,7 @@ function buildCalendarDays(year, month) {
 
 export default function CancelRescheduleModal({ lesson, tutorAvailability, bookedSlots = [], onClose, onCancel, onReschedule, loading }) {
   const [tab, setTab] = useState("cancel"); // "cancel" | "reschedule"
+  const [proposed, setProposed] = useState(false);
   const [message, setMessage] = useState("");
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -69,12 +70,13 @@ export default function CancelRescheduleModal({ lesson, tutorAvailability, booke
   const calendarDays = buildCalendarDays(viewYear, viewMonth);
   const slots = getSlotsForDate(selectedDate);
 
-  const handleReschedule = () => {
+  const handleReschedule = async () => {
     if (!selectedDate || !selectedSlot) return;
     const [hours, minutes] = selectedSlot.split(":").map(Number);
     const scheduled = new Date(selectedDate);
     scheduled.setHours(hours, minutes, 0, 0);
-    onReschedule(scheduled.toISOString(), message);
+    const ok = await onReschedule(scheduled.toISOString(), message);
+    if (ok) setProposed(true);
   };
 
   return (
@@ -136,6 +138,21 @@ export default function CancelRescheduleModal({ lesson, tutorAvailability, booke
 
           {tab === "reschedule" && (
             <div className="p-6 space-y-4">
+              {proposed ? (
+                <div className="text-center py-8 space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center mx-auto">
+                    <Clock className="w-7 h-7 text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="font-display font-bold text-gray-800 text-lg mb-1">Aguardando resposta do aluno</p>
+                    <p className="text-sm text-gray-500">O aluno foi notificado e pode aceitar ou recusar o novo horário na plataforma.</p>
+                  </div>
+                  <Button onClick={onClose} className="rounded-2xl bg-gray-100 text-gray-700 hover:bg-gray-200 border-0">
+                    Close
+                  </Button>
+                </div>
+              ) : (
+                <>
               <p className="text-sm text-gray-500">Pick a new date and time for <strong className="text-gray-800">{lesson.student_name}</strong>'s lesson.</p>
 
               {/* Calendar */}
@@ -223,9 +240,11 @@ export default function CancelRescheduleModal({ lesson, tutorAvailability, booke
                   disabled={!selectedDate || !selectedSlot || loading}
                   className="flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 disabled:opacity-40"
                 >
-                  {loading ? "Saving..." : <><Check className="w-4 h-4 mr-1" /> Confirm</>}
+                  {loading ? "Saving..." : <><Check className="w-4 h-4 mr-1" /> Propose</>}
                 </Button>
               </div>
+                </>
+              )}
             </div>
           )}
         </div>
