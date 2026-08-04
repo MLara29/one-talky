@@ -64,9 +64,7 @@ export default function MyLessons() {
       if (user.role === "tutor" && r.tutor_id !== user.id) return;
       if (user.role === "student" && r.student_id !== user.id) return;
       loadPendingRequests();
-      if (event.type === "update" && r.status !== "pending") {
-        loadData(); // lesson time may have changed on accept
-      }
+      loadData(); // sempre recarrega — leituras leves, sem depender de event.type
     }));
   }, [user?.id, user?.role]);
 
