@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { CATALOG, PRICE_CATALOG } from "../../shared/paymentCatalog.js";
+import { validateAndApplyCoupon } from "../../shared/couponDiscount.js";
 
 Deno.serve(async (req) => {
   try {
@@ -22,11 +23,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Referência de produto inválida" }, { status: 400 });
     }
 
+    // ── Validate coupon and calculate discounted price BEFORE charging ──────────
+    const { finalPrice, coupon: appliedCoupon, bonusMinutes, error: couponError } =
+      await validateAndApplyCoupon(base44, coupon_code, item.price);
+    if (couponError) {
+      return Response.json({ error: couponError }, { status: 400 });
+    }
+
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     if (!accessToken) return Response.json({ error: "MP token não configurado" }, { status: 500 });
 
     const paymentBody = {
-      transaction_amount: item.price, // server-side price, never from client
+      transaction_amount: finalPrice, // reflects the coupon discount, never the full price
       token,
       description: external_reference,
       installments: Number(installments) || 1,
@@ -55,13 +63,22 @@ Deno.serve(async (req) => {
       const profiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
         const profile = profiles[0];
+        // Add plan minutes + coupon bonus minutes.
         const updateData: Record<string, unknown> = {
-          credits_minutes: (profile.credits_minutes ?? 0) + item.minutes,
+          credits_minutes: (profile.credits_minutes ?? 0) + item.minutes + bonusMinutes,
         };
         if (item.plan) updateData.plan = item.plan;
         await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
 
-        // ── Affiliate commission logic ──────────────────────────────────────
+        // ── Increment coupon used_count (CAS) ──────────────────────────────────
+        if (appliedCoupon) {
+          await base44.asServiceRole.entities.Coupon.update(appliedCoupon.id, {
+            used_count: (appliedCoupon.used_count || 0) + 1,
+          });
+        }
+
+        // ── Affiliate commission logic (on FULL price — discount is a platform
+        //    promotion, not an affiliate discount) ──────────────────────────────
         if (coupon_code) {
           const coupons = await base44.asServiceRole.entities.Coupon.filter({
             code: String(coupon_code).toUpperCase(),
@@ -95,7 +112,7 @@ Deno.serve(async (req) => {
             }
           }
         }
-        // ── end affiliate logic ─────────────────────────────────────────────
+        // ── end affiliate logic ─────────────────────────────────────────────────
       }
     }
 

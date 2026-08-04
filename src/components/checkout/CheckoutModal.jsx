@@ -196,7 +196,18 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         {/* Item summary */}
         <div className="px-6 py-4" style={{ background: "var(--app-nav-hover-bg)", borderBottom: "1px solid var(--app-border)" }}>
           <p className="theme-subtext text-xs" style={{ color: "var(--app-text-secondary)" }}>{item.title}</p>
-          <p className="theme-heading font-display font-bold text-2xl">{fmtBRL(item.price)}</p>
+          <div className="flex items-baseline gap-2">
+            <p className="theme-heading font-display font-bold text-2xl">{fmtBRL(item.price)}</p>
+            {item.original_price && item.original_price > item.price && (
+              <span className="text-sm line-through" style={{ color: "var(--app-text-muted)" }}>{fmtBRL(item.original_price)}</span>
+            )}
+          </div>
+          {item.bonus_minutes > 0 && (
+            <div className="flex items-center gap-1.5 mt-1 text-xs font-semibold text-emerald-500">
+              <Tag className="w-3 h-3" />
+              +{item.bonus_minutes} min de bônus
+            </div>
+          )}
           {affiliateCoupon && (
             <div className="flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-emerald-500">
               <Tag className="w-3 h-3" />

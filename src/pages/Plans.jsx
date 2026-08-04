@@ -23,14 +23,38 @@ export default function Plans() {
   const [loading, setLoading] = useState(true);
   const [checkoutItem, setCheckoutItem] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [couponDiscount, setCouponDiscount] = useState(null);
 
   useEffect(() => { loadProfile(); }, [user]);
 
   const loadProfile = async () => {
     try {
       const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
-      if (profiles.length > 0) setProfile(profiles[0]);
+      if (profiles.length > 0) {
+        setProfile(profiles[0]);
+        // Fetch coupon discount info for display (discount_percent is coupon-level,
+        // so one probe call is enough to calculate the discounted price for any item).
+        if (profiles[0].coupon_code) {
+          try {
+            const res = await base44.functions.invoke('validateCoupon', {
+              coupon_code: profiles[0].coupon_code,
+              external_reference: 'plan:standard',
+            });
+            if (res.data?.valid) {
+              setCouponDiscount({
+                discount_percent: res.data.discount_percent || 0,
+                bonus_minutes: res.data.bonus_minutes || 0,
+              });
+            }
+          } catch {}
+        }
+      }
     } catch {} finally { setLoading(false); }
+  };
+
+  const applyDiscount = (price) => {
+    if (!couponDiscount || couponDiscount.discount_percent <= 0) return price;
+    return Math.round(price * (1 - couponDiscount.discount_percent / 100) * 100) / 100;
   };
 
   const handleSuccess = (status) => {
@@ -44,9 +68,12 @@ export default function Plans() {
 
   const selectPlan = (plan) => {
     if (!profile || plan.price_monthly === 0) return;
+    const discountedPrice = applyDiscount(plan.price_monthly);
     setCheckoutItem({
       title: `One Talky — Plano ${plan.name} (${plan.minutes} min/mês)`,
-      price: plan.price_monthly,
+      price: discountedPrice,
+      original_price: discountedPrice < plan.price_monthly ? plan.price_monthly : null,
+      bonus_minutes: couponDiscount?.bonus_minutes || 0,
       external_reference: `plan:${plan.id}`,
     });
   };
@@ -54,9 +81,12 @@ export default function Plans() {
   const buyPack = (pack) => {
     if (!profile) return;
     const ref = pack.id === "teste" ? "pack:teste" : `pack:${pack.id}`;
+    const discountedPrice = applyDiscount(pack.price_brl);
     setCheckoutItem({
       title: `One Talky — ${pack.label}`,
-      price: pack.price_brl,
+      price: discountedPrice,
+      original_price: discountedPrice < pack.price_brl ? pack.price_brl : null,
+      bonus_minutes: couponDiscount?.bonus_minutes || 0,
       external_reference: ref,
     });
   };
