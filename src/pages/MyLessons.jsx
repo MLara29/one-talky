@@ -87,12 +87,14 @@ export default function MyLessons() {
     if (!cancellingLesson) return;
     setActionLoading(true);
     try {
-      await base44.functions.invoke('cancelLesson', { lesson_id: cancellingLesson.id, message });
+      const response = await base44.functions.invoke('cancelLesson', { lesson_id: cancellingLesson.id, message });
+      if (response.data?.error) throw new Error(response.data.error);
       setLessons(prev => prev.map(l => l.id === cancellingLesson.id ? { ...l, status: "cancelled" } : l));
       setCancellingLesson(null);
       toast({ title: T("cancelLesson"), description: message ? T("msgToTutor") : "" });
-    } catch {
-      toast({ title: "Error cancelling", variant: "destructive" });
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || "Please try again.";
+      toast({ title: "Error cancelling", description: msg, variant: "destructive" });
     } finally { setActionLoading(false); }
   };
 
@@ -100,12 +102,14 @@ export default function MyLessons() {
     if (!managingLesson) return;
     setActionLoading(true);
     try {
-      await base44.functions.invoke('cancelLesson', { lesson_id: managingLesson.id, message });
+      const response = await base44.functions.invoke('cancelLesson', { lesson_id: managingLesson.id, message });
+      if (response.data?.error) throw new Error(response.data.error);
       setLessons(prev => prev.map(l => l.id === managingLesson.id ? { ...l, status: "cancelled" } : l));
       setManagingLesson(null);
       toast({ title: "Lesson cancelled", description: message ? "Message sent to student." : "" });
-    } catch {
-      toast({ title: "Error cancelling", variant: "destructive" });
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || "Please try again.";
+      toast({ title: "Error cancelling", description: msg, variant: "destructive" });
     } finally { setActionLoading(false); }
   };
 
@@ -113,12 +117,14 @@ export default function MyLessons() {
     if (!managingLesson) return;
     setActionLoading(true);
     try {
-      await base44.functions.invoke('rescheduleLesson', { lesson_id: managingLesson.id, new_scheduled_at: newScheduledAt, message });
+      const response = await base44.functions.invoke('rescheduleLesson', { lesson_id: managingLesson.id, new_scheduled_at: newScheduledAt, message });
+      if (response.data?.error) throw new Error(response.data.error);
       setLessons(prev => prev.map(l => l.id === managingLesson.id ? { ...l, scheduled_at: newScheduledAt } : l));
       setManagingLesson(null);
       toast({ title: "Lesson rescheduled! 📅", description: message ? "Message sent to student." : "" });
-    } catch {
-      toast({ title: "Error rescheduling", variant: "destructive" });
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || "Please try again.";
+      toast({ title: "Error rescheduling", description: msg, variant: "destructive" });
     } finally { setActionLoading(false); }
   };
 
