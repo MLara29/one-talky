@@ -62,15 +62,27 @@ Deno.serve(async (req) => {
     const newSlotFull = `${normalizedNew}:00Z`;
     const oldSlotFull = (tp.booked_slots || []).find((s: string) => normalizeSlot(s) === normalizedOld) || `${normalizedOld}:00Z`;
 
-    // Atomic slot move: only succeeds if the new slot isn't already booked on the
-    // tutor profile at the moment of the write — protects against a concurrent
-    // booking/reschedule claiming the same slot between our read and this update.
+    // Etapa 1: remover o slot antigo (seguro, idempotente — não precisa de CAS)
+    await base44.asServiceRole.entities.TutorProfile.updateMany(
+      { id: tp.id },
+      { $pull: { booked_slots: oldSlotFull } }
+    );
+
+    // Etapa 2: reivindicar o slot novo com proteção CAS (essa é a etapa que
+    // realmente protege contra corrida — dois reagendamentos simultâneos
+    // tentando pegar o mesmo horário novo)
     const casResult = await base44.asServiceRole.entities.TutorProfile.updateMany(
       { id: tp.id, booked_slots: { $nin: [newSlotFull] } },
-      { $addToSet: { booked_slots: newSlotFull }, $pull: { booked_slots: oldSlotFull } }
+      { $addToSet: { booked_slots: newSlotFull } }
     );
 
     if (casResult.updated === 0) {
+      // Não conseguiu reivindicar o novo horário — devolve o slot antigo
+      // para não perder a disponibilidade original do tutor
+      await base44.asServiceRole.entities.TutorProfile.updateMany(
+        { id: tp.id },
+        { $addToSet: { booked_slots: oldSlotFull } }
+      );
       return Response.json({ error: "Novo horário já está ocupado" }, { status: 409 });
     }
 
