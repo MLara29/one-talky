@@ -49,6 +49,26 @@ function getDayNameInTz(date, tz) {
   return new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long" }).format(date);
 }
 
+// Convert the Brazil (Brasília, UTC-3) student activity window into the
+// tutor's own timezone, so we can suggest when they're most likely to get
+// bookings from Brazilian students.
+function getBrazilWindowInTutorTz(tutorTz) {
+  if (!tutorTz) return null;
+  const fmt = (utcHour, utcMinute = 0) => {
+    const d = new Date();
+    d.setUTCHours(utcHour, utcMinute, 0, 0);
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: tutorTz, hour: "2-digit", minute: "2-digit", hour12: false,
+    }).format(d);
+  };
+  return {
+    generalStart: fmt(9),   // 06:00 BRT = 09:00 UTC
+    generalEnd: fmt(2),     // 23:00 BRT = 02:00 UTC (next day)
+    peakStart: fmt(21),     // 18:00 BRT = 21:00 UTC
+    peakEnd: fmt(1),        // 22:00 BRT = 01:00 UTC (next day)
+  };
+}
+
 export default function TutorSchedule() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -232,6 +252,24 @@ export default function TutorSchedule() {
           })}
         </div>
       </div>
+
+      {/* Brazil demand hint — converted to tutor's timezone */}
+      {(() => {
+        const w = getBrazilWindowInTutorTz(profile?.timezone);
+        if (!w) return null;
+        return (
+          <div className="px-3 py-2.5 rounded-xl text-xs mb-4 flex items-start gap-2"
+            style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)", color: "var(--app-text-secondary)" }}>
+            <span>💡</span>
+            <span>
+              Most students are in Brazil. Based on your timezone, students are
+              typically online from <strong>{w.generalStart}–{w.generalEnd}</strong>,
+              with peak demand around <strong>{w.peakStart}–{w.peakEnd}</strong>.
+              Setting availability in this window may get you more bookings.
+            </span>
+          </div>
+        );
+      })()}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calendar */}

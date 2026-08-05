@@ -204,12 +204,12 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="theme-card w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+      <div className="theme-card w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh]"
         style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid var(--app-border)" }}>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
               <Calendar className="w-4 h-4 text-white" />
             </div>
             <h2 className="theme-heading font-display font-bold text-lg">Schedule a Lesson</h2>
@@ -219,16 +219,17 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 overflow-y-auto flex-1">
           {/* Timezone note */}
           {tzDiffers && (
-            <div className="px-3 py-2 rounded-xl text-xs" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)", color: "var(--app-text-secondary)" }}>
+            <div className="px-3 py-2 rounded-xl text-xs" style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.2)", color: "var(--app-text-secondary)" }}>
               🌍 Times shown in <strong>your local timezone</strong> ({studentTz.replace("_", " ")})
             </div>
           )}
 
-          {/* Calendar */}
-          <div>
+          <div className="sm:flex sm:gap-6">
+            {/* Calendar */}
+            <div className="sm:w-[280px] shrink-0">
             <div className="flex items-center justify-between mb-4">
               <button onClick={prevMonth} disabled={!canGoPrev}
                 className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30"
@@ -261,30 +262,31 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
                 return (
                   <button key={idx} onClick={() => handleDayClick(date)} disabled={!available}
                     className={`relative h-10 w-full flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-all
-                      ${isSelected ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30 scale-105" : ""}
-                      ${!isSelected && available ? "hover:bg-violet-500/15 cursor-pointer" : ""}
+                      ${isSelected ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30 scale-105" : ""}
+                      ${!isSelected && available ? "hover:bg-orange-500/15 cursor-pointer" : ""}
                       ${isPast || !available ? "opacity-30 cursor-not-allowed" : ""}
                     `}>
-                    <span className={isToday && !isSelected ? "text-violet-500 font-bold" : isSelected ? "text-white" : ""}
+                    <span className={isToday && !isSelected ? "text-orange-500 font-bold" : isSelected ? "text-white" : ""}
                       style={{ color: isSelected ? undefined : (!available || isPast) ? "var(--app-text-muted)" : "var(--app-text-primary)" }}>
                       {date.getDate()}
                     </span>
                     {available && !isSelected && (
-                      <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-violet-500" />
+                      <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-orange-500" />
                     )}
                   </button>
                 );
               })}
             </div>
             <p className="text-[11px] mt-3 flex items-center gap-1.5" style={{ color: "var(--app-text-muted)" }}>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-500" />
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500" />
               Days with available slots (booked slots are hidden)
             </p>
-          </div>
+            </div>
 
-          {/* Time slots */}
+            {/* Time slots */}
+            <div className="sm:flex-1 sm:border-l sm:pl-6 mt-5 sm:mt-0" style={{ borderColor: "var(--app-border)" }}>
           {selectedDate && (
-            <div style={{ borderTop: "1px solid var(--app-border)" }} className="pt-5">
+            <div>
               <div className="flex items-center gap-2 mb-3">
                 <Clock className="w-4 h-4" style={{ color: "var(--app-text-muted)" }} />
                 <span className="theme-heading font-semibold text-sm">
@@ -299,8 +301,8 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
                     <button key={i} onClick={() => setSelectedSlot(s)}
                       className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${
                         selectedSlot?.displayLabel === s.displayLabel && selectedSlot?.tutorSlot === s.tutorSlot
-                          ? "bg-violet-600 text-white shadow-md shadow-violet-500/30 scale-105"
-                          : "hover:border-violet-500/40 hover:text-violet-500"
+                          ? "bg-orange-500 text-white shadow-md shadow-orange-500/30 scale-105"
+                          : "hover:border-orange-500/40 hover:text-orange-500"
                       }`}
                       style={!(selectedSlot?.tutorSlot === s.tutorSlot) ? {
                         background: "var(--app-nav-hover-bg)",
@@ -322,15 +324,17 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
                 : "Select a highlighted day to see available times."}
             </p>
           )}
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-3 px-6 pb-6">
+        <div className="flex gap-3 px-6 py-4 shrink-0" style={{ borderTop: "1px solid var(--app-border)" }}>
           <Button variant="outline" onClick={onClose} className="flex-1 rounded-2xl"
             style={{ borderColor: "var(--app-border)", color: "var(--app-text-secondary)", background: "transparent" }}>
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={!selectedDate || !selectedSlot || booking}
-            className="flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 disabled:opacity-40 hover:scale-105 transition-all">
+            className="flex-1 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 disabled:opacity-40 hover:scale-105 transition-all">
             {booking ? "Booking..." : <><Check className="w-4 h-4 mr-1.5" /> Confirm Booking</>}
           </Button>
         </div>
