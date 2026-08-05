@@ -40,6 +40,13 @@ export default function Login() {
     return () => { cancelled = true; };
   }, []);
 
+  const resetCaptcha = () => {
+    if (window.turnstile && widgetIdRef.current) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+    setCaptchaToken(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -58,19 +65,13 @@ export default function Login() {
         const captchaRes = await base44.functions.invoke("verifyCaptcha", { token: captchaToken });
         if (!captchaRes.data?.success) {
           setError("Verificação de segurança falhou. Tente novamente.");
-          if (window.turnstile && widgetIdRef.current) {
-            window.turnstile.reset(widgetIdRef.current);
-          }
-          setCaptchaToken(null);
+          resetCaptcha();
           setLoading(false);
           return;
         }
       } catch (captchaErr) {
         setError("Verificação de segurança falhou. Tente novamente.");
-        if (window.turnstile && widgetIdRef.current) {
-          window.turnstile.reset(widgetIdRef.current);
-        }
-        setCaptchaToken(null);
+        resetCaptcha();
         setLoading(false);
         return;
       }
@@ -79,6 +80,7 @@ export default function Login() {
       const rlRes = await base44.functions.invoke("checkLoginRateLimit", { email });
       if (!rlRes.data.allowed) {
         setError(rlRes.data.message || "Muitas tentativas de login. Tente novamente em breve.");
+        resetCaptcha();
         setLoading(false);
         return;
       }
@@ -90,6 +92,7 @@ export default function Login() {
         // Record failed attempt server-side via checkLoginRateLimit (action flag)
         base44.functions.invoke("checkLoginRateLimit", { email, action: "record_failure" });
         setError("E-mail ou senha inválidos.");
+        resetCaptcha();
         setLoading(false);
         return;
       }
