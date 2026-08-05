@@ -31,7 +31,6 @@ export default function Classroom() {
   const [msgInput, setMsgInput] = useState("");
   const [elapsed, setElapsed] = useState(0);
   const [showReview, setShowReview] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
   const [remoteUserPresent, setRemoteUserPresent] = useState(false);
   const [joined, setJoined] = useState(false);
@@ -655,7 +654,7 @@ export default function Classroom() {
     let success = false;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await base44.functions.invoke('endLesson', { lesson_id: id, is_recorded: isRecording });
+        await base44.functions.invoke('endLesson', { lesson_id: id, is_recorded: false });
         success = true;
         break;
       } catch (e) {
@@ -755,15 +754,6 @@ export default function Classroom() {
               <p className={`text-[16px] font-extrabold tabular-nums ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`}>{formatTime(displaySeconds)}</p>
             </div>
           </div>
-          <button
-            onClick={() => setIsRecording(!isRecording)}
-            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-              isRecording ? "bg-red-50 border-red-300 text-red-600" : "bg-[#F7F5F2] border-ot-border text-ot-text-secondary hover:text-ot-text"
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${isRecording ? "bg-red-500 animate-pulse" : "bg-ot-text-secondary/50"}`} />
-            {isRecording ? "REC" : "Gravar"}
-          </button>
         </div>
       </div>
 
