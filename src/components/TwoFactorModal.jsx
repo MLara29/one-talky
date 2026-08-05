@@ -15,7 +15,14 @@ export default function TwoFactorModal({ email, onVerified }) {
   const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(60);
+  const [role, setRole] = useState(null);
   const inputs = useRef([]);
+
+  useEffect(() => {
+    base44.auth.me().then(u => setRole(u?.role ?? null)).catch(() => {});
+  }, []);
+
+  const isEnglish = role === "tutor";
 
   useEffect(() => {
     inputs.current[0]?.focus();
@@ -48,7 +55,7 @@ export default function TwoFactorModal({ email, onVerified }) {
 
   const handleVerify = async () => {
     const code = digits.join("");
-    if (code.length !== 6) { setError("Digite os 6 dígitos do código."); return; }
+    if (code.length !== 6) { setError(isEnglish ? "Please enter all 6 digits." : "Digite os 6 dígitos do código."); return; }
     setLoading(true);
     setError("");
     try {
@@ -57,12 +64,12 @@ export default function TwoFactorModal({ email, onVerified }) {
         localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
         onVerified();
       } else {
-        setError(res.data?.message || "Código inválido ou expirado.");
+        setError(res.data?.message || (isEnglish ? "Invalid or expired code." : "Código inválido ou expirado."));
         setDigits(["", "", "", "", "", ""]);
         inputs.current[0]?.focus();
       }
     } catch {
-      setError("Erro ao verificar o código. Tente novamente.");
+      setError(isEnglish ? "Error verifying code. Please try again." : "Erro ao verificar o código. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -78,7 +85,7 @@ export default function TwoFactorModal({ email, onVerified }) {
       setDigits(["", "", "", "", "", ""]);
       inputs.current[0]?.focus();
     } catch {
-      setError("Erro ao reenviar. Tente novamente.");
+      setError(isEnglish ? "Error resending code. Please try again." : "Erro ao reenviar. Tente novamente.");
     } finally {
       setResending(false);
     }
@@ -90,9 +97,9 @@ export default function TwoFactorModal({ email, onVerified }) {
         <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
           <ShieldCheck className="w-7 h-7 text-orange-500" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Verificação em duas etapas</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-1">{isEnglish ? "Two-factor verification" : "Verificação em duas etapas"}</h2>
         <p className="text-sm text-gray-500 mb-6">
-          Enviamos um código de 6 dígitos para<br />
+          {isEnglish ? `We sent a 6-digit code to` : "Enviamos um código de 6 dígitos para"}<br />
           <span className="font-medium text-gray-700">{email}</span>
         </p>
 
@@ -122,7 +129,7 @@ export default function TwoFactorModal({ email, onVerified }) {
           disabled={loading || digits.join("").length !== 6}
           className="w-full h-12 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 rounded-xl mb-4"
         >
-          {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verificando...</> : "Confirmar acesso"}
+          {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isEnglish ? "Verifying..." : "Verificando..."}</> : (isEnglish ? "Verify" : "Confirmar acesso")}
         </Button>
 
         <button
@@ -131,14 +138,14 @@ export default function TwoFactorModal({ email, onVerified }) {
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-500 transition-colors mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${resending ? "animate-spin" : ""}`} />
-          {countdown > 0 ? `Reenviar em ${countdown}s` : "Reenviar código"}
+          {countdown > 0 ? (isEnglish ? `Resend in ${countdown}s` : `Reenviar em ${countdown}s`) : (isEnglish ? "Resend code" : "Reenviar código")}
         </button>
 
         <button
           onClick={handleNotYou}
           className="block w-full text-xs text-gray-400 hover:text-red-500 transition-colors mt-4"
         >
-          Não é você? Sair
+          {isEnglish ? "Not you? Log out" : "Não é você? Sair"}
         </button>
       </div>
     </div>
