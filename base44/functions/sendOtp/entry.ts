@@ -8,8 +8,8 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Only admins and tutors require 2FA
-    if (user.role !== 'admin' && user.role !== 'tutor') {
+    // Admins, tutors, and affiliates require 2FA
+    if (user.role !== 'admin' && user.role !== 'tutor' && user.role !== 'affiliate') {
       return Response.json({ required: false });
     }
 

@@ -13,8 +13,8 @@ import { getSessionHash } from './sessionHash.js';
 export async function requireOtp(base44, req, user) {
   if (!user) return { ok: false, status: 401, error: 'Unauthorized' };
 
-  // Only admin/tutor accounts go through 2FA — everyone else passes through.
-  if (user.role !== 'admin' && user.role !== 'tutor') {
+  // Only admin/tutor/affiliate accounts go through 2FA — everyone else passes through.
+  if (user.role !== 'admin' && user.role !== 'tutor' && user.role !== 'affiliate') {
     return { ok: true };
   }
 

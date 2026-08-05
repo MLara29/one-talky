@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (user.role !== 'admin' && user.role !== 'tutor') {
+    if (user.role !== 'admin' && user.role !== 'tutor' && user.role !== 'affiliate') {
       return Response.json({ required: false, verified: true });
     }
 

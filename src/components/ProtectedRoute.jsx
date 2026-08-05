@@ -25,7 +25,7 @@ export default function ProtectedRoute({ fallback = <DefaultFallback />, unauthe
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
-    if (user.role !== 'admin' && user.role !== 'tutor') {
+    if (user.role !== 'admin' && user.role !== 'tutor' && user.role !== 'affiliate') {
       setOtpStatus({ required: false, verified: true });
       return;
     }
