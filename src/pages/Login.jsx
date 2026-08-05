@@ -22,14 +22,22 @@ export default function Login() {
   const widgetIdRef = useRef(null);
 
   useEffect(() => {
-    if (window.turnstile && !widgetIdRef.current) {
-      widgetIdRef.current = window.turnstile.render("#turnstile-widget", {
-        sitekey: "0x4AAAAAAEGgibmedNvDV61I",
-        callback: (token) => { setCaptchaToken(token); setCaptchaError(false); },
-        "error-callback": () => setCaptchaError(true),
-        "expired-callback": () => setCaptchaToken(null),
-      });
-    }
+    let cancelled = false;
+    const tryRender = () => {
+      if (cancelled || widgetIdRef.current) return;
+      if (window.turnstile) {
+        widgetIdRef.current = window.turnstile.render("#turnstile-widget", {
+          sitekey: "0x4AAAAAAEGgibmedNvDV61I",
+          callback: (token) => { setCaptchaToken(token); setCaptchaError(false); },
+          "error-callback": () => setCaptchaError(true),
+          "expired-callback": () => setCaptchaToken(null),
+        });
+      } else {
+        setTimeout(tryRender, 100);
+      }
+    };
+    tryRender();
+    return () => { cancelled = true; };
   }, []);
 
   const handleSubmit = async (e) => {
