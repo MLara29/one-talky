@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -17,13 +17,56 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [show2FA, setShow2FA] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const [captchaError, setCaptchaError] = useState(false);
+  const widgetIdRef = useRef(null);
+
+  useEffect(() => {
+    if (window.turnstile && !widgetIdRef.current) {
+      widgetIdRef.current = window.turnstile.render("#turnstile-widget", {
+        sitekey: "0x4AAAAAAEGgibmedNvDV61I",
+        callback: (token) => { setCaptchaToken(token); setCaptchaError(false); },
+        "error-callback": () => setCaptchaError(true),
+        "expired-callback": () => setCaptchaToken(null),
+      });
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!captchaToken) {
+      setError("Complete a verificação de segurança antes de continuar.");
+      setCaptchaError(true);
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // 0. Verify captcha token server-side before attempting auth
+      try {
+        const captchaRes = await base44.functions.invoke("verifyCaptcha", { token: captchaToken });
+        if (!captchaRes.data?.success) {
+          setError("Verificação de segurança falhou. Tente novamente.");
+          if (window.turnstile && widgetIdRef.current) {
+            window.turnstile.reset(widgetIdRef.current);
+          }
+          setCaptchaToken(null);
+          setLoading(false);
+          return;
+        }
+      } catch (captchaErr) {
+        setError("Verificação de segurança falhou. Tente novamente.");
+        if (window.turnstile && widgetIdRef.current) {
+          window.turnstile.reset(widgetIdRef.current);
+        }
+        setCaptchaToken(null);
+        setLoading(false);
+        return;
+      }
+
       // 1. Check rate limit on the backend before attempting auth
       const rlRes = await base44.functions.invoke("checkLoginRateLimit", { email });
       if (!rlRes.data.allowed) {
@@ -149,6 +192,12 @@ export default function Login() {
             />
           </div>
         </div>
+        <div id="turnstile-widget" className="my-3" />
+        {captchaError && !captchaToken && (
+          <div className="mb-2 text-sm text-destructive">
+            Complete a verificação de segurança antes de continuar.
+          </div>
+        )}
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
             <>
