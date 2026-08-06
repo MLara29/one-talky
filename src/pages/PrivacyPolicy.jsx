@@ -29,8 +29,7 @@ const sections = [
         titulares e se comunicar com a Autoridade Nacional de Proteção de
         Dados (ANPD). Para exercer seus direitos ou tirar dúvidas sobre o
         tratamento de seus dados, entre em contato pelo e-mail
-        [inserir e-mail do encarregado, ex: privacidade@onetalky.com] ou
-        pelo canal de suporte disponível na plataforma.
+        support@onetalky.com ou pelo canal de suporte disponível na plataforma.
       </p>
     ),
   },

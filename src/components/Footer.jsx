@@ -27,7 +27,7 @@ export default function Footer({ role }) {
           </p>
         </div>
         <p className="mt-2 text-[11px] text-center sm:text-left" style={{ color: "#b7b3ab" }}>
-          One Talky Tecnologia Ltda. · CNPJ 00.000.000/0001-00 · contato@onetalky.com
+          One Talky Tecnologia Ltda. · CNPJ 00.000.000/0001-00 · support@onetalky.com
         </p>
       </div>
     </footer>
