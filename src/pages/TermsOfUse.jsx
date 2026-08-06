@@ -104,6 +104,93 @@ const sections = [
       </p>
     ),
   },
+  {
+    title: "8. Elegibilidade e Idade Mínima",
+    content: (
+      <p>
+        A One Talky é destinada exclusivamente a maiores de 18 anos. Ao criar uma conta, você declara e garante ter 18 anos ou mais. A One Talky reserva-se o direito de suspender ou encerrar contas que violem esta condição, a qualquer momento, sem aviso prévio.
+      </p>
+    ),
+  },
+  {
+    title: "9. Sua Conta e Responsabilidade",
+    content: (
+      <>
+        <p>
+          Você é responsável por manter a confidencialidade de sua senha e por todas as atividades realizadas em sua conta. Notifique imediatamente o Suporte caso suspeite de uso não autorizado.
+        </p>
+        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+          <li>Cada conta é de uso pessoal e intransferível — não é permitido compartilhar credenciais de acesso com terceiros.</li>
+          <li>Não é permitido criar mais de uma conta por pessoa, nem se passar por outra pessoa ou entidade.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    title: "10. Licença de Uso e Restrições",
+    content: (
+      <>
+        <p>
+          A One Talky concede a você uma licença limitada, não exclusiva e revogável para acessar e usar a plataforma conforme sua finalidade pretendida. Você concorda em não:
+        </p>
+        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+          <li>Copiar, modificar ou criar obras derivadas da plataforma;</li>
+          <li>Utilizar robôs, scrapers ou outros meios automatizados para acessar a plataforma sem autorização expressa;</li>
+          <li>Tentar obter acesso não autorizado a contas, sistemas ou redes conectadas à plataforma;</li>
+          <li>Interferir no funcionamento normal da plataforma ou no uso por outros usuários, incluindo por meio de vírus ou código malicioso;</li>
+          <li>Utilizar marcas, logotipos ou materiais da One Talky sem autorização prévia por escrito.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    title: "11. Registros de Sessão e Confiança e Segurança",
+    content: (
+      <p>
+        Conforme detalhado em nossa <Link to="/privacidade" style={{ color: ACCENT, fontWeight: 700 }}>Política de Privacidade</Link>, não gravamos vídeo ou áudio das aulas. Mensagens de texto trocadas durante as aulas e registros de duração são mantidos para fins de auditoria, resolução de disputas e conformidade com estas regras. A One Talky busca promover um ambiente de aprendizado seguro, mas não garante nem se responsabiliza integralmente pelo comportamento de alunos ou tutores fora do que está descrito nestes Termos — utilize o canal de Suporte para relatar qualquer preocupação sobre outro usuário.
+      </p>
+    ),
+  },
+  {
+    title: "12. Propriedade Intelectual",
+    content: (
+      <p>
+        Todo o conteúdo, design, código, marca e demais materiais da plataforma são de propriedade da One Talky ou de seus licenciadores, protegidos por leis de propriedade intelectual aplicáveis. Nenhuma licença ou direito é concedido a você além do uso pessoal previsto nestes Termos.
+      </p>
+    ),
+  },
+  {
+    title: "13. Conteúdo Enviado pelo Usuário",
+    content: (
+      <p>
+        Ao enviar fotos, vídeos de apresentação, biografia ou outro conteúdo à plataforma (ex: perfil de tutor), você garante possuir os direitos necessários sobre esse conteúdo e concede à One Talky uma licença para exibi-lo dentro da plataforma, na medida necessária para o funcionamento do serviço (ex: exibir seu perfil a alunos interessados).
+      </p>
+    ),
+  },
+  {
+    title: "14. Rescisão de Conta",
+    content: (
+      <p>
+        Você pode encerrar sua conta a qualquer momento pelo canal de Suporte. A One Talky também pode suspender ou encerrar contas que violem estes Termos, a seu critério, especialmente em casos de violação da Seção 5 (Tolerância Zero). Tutores com contrato encerrado têm direito ao pagamento de aulas já realizadas antes da data efetiva de encerramento, conforme o ciclo de pagamento vigente.
+      </p>
+    ),
+  },
+  {
+    title: "15. Isenções e Limitação de Responsabilidade",
+    content: (
+      <p>
+        A plataforma é fornecida "como está", sem garantia de operação ininterrupta ou livre de erros. Na máxima medida permitida pela legislação brasileira aplicável — incluindo o Código de Defesa do Consumidor, cujos direitos não podem ser afastados por este instrumento — a responsabilidade da One Talky por danos indiretos ou consequenciais é limitada ao valor efetivamente pago pelo usuário nos últimos seis meses anteriores ao evento gerador da reclamação.
+      </p>
+    ),
+  },
+  {
+    title: "16. Cessão e Acordo Integral",
+    content: (
+      <p>
+        Estes Termos, em conjunto com a Política de Privacidade, a Política de Reembolso e (quando aplicável) o Contrato de Prestação de Serviço para Tutores, constituem o acordo integral entre você e a One Talky. Você não pode ceder ou transferir seus direitos sob estes Termos a terceiros; a One Talky pode fazê-lo livremente, por exemplo em caso de reorganização societária.
+      </p>
+    ),
+  },
 ];
 
 export default function TermsOfUse() {
