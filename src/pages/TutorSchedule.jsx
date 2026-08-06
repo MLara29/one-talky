@@ -12,9 +12,11 @@ import TimezoneSelector from "@/components/tutors/TimezoneSelector";
 // Availability is stored as { "Monday": ["08:00","09:00",...], ... }
 // This is the format ScheduleModal reads to convert tutor-tz → student-tz
 const DAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-// 30-minute slots from 06:00 to 23:30
+// 30-minute slots covering the full 24-hour day, so tutors in any
+// timezone can open availability during Brazil's peak hours, even when
+// those hours fall overnight in their own local time.
 const HOURS = [];
-for (let h = 6; h < 24; h++) {
+for (let h = 0; h < 24; h++) {
   HOURS.push(`${String(h).padStart(2, "0")}:00`);
   HOURS.push(`${String(h).padStart(2, "0")}:30`);
 }
