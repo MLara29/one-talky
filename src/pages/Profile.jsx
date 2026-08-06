@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Save, Camera, Upload, Eye, Video, Star, MessageSquare } from "lucide-react";
+import { User, Save, Camera, Upload, Eye, Video, Star, MessageSquare, Trash2 } from "lucide-react";
 import { getCountryFlag, getLanguageLabel, INTERESTS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -83,6 +83,28 @@ export default function Profile() {
       setProfile({ ...profile, intro_video_url: file_url });
       toast({ title: "Intro video updated! 🎥" });
     } catch { toast({ title: "Error uploading video", variant: "destructive" }); } finally { setUploadingVideo(false); }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!confirm("Remove your profile photo?")) return;
+    setUploadingPhoto(true);
+    try {
+      await base44.functions.invoke('updateMyProfile', { updates: { photo_url: "" } });
+      setProfile({ ...profile, photo_url: "" });
+      toast({ title: "Photo removed" });
+    } catch { toast({ title: "Error removing photo", variant: "destructive" }); }
+    finally { setUploadingPhoto(false); }
+  };
+
+  const handleRemoveVideo = async () => {
+    if (!confirm("Remove your intro video?")) return;
+    setUploadingVideo(true);
+    try {
+      await base44.functions.invoke('updateMyProfile', { updates: { intro_video_url: "" } });
+      setProfile({ ...profile, intro_video_url: "" });
+      toast({ title: "Video removed" });
+    } catch { toast({ title: "Error removing video", variant: "destructive" }); }
+    finally { setUploadingVideo(false); }
   };
 
   if (loading) return (
@@ -363,6 +385,17 @@ export default function Profile() {
                 >
                   <Camera className="w-4 h-4 mr-2" /> Take photo now
                 </Button>
+                {profile?.photo_url && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemovePhoto}
+                    disabled={uploadingPhoto}
+                    className="theme-btn-ghost border-red-500/20 text-red-400 hover:text-red-300 justify-start"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Remove photo
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -384,15 +417,26 @@ export default function Profile() {
             {profile?.intro_video_url ? (
               <div className="space-y-3">
                 <video src={profile.intro_video_url} controls className="w-full rounded-xl bg-black" style={{ maxHeight: 220 }} />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => videoInputRef.current.click()}
-                  disabled={uploadingVideo}
-                  className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start"
-                >
-                  <Upload className="w-4 h-4 mr-2" /> {uploadingVideo ? "Uploading..." : "Replace video"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => videoInputRef.current.click()}
+                    disabled={uploadingVideo}
+                    className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start flex-1"
+                  >
+                    <Upload className="w-4 h-4 mr-2" /> {uploadingVideo ? "Uploading..." : "Replace video"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemoveVideo}
+                    disabled={uploadingVideo}
+                    className="theme-btn-ghost border-red-500/20 text-red-400 hover:text-red-300"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             ) : (
               <Button
