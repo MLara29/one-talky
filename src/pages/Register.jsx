@@ -23,13 +23,32 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+
+  const calculateAge = (dob) => {
+    const today = new Date();
+    const birth = new Date(dob);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
       setError("As senhas não coincidem.");
+      return;
+    }
+    if (!birthDate || calculateAge(birthDate) < 18) {
+      setError("Você precisa ter 18 anos ou mais para usar a One Talky.");
+      return;
+    }
+    if (!ageConfirmed) {
+      setError("Você precisa confirmar que tem 18 anos ou mais.");
       return;
     }
     if (!termsAccepted) {
@@ -60,6 +79,7 @@ export default function Register() {
           terms_accepted: true,
           terms_accepted_at: new Date().toISOString(),
           privacy_policy_accepted: true,
+          birth_date: birthDate,
         });
       }
       window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
@@ -230,6 +250,28 @@ export default function Register() {
             />
           </div>
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="birthDate">Data de nascimento</Label>
+          <Input
+            id="birthDate"
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            className="h-12"
+            required
+          />
+        </div>
+        <div className="flex items-start gap-3 pt-1">
+          <Checkbox
+            id="age"
+            checked={ageConfirmed}
+            onCheckedChange={(v) => setAgeConfirmed(!!v)}
+            className="mt-0.5"
+          />
+          <label htmlFor="age" className="text-sm text-muted-foreground leading-snug cursor-pointer">
+            Confirmo que tenho 18 anos ou mais.
+          </label>
+        </div>
         <div className="flex items-start gap-3 pt-1">
           <Checkbox
             id="terms"
@@ -250,7 +292,7 @@ export default function Register() {
           </label>
         </div>
 
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading || !termsAccepted}>
+        <Button type="submit" className="w-full h-12 font-medium" disabled={loading || !termsAccepted || !ageConfirmed || !birthDate}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
