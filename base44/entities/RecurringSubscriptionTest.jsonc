@@ -1,0 +1,55 @@
+{
+  "name": "RecurringSubscriptionTest",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "description": "Tipo do evento (SUBSCRIPTION_CREATED, payment.created, etc.) ou action do webhook do Mercado Pago"
+    },
+    "payment_id": {
+      "type": "string",
+      "description": "ID do pagamento cobrado pela assinatura (preenchido pelo webhook)"
+    },
+    "preapproval_id": {
+      "type": "string",
+      "description": "ID da assinatura recorrente (preapproval) no Mercado Pago"
+    },
+    "status": {
+      "type": "string",
+      "description": "Status da assinatura ou do pagamento (authorized, pending, confirmed, etc.)"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "raw_payload": {
+      "type": "string",
+      "description": "Payload completo do evento em JSON, para auditoria"
+    }
+  },
+  "required": [
+    "event_type"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
