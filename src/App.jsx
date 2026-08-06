@@ -40,6 +40,7 @@ import AdminAffiliates from '@/pages/AdminAffiliates';
 import AdminNotifications from '@/pages/AdminNotifications';
 import AdminAgoraUsage from '@/pages/AdminAgoraUsage';
 import AdminErrorLogs from '@/pages/AdminErrorLogs';
+import AdminAsaasEvents from '@/pages/AdminAsaasEvents';
 import AffiliateDashboard from '@/pages/AffiliateDashboard';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
@@ -120,6 +121,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/notifications" element={<AdminNotifications />} />
           <Route path="/admin/agora-usage" element={<AdminAgoraUsage />} />
           <Route path="/admin/error-logs" element={<AdminErrorLogs />} />
+          <Route path="/admin/asaas-events" element={<AdminAsaasEvents />} />
           <Route path="/affiliate" element={<AffiliateDashboard />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my-messages" element={<MyMessages />} />

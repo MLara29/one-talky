@@ -1,0 +1,55 @@
+{
+  "name": "AsaasTestEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "description": "Tipo do evento recebido do Asaas (ex: PAYMENT_CONFIRMED, PAYMENT_RECEIVED, PAYMENT_OVERDUE)"
+    },
+    "payment_id": {
+      "type": "string",
+      "description": "ID do pagamento no Asaas"
+    },
+    "subscription_id": {
+      "type": "string",
+      "description": "ID da assinatura recorrente no Asaas"
+    },
+    "value": {
+      "type": "number",
+      "description": "Valor da cobran\u00e7a"
+    },
+    "status": {
+      "type": "string",
+      "description": "Status do pagamento no Asaas"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "raw_payload": {
+      "type": "string",
+      "description": "Payload completo do evento em JSON, para auditoria"
+    }
+  },
+  "required": [
+    "event_type"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
