@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { MessageCircle, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 const ACCENT = "#F26A1B";
 
@@ -262,12 +262,7 @@ export default function PrivacyPolicy() {
             <ArrowLeft size={18} />
             <span style={{ fontSize: 14, fontWeight: 500 }}>Voltar</span>
           </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${ACCENT}, #e05a10)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <MessageCircle size={18} color="#fff" />
-            </div>
-            <span style={{ fontWeight: 800, fontSize: 16, color: "#111827" }}>One Talky</span>
-          </div>
+          <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style={{ height: 40, width: "auto" }} />
         </div>
       </header>
 
