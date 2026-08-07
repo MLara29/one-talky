@@ -45,7 +45,8 @@ export default function AdminRecurringTest() {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
-  const [frequencyType, setFrequencyType] = useState("days"); // days | weeks | months
+  const [frequencyType, setFrequencyType] = useState("months"); // days | weeks | months
+  const [transactionAmount, setTransactionAmount] = useState(15);
 
   // preapproval_ids que já foram cancelados (status ou evento manual)
   const cancelledIds = new Set(
@@ -148,6 +149,7 @@ export default function AdminRecurringTest() {
         card_token_id: tokenRes.id,
         payer_email: form.payerEmail,
         frequency_type: frequencyType,
+        transaction_amount: transactionAmount,
       });
       if (res.data?.success) {
         setResult(res.data);
@@ -249,6 +251,11 @@ export default function AdminRecurringTest() {
               <Label className="text-xs mb-1 block text-gray-600">E-mail do pagador</Label>
               <input type="email" placeholder="pagador@email.com" required value={form.payerEmail}
                 onChange={(e) => setForm((f) => ({ ...f, payerEmail: e.target.value }))} className={inputCls} />
+            </div>
+            <div>
+              <Label className="text-xs mb-1 block text-gray-600">Valor da cobrança (R$)</Label>
+              <input type="number" min="1" step="0.01" value={transactionAmount}
+                onChange={(e) => setTransactionAmount(Number(e.target.value))} placeholder="Valor (R$)" className={inputCls} />
             </div>
             <div>
               <Label className="text-xs mb-1 block text-gray-600">Frequência da cobrança</Label>

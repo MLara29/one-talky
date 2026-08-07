@@ -13,11 +13,14 @@ Deno.serve(async (req) => {
     const otpGate = await requireOtp(base44, req, user);
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
-    const { card_token_id, payer_email, frequency_type } = await req.json();
+    const { card_token_id, payer_email, frequency_type, transaction_amount } = await req.json();
     if (!card_token_id) return Response.json({ error: "card_token_id é obrigatório" }, { status: 400 });
     if (!payer_email) return Response.json({ error: "payer_email é obrigatório" }, { status: 400 });
     if (!["days", "weeks", "months"].includes(frequency_type)) {
       return Response.json({ error: "frequency_type inválido" }, { status: 400 });
+    }
+    if (!transaction_amount || transaction_amount <= 0) {
+      return Response.json({ error: "transaction_amount deve ser maior que zero" }, { status: 400 });
     }
 
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
@@ -33,7 +36,7 @@ Deno.serve(async (req) => {
       auto_recurring: {
         frequency: mpFrequency,
         frequency_type: mpFrequencyType,
-        transaction_amount: 1,
+        transaction_amount: transaction_amount,
         currency_id: "BRL",
       },
       card_token_id: card_token_id,
