@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { CreditCard, Lock, Loader2, CheckCircle, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Zap } from "lucide-react";
+import { CreditCard, Lock, Loader2, CheckCircle, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Zap, Ban } from "lucide-react";
 
 function formatCardNumber(v) {
   return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
@@ -44,6 +44,39 @@ export default function AdminRecurringTest() {
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [expanded, setExpanded] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
+
+  // preapproval_ids que já foram cancelados (status ou evento manual)
+  const cancelledIds = new Set(
+    events
+      .filter(
+        (ev) =>
+          ev.preapproval_id &&
+          (ev.status?.toLowerCase() === "cancelled" ||
+            ev.event_type === "cancelled_manually")
+      )
+      .map((ev) => ev.preapproval_id)
+  );
+
+  const handleCancel = async (preapprovalId) => {
+    if (!window.confirm(`Cancelar a assinatura ${preapprovalId}? As cobranças recorrentes serão interrompidas.`)) return;
+    setCancellingId(preapprovalId);
+    try {
+      const res = await base44.functions.invoke("testCancelRecurringSubscription", {
+        preapproval_id: preapprovalId,
+      });
+      if (res.data?.success) {
+        loadEvents();
+      } else {
+        alert(res.data?.error || "Não foi possível cancelar a assinatura.");
+      }
+    } catch (err) {
+      console.error("[AdminRecurringTest] cancel error:", err);
+      alert(err.message || "Erro ao cancelar assinatura.");
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const loadEvents = () => {
     setLoadingEvents(true);
@@ -251,30 +284,46 @@ export default function AdminRecurringTest() {
             const open = expanded === ev.id;
             return (
               <div key={ev.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                <button onClick={() => setExpanded(open ? null : ev.id)}
-                  className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-gray-50">
-                  {open ? <ChevronDown className="w-4 h-4 text-gray-400 mt-0.5" /> : <ChevronRight className="w-4 h-4 text-gray-400 mt-0.5" />}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="text-[11px] text-gray-500">
-                        {ev.received_at ? new Date(ev.received_at).toLocaleString("pt-BR") : new Date(ev.created_date).toLocaleString("pt-BR")}
-                      </span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600">
-                        {ev.event_type}
-                      </span>
-                      {ev.status && (
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLOR[ev.status?.toLowerCase()] || "bg-gray-100 text-gray-600"}`}>
-                          {ev.status}
+                <div className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-gray-50">
+                  <button onClick={() => setExpanded(open ? null : ev.id)} className="flex items-start gap-3 flex-1 min-w-0">
+                    {open ? <ChevronDown className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" /> : <ChevronRight className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="text-[11px] text-gray-500">
+                          {ev.received_at ? new Date(ev.received_at).toLocaleString("pt-BR") : new Date(ev.created_date).toLocaleString("pt-BR")}
                         </span>
-                      )}
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-50 text-orange-600">
+                          {ev.event_type}
+                        </span>
+                        {ev.status && (
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLOR[ev.status?.toLowerCase()] || "bg-gray-100 text-gray-600"}`}>
+                            {ev.status}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">
+                        {ev.preapproval_id ? `Assinatura ${ev.preapproval_id}` : ""}
+                        {ev.payment_id ? ` · Pagamento ${ev.payment_id}` : ""}
+                        {!ev.preapproval_id && !ev.payment_id ? "—" : ""}
+                      </p>
                     </div>
-                    <p className="text-sm font-medium text-gray-800">
-                      {ev.preapproval_id ? `Assinatura ${ev.preapproval_id}` : ""}
-                      {ev.payment_id ? ` · Pagamento ${ev.payment_id}` : ""}
-                      {!ev.preapproval_id && !ev.payment_id ? "—" : ""}
-                    </p>
-                  </div>
-                </button>
+                  </button>
+                  {ev.preapproval_id && !cancelledIds.has(ev.preapproval_id) && (
+                    <button
+                      onClick={() => handleCancel(ev.preapproval_id)}
+                      disabled={cancellingId === ev.preapproval_id}
+                      className="shrink-0 flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title="Cancelar assinatura recorrente"
+                    >
+                      {cancellingId === ev.preapproval_id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Ban className="w-3.5 h-3.5" />
+                      )}
+                      Cancelar
+                    </button>
+                  )}
+                </div>
                 {open && (
                   <div className="px-4 pb-4 pt-1 border-t border-gray-100">
                     <p className="text-[11px] text-gray-400 mb-1">Payload completo</p>
