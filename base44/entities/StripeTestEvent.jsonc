@@ -1,0 +1,63 @@
+{
+  "name": "StripeTestEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "description": "Tipo do evento Stripe (checkout.session.completed, invoice.paid, invoice.payment_failed, customer.subscription.deleted, etc.)"
+    },
+    "subscription_id": {
+      "type": "string",
+      "description": "ID da assinatura (subscription) no Stripe"
+    },
+    "invoice_id": {
+      "type": "string",
+      "description": "ID da invoice no Stripe"
+    },
+    "checkout_session_id": {
+      "type": "string",
+      "description": "ID da Checkout Session que originou a assinatura"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "ID do customer no Stripe"
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "Valor pago em centavos (BRL)"
+    },
+    "status": {
+      "type": "string",
+      "description": "Status do evento/objeto no Stripe (paid, open, canceled, etc.)"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "raw_payload": {
+      "type": "string",
+      "description": "Payload completo do evento em JSON, para auditoria"
+    }
+  },
+  "required": [
+    "event_type"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

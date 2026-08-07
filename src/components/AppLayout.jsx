@@ -14,7 +14,7 @@ import LessonReminderPopup from "@/components/LessonReminderPopup";
 import Footer from "@/components/Footer";
 import {
   Search, Calendar, BarChart3, BookOpen, User, LogOut,
-  GraduationCap, DollarSign, Star, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users, Bell, Bug, Repeat
+  GraduationCap, DollarSign, Star, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users, Bell, Bug, Repeat, CreditCard
 } from "lucide-react";
 
 const STUDENT_NAV = (lang) => {
@@ -62,6 +62,7 @@ const ADMIN_NAV = [
   { label: "Agora", path: "/admin/agora-usage", icon: BarChart3 },
   { label: "Erros", path: "/admin/error-logs", icon: Bug },
   { label: "Recorrência", path: "/admin/recurring-test", icon: Repeat },
+  { label: "Stripe", path: "/admin/stripe-test", icon: CreditCard },
 ];
 
 const AFFILIATE_NAV = [
