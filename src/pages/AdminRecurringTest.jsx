@@ -45,6 +45,7 @@ export default function AdminRecurringTest() {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
+  const [frequencyType, setFrequencyType] = useState("days"); // days | weeks | months
 
   // preapproval_ids que já foram cancelados (status ou evento manual)
   const cancelledIds = new Set(
@@ -146,6 +147,7 @@ export default function AdminRecurringTest() {
       const res = await base44.functions.invoke("testCreateRecurringSubscription", {
         card_token_id: tokenRes.id,
         payer_email: form.payerEmail,
+        frequency_type: frequencyType,
       });
       if (res.data?.success) {
         setResult(res.data);
@@ -248,8 +250,16 @@ export default function AdminRecurringTest() {
               <input type="email" placeholder="pagador@email.com" required value={form.payerEmail}
                 onChange={(e) => setForm((f) => ({ ...f, payerEmail: e.target.value }))} className={inputCls} />
             </div>
+            <div>
+              <Label className="text-xs mb-1 block text-gray-600">Frequência da cobrança</Label>
+              <select value={frequencyType} onChange={(e) => setFrequencyType(e.target.value)} className={inputCls}>
+                <option value="days">Diário (a cada 1 dia)</option>
+                <option value="weeks">Semanal (a cada 7 dias)</option>
+                <option value="months">Mensal (a cada 1 mês)</option>
+              </select>
+            </div>
             <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white border-0 h-11 text-base font-semibold">
-              Criar assinatura de teste · R$ 1,00/dia
+              Criar assinatura de teste · R$ 1,00
             </Button>
             <p className="text-center text-xs text-gray-500 flex items-center justify-center gap-1">
               <Lock className="w-3 h-3" /> Cartão tokenizado pelo Mercado Pago

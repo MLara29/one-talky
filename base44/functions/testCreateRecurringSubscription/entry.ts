@@ -13,18 +13,26 @@ Deno.serve(async (req) => {
     const otpGate = await requireOtp(base44, req, user);
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
-    const { card_token_id, payer_email } = await req.json();
+    const { card_token_id, payer_email, frequency_type } = await req.json();
     if (!card_token_id) return Response.json({ error: "card_token_id é obrigatório" }, { status: 400 });
     if (!payer_email) return Response.json({ error: "payer_email é obrigatório" }, { status: 400 });
+    if (!["days", "weeks", "months"].includes(frequency_type)) {
+      return Response.json({ error: "frequency_type inválido" }, { status: 400 });
+    }
 
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     if (!accessToken) return Response.json({ error: "Mercado Pago access token não configurado" }, { status: 500 });
 
+    // Mercado Pago documenta apenas "days" e "months" como frequency_type válidos.
+    // "weeks" é convertido para "days" com frequency 7 (mesmo efeito prático).
+    const mpFrequencyType = frequency_type === "weeks" ? "days" : frequency_type;
+    const mpFrequency = frequency_type === "weeks" ? 7 : 1;
+
     const preapprovalBody = {
       reason: "Teste de assinatura recorrente — One Talky",
       auto_recurring: {
-        frequency: 1,
-        frequency_type: "days",
+        frequency: mpFrequency,
+        frequency_type: mpFrequencyType,
         transaction_amount: 1,
         currency_id: "BRL",
       },
