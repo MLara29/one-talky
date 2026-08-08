@@ -31,13 +31,19 @@ export default function VideoRecorderModal({ onSave, onClose }) {
 
   const startRecording = () => {
     chunksRef.current = [];
-    const recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+    const mimeType = [
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm",
+      "video/mp4",
+    ].find(t => MediaRecorder.isTypeSupported(t)) || "";
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
     recorder.ondataavailable = e => chunksRef.current.push(e.data);
     recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
       setRecordedBlob(blob);
     };
-    recorder.start();
+    recorder.start(250); // captura dados a cada 250ms, evita blob vazio em alguns navegadores
     mediaRecorderRef.current = recorder;
     setRecording(true);
   };
@@ -53,7 +59,9 @@ export default function VideoRecorderModal({ onSave, onClose }) {
   };
 
   const useThisVideo = () => {
-    const file = new File([recordedBlob], `intro-video-${Date.now()}.webm`, { type: "video/webm" });
+    const actualType = recordedBlob?.type || "video/webm";
+    const ext = actualType.includes("mp4") ? "mp4" : "webm";
+    const file = new File([recordedBlob], `intro-video-${Date.now()}.${ext}`, { type: actualType });
     stream?.getTracks().forEach(t => t.stop());
     onSave(file);
   };

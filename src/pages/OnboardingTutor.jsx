@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LANGUAGES, COUNTRIES, INTERESTS } from "@/lib/constants";
-import { MessageCircle, ChevronRight, ChevronLeft } from "lucide-react";
+import { MessageCircle, ChevronRight, ChevronLeft, Video, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import VideoRecorder from "@/components/VideoRecorder";
+import VideoRecorderModal from "@/components/profile/VideoRecorderModal";
 
 export default function OnboardingTutor() {
   const { toast } = useToast();
@@ -26,6 +26,8 @@ export default function OnboardingTutor() {
     price_per_minute: 0.0833,
   });
   const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [showRecorder, setShowRecorder] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
 
 
@@ -184,10 +186,50 @@ export default function OnboardingTutor() {
                 <p className="text-xs text-gray-400 mt-1">{form.bio.length}/300</p>
               </div>
 
-              <VideoRecorder
-                onVideoReady={url => set("intro_video_url", url)}
-                onVideoRemoved={() => set("intro_video_url", "")}
-              />
+              <div>
+                <Label className={labelCls}>Intro video (optional)</Label>
+                {!form.intro_video_url ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowRecorder(true)}
+                    disabled={uploadingVideo}
+                    className="mt-1.5 w-full border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center gap-2 text-gray-500 hover:border-orange-400 hover:text-orange-600 transition-colors"
+                  >
+                    {uploadingVideo ? (
+                      <><Loader2 className="w-6 h-6 animate-spin" /><span className="text-sm">Uploading...</span></>
+                    ) : (
+                      <><Video className="w-6 h-6" /><span className="text-sm">Record intro video</span></>
+                    )}
+                  </button>
+                ) : (
+                  <div className="mt-1.5 space-y-2">
+                    <video src={form.intro_video_url} controls className="w-full rounded-xl bg-black" style={{ maxHeight: 200 }} />
+                    <button
+                      type="button"
+                      onClick={() => set("intro_video_url", "")}
+                      className="text-xs text-red-500 hover:underline flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3 h-3" /> Remove video
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {showRecorder && (
+                <VideoRecorderModal
+                  onSave={async (file) => {
+                    setShowRecorder(false);
+                    setUploadingVideo(true);
+                    try {
+                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                      set("intro_video_url", file_url);
+                    } catch {
+                      toast({ title: "Error uploading video", variant: "destructive" });
+                    } finally { setUploadingVideo(false); }
+                  }}
+                  onClose={() => setShowRecorder(false)}
+                />
+              )}
 
               <div className="flex gap-3 mt-2">
                 <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
