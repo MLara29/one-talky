@@ -203,6 +203,7 @@ export default function Plans() {
             {PLANS.map(plan => {
               const isCurrent = profile?.plan === plan.id;
               const isHighlight = plan.popular;
+              const isCancelledButActive = isCurrent && profile?.subscription_status === "cancelled" && profile?.subscription_valid_until && new Date(profile.subscription_valid_until) > new Date();
 
               return (
                 <div
@@ -223,9 +224,14 @@ export default function Plans() {
                       ⚡ Popular
                     </span>
                   )}
-                  {isCurrent && (
+                  {isCurrent && !isCancelledButActive && (
                     <span style={{ position: "absolute", top: -13, right: 16, background: "#22c55e", color: "#fff", fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999 }}>
                       ✓ Atual
+                    </span>
+                  )}
+                  {isCancelledButActive && (
+                    <span style={{ position: "absolute", top: -13, right: 16, background: "#f59e0b", color: "#fff", fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>
+                      Cancelado · até {new Date(profile.subscription_valid_until).toLocaleDateString('pt-BR')}
                     </span>
                   )}
 
@@ -265,26 +271,36 @@ export default function Plans() {
 
                   <button
                     onClick={() => selectPlan(plan)}
-                    disabled={isCurrent}
+                    disabled={isCurrent && !isCancelledButActive}
                     style={{
                       textAlign: "center", padding: "13px 0", borderRadius: 999, fontWeight: 700, fontSize: 14.5,
-                      background: isCurrent ? "#f0fdf4" : isHighlight ? ACCENT : "#17181C",
-                      color: isCurrent ? "#22c55e" : "#fff",
-                      border: isCurrent ? "1.5px solid #86efac" : "none",
-                      cursor: isCurrent ? "default" : "pointer",
+                      background: isCancelledButActive ? "#fff7ed" : isCurrent ? "#f0fdf4" : isHighlight ? ACCENT : "#17181C",
+                      color: isCancelledButActive ? "#f59e0b" : isCurrent ? "#22c55e" : "#fff",
+                      border: isCancelledButActive ? "1.5px solid #fdba74" : isCurrent ? "1.5px solid #86efac" : "none",
+                      cursor: (isCurrent && !isCancelledButActive) ? "default" : "pointer",
                       fontFamily: "inherit", transition: "opacity .2s",
                     }}
                   >
                     <CreditCard className="inline w-4 h-4 mr-2 mb-0.5" />
-                    {isCurrent ? "✓ Plano atual" : "Assinar agora"}
+                    {isCancelledButActive
+                      ? `Acesso até ${new Date(profile.subscription_valid_until).toLocaleDateString('pt-BR')}`
+                      : isCurrent ? "✓ Plano atual" : "Assinar agora"}
                   </button>
 
-                  {isCurrent && plan.id !== "free" && (
+                  {isCurrent && plan.id !== "free" && !isCancelledButActive && (
                     <button
                       onClick={() => setShowCancelModal(true)}
                       style={{ textAlign: "center", padding: "8px 0", fontWeight: 600, fontSize: 13, background: "transparent", color: "#ef4444", border: "none", cursor: "pointer", fontFamily: "inherit" }}
                     >
                       Cancelar assinatura
+                    </button>
+                  )}
+                  {isCancelledButActive && (
+                    <button
+                      onClick={() => selectPlan(plan)}
+                      style={{ textAlign: "center", padding: "8px 0", fontWeight: 600, fontSize: 13, background: "transparent", color: ACCENT, border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      Reativar assinatura
                     </button>
                   )}
                 </div>
