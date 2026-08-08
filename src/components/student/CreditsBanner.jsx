@@ -88,7 +88,8 @@ export default function CreditsBanner({ profile, onUpdate }) {
   const planObj = PLANS.find(p => p.id === plan);
   const isLow = mins < 30;
   const pct = Math.min(100, Math.round((mins / 120) * 100));
-  const planPct = Math.min(100, Math.round((planMins / 120) * 100));
+  const planMaxMinutes = planObj?.minutes || 60;
+  const planPct = Math.min(100, Math.round((planMins / planMaxMinutes) * 100));
   const prepaidPct = Math.min(100, Math.round((prepaidMins / 120) * 100));
 
   // Grace period warning for cancelled plan credits.
@@ -135,7 +136,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
           </button>
         ))}
       </div>
-      <p className="text-[10px] text-gray-400 mt-3 text-center">Créditos não expiram · Pagamento via Mercado Pago</p>
+      <p className="text-[10px] text-gray-400 mt-3 text-center">Créditos expiram em 60 dias · Pagamento via Mercado Pago</p>
     </div>
   );
 
