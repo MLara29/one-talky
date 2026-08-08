@@ -3,7 +3,7 @@ import { requireOtp } from "../../shared/requireOtp.js";
 
 // Fields that tutors are allowed to update on their own profile
 const TUTOR_ALLOWED_FIELDS = new Set([
-  "full_name", "bio", "bank_info", "photo_url", "intro_video_url",
+  "full_name", "display_name", "bio", "bank_info", "photo_url", "intro_video_url",
   "availability", "is_available_now", "last_seen", "timezone", "accent",
   "booked_slots", "interests", "other_languages", "min_booking_notice_hours", "payout_frequency",
 ]);
