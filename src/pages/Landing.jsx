@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 const ACCENT = "#F26A1B";
 
 import CookieConsentBanner from "@/components/CookieConsentBanner";
+import TrackingScripts from "@/components/TrackingScripts";
 
 const CONTENT = {
   pt: {
@@ -657,6 +658,7 @@ export default function Landing() {
       </footer>
 
       <CookieConsentBanner />
+      <TrackingScripts />
     </div>
   );
 }
