@@ -309,7 +309,7 @@ export default function Plans() {
           </div>
 
           <p className="text-center text-xs mt-6" style={{ color: "#A29A8C" }}>
-            Você pode cancelar a qualquer momento, sem multa. Ao cancelar, seu plano volta para Free, mas você mantém os minutos restantes por até 60 dias. Créditos pré-pagos não são afetados pelo cancelamento.
+            Você pode cancelar a qualquer momento, sem multa. Ao cancelar, seu plano volta para Free, mas você mantém os minutos do plano por até 60 dias. Créditos pré-pagos não são afetados pelo cancelamento, mas sempre expiram 60 dias após a data da compra, independente do status da sua assinatura.
           </p>
         </TabsContent>
 
