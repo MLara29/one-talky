@@ -18,7 +18,7 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
     try {
       const response = await base44.functions.invoke("cancelMyPlan", {});
       if (response.data?.error) throw new Error(response.data.error);
-      onCancelled();
+      onCancelled(response.data?.provider);
       setDone(true);
     } catch (e) {
       toast({ title: "Erro ao cancelar plano", description: e?.message || "Tente novamente.", variant: "destructive" });
@@ -40,7 +40,11 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
               <CheckCircle className="w-7 h-7 text-emerald-500" />
             </div>
             <h3 className="font-display font-bold text-lg mb-2" style={{ color: "#17181C" }}>Assinatura cancelada</h3>
-            <p className="text-sm mb-6" style={{ color: "#5A5B66" }}>Seu plano voltou para Free. Você pode assinar novamente quando quiser.</p>
+            <p className="text-sm mb-6" style={{ color: "#5A5B66" }}>
+              {profile?.subscription_provider === "stripe"
+                ? "Sua assinatura foi cancelada. Você mantém acesso aos minutos restantes até o fim do período já pago."
+                : "Seu plano voltou para Free. Você pode assinar novamente quando quiser."}
+            </p>
             <Button onClick={onClose} className="w-full bg-[#F26A1B] hover:bg-[#d9560e] text-white border-0">Fechar</Button>
           </div>
         ) : (
@@ -53,8 +57,12 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
               Você pode cancelar a qualquer momento, sem multa. Ao confirmar:
             </p>
             <ul className="text-sm mb-6 space-y-2" style={{ color: "#4B4C57" }}>
-              <li>• Seu plano volta imediatamente para <strong>Free</strong>.</li>
-              <li>• Os <strong>{profile?.credits_minutes || 0} minutos</strong> restantes do plano atual serão zerados — não há reembolso ou aproveitamento desses minutos após o cancelamento.</li>
+              <li>• Sua assinatura será cancelada.</li>
+              {profile?.subscription_provider === "stripe" ? (
+                <li>• Você mantém acesso aos <strong>{profile?.credits_minutes || 0} minutos</strong> restantes até o fim do período já pago — a cobrança automática para a partir daí.</li>
+              ) : (
+                <li>• Os <strong>{profile?.credits_minutes || 0} minutos</strong> restantes serão zerados imediatamente — não há reembolso ou aproveitamento após o cancelamento.</li>
+              )}
               <li>• Você pode assinar um novo plano a qualquer momento.</li>
             </ul>
             <div className="flex gap-3">

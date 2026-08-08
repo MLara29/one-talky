@@ -125,7 +125,13 @@ export default function Plans() {
         <CancelPlanModal
           profile={profile}
           onClose={() => setShowCancelModal(false)}
-          onCancelled={() => setProfile(prev => ({ ...prev, plan: "free", credits_minutes: 0, subscription_status: "cancelled" }))}
+          onCancelled={(provider) => {
+            if (provider === "stripe") {
+              setProfile(prev => ({ ...prev, subscription_status: "cancelled" }));
+            } else {
+              setProfile(prev => ({ ...prev, plan: "free", credits_minutes: 0, subscription_status: "cancelled" }));
+            }
+          }}
         />
       )}
 
