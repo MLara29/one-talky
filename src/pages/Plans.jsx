@@ -8,6 +8,7 @@ import { PLANS, PREPAID_PACKS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
+import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
 
 const ACCENT = "#F26A1B";
@@ -24,6 +25,7 @@ export default function Plans() {
   const [checkoutItem, setCheckoutItem] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("stripe");
 
   useEffect(() => { loadProfile(); }, [user]);
 
@@ -101,7 +103,15 @@ export default function Plans() {
 
   return (
     <div>
-      {checkoutItem && (
+      {checkoutItem && paymentMethod === "stripe" && (
+        <StripeCheckoutModal
+          item={checkoutItem}
+          onClose={() => setCheckoutItem(null)}
+          onSuccess={handleSuccess}
+          affiliateCoupon={affiliateCoupon}
+        />
+      )}
+      {checkoutItem && paymentMethod === "mercadopago" && (
         <CheckoutModal
           item={checkoutItem}
           userEmail={user?.email}
@@ -126,6 +136,40 @@ export default function Plans() {
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-sm font-semibold" style={{ background: "rgba(242,106,27,0.10)", border: "1px solid rgba(242,106,27,0.25)", color: ACCENT }}>
             <Clock className="w-4 h-4" /> {profile.credits_minutes || 0} minutos disponíveis
           </div>
+        )}
+      </div>
+
+      {/* ── Seletor de método de pagamento — Stripe (principal) / Mercado Pago (alternativo) ── */}
+      <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
+        <span className="text-xs font-semibold" style={{ color: "#8A8B94" }}>Pagamento via:</span>
+        <div className="inline-flex rounded-full overflow-hidden" style={{ border: "1px solid #EEE7DD", background: "#fff" }}>
+          <button
+            onClick={() => setPaymentMethod("stripe")}
+            style={{
+              padding: "7px 18px", fontSize: 13, fontWeight: 700, fontFamily: "inherit",
+              background: paymentMethod === "stripe" ? "#635BFF" : "transparent",
+              color: paymentMethod === "stripe" ? "#fff" : "#8A8B94",
+              border: "none", cursor: "pointer", transition: "all .2s",
+            }}
+          >
+            Stripe {paymentMethod === "stripe" && "✓"}
+          </button>
+          <button
+            onClick={() => setPaymentMethod("mercadopago")}
+            style={{
+              padding: "7px 18px", fontSize: 13, fontWeight: 700, fontFamily: "inherit",
+              background: paymentMethod === "mercadopago" ? "#00B1EA" : "transparent",
+              color: paymentMethod === "mercadopago" ? "#fff" : "#8A8B94",
+              border: "none", cursor: "pointer", transition: "all .2s",
+            }}
+          >
+            Mercado Pago
+          </button>
+        </div>
+        {paymentMethod === "stripe" && (
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(99,91,255,0.10)", color: "#635BFF" }}>
+            Recomendado
+          </span>
         )}
       </div>
 
@@ -300,7 +344,7 @@ export default function Plans() {
               ))}
             </div>
             <p className="text-center text-xs mt-6" style={{ color: "#A29A8C" }}>
-              Pagamento seguro via Mercado Pago · Cartão de crédito · Créditos não expiram
+              Pagamento seguro via {paymentMethod === "stripe" ? "Stripe" : "Mercado Pago"} · Cartão de crédito · Créditos não expiram
             </p>
           </div>
         </TabsContent>
