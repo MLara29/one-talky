@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
           <h2 style="color:#F26A1B;margin-bottom:8px">Hi, ${tutor.full_name}! 🎉</h2>
           <p style="color:#374151;font-size:16px">Your payment of <strong style="color:#10b981">$${(wr?.amount || 0).toFixed(2)}</strong> has been successfully sent!</p>
           <p style="color:#374151;font-size:15px">Please log in to <strong>One Talky</strong> and confirm receipt in your earnings section.</p>
-          <a href="https://onetalky.base44.app/earnings" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#F26A1B;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px">Confirm receipt →</a>
+          <a href="https://onetalky.com/earnings" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#F26A1B;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px">Confirm receipt →</a>
           <p style="color:#6b7280;font-size:13px;margin-top:24px">If you have any questions, please reach out through the platform support.</p>
           <p style="color:#6b7280;font-size:13px">The One Talky Team 🧡</p>
         </div>`
