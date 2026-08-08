@@ -1,0 +1,55 @@
+{
+  "name": "CouponUsage",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "description": "ID do User (student) que usou o cupom"
+    },
+    "coupon_code": {
+      "type": "string",
+      "description": "C\u00f3digo do cupom (uppercase)"
+    },
+    "discount_cycles_remaining": {
+      "type": "number",
+      "default": 0,
+      "description": "Quantos ciclos de cobran\u00e7a ainda t\u00eam desconto. Decrementado a cada cobran\u00e7a com desconto aplicado. 0 = desconto j\u00e1 esgotado."
+    },
+    "bonus_minutes_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de expira\u00e7\u00e3o dos minutos gr\u00e1tis concedidos pelo cupom. Calculada a partir do discount_type (ex: first_month = +30 dias, bimestral = +60 dias)."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de cria\u00e7\u00e3o do registro (primeira vez que o cupom foi usado por este aluno)"
+    }
+  },
+  "required": [
+    "student_id",
+    "coupon_code"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

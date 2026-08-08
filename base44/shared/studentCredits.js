@@ -1,0 +1,195 @@
+// Shared student credit logic: routing (plan vs prepaid) on purchase, and
+// debiting (plan first, prepaid last) on lesson consumption.
+//
+// Used by all payment confirmation points (mpProcessPayment, mpConfirmPayment,
+// mpCheckPixStatus, stripeWebhook) and all lesson consumption points
+// (completeLesson, processNoShow).
+
+// ── Constants ──────────────────────────────────────────────────────────────
+
+const PREPAID_EXPIRY_DAYS = 60;
+const PLAN_GRACE_EXPIRY_DAYS = 60;
+
+// Discount type → number of billing cycles the discount applies for.
+const DISCOUNT_CYCLES_BY_TYPE = {
+  none: 0,
+  first_month: 1,
+  period: 1,
+  bimestral: 2,
+  trimestral: 3,
+  semestral: 6,
+  anual: 12,
+};
+
+// Discount type → how many days the coupon's bonus minutes stay valid.
+const BONUS_EXPIRY_DAYS_BY_TYPE = {
+  none: 30,
+  first_month: 30,
+  period: 30,
+  bimestral: 60,
+  trimestral: 90,
+  semestral: 180,
+  anual: 365,
+};
+
+export function getDiscountCycles(discountType) {
+  return DISCOUNT_CYCLES_BY_TYPE[discountType] ?? 0;
+}
+
+export function getBonusExpiryDays(discountType) {
+  return BONUS_EXPIRY_DAYS_BY_TYPE[discountType] ?? 30;
+}
+
+export function getPrepaidExpiryDays() {
+  return PREPAID_EXPIRY_DAYS;
+}
+
+export function getPlanGraceExpiryDays() {
+  return PLAN_GRACE_EXPIRY_DAYS;
+}
+
+// ── Credit routing on purchase ────────────────────────────────────────────
+
+// Computes the StudentProfile update data for a confirmed payment, routing
+// minutes to plan_credits_minutes or prepaid_credits_minutes based on the
+// external_reference prefix, and handling coupon bonus minutes with their
+// own expiry via CouponUsage tracking.
+//
+// Does NOT apply the update — the caller does that. Returns the updateData
+// object to merge with any other fields the caller needs to set.
+//
+// @param {object} base44            - base44 service-role client
+// @param {object} opts
+// @param {object} opts.profile       - current StudentProfile record
+// @param {string} opts.externalReference - "plan:standard" | "pack:pp_60" | ...
+// @param {object} opts.item          - catalog item { minutes, plan, ... }
+// @param {string} opts.couponCode    - coupon code (or "")
+// @param {number} opts.bonusMinutes  - bonus minutes from validateAndApplyCoupon
+// @param {object} opts.appliedCoupon - Coupon record (null if no coupon)
+// @param {boolean} opts.isRenewal    - true for Stripe invoice.paid cycle 2+
+// @returns {Promise<object>} updateData for StudentProfile.update
+export async function computeCreditUpdate(base44, {
+  profile,
+  externalReference,
+  item,
+  couponCode,
+  bonusMinutes,
+  appliedCoupon,
+  isRenewal = false,
+}) {
+  const isPlan = externalReference.startsWith("plan:");
+  const isPack = externalReference.startsWith("pack:");
+  const now = new Date();
+  const updateData = {};
+
+  // ── Route purchased minutes ──
+  if (isPlan) {
+    updateData.plan_credits_minutes = (profile.plan_credits_minutes ?? 0) + item.minutes;
+    // plan_credits_grace_expires_at stays null while subscription is active.
+  } else if (isPack) {
+    updateData.prepaid_credits_minutes = (profile.prepaid_credits_minutes ?? 0) + item.minutes;
+    // Reset prepaid expiry to now + 60 days, always (reinicia o prazo para todo o saldo).
+    updateData.prepaid_expires_at = new Date(
+      now.getTime() + PREPAID_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+    ).toISOString();
+  }
+
+  // ── Coupon bonus minutes + discount cycle tracking ──
+  const hasCoupon = couponCode && appliedCoupon;
+  const hasBonus = bonusMinutes > 0;
+  const hasDiscount = appliedCoupon && (appliedCoupon.discount_percent || 0) > 0;
+
+  if (hasCoupon && (hasBonus || hasDiscount)) {
+    const code = String(couponCode).toUpperCase();
+    const usageRecords = await base44.asServiceRole.entities.CouponUsage.filter({
+      student_id: profile.user_id,
+      coupon_code: code,
+    });
+    let usage = usageRecords[0];
+
+    if (!usage) {
+      // First time — create with cycles + bonus expiry based on discount_type.
+      const discountType = appliedCoupon.discount_type || "none";
+      const cycles = getDiscountCycles(discountType);
+      const bonusExpiryDays = getBonusExpiryDays(discountType);
+      const bonusExpiresAt = new Date(
+        now.getTime() + bonusExpiryDays * 24 * 60 * 60 * 1000
+      ).toISOString();
+
+      usage = await base44.asServiceRole.entities.CouponUsage.create({
+        student_id: profile.user_id,
+        coupon_code: code,
+        discount_cycles_remaining: cycles,
+        bonus_minutes_expires_at: bonusExpiresAt,
+        created_at: now.toISOString(),
+      });
+    }
+
+    // Decrement discount_cycles_remaining on a charge where the discount was
+    // applied (first purchase or renewal within the discount window). On
+    // renewals where the discount is no longer active (cycles=0), skip.
+    if (!isRenewal && usage.discount_cycles_remaining > 0) {
+      await base44.asServiceRole.entities.CouponUsage.update(usage.id, {
+        discount_cycles_remaining: usage.discount_cycles_remaining - 1,
+      });
+    }
+
+    // Add bonus minutes to prepaid with the coupon's specific expiry.
+    if (hasBonus) {
+      const bonusExpiry = usage.bonus_minutes_expires_at
+        ? new Date(usage.bonus_minutes_expires_at)
+        : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      const currentPrepaidInUpdate = updateData.prepaid_credits_minutes ?? null;
+      const newPrepaidTotal = (currentPrepaidInUpdate ?? profile.prepaid_credits_minutes ?? 0) + bonusMinutes;
+      updateData.prepaid_credits_minutes = newPrepaidTotal;
+
+      // Set prepaid_expires_at to the LATER of (current/new pack expiry, bonus
+      // expiry) so neither set of minutes is prematurely expired. With a single
+      // prepaid_expires_at field we can't track per-lot expiry, so we take the
+      // most generous (latest) date.
+      const packExpiryCandidate = updateData.prepaid_expires_at
+        ? new Date(updateData.prepaid_expires_at)
+        : (profile.prepaid_expires_at ? new Date(profile.prepaid_expires_at) : null);
+
+      const laterExpiry = packExpiryCandidate && packExpiryCandidate > bonusExpiry
+        ? packExpiryCandidate
+        : bonusExpiry;
+      updateData.prepaid_expires_at = laterExpiry.toISOString();
+    }
+  }
+
+  // ── Keep deprecated credits_minutes in sync as the sum during transition ──
+  const finalPlan = updateData.plan_credits_minutes ?? (profile.plan_credits_minutes ?? 0);
+  const finalPrepaid = updateData.prepaid_credits_minutes ?? (profile.prepaid_credits_minutes ?? 0);
+  updateData.credits_minutes = Math.round((finalPlan + finalPrepaid) * 100) / 100;
+
+  return updateData;
+}
+
+// ── Credit debit on lesson consumption ─────────────────────────────────────
+
+// Debits student credits: plan credits first, prepaid credits last.
+// Returns the new values for plan_credits_minutes and prepaid_credits_minutes
+// (rounded to 2 decimals), suitable for a StudentProfile.update call.
+//
+// @param {object} sp               - StudentProfile record
+// @param {number} durationMinutes  - minutes to debit
+// @returns {{ plan_credits_minutes: number, prepaid_credits_minutes: number }}
+export function debitStudentCredits(sp, durationMinutes) {
+  let remaining = durationMinutes;
+  const fromPlan = Math.min(sp.plan_credits_minutes || 0, remaining);
+  remaining -= fromPlan;
+  const fromPrepaid = Math.min(sp.prepaid_credits_minutes || 0, remaining);
+  remaining -= fromPrepaid;
+
+  const newPlan = Math.max(0, Math.round(((sp.plan_credits_minutes || 0) - fromPlan) * 100) / 100);
+  const newPrepaid = Math.max(0, Math.round(((sp.prepaid_credits_minutes || 0) - fromPrepaid) * 100) / 100);
+
+  return {
+    plan_credits_minutes: newPlan,
+    prepaid_credits_minutes: newPrepaid,
+    // Keep deprecated credits_minutes in sync during transition.
+    credits_minutes: Math.round((newPlan + newPrepaid) * 100) / 100,
+  };
+}

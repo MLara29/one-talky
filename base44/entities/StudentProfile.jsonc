@@ -70,7 +70,28 @@
     },
     "credits_minutes": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "DEPRECATED \u2014 mantido durante a transi\u00e7\u00e3o como soma de plan_credits_minutes + prepaid_credits_minutes. A fonte de verdade agora s\u00e3o os dois campos separados. N\u00e3o usar para l\u00f3gica de neg\u00f3cio."
+    },
+    "plan_credits_minutes": {
+      "type": "number",
+      "default": 0,
+      "description": "Minutos concedidos pelo plano mensal. Nunca expiram enquanto a assinatura estiver ativa. Ap\u00f3s cancelamento, ganham prazo de 60 dias (plan_credits_grace_expires_at). Consumidos primeiro em aulas."
+    },
+    "prepaid_credits_minutes": {
+      "type": "number",
+      "default": 0,
+      "description": "Minutos comprados avulsos (pr\u00e9-pago) ou b\u00f4nus de cupom. Expiram 60 dias ap\u00f3s a compra (prepaid_expires_at). Cada nova compra de pacote reinicia o prazo para todo o saldo acumulado. Consumidos por \u00faltimo em aulas."
+    },
+    "prepaid_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de expira\u00e7\u00e3o de TODO o saldo pr\u00e9-pago (comprado + b\u00f4nus). Resetada para agora+60 dias a cada compra de pacote. Pode ser diferente quando h\u00e1 b\u00f4nus de cupom com prazo pr\u00f3prio."
+    },
+    "plan_credits_grace_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Setado s\u00f3 quando a assinatura \u00e9 cancelada (agora + 60 dias). Nulo enquanto ativa \u2014 o rel\u00f3gio s\u00f3 come\u00e7a a contar depois do cancelamento. O cron expirePlanGraceCredits zera plan_credits_minutes quando esta data passa."
     },
     "coupon_code": {
       "type": "string",
