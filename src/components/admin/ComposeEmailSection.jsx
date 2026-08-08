@@ -15,6 +15,24 @@ const TARGETS = [
   { value: "all_students", label: "Todos os alunos", icon: Users },
 ];
 
+// Converte texto colado (quebras de linha e **negrito** estilo markdown)
+// para HTML antes de enviar — não altera o que se vê digitando.
+const convertToHtml = (text) => {
+  if (!text) return "";
+  // Escapa HTML real que porventura já exista no texto colado
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  // **negrito** → <strong>negrito</strong>
+  const withBold = escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  // Quebra dupla de linha (parágrafo) → </p><p>, quebra simples → <br>
+  const paragraphs = withBold.split("\n\n").map(p =>
+    `<p style="margin: 0 0 12px;">${p.replace(/\n/g, "<br>")}</p>`
+  ).join("");
+  return paragraphs;
+};
+
 export default function ComposeEmailSection() {
   const [target, setTarget] = useState("specific_tutor");
   const [recipient, setRecipient] = useState(null);
@@ -42,7 +60,7 @@ export default function ComposeEmailSection() {
         target,
         recipient_id: recipient?.id,
         subject,
-        body_html: bodyHtml,
+        body_html: convertToHtml(bodyHtml),
         attachments: attachments.map(({ filename, content_type, content_base64 }) => ({ filename, content_type, content_base64 })),
       });
       setResult({ ok: true, data: res.data });
@@ -104,13 +122,20 @@ export default function ComposeEmailSection() {
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 mb-1.5 block">Corpo do e-mail (aceita HTML simples)</label>
+          <label className="text-xs text-gray-500 mb-1.5 block">Corpo do e-mail</label>
           <Textarea
             value={bodyHtml}
             onChange={(e) => setBodyHtml(e.target.value)}
-            placeholder="Digite a mensagem... você pode usar tags HTML simples como <b>, <br>, <a>"
+            placeholder="Digite ou cole o texto normalmente — quebras de linha e **negrito** (com dois asteriscos) são convertidos automaticamente."
             className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 min-h-[160px]"
           />
+          <div className="mt-2 p-3 rounded-lg bg-white border border-white/10">
+            <p className="text-[10px] text-gray-500 mb-2 uppercase tracking-wide">Prévia</p>
+            <div
+              className="text-sm text-gray-800"
+              dangerouslySetInnerHTML={{ __html: convertToHtml(bodyHtml) }}
+            />
+          </div>
         </div>
 
         <div>
