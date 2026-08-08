@@ -34,6 +34,10 @@
     },
     "pioneer_email": {
       "type": "string"
+    },
+    "admin_comment": {
+      "type": "string",
+      "description": "Observa\u00e7\u00e3o do admin sobre esse pagamento espec\u00edfico (ex: valor extra pago, motivo de ajuste)."
     }
   },
   "required": [

@@ -16,10 +16,13 @@ Deno.serve(async (req) => {
     const otpGate = await requireOtp(base44, req, user);
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
-    const { tutor_id, action } = await req.json();
+    const { tutor_id, action, comment } = await req.json();
     if (!tutor_id || !['mark_processing', 'mark_paid', 'mark_rejected'].includes(action)) {
       return Response.json({ error: 'tutor_id and valid action are required' }, { status: 400 });
     }
+
+    const commentStr = comment ? String(comment).trim().slice(0, 500) : "";
+    const commentField = commentStr ? { admin_comment: commentStr } : {};
 
     const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: tutor_id });
     const tutor = tutorProfiles[0];
@@ -42,13 +45,13 @@ Deno.serve(async (req) => {
       const existing = await base44.asServiceRole.entities.WithdrawalRequest.filter({ tutor_id, status: 'pending' });
 
       if (existing[0]) {
-        await base44.asServiceRole.entities.WithdrawalRequest.update(existing[0].id, { status: 'processing' });
+        await base44.asServiceRole.entities.WithdrawalRequest.update(existing[0].id, { status: 'processing', ...commentField });
       } else {
         const pioneerEmail = parsePioneerEmail(tutor.bank_info);
         await base44.asServiceRole.entities.WithdrawalRequest.create({
           tutor_id, tutor_name: tutor.full_name, amount: earned,
           period: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-          pioneer_email: pioneerEmail || '', status: 'processing',
+          pioneer_email: pioneerEmail || '', status: 'processing', ...commentField,
         });
         // Keep the CAS lock consistent — admin proactively started a withdrawal cycle.
         await base44.asServiceRole.entities.TutorProfile.update(tutor.id, { has_pending_withdrawal: true });
@@ -72,7 +75,7 @@ Deno.serve(async (req) => {
       const wrList = await base44.asServiceRole.entities.WithdrawalRequest.filter({ tutor_id, status: 'processing' });
       const wr = wrList[0];
       if (wr) {
-        await base44.asServiceRole.entities.WithdrawalRequest.update(wr.id, { status: 'paid' });
+        await base44.asServiceRole.entities.WithdrawalRequest.update(wr.id, { status: 'paid', ...commentField });
       }
 
       await sendPaymentEmail(
@@ -94,7 +97,7 @@ Deno.serve(async (req) => {
       const wrList = await base44.asServiceRole.entities.WithdrawalRequest.filter({ tutor_id, status: { $in: ['pending', 'processing'] } });
       const wr = wrList[0];
       if (wr) {
-        await base44.asServiceRole.entities.WithdrawalRequest.update(wr.id, { status: 'rejected' });
+        await base44.asServiceRole.entities.WithdrawalRequest.update(wr.id, { status: 'rejected', ...commentField });
       }
 
       // Release the CAS lock, same as confirmWithdrawal does on the success path,

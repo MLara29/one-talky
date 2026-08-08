@@ -10,13 +10,17 @@ const FREQUENCY_LABELS = { weekly: "Semanal", biweekly: "Quinzenal", monthly: "M
 export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBadge = false, onTutorClick }) {
   const { toast } = useToast();
   const [processing, setProcessing] = useState(null);
+  const [comments, setComments] = useState({});
+
+  const setComment = (tutorId, value) => setComments(prev => ({ ...prev, [tutorId]: value }));
 
   const markProcessing = async (tutor) => {
     setProcessing(tutor.user_id + "_proc");
     try {
-      const response = await base44.functions.invoke("adminManageWithdrawal", { tutor_id: tutor.user_id, action: "mark_processing" });
+      const response = await base44.functions.invoke("adminManageWithdrawal", { tutor_id: tutor.user_id, action: "mark_processing", comment: comments[tutor.user_id] || "" });
       if (response.data?.error) throw new Error(response.data.error);
       toast({ title: "Pagamento em processamento notificado ✅", description: `${tutor.full_name} verá o status de processamento.` });
+      setComment(tutor.user_id, "");
       onChanged?.();
     } catch (err) {
       toast({ title: "Erro", description: err.message, variant: "destructive" });
@@ -26,9 +30,10 @@ export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBad
   const markPaid = async (tutor) => {
     setProcessing(tutor.user_id + "_paid");
     try {
-      const response = await base44.functions.invoke("adminManageWithdrawal", { tutor_id: tutor.user_id, action: "mark_paid" });
+      const response = await base44.functions.invoke("adminManageWithdrawal", { tutor_id: tutor.user_id, action: "mark_paid", comment: comments[tutor.user_id] || "" });
       if (response.data?.error) throw new Error(response.data.error);
       toast({ title: "Marcado como pago ✅", description: `${tutor.full_name} será solicitado a confirmar o recebimento.` });
+      setComment(tutor.user_id, "");
       onChanged?.();
     } catch (err) {
       toast({ title: "Erro", description: err.message, variant: "destructive" });
@@ -97,6 +102,16 @@ export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBad
                 {processing === t.user_id + "_paid" ? "..." : "Marcar como pago"}
               </Button>
             </div>
+          </div>
+
+          <div className="mt-3">
+            <textarea
+              value={comments[t.user_id] || ""}
+              onChange={e => setComment(t.user_id, e.target.value)}
+              placeholder="Observação para o tutor (opcional) — ex: valor extra pago, motivo de ajuste"
+              rows={2}
+              className="w-full text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-600 px-3 py-2 resize-none focus:outline-none focus:border-orange-500/40"
+            />
           </div>
         </div>
       ))}

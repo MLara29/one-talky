@@ -325,16 +325,24 @@ export default function TutorEarnings() {
           <h3 className="theme-heading font-display font-bold text-white mb-4">Withdrawal history</h3>
           <div className="space-y-2">
             {withdrawals.map(w => (
-              <div key={w.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
-                <div>
-                  <p className="theme-heading text-sm font-medium text-white">${w.amount?.toFixed(2)}</p>
-                  <p className="theme-subtext text-xs text-gray-600">{w.period} · {w.pioneer_email}</p>
+              <div key={w.id} className="p-3 rounded-2xl bg-white/5 border border-white/5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="theme-heading text-sm font-medium text-white">${w.amount?.toFixed(2)}</p>
+                    <p className="theme-subtext text-xs text-gray-600">{w.period} · {w.pioneer_email}</p>
+                  </div>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
+                    w.status === "paid" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" :
+                    w.status === "rejected" ? "bg-red-500/10 border-red-500/20 text-red-500" :
+                    "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                  } capitalize`}>{w.status}</span>
                 </div>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
-                  w.status === "paid" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" :
-                  w.status === "rejected" ? "bg-red-500/10 border-red-500/20 text-red-500" :
-                  "bg-amber-500/10 border-amber-500/20 text-amber-500"
-                } capitalize`}>{w.status}</span>
+                {w.admin_comment && (
+                  <div className="mt-2 pt-2 border-t border-white/5 flex items-start gap-1.5">
+                    <span className="text-xs text-gray-500 shrink-0">💬</span>
+                    <p className="text-xs text-gray-400 leading-relaxed">{w.admin_comment}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
