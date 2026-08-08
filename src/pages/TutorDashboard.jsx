@@ -141,15 +141,11 @@ export default function TutorDashboard() {
     setProfile({ ...profile, is_available_now: newVal });
   };
 
-  const rejectLesson = async (lesson) => {
+  const endActiveLesson = async (lesson) => {
     try {
-      if (lesson.status === "in_progress") {
-        await base44.functions.invoke('endLesson', { lesson_id: lesson.id, is_recorded: false });
-      } else {
-        await base44.functions.invoke('cancelLesson', { lesson_id: lesson.id });
-      }
+      await base44.functions.invoke('endLesson', { lesson_id: lesson.id, is_recorded: false });
       setLessons(prev => prev.filter(l => l.id !== lesson.id));
-      toast({ title: "Lesson cancelled" });
+      toast({ title: "Lesson ended" });
     } catch {
       toast({ title: "Error", variant: "destructive" });
     }
@@ -349,13 +345,20 @@ export default function TutorDashboard() {
                           </Button>
                         </Link>
                       ) : null}
-                      <button
-                        onClick={() => rejectLesson(l)}
-                        className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 border border-red-500/20 transition-all hover:scale-105"
-                        title="Cancel lesson"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                      {l.status === "in_progress" && (
+                        <button
+                          onClick={() => endActiveLesson(l)}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 border border-red-500/20 transition-all hover:scale-105"
+                          title="End lesson"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                      {l.status === "scheduled" && (
+                        <Link to="/my-lessons" className="text-xs text-gray-500 hover:text-orange-400 hover:underline">
+                          Manage in My Lessons →
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>
