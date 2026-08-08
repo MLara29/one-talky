@@ -57,7 +57,7 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div
-        className="w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col"
         style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)", maxHeight: "90vh" }}
       >
         {/* Header */}
@@ -100,7 +100,7 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
         </div>
 
         {/* Body — scrollable if Stripe form is tall */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
               <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#F26A1B" }} />
@@ -125,12 +125,14 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
           )}
 
           {!loading && !error && !done && clientSecret && stripePromise && (
-            <EmbeddedCheckoutProvider
-              stripe={stripePromise}
-              options={{ clientSecret, onComplete: handleComplete }}
-            >
-              <EmbeddedCheckout />
-            </EmbeddedCheckoutProvider>
+            <div style={{ minHeight: 420 }}>
+              <EmbeddedCheckoutProvider
+                stripe={stripePromise}
+                options={{ clientSecret, onComplete: handleComplete }}
+              >
+                <EmbeddedCheckout />
+              </EmbeddedCheckoutProvider>
+            </div>
           )}
         </div>
       </div>
