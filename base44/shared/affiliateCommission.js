@@ -31,6 +31,17 @@ export async function recordAffiliateCommission(base44, {
   const affiliate = affiliates[0];
   if (!affiliate) return;
 
+  // ── Idempotency — never record the same commission twice for the same payment ──
+  // Each Stripe event has a unique ID (session.id for first charge, invoice.id for
+  // renewals), so a duplicate webhook delivery with the same payment_id is skipped.
+  const existing = await base44.asServiceRole.entities.AffiliateEarning.filter({
+    payment_id: String(paymentId),
+  });
+  if (existing.length > 0) {
+    console.log(`[affiliateCommission] commission for payment ${paymentId} already recorded — skipping`);
+    return;
+  }
+
   const saleAmount = PRICE_CATALOG[externalReference] ?? 0;
   const commissionPct = affiliate.commission_percent ?? 15;
   const commissionAmount = parseFloat(((saleAmount * commissionPct) / 100).toFixed(2));

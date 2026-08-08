@@ -194,15 +194,18 @@ async function handleCheckoutCompleted(base44, session) {
     }
   }
 
-  // ── Affiliate commission (on full price) ───────────────────────────────────
-  await recordAffiliateCommission(base44, {
-    couponCode,
-    externalReference,
-    planId: item.plan || externalReference,
-    studentId: userId,
-    studentName: profile.full_name || "",
-    paymentId: session.id,
-  });
+  // ── Affiliate commission — SOMENTE para assinatura de plano, nunca
+  //    para pacote avulso pré-pago ──────────────────────────────────────────────
+  if (session.mode === "subscription") {
+    await recordAffiliateCommission(base44, {
+      couponCode,
+      externalReference,
+      planId: item.plan || externalReference,
+      studentId: userId,
+      studentName: profile.full_name || "",
+      paymentId: session.id,
+    });
+  }
 }
 
 // ── invoice.paid — renewal (cycle 2+) ────────────────────────────────────────
@@ -269,6 +272,20 @@ async function handleInvoicePaid(base44, invoice) {
     subscription_cycle: (profile.subscription_cycle ?? 1) + 1,
   });
   console.log(`[stripeWebhook] renewal: credited ${item.minutes} min to user ${userId} (cycle ${(profile.subscription_cycle ?? 1) + 1})`);
+
+  // ── Affiliate commission na renovação (todo mês, enquanto ativo) ──────────────
+  // O cupom (desconto) só se aplica na primeira compra, mas a comissão do
+  // afiliado recorre em todo ciclo. Usamos o coupon_code armazenado no perfil
+  // do aluno para localizar o afiliado original, e invoice.id como paymentId
+  // (cada invoice é única no Stripe → idempotência natural + check interno).
+  await recordAffiliateCommission(base44, {
+    couponCode: profile.coupon_code || "",
+    externalReference,
+    planId: item.plan || externalReference,
+    studentId: userId,
+    studentName: profile.full_name || "",
+    paymentId: invoice.id,
+  });
 }
 
 // ── customer.subscription.deleted — cancellation/expiry ──────────────────────
