@@ -40,7 +40,8 @@ const sections = [
           interest, declared level, and lesson minute consumption history.</li>
         <li><strong>Tutors:</strong> Full name, email, country/time zone, profile
           photo, introduction video, public biography, and payment details
-          (PIX key or bank details) necessary for earnings payouts.</li>
+          (Upwork/Payoneer account details, or PIX/bank details when
+          applicable) necessary for earnings payouts.</li>
         <li><strong>Affiliates:</strong> Full name, email, and payment details
           (PIX key or bank details) necessary for commission payouts.</li>
       </ul>

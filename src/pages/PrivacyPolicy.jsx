@@ -41,8 +41,8 @@ const sections = [
           interesse, nível declarado, e histórico de consumo de minutos de aula.</li>
         <li><strong>Tutores:</strong> Nome completo, e-mail, país/fuso horário, foto
           de perfil, vídeo de apresentação, biografia pública, e dados de
-          pagamento (chave PIX ou dados bancários) necessários para o
-          repasse de ganhos.</li>
+          pagamento (dados de conta Upwork/Payoneer, ou PIX/dados bancários
+          quando aplicável) necessários para o repasse de ganhos.</li>
         <li><strong>Afiliados:</strong> Nome completo, e-mail, e dados de pagamento
           (chave PIX ou dados bancários) necessários para o repasse de
           comissões.</li>
