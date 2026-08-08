@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -75,12 +75,12 @@ const LANG_LABELS = { en: "EN", pt_br: "PT" };
 // Shared pill nav used by all roles
 function TopPillNav({ nav, location, supportCount }) {
   return (
-    <nav className="hidden lg:flex items-center gap-1" style={{
+    <nav className="hidden lg:flex items-center gap-1 flex-wrap justify-center" style={{
       background: "rgba(255,255,255,0.7)",
       backdropFilter: "blur(8px)",
       border: "1px solid rgba(0,0,0,0.05)",
       padding: "6px",
-      borderRadius: 999,
+      borderRadius: 18,
       boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
     }}>
       {nav.map(item => {
@@ -135,26 +135,36 @@ export default function AppLayout() {
     }).catch(() => {});
   }, [role, user?.id]);
 
-  if (studentBlocked) {
-    return <BlockedScreen />;
-  }
-
   const nav = role === "admin" ? ADMIN_NAV
     : role === "tutor" ? TUTOR_NAV
     : role === "affiliate" ? AFFILIATE_NAV
     : STUDENT_NAV(lang);
 
+  // All roles now use the same top-bar layout with horizontal nav
+  // Background: soft orange gradient for everyone
+  const bgGradient = "linear-gradient(135deg, #fffaf7 0%, #fff5ee 50%, #ffe8d6 100%)";
+  const headerHeight = 88;
+  const headerRef = useRef(null);
+  const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState(headerHeight);
 
+  useEffect(() => {
+    if (!headerRef.current) return;
+    const measure = () => setMeasuredHeaderHeight(headerRef.current.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(headerRef.current);
+    window.addEventListener("resize", measure);
+    return () => { ro.disconnect(); window.removeEventListener("resize", measure); };
+  }, [nav]);
+
+  if (studentBlocked) {
+    return <BlockedScreen />;
+  }
 
   const handleLogout = () => {
     localStorage.removeItem(LAST_ACTIVITY_KEY);
     base44.auth.logout("/");
   };
-
-  // All roles now use the same top-bar layout with horizontal nav
-  // Background: soft orange gradient for everyone
-  const bgGradient = "linear-gradient(135deg, #fffaf7 0%, #fff5ee 50%, #ffe8d6 100%)";
-  const headerHeight = 88;
 
   const roleLabel = role === "student" ? "Student" : role === "tutor" ? "Tutor" : role === "admin" ? "Admin" : "Affiliate";
 
@@ -162,9 +172,10 @@ export default function AppLayout() {
     <div className="min-h-screen" style={{ background: bgGradient }}>
       {/* Top bar — same for all roles */}
       <header
+        ref={headerRef}
         className="fixed top-0 left-0 right-0 z-40"
         style={{
-          height: headerHeight,
+          minHeight: headerHeight,
           background: "rgba(255,255,255,0.85)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid rgba(0,0,0,0.05)",
@@ -250,7 +261,7 @@ export default function AppLayout() {
           <aside
             className="absolute left-0 bottom-0 w-64 p-4"
             style={{
-              top: headerHeight,
+              top: measuredHeaderHeight,
               background: "#fff",
               borderRight: "1px solid #f0e8e0",
             }}
@@ -283,7 +294,7 @@ export default function AppLayout() {
       )}
 
       {/* Main content */}
-      <main style={{ paddingTop: headerHeight }} className="min-h-screen">
+      <main style={{ paddingTop: measuredHeaderHeight }} className="min-h-screen">
         <div className="px-8 py-6 sm:px-14 sm:py-8 lg:px-20 lg:py-10 max-w-screen-2xl mx-auto pb-8 lg:pb-4">
           <Outlet />
         </div>
