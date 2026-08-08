@@ -76,8 +76,7 @@ export default async function (req: Request): Promise<Response> {
     }
 
     // 4) Build the Checkout Session with ui_mode: "embedded".
-    const origin = new URL(req.url).origin;
-    const returnUrl = `${origin}/plans?stripe_status=success`;
+    const returnUrl = "https://onetalky.com/plans?stripe_status=success";
 
     const params = new URLSearchParams();
     params.set("ui_mode", "embedded");

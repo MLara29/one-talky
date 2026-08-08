@@ -27,10 +27,10 @@ export default async function (req: Request): Promise<Response> {
     const secretKey = secrets.get("STRIPE_SECRET_KEY");
     if (!secretKey) return Response.json({ error: "STRIPE_SECRET_KEY não configurado" }, { status: 500 });
 
-    // Constrói success/cancel URLs a partir da origem do request.
-    const origin = new URL(req.url).origin;
-    const successUrl = `${origin}/admin/stripe-test?stripe_status=success`;
-    const cancelUrl = `${origin}/admin/stripe-test?stripe_status=cancel`;
+    // URL fixa do domínio de produção — req.url pode chegar como o dispatcher
+    // interno do Base44, o que quebraria o redirect pós-pagamento.
+    const successUrl = "https://onetalky.com/admin/stripe-test?stripe_status=success";
+    const cancelUrl = "https://onetalky.com/admin/stripe-test?stripe_status=cancel";
 
     const unitAmount = Math.round(Number(amount) * 100);
     const now = Math.floor(Date.now() / 1000);
