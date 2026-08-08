@@ -4,12 +4,11 @@ import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
-import { Search, X, MessageSquare, Zap } from "lucide-react";
+import { Search, X, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TutorCard from "@/components/tutors/TutorCard";
 import CreditsBanner from "@/components/student/CreditsBanner";
 import SupportModal from "@/components/support/SupportModal";
-import PlanManageModal from "@/components/student/PlanManageModal";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -20,7 +19,6 @@ export default function StudentDashboard() {
   const [search, setSearch] = useState("");
   const [availableNow, setAvailableNow] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
-  const [showPlanModal, setShowPlanModal] = useState(false);
   const [tick, setTick] = useState(0);
 
   useEffect(() => { loadData(); }, [user]);
@@ -108,13 +106,6 @@ export default function StudentDashboard() {
   return (
     <div>
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
-      {showPlanModal && profile && (
-        <PlanManageModal
-          profile={profile}
-          onClose={() => setShowPlanModal(false)}
-          onUpdated={p => { setProfile(p); setShowPlanModal(false); }}
-        />
-      )}
 
       {/* Credits Banner */}
       {profile && <CreditsBanner profile={profile} onUpdate={setProfile} />}
@@ -125,15 +116,6 @@ export default function StudentDashboard() {
           Welcome, {profile?.full_name?.split(" ")[0] || user?.full_name?.split(" ")[0] || "there"} 👋
         </h1>
         <div className="flex items-center gap-2">
-          {profile && (
-            <button
-              onClick={() => setShowPlanModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500 text-white text-sm font-semibold shadow hover:bg-orange-600 transition-all"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              <span className="capitalize">{profile.plan || "Free"}</span>
-            </button>
-          )}
           <button
             onClick={() => setShowSupport(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all text-sm font-medium shadow-sm"
