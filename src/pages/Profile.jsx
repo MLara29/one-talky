@@ -216,6 +216,44 @@ export default function Profile() {
             </div>
           </div>
 
+          {/* Conversation Topics card */}
+          <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <MessageSquare className="w-4 h-4 text-orange-400" />
+                <Label className="theme-subtext text-gray-500 text-sm block">Conversation topics</Label>
+              </div>
+              <p className="text-xs text-orange-400 mb-3">
+                🗣️ Select the topics you enjoy discussing. These appear on your public profile and help students find you.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {INTERESTS.map(topic => {
+                  const selected = (profile?.interests || []).includes(topic);
+                  return (
+                    <button
+                      key={topic}
+                      type="button"
+                      onClick={() => {
+                        const current = profile?.interests || [];
+                        const updated = selected
+                          ? current.filter(i => i !== topic)
+                          : [...current, topic];
+                        setProfile({ ...profile, interests: updated });
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        selected
+                          ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                          : "bg-white/5 text-gray-400 border-white/10 hover:border-orange-400 hover:text-orange-400"
+                      }`}
+                    >
+                      {topic}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           {/* Photo card */}
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center gap-2 mb-4">
@@ -377,44 +415,6 @@ export default function Profile() {
               onClose={() => setShowRecorder(false)}
             />
           )}
-
-          {/* Conversation Topics card */}
-          <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <MessageSquare className="w-4 h-4 text-orange-400" />
-                <Label className="theme-subtext text-gray-500 text-sm block">Conversation topics</Label>
-              </div>
-              <p className="text-xs text-orange-400 mb-3">
-                🗣️ Select the topics you enjoy discussing. These appear on your public profile and help students find you.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {INTERESTS.map(topic => {
-                  const selected = (profile?.interests || []).includes(topic);
-                  return (
-                    <button
-                      key={topic}
-                      type="button"
-                      onClick={() => {
-                        const current = profile?.interests || [];
-                        const updated = selected
-                          ? current.filter(i => i !== topic)
-                          : [...current, topic];
-                        setProfile({ ...profile, interests: updated });
-                      }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                        selected
-                          ? "bg-orange-500 text-white border-orange-500 shadow-sm"
-                          : "bg-white/5 text-gray-400 border-white/10 hover:border-orange-400 hover:text-orange-400"
-                      }`}
-                    >
-                      {topic}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
 
           {/* Bio card */}
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
