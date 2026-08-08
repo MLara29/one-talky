@@ -1,6 +1,7 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { CATALOG, PRICE_CATALOG } from "../../shared/paymentCatalog.js";
 import { validateAndApplyCoupon } from "../../shared/couponDiscount.js";
+import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
 
 Deno.serve(async (req) => {
   try {
@@ -86,42 +87,16 @@ Deno.serve(async (req) => {
           }
         }
 
-        // ── Affiliate commission logic (on FULL price — discount is a platform
+        // ── Affiliate commission (on FULL price — discount is a platform
         //    promotion, not an affiliate discount) ──────────────────────────────
-        if (coupon_code) {
-          const coupons = await base44.asServiceRole.entities.Coupon.filter({
-            code: String(coupon_code).toUpperCase(),
-            is_active: true,
-          });
-          const coupon = coupons[0];
-          if (coupon?.affiliate_id) {
-            const affiliates = await base44.asServiceRole.entities.Affiliate.filter({
-              id: coupon.affiliate_id,
-              status: "active",
-            });
-            const affiliate = affiliates[0];
-            if (affiliate) {
-              const saleAmount = PRICE_CATALOG[external_reference] ?? item.price;
-              const commissionPct = affiliate.commission_percent ?? 15;
-              const commissionAmount = parseFloat(((saleAmount * commissionPct) / 100).toFixed(2));
-              await base44.asServiceRole.entities.AffiliateEarning.create({
-                affiliate_id: affiliate.id,
-                student_id: user.id,
-                student_name: profile.full_name || user.email,
-                coupon_code: coupon.code,
-                plan_id: item.plan || external_reference,
-                sale_amount: saleAmount,
-                commission_percent: commissionPct,
-                commission_amount: commissionAmount,
-                payment_id: String(payment.id),
-                sale_date: new Date().toISOString(),
-                release_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                status: "aguardando_7_dias",
-              });
-            }
-          }
-        }
-        // ── end affiliate logic ─────────────────────────────────────────────────
+        await recordAffiliateCommission(base44, {
+          couponCode: coupon_code,
+          externalReference: external_reference,
+          planId: item.plan || external_reference,
+          studentId: user.id,
+          studentName: profile.full_name || user.email,
+          paymentId: payment.id,
+        });
       }
     }
 
