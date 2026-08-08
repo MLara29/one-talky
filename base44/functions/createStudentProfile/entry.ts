@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
+import { getBonusExpiryDays, getDiscountCycles } from "../../shared/studentCredits.js";
 
 const VALID_LEVELS = ["beginner", "intermediate", "advanced"];
 
@@ -37,7 +38,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Create profile with server-resolved credits
+    // Route coupon bonus minutes to prepaid_credits_minutes with the coupon's
+    // specific expiry (based on discount_type). Create a CouponUsage record to
+    // track the discount cycles + bonus expiry.
+    const bonusExpiryDays = couponRecord ? getBonusExpiryDays(couponRecord.discount_type || "none") : 30;
+    const prepaidExpiresAt = freeCredits > 0
+      ? new Date(Date.now() + bonusExpiryDays * 24 * 60 * 60 * 1000).toISOString()
+      : null;
+
     const created = await base44.asServiceRole.entities.StudentProfile.create({
       user_id: user.id,
       full_name: String(profile.full_name || "").slice(0, 200),
@@ -48,10 +56,24 @@ Deno.serve(async (req) => {
       objective: String(profile.objective || "").slice(0, 200),
       accent_preference: String(profile.accent_preference || "").slice(0, 100),
       conversation_topics: Array.isArray(profile.conversation_topics) ? profile.conversation_topics.slice(0, 30) : [],
+      plan_credits_minutes: 0,
+      prepaid_credits_minutes: freeCredits,
+      prepaid_expires_at: prepaidExpiresAt,
       credits_minutes: freeCredits,
       plan: "free",
       ...(couponRecord ? { coupon_code: couponRecord.code } : {}),
     });
+
+    // Create CouponUsage record for the onboarding coupon (tracks discount cycles + bonus expiry).
+    if (couponRecord && freeCredits > 0) {
+      await base44.asServiceRole.entities.CouponUsage.create({
+        student_id: user.id,
+        coupon_code: couponRecord.code,
+        discount_cycles_remaining: getDiscountCycles(couponRecord.discount_type || "none"),
+        bonus_minutes_expires_at: prepaidExpiresAt,
+        created_at: new Date().toISOString(),
+      });
+    }
 
     // Increment coupon usage and record affiliate earning if applicable
     if (couponRecord) {

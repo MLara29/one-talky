@@ -68,10 +68,15 @@ Deno.serve(async (req) => {
     }
 
     // ── Mercado Pago: local downgrade (no real recurring subscription) ──────────
+    // Set grace period for plan credits (60 days). Don't zero plan_credits_minutes
+    // — the cron expirePlanGraceCredits will do that when the grace period ends.
+    // Prepaid credits are untouched (independent of the plan).
+    const mpGraceExpiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
     await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
       plan: "free",
-      credits_minutes: 0,
       subscription_status: "cancelled",
+      subscription_valid_until: mpGraceExpiresAt,
+      plan_credits_grace_expires_at: mpGraceExpiresAt,
     });
 
     return Response.json({ success: true, provider: "mercadopago" });

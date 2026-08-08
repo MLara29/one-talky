@@ -50,7 +50,7 @@ export default function PlanManageModal({ profile, onClose, onUpdated }) {
       // Cancellation goes through the server — it enforces the "no free credits on cancel" rule
       const response = await base44.functions.invoke("cancelMyPlan", {});
       if (response.data?.error) throw new Error(response.data.error);
-      onUpdated({ ...profile, plan: "free", credits_minutes: 0, subscription_status: "cancelled" });
+      onUpdated({ ...profile, plan: "free", subscription_status: "cancelled" });
       setDone(true);
     } catch (e) {
       toast({ title: "Erro ao cancelar plano", description: e?.message || "Tente novamente.", variant: "destructive" });

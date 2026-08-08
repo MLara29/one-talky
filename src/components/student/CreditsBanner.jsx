@@ -81,11 +81,23 @@ export default function CreditsBanner({ profile, onUpdate }) {
   const [showTopup, setShowTopup] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState(null);
 
-  const mins = profile?.credits_minutes || 0;
+  const planMins = profile?.plan_credits_minutes || 0;
+  const prepaidMins = profile?.prepaid_credits_minutes || 0;
+  const mins = planMins + prepaidMins;
   const plan = profile?.plan || "free";
   const planObj = PLANS.find(p => p.id === plan);
   const isLow = mins < 30;
   const pct = Math.min(100, Math.round((mins / 120) * 100));
+  const planPct = Math.min(100, Math.round((planMins / 120) * 100));
+  const prepaidPct = Math.min(100, Math.round((prepaidMins / 120) * 100));
+
+  // Grace period warning for cancelled plan credits.
+  const graceExpiresAt = profile?.plan_credits_grace_expires_at;
+  const graceDate = graceExpiresAt ? new Date(graceExpiresAt).toLocaleDateString("pt-BR") : null;
+
+  // Prepaid expiry date.
+  const prepaidExpiresAt = profile?.prepaid_expires_at;
+  const prepaidExpiresDate = prepaidExpiresAt ? new Date(prepaidExpiresAt).toLocaleDateString("pt-BR") : null;
 
   const buyPack = (pack) => {
     setCheckoutItem({
@@ -186,27 +198,71 @@ export default function CreditsBanner({ profile, onUpdate }) {
             </Link>
           </div>
         </div>
-        <div className="mt-3">
-          <div style={{
-            width: "100%", height: 22, borderRadius: 999,
-            border: "1px solid rgba(249,115,22,0.25)",
-            background: "#fff5ee",
-            position: "relative", overflow: "hidden",
-          }}>
+        <div className="mt-3 space-y-2">
+          {/* Plan credits bar */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280" }}>Plano</span>
+              {graceDate && (
+                <span style={{ fontSize: 10, fontWeight: 600, color: "#f59e0b" }}>
+                  Cancelado · até {graceDate}
+                </span>
+              )}
+            </div>
             <div style={{
-              position: "absolute", inset: "0 auto 0 0",
-              width: `${Math.max(pct, 3)}%`,
-              background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
-              borderRadius: 999,
-              transition: "width 0.5s ease",
-            }} />
-            <span style={{
-              position: "absolute", left: "50%", top: "50%",
-              transform: "translate(-50%,-50%)",
-              fontSize: 11, fontWeight: 800, color: "#f97316",
-              whiteSpace: "nowrap",
-            }}>{Math.floor(mins)} min restantes</span>
+              width: "100%", height: 18, borderRadius: 999,
+              border: "1px solid rgba(249,115,22,0.25)",
+              background: "#fff5ee",
+              position: "relative", overflow: "hidden",
+            }}>
+              <div style={{
+                position: "absolute", inset: "0 auto 0 0",
+                width: `${Math.max(planPct, 3)}%`,
+                background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
+                borderRadius: 999,
+                transition: "width 0.5s ease",
+              }} />
+              <span style={{
+                position: "absolute", left: "50%", top: "50%",
+                transform: "translate(-50%,-50%)",
+                fontSize: 10, fontWeight: 800, color: "#f97316",
+                whiteSpace: "nowrap",
+              }}>{Math.floor(planMins)} min</span>
+            </div>
           </div>
+          {/* Prepaid credits bar (only if > 0) */}
+          {prepaidMins > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280" }}>Pré-pago</span>
+                {prepaidExpiresDate && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#9ca3af" }}>
+                    expira em {prepaidExpiresDate}
+                  </span>
+                )}
+              </div>
+              <div style={{
+                width: "100%", height: 18, borderRadius: 999,
+                border: "1px solid rgba(99,102,241,0.2)",
+                background: "#f5f3ff",
+                position: "relative", overflow: "hidden",
+              }}>
+                <div style={{
+                  position: "absolute", inset: "0 auto 0 0",
+                  width: `${Math.max(prepaidPct, 3)}%`,
+                  background: "repeating-linear-gradient(115deg, rgba(99,102,241,0.45) 0 6px, rgba(99,102,241,0.15) 6px 13px)",
+                  borderRadius: 999,
+                  transition: "width 0.5s ease",
+                }} />
+                <span style={{
+                  position: "absolute", left: "50%", top: "50%",
+                  transform: "translate(-50%,-50%)",
+                  fontSize: 10, fontWeight: 800, color: "#6366f1",
+                  whiteSpace: "nowrap",
+                }}>{Math.floor(prepaidMins)} min</span>
+              </div>
+            </div>
+          )}
         </div>
         {showTopup && <TopupSection />}
       </div>
@@ -243,29 +299,72 @@ export default function CreditsBanner({ profile, onUpdate }) {
             </div>
           </div>
 
-          {/* Center: striped progress bar */}
-          <div className="flex flex-col items-center gap-2 flex-1 mx-6">
-            <div style={{
-              width: "100%", maxWidth: 260, height: 30, borderRadius: 999,
-              border: "1px solid rgba(249,115,22,0.3)",
-              background: "#fff5ee",
-              position: "relative", overflow: "hidden",
-            }}>
+          {/* Center: dual progress bars (plan + prepaid) */}
+          <div className="flex flex-col items-center gap-2 flex-1 mx-6 w-full">
+            {/* Plan credits bar */}
+            <div className="w-full" style={{ maxWidth: 280 }}>
+              <div className="flex items-center justify-between mb-1">
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>Plano</span>
+                {graceDate && (
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#f59e0b" }}>
+                    Cancelado · até {graceDate}
+                  </span>
+                )}
+              </div>
               <div style={{
-                position: "absolute", inset: "0 auto 0 0",
-                width: `${Math.max(pct, 4)}%`,
-                background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
-                borderRadius: 999,
-                transition: "width 0.5s ease",
-              }} />
-              <span style={{
-                position: "absolute", left: "50%", top: "50%",
-                transform: "translate(-50%,-50%)",
-                fontSize: 13, fontWeight: 800, color: "#f97316",
-              }}>{pct}%</span>
+                width: "100%", height: 24, borderRadius: 999,
+                border: "1px solid rgba(249,115,22,0.3)",
+                background: "#fff5ee",
+                position: "relative", overflow: "hidden",
+              }}>
+                <div style={{
+                  position: "absolute", inset: "0 auto 0 0",
+                  width: `${Math.max(planPct, 4)}%`,
+                  background: "repeating-linear-gradient(115deg, rgba(249,115,22,0.55) 0 6px, rgba(249,115,22,0.18) 6px 13px)",
+                  borderRadius: 999,
+                  transition: "width 0.5s ease",
+                }} />
+                <span style={{
+                  position: "absolute", left: "50%", top: "50%",
+                  transform: "translate(-50%,-50%)",
+                  fontSize: 12, fontWeight: 800, color: "#f97316",
+                }}>{Math.floor(planMins)} min</span>
+              </div>
             </div>
+            {/* Prepaid credits bar (only if > 0) */}
+            {prepaidMins > 0 && (
+              <div className="w-full" style={{ maxWidth: 280 }}>
+                <div className="flex items-center justify-between mb-1">
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>Pré-pago</span>
+                  {prepaidExpiresDate && (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>
+                      expira em {prepaidExpiresDate}
+                    </span>
+                  )}
+                </div>
+                <div style={{
+                  width: "100%", height: 24, borderRadius: 999,
+                  border: "1px solid rgba(99,102,241,0.2)",
+                  background: "#f5f3ff",
+                  position: "relative", overflow: "hidden",
+                }}>
+                  <div style={{
+                    position: "absolute", inset: "0 auto 0 0",
+                    width: `${Math.max(prepaidPct, 4)}%`,
+                    background: "repeating-linear-gradient(115deg, rgba(99,102,241,0.45) 0 6px, rgba(99,102,241,0.15) 6px 13px)",
+                    borderRadius: 999,
+                    transition: "width 0.5s ease",
+                  }} />
+                  <span style={{
+                    position: "absolute", left: "50%", top: "50%",
+                    transform: "translate(-50%,-50%)",
+                    fontSize: 12, fontWeight: 800, color: "#6366f1",
+                  }}>{Math.floor(prepaidMins)} min</span>
+                </div>
+              </div>
+            )}
             <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap" }}>
-              {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>restantes</span>
+              {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>totais</span>
             </span>
           </div>
 

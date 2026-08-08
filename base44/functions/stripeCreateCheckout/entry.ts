@@ -53,12 +53,23 @@ export default async function (req: Request): Promise<Response> {
     let stripeCouponId = "";
     const discountPercent = appliedCoupon?.discount_percent || 0;
     if (discountPercent > 0) {
-      const couponId = `ot_disc_${discountPercent}`;
+      // Determine Stripe coupon duration based on discount_type.
+      // first_month/period → once (1 cycle). bimestral/trimestral/semestral/anual → repeating.
+      const discountType = appliedCoupon?.discount_type || "none";
+      const repeatingMonths = { bimestral: 2, trimestral: 3, semestral: 6, anual: 12 }[discountType];
+      const stripeDuration = repeatingMonths ? "repeating" : "once";
+      const couponId = repeatingMonths
+        ? `ot_disc_${discountPercent}_r${repeatingMonths}`
+        : `ot_disc_${discountPercent}`;
+
+      let createBody = `id=${encodeURIComponent(couponId)}&percent_off=${discountPercent}&duration=${stripeDuration}`;
+      if (repeatingMonths) createBody += `&duration_in_months=${repeatingMonths}`;
+
       // Try to create; if it already exists (409), retrieve it.
       const createRes = await fetch("https://api.stripe.com/v1/coupons", {
         method: "POST",
         headers: formHeaders,
-        body: `id=${encodeURIComponent(couponId)}&percent_off=${discountPercent}&duration=once`,
+        body: createBody,
       });
       if (createRes.ok) {
         stripeCouponId = couponId;

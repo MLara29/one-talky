@@ -23,6 +23,7 @@
 // runs never double-process.
 
 import { registerTutorNoShow } from './registerTutorNoShow.js';
+import { debitStudentCredits } from './studentCredits.js';
 
 export async function processNoShow(base44, lesson) {
   const lessonId = lesson.id;
@@ -44,10 +45,8 @@ export async function processNoShow(base44, lesson) {
     const studentProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: lesson.student_id });
     if (studentProfiles.length > 0) {
       const sp = studentProfiles[0];
-      const newCredits = Math.max(0, (sp.credits_minutes ?? 0) - durationMinutes);
-      await base44.asServiceRole.entities.StudentProfile.update(sp.id, {
-        credits_minutes: Math.round(newCredits * 100) / 100,
-      });
+      const debited = debitStudentCredits(sp, durationMinutes);
+      await base44.asServiceRole.entities.StudentProfile.update(sp.id, debited);
     }
 
     // Credit the tutor (same rate_applied/earned_amount pattern as completeLesson.js).

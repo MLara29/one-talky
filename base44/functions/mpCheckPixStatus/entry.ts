@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { CATALOG } from "../../shared/paymentCatalog.js";
+import { computeCreditUpdate } from "../../shared/studentCredits.js";
 
 Deno.serve(async (req) => {
   try {
@@ -49,9 +50,16 @@ Deno.serve(async (req) => {
     if (profiles.length === 0) return Response.json({ error: "Perfil não encontrado" }, { status: 404 });
 
     const profile = profiles[0];
-    const updateData: Record<string, unknown> = {
-      credits_minutes: (profile.credits_minutes ?? 0) + item.minutes,
-    };
+    const creditUpdate = await computeCreditUpdate(base44, {
+      profile,
+      externalReference: externalRef,
+      item,
+      couponCode: "",
+      bonusMinutes: 0,
+      appliedCoupon: null,
+      isRenewal: false,
+    });
+    const updateData: Record<string, unknown> = { ...creditUpdate };
     if (item.plan) updateData.plan = item.plan;
     await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
 

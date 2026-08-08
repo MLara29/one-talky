@@ -129,7 +129,7 @@ export default function Plans() {
             if (provider === "stripe") {
               setProfile(prev => ({ ...prev, subscription_status: "cancelled" }));
             } else {
-              setProfile(prev => ({ ...prev, plan: "free", credits_minutes: 0, subscription_status: "cancelled" }));
+              setProfile(prev => ({ ...prev, plan: "free", subscription_status: "cancelled" }));
             }
           }}
         />
@@ -309,7 +309,7 @@ export default function Plans() {
           </div>
 
           <p className="text-center text-xs mt-6" style={{ color: "#A29A8C" }}>
-            Você pode cancelar a qualquer momento, sem multa. Ao cancelar, seu plano volta para Free imediatamente e os minutos restantes do ciclo atual são zerados — eles não são reembolsados nem aproveitados depois.
+            Você pode cancelar a qualquer momento, sem multa. Ao cancelar, seu plano volta para Free, mas você mantém os minutos restantes por até 60 dias. Créditos pré-pagos não são afetados pelo cancelamento.
           </p>
         </TabsContent>
 

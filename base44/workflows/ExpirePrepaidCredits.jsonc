@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "expire_prepaid_credits",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "expire_prepaid": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "expirePrepaidCredits",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Expirar cr\u00e9ditos pr\u00e9-pagos",
+            "description": "Zera prepaid_credits_minutes de alunos cujo prazo de 60 dias (ou do cupom) acabou"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Daily at 3am \u2014 zeroes prepaid_credits_minutes for students whose prepaid expiry (60 days for packs, or coupon-specific) has passed.",
+  "name": "Expire Prepaid Credits",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 3 * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

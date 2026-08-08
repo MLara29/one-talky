@@ -36,9 +36,14 @@ Deno.serve(async (req) => {
     if (action === 'add_minutes') {
       const mins = Number(minutes);
       if (!mins || mins <= 0) return Response.json({ error: 'Invalid minutes value' }, { status: 400 });
-      const newTotal = (student.credits_minutes ?? 0) + mins;
-      await base44.asServiceRole.entities.StudentProfile.update(student_id, { credits_minutes: newTotal });
-      return Response.json({ success: true, credits_minutes: newTotal });
+      // Admin-granted minutes go to plan_credits_minutes (no expiry while active).
+      const newPlanTotal = (student.plan_credits_minutes ?? 0) + mins;
+      const newPrepaid = student.prepaid_credits_minutes ?? 0;
+      await base44.asServiceRole.entities.StudentProfile.update(student_id, {
+        plan_credits_minutes: newPlanTotal,
+        credits_minutes: newPlanTotal + newPrepaid,
+      });
+      return Response.json({ success: true, credits_minutes: newPlanTotal + newPrepaid });
     }
   } catch (error) {
     console.error('[adminManageStudent]', error.message);

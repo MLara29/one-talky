@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "expire_plan_grace_credits",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "expire_plan_grace": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "expirePlanGraceCredits",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Expirar cr\u00e9ditos do plano (p\u00f3s-cancelamento)",
+            "description": "Zera plan_credits_minutes de alunos cujo prazo de 60 dias p\u00f3s-cancelamento acabou"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Daily at 3am \u2014 zeroes plan_credits_minutes for students whose 60-day post-cancellation grace period has expired.",
+  "name": "Expire Plan Grace Credits",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 3 * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

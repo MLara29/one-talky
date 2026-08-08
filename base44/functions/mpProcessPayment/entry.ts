@@ -1,6 +1,7 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { CATALOG } from "../../shared/paymentCatalog.js";
 import { validateAndApplyCoupon } from "../../shared/couponDiscount.js";
+import { computeCreditUpdate } from "../../shared/studentCredits.js";
 import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
 
 Deno.serve(async (req) => {
@@ -65,9 +66,16 @@ Deno.serve(async (req) => {
       if (profiles.length > 0) {
         const profile = profiles[0];
         // Add plan minutes + coupon bonus minutes.
-        const updateData: Record<string, unknown> = {
-          credits_minutes: (profile.credits_minutes ?? 0) + item.minutes + bonusMinutes,
-        };
+        const creditUpdate = await computeCreditUpdate(base44, {
+          profile,
+          externalReference: external_reference,
+          item,
+          couponCode,
+          bonusMinutes,
+          appliedCoupon,
+          isRenewal: false,
+        });
+        const updateData: Record<string, unknown> = { ...creditUpdate };
         if (item.plan) {
           updateData.plan = item.plan;
           updateData.subscription_provider = "mercadopago";

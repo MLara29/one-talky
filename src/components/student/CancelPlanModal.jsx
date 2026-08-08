@@ -6,8 +6,8 @@ import { useToast } from "@/components/ui/use-toast";
 
 // Standalone cancellation-confirmation modal used on Plans.jsx.
 // Cancellation is enforced server-side by cancelMyPlan — plan goes back to
-// "free" and credits_minutes is zeroed (there's no partial refund of unused
-// minutes today, so the copy below states that plainly).
+// "free" and plan_credits_minutes gets a 60-day grace period before expiring
+// (plan_credits_grace_expires_at). Prepaid credits are always unaffected.
 export default function CancelPlanModal({ profile, onClose, onCancelled }) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
@@ -43,7 +43,7 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
             <p className="text-sm mb-6" style={{ color: "#5A5B66" }}>
               {profile?.subscription_provider === "stripe"
                 ? "Sua assinatura foi cancelada. Você mantém acesso aos minutos restantes até o fim do período já pago."
-                : "Seu plano voltou para Free. Você pode assinar novamente quando quiser."}
+                : "Seu plano voltou para Free. Você mantém seus minutos por até 60 dias. Pode assinar novamente quando quiser."}
             </p>
             <Button onClick={onClose} className="w-full bg-[#F26A1B] hover:bg-[#d9560e] text-white border-0">Fechar</Button>
           </div>
@@ -58,11 +58,7 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
             </p>
             <ul className="text-sm mb-6 space-y-2" style={{ color: "#4B4C57" }}>
               <li>• Sua assinatura será cancelada.</li>
-              {profile?.subscription_provider === "stripe" ? (
-                <li>• Você mantém acesso aos <strong>{profile?.credits_minutes || 0} minutos</strong> restantes até o fim do período já pago — a cobrança automática para a partir daí.</li>
-              ) : (
-                <li>• Os <strong>{profile?.credits_minutes || 0} minutos</strong> restantes serão zerados imediatamente — não há reembolso ou aproveitamento após o cancelamento.</li>
-              )}
+              <li>• Você mantém os <strong>{(profile?.plan_credits_minutes || 0) + (profile?.prepaid_credits_minutes || 0)} minutos</strong> restantes por até <strong>60 dias</strong> após o cancelamento. Créditos pré-pagos não são afetados.</li>
               <li>• Você pode assinar um novo plano a qualquer momento.</li>
             </ul>
             <div className="flex gap-3">

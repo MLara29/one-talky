@@ -10,6 +10,8 @@
 // 3. Duration is capped so a forgotten/stuck call can't bill unbounded time.
 
 // Absolute floor for the duration cap, regardless of the lesson's scheduled length.
+import { debitStudentCredits } from './studentCredits.js';
+
 const MAX_DURATION_CAP_MINUTES_FLOOR = 120;
 
 export async function completeLesson(base44, lesson, { isRecorded = false, endedAtOverride = null } = {}) {
@@ -51,9 +53,9 @@ export async function completeLesson(base44, lesson, { isRecorded = false, ended
   const studentProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: lesson.student_id });
   if (studentProfiles.length > 0) {
     const sp = studentProfiles[0];
-    const newCredits = Math.max(0, (sp.credits_minutes ?? 0) - durationMinutes);
+    const debited = debitStudentCredits(sp, durationMinutes);
     await base44.asServiceRole.entities.StudentProfile.update(sp.id, {
-      credits_minutes: Math.round(newCredits * 100) / 100,
+      ...debited,
       total_minutes: Math.round(((sp.total_minutes ?? 0) + durationMinutes) * 100) / 100,
       total_lessons: (sp.total_lessons ?? 0) + 1,
       last_practice_date: nowIso.split('T')[0],

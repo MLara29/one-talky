@@ -42,7 +42,7 @@ export default async function(req) {
     // ── RULE 2: Real credit balance (server-side, never trust the client) ──────
     const spProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: user.id });
     const sp = spProfiles[0];
-    const credits = sp?.credits_minutes ?? 0;
+    const credits = (sp?.plan_credits_minutes || 0) + (sp?.prepaid_credits_minutes || 0);
     if (credits < MIN_CREDIT_MINUTES) {
       return Response.json({
         error_code: 'insufficient_credits',

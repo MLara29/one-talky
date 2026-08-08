@@ -2,6 +2,7 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { secrets } from "base44:runtime";
 import { CATALOG } from "../../shared/paymentCatalog.js";
 import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
+import { computeCreditUpdate } from "../../shared/studentCredits.js";
 
 // Stripe webhook — receives ALL Stripe events.
 // 1. Logs every event to StripeTestEvent (audit trail, admin dashboard).
@@ -161,9 +162,26 @@ async function handleCheckoutCompleted(base44, session) {
   }
   const profile = profiles[0];
 
-  const updateData = {
-    credits_minutes: (profile.credits_minutes ?? 0) + item.minutes + bonusMinutes,
-  };
+  // Look up the coupon record for CouponUsage tracking (bonus minutes + cycle tracking).
+  let appliedCoupon = null;
+  if (couponCode) {
+    const coupons = await base44.asServiceRole.entities.Coupon.filter({
+      code: String(couponCode).toUpperCase(),
+      is_active: true,
+    });
+    appliedCoupon = coupons[0] || null;
+  }
+
+  const creditUpdate = await computeCreditUpdate(base44, {
+    profile,
+    externalReference: externalReference,
+    item,
+    couponCode,
+    bonusMinutes,
+    appliedCoupon,
+    isRenewal: false,
+  });
+  const updateData = { ...creditUpdate };
   if (item.plan) updateData.plan = item.plan;
 
   // Subscription first payment — activate subscription tracking.
@@ -267,9 +285,18 @@ async function handleInvoicePaid(base44, invoice) {
   }
   const profile = profiles[0];
 
-  // Renewal: add minutes (no bonus — coupon was one-time), increment cycle.
+  // Renewal: add plan minutes (no bonus — coupon was one-time), increment cycle.
+  const creditUpdate = await computeCreditUpdate(base44, {
+    profile,
+    externalReference: externalReference,
+    item,
+    couponCode: "",
+    bonusMinutes: 0,
+    appliedCoupon: null,
+    isRenewal: true,
+  });
   await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
-    credits_minutes: (profile.credits_minutes ?? 0) + item.minutes,
+    ...creditUpdate,
     subscription_status: "active",
     subscription_cycle: (profile.subscription_cycle ?? 1) + 1,
   });
@@ -316,9 +343,14 @@ async function handleSubscriptionDeleted(base44, subscription) {
     ? new Date(subscription.current_period_end * 1000).toISOString()
     : new Date().toISOString();
 
+  // Set grace period for plan credits (60 days from now). The subscription's
+  // current_period_end may be different — that controls scheduling access, while
+  // plan_credits_grace_expires_at controls when the plan credits are zeroed.
+  const planGraceExpiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
   await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
     subscription_status: "cancelled",
     subscription_valid_until: validUntil,
+    plan_credits_grace_expires_at: planGraceExpiresAt,
   });
   console.log(`[stripeWebhook] subscription cancelled for user ${userId}, valid until ${validUntil}`);
 }
