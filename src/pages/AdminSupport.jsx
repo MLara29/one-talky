@@ -118,6 +118,15 @@ export default function AdminSupport() {
           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_STYLES[msg.status]}`}>
             {STATUS_LABELS[msg.status]}
           </span>
+          {msg.status !== "closed" && (
+            <button
+              onClick={() => closeTicket(msg.id)}
+              title="Marcar como resolvido e mover para o histórico"
+              className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-emerald-500 transition-colors"
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
+          )}
           <button onClick={() => deleteMessage(msg.id)} title="Excluir mensagem" className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors">
             <Trash2 className="w-4 h-4" />
           </button>
