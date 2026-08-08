@@ -9,6 +9,7 @@ import { User, Save, Camera, Upload, Eye, Video, Star, MessageSquare, Trash2 } f
 import { getCountryFlag, getLanguageLabel, INTERESTS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import VideoRecorderModal from "@/components/profile/VideoRecorderModal";
+import TutorCard from "@/components/tutors/TutorCard";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -152,60 +153,8 @@ export default function Profile() {
               <p className="text-sm font-bold text-white">This is how your profile looks to students</p>
             </div>
 
-            {/* Exact replica of TutorCard */}
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-5">
-              <div className="flex items-start gap-4">
-                <div className="relative shrink-0">
-                  <img
-                    src={profile?.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.full_name || "T")}&background=F26A1B&color=fff&size=80`}
-                    alt="Preview"
-                    className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10"
-                  />
-                  {profile?.is_available_now ? (
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 border-2 border-slate-950 rounded-full">
-                      <span className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-60" />
-                    </div>
-                  ) : (
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gray-500 border-2 border-slate-950 rounded-full" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-bold text-white truncate">{profile?.display_name || profile?.full_name || "Your name"}</h3>
-                  <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
-                    <span className="text-lg leading-none">{getCountryFlag(profile?.nationality || profile?.country)}</span>
-                    <span>{profile?.nationality || profile?.country || "Your country"}</span>
-                  </p>
-                  <div className="flex items-center gap-3 mt-1.5">
-                    <span className="flex items-center gap-1 text-sm text-amber-500 font-semibold">
-                      <Star className="w-3.5 h-3.5 fill-amber-400" />
-                      {(profile?.total_reviews || 0) > 0 ? (profile?.average_rating || 0).toFixed(1) : "New"}
-                    </span>
-                    <span className="text-xs text-gray-600">{profile?.total_lessons || 0} lessons</span>
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  {profile?.is_available_now ? (
-                    <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-500/15 border border-emerald-500/20 text-emerald-400">● Online</span>
-                  ) : (
-                    <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-white/5 border border-white/10 text-gray-500">Offline</span>
-                  )}
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {profile?.native_languages?.map(l => (
-                  <span key={l} className="text-xs px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium">
-                    {getLanguageLabel(l)}
-                  </span>
-                ))}
-                {profile?.interests?.slice(0, 3).map(i => (
-                  <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-500">{i}</span>
-                ))}
-              </div>
-              {profile?.is_available_now && (
-                <div className="mt-3 text-xs font-semibold text-emerald-500 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Available now
-                </div>
-              )}
+            <div style={{ pointerEvents: "none" }}>
+              <TutorCard tutor={profile} forceEnglishTopics={true} />
             </div>
 
             {/* Tips below the card */}
