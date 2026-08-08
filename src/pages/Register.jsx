@@ -94,7 +94,9 @@ export default function Register() {
         await base44.auth.updateMe({
           terms_accepted: true,
           terms_accepted_at: new Date().toISOString(),
+          terms_accepted_version: "2026-08-08",
           privacy_policy_accepted: true,
+          privacy_policy_accepted_version: "2026-08-08",
           birth_date: birthDate,
         });
       }
@@ -315,11 +317,11 @@ export default function Register() {
           />
           <label htmlFor="terms" className="text-sm text-muted-foreground leading-snug cursor-pointer">
             Li e concordo com os{" "}
-            <Link to="/termos" target="_blank" className="text-primary font-medium hover:underline">
+            <Link to={role === "tutor" ? "/terms-of-use" : "/termos"} target="_blank" className="text-primary font-medium hover:underline">
               Termos de Uso
             </Link>{" "}
             e com a{" "}
-            <Link to="/privacidade" target="_blank" className="text-primary font-medium hover:underline">
+            <Link to={role === "tutor" ? "/privacy-policy" : "/privacidade"} target="_blank" className="text-primary font-medium hover:underline">
               Política de Privacidade
             </Link>{" "}
             da One Talky.

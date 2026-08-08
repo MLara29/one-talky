@@ -47,6 +47,8 @@ import AffiliateDashboard from '@/pages/AffiliateDashboard';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
 import TutorAgreement from '@/pages/TutorAgreement';
+import PrivacyPolicyEN from '@/pages/PrivacyPolicyEN';
+import TermsOfUseEN from '@/pages/TermsOfUseEN';
 import FAQ from '@/pages/FAQ';
 import RefundPolicy from '@/pages/RefundPolicy';
 import OnboardingAffiliate from '@/pages/OnboardingAffiliate';
@@ -56,7 +58,7 @@ import Profile from '@/pages/Profile';
 import StudentPersonalInfo from '@/pages/StudentPersonalInfo';
 import AppLayout from '@/components/AppLayout';
 
-const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/landing', '/privacidade', '/privacy', '/termos', '/tutor-agreement', '/faq', '/reembolso'];
+const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/landing', '/privacidade', '/privacy', '/termos', '/tutor-agreement', '/faq', '/reembolso', '/privacy-policy', '/terms-of-use'];
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -87,6 +89,8 @@ const AuthenticatedApp = () => {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/termos" element={<TermsOfUse />} />
       <Route path="/tutor-agreement" element={<TutorAgreement />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicyEN />} />
+      <Route path="/terms-of-use" element={<TermsOfUseEN />} />
       <Route path="/faq" element={<FAQ />} />
       <Route path="/reembolso" element={<RefundPolicy />} />
       <Route path="/login" element={<Login />} />

@@ -157,6 +157,10 @@
       "format": "date-time",
       "description": "Timestamp de aceite expl\u00edcito do Contrato de Presta\u00e7\u00e3o de Servi\u00e7o para Tutores, feito no onboarding. Separado do terms_accepted gen\u00e9rico do User."
     },
+    "tutor_agreement_accepted_version": {
+      "type": "string",
+      "description": "Version string (YYYY-MM-DD) of the Tutor Service Agreement the tutor last accepted. Compared against LEGAL_VERSIONS.tutor_agreement to decide if re-acceptance is needed."
+    },
     "no_show_count": {
       "type": "number",
       "default": 0,

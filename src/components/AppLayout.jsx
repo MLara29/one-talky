@@ -4,6 +4,9 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
 import BlockedScreen from "@/components/BlockedScreen";
+import LegalReacceptGate from "@/components/LegalReacceptGate";
+import TutorAgreementGate from "@/components/TutorAgreementGate";
+import { LEGAL_VERSIONS } from "@/lib/legalVersions";
 
 import { Button } from "@/components/ui/button";
 import useInactivityLogout, { LAST_ACTIVITY_KEY } from "@/hooks/useInactivityLogout";
@@ -128,10 +131,18 @@ export default function AppLayout() {
   // Students blocked by an admin (StudentProfile.is_blocked) are denied access
   // to the entire app — checked here since AppLayout wraps every protected page.
   const [studentBlocked, setStudentBlocked] = useState(false);
+  const [tutorProfile, setTutorProfile] = useState(null);
   useEffect(() => {
     if (role !== "student" || !user?.id) return;
     base44.entities.StudentProfile.filter({ user_id: user.id }).then(profiles => {
       if (profiles[0]?.is_blocked) setStudentBlocked(true);
+    }).catch(() => {});
+  }, [role, user?.id]);
+
+  useEffect(() => {
+    if (role !== "tutor" || !user?.id) return;
+    base44.entities.TutorProfile.filter({ user_id: user.id }).then(profiles => {
+      setTutorProfile(profiles[0] || null);
     }).catch(() => {});
   }, [role, user?.id]);
 
@@ -159,6 +170,27 @@ export default function AppLayout() {
 
   if (studentBlocked) {
     return <BlockedScreen />;
+  }
+
+  // Legal re-acceptance: if the user's accepted version doesn't match the
+  // current version, block access until they accept. Tutors see English;
+  // all other roles see Portuguese.
+  const legalTermsPending =
+    user?.terms_accepted_version !== LEGAL_VERSIONS.terms ||
+    user?.privacy_policy_accepted_version !== LEGAL_VERSIONS.privacy;
+
+  if (legalTermsPending) {
+    return <LegalReacceptGate role={role} onAccepted={() => window.location.reload()} />;
+  }
+
+  // Tutors must also accept the current Tutor Service Agreement version.
+  const tutorAgreementPending =
+    role === "tutor" &&
+    tutorProfile !== null &&
+    tutorProfile?.tutor_agreement_accepted_version !== LEGAL_VERSIONS.tutor_agreement;
+
+  if (tutorAgreementPending) {
+    return <TutorAgreementGate onAccepted={() => window.location.reload()} />;
   }
 
   const handleLogout = () => {

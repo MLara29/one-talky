@@ -21,9 +21,17 @@
       "type": "string",
       "format": "date-time"
     },
+    "terms_accepted_version": {
+      "type": "string",
+      "description": "Version string (YYYY-MM-DD) of the Terms of Use the user last accepted. Compared against LEGAL_VERSIONS.terms to decide if re-acceptance is needed."
+    },
     "privacy_policy_accepted": {
       "type": "boolean",
       "default": false
+    },
+    "privacy_policy_accepted_version": {
+      "type": "string",
+      "description": "Version string (YYYY-MM-DD) of the Privacy Policy the user last accepted. Compared against LEGAL_VERSIONS.privacy to decide if re-acceptance is needed."
     },
     "birth_date": {
       "type": "string",

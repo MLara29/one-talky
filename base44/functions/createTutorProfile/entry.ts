@@ -37,6 +37,7 @@ Deno.serve(async (req) => {
       average_rating: 0,
       total_reviews: 0,
       tutor_agreement_accepted_at: new Date().toISOString(),
+      tutor_agreement_accepted_version: "2026-08-08",
     });
 
     // Assign tutor role server-side (client cannot self-assign privileged roles)
