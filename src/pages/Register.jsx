@@ -36,9 +36,25 @@ export default function Register() {
     return age;
   };
 
+  const getPasswordStrength = (pwd) => {
+    const hasMinLength = pwd.length >= 8;
+    const hasLetter = /[a-zA-Z]/.test(pwd);
+    const hasNumber = /[0-9]/.test(pwd);
+    const checks = [hasMinLength, hasLetter, hasNumber];
+    const passedCount = checks.filter(Boolean).length;
+    const isValid = hasMinLength && hasLetter && hasNumber;
+    return { isValid, hasMinLength, hasLetter, hasNumber, passedCount };
+  };
+
+  const passwordStrength = getPasswordStrength(password);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!passwordStrength.isValid) {
+      setError("Sua senha precisa ter pelo menos 8 caracteres, incluindo letras e números.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("As senhas não coincidem.");
       return;
@@ -233,6 +249,24 @@ export default function Register() {
               required
             />
           </div>
+          <div className="space-y-1 mt-1.5">
+            <div className="flex gap-1">
+              {[0, 1, 2].map(i => (
+                <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
+                  passwordStrength.passedCount > i
+                    ? (passwordStrength.isValid ? "bg-green-500" : "bg-amber-500")
+                    : "bg-gray-200"
+                }`} />
+              ))}
+            </div>
+            {password && !passwordStrength.isValid && (
+              <p className="text-xs text-muted-foreground">
+                {!passwordStrength.hasMinLength && "Mínimo de 8 caracteres. "}
+                {!passwordStrength.hasLetter && "Inclua ao menos uma letra. "}
+                {!passwordStrength.hasNumber && "Inclua ao menos um número."}
+              </p>
+            )}
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm Password</Label>
@@ -292,7 +326,7 @@ export default function Register() {
           </label>
         </div>
 
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading || !termsAccepted || !ageConfirmed || !birthDate}>
+        <Button type="submit" className="w-full h-12 font-medium" disabled={loading || !termsAccepted || !ageConfirmed || !birthDate || !passwordStrength.isValid}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
