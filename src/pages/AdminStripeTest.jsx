@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, CheckCircle, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Zap, Ban, CreditCard, ExternalLink } from "lucide-react";
+import { Loader2, CheckCircle, AlertCircle, RefreshCw, ChevronDown, ChevronRight, Zap, Ban, CreditCard, ExternalLink, FastForward } from "lucide-react";
 
 const STATUS_COLOR = {
   paid: "bg-emerald-50 text-emerald-600",
@@ -24,6 +24,8 @@ export default function AdminStripeTest() {
   const [expanded, setExpanded] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
   const [redirectMsg, setRedirectMsg] = useState("");
+  const [advancingClock, setAdvancingClock] = useState(null);
+  const [advanceDays, setAdvanceDays] = useState(1);
 
   const loadEvents = () => {
     setLoadingEvents(true);
@@ -105,6 +107,35 @@ export default function AdminStripeTest() {
       )
       .map((ev) => ev.subscription_id)
   );
+
+  // Mapa subscription_id → clock_id (o clock pode vir do evento de criação
+  // ou de eventos de subscription; procuramos em todos os eventos).
+  const clockBySub = {};
+  events.forEach((ev) => {
+    if (ev.clock_id && ev.subscription_id) clockBySub[ev.subscription_id] = ev.clock_id;
+  });
+
+  const handleAdvance = async (clockId, subId) => {
+    if (!window.confirm(`Avançar o Test Clock ${clockId} em ${advanceDays} dia(s)? A Stripe processará a renovação em segundo plano — aguarde alguns segundos e atualize a lista.`)) return;
+    setAdvancingClock(clockId);
+    try {
+      const res = await base44.functions.invoke("stripeAdvanceTestClock", {
+        clock_id: clockId,
+        days: Number(advanceDays),
+      });
+      if (res.data?.success) {
+        // Recarrega após alguns segundos para dar tempo da Stripe processar.
+        setTimeout(() => loadEvents(), 4000);
+      } else {
+        alert(res.data?.error || "Não foi possível avançar o Test Clock.");
+      }
+    } catch (err) {
+      console.error("[AdminStripeTest] advance error:", err);
+      alert(err.message || "Erro ao avançar o Test Clock.");
+    } finally {
+      setAdvancingClock(null);
+    }
+  };
 
   const inputCls = "w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:border-orange-500 transition-colors theme-input";
 
@@ -233,21 +264,49 @@ export default function AdminStripeTest() {
                       )}
                     </div>
                   </button>
-                  {subId && !cancelledIds.has(subId) && ev.event_type !== "checkout.session.created" && (
-                    <button
-                      onClick={() => handleCancel(subId)}
-                      disabled={cancellingId === subId}
-                      className="shrink-0 flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      title="Cancelar assinatura no Stripe"
-                    >
-                      {cancellingId === subId ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Ban className="w-3.5 h-3.5" />
-                      )}
-                      Cancelar
-                    </button>
-                  )}
+                  <div className="shrink-0 flex items-center gap-1.5">
+                    {subId && !cancelledIds.has(subId) && (ev.clock_id || clockBySub[subId]) && ev.event_type !== "checkout.session.created" && ev.event_type !== "test_clock.advanced" && (
+                      <>
+                        <input
+                          type="number"
+                          min="1"
+                          max="365"
+                          value={advanceDays}
+                          onChange={(e) => setAdvanceDays(e.target.value)}
+                          className="w-12 px-1.5 py-1 text-[11px] rounded-lg border border-gray-200 text-center theme-input"
+                          title="Dias para avançar"
+                        />
+                        <button
+                          onClick={() => handleAdvance(ev.clock_id || clockBySub[subId], subId)}
+                          disabled={advancingClock === (ev.clock_id || clockBySub[subId])}
+                          className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          title="Avançar Test Clock (simular tempo passando)"
+                        >
+                          {advancingClock === (ev.clock_id || clockBySub[subId]) ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <FastForward className="w-3.5 h-3.5" />
+                          )}
+                          Avançar
+                        </button>
+                      </>
+                    )}
+                    {subId && !cancelledIds.has(subId) && ev.event_type !== "checkout.session.created" && ev.event_type !== "test_clock.advanced" && (
+                      <button
+                        onClick={() => handleCancel(subId)}
+                        disabled={cancellingId === subId}
+                        className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Cancelar assinatura no Stripe"
+                      >
+                        {cancellingId === subId ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Ban className="w-3.5 h-3.5" />
+                        )}
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {open && (
                   <div className="px-4 pb-4 pt-1 border-t border-gray-100">

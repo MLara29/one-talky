@@ -32,10 +32,44 @@ export default async function (req: Request): Promise<Response> {
     const successUrl = `${origin}/admin/stripe-test?stripe_status=success`;
     const cancelUrl = `${origin}/admin/stripe-test?stripe_status=cancel`;
 
-    // Cria a Checkout Session com price_data inline (product + price descartáveis).
-    // Stripe exige unit_amount em centavos.
     const unitAmount = Math.round(Number(amount) * 100);
+    const now = Math.floor(Date.now() / 1000);
 
+    // 1) Cria um Test Clock congelado no agora — permite avançar o tempo depois
+    //    para validar a renovação automática sem esperar o ciclo real.
+    const clockRes = await fetch("https://api.stripe.com/v1/test_helpers/test_clocks", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        "frozen_time": String(now),
+        "name": "Teste recorrência One Talky",
+      }),
+    });
+    const clockData = await clockRes.json();
+    if (!clockRes.ok) {
+      console.error("[stripeCreateTestSubscription] clock error:", JSON.stringify(clockData));
+      return Response.json({ error: clockData.error?.message || "Falha ao criar Test Clock" }, { status: 400 });
+    }
+
+    // 2) Cria um customer vinculado ao Test Clock. Assinaturas geradas a partir
+    //    deste customer herdam o clock e respondem ao avanço do tempo.
+    const customerRes = await fetch("https://api.stripe.com/v1/customers", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        "test_clock": clockData.id,
+        "description": "Customer de teste — One Talky recorrência",
+        "metadata[test]": "true",
+      }),
+    });
+    const customerData = await customerRes.json();
+    if (!customerRes.ok) {
+      console.error("[stripeCreateTestSubscription] customer error:", JSON.stringify(customerData));
+      return Response.json({ error: customerData.error?.message || "Falha ao criar customer de teste" }, { status: 400 });
+    }
+
+    // 3) Cria a Checkout Session com price_data inline, vinculada ao customer
+    //    (e portanto ao Test Clock).
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
       headers: {
@@ -44,6 +78,7 @@ export default async function (req: Request): Promise<Response> {
       },
       body: new URLSearchParams({
         "mode": "subscription",
+        "customer": customerData.id,
         "line_items[0][quantity]": "1",
         "line_items[0][price_data][currency]": "brl",
         "line_items[0][price_data][unit_amount]": String(unitAmount),
@@ -53,6 +88,7 @@ export default async function (req: Request): Promise<Response> {
         "cancel_url": cancelUrl,
         "metadata[test]": "true",
         "metadata[created_by]": user.id,
+        "metadata[clock_id]": clockData.id,
       }),
     });
     const data = await res.json();
@@ -65,16 +101,18 @@ export default async function (req: Request): Promise<Response> {
       );
     }
 
-    // Registra a criação para acompanhamento.
+    // Registra a criação para acompanhamento, incluindo clock e customer.
     await base44.asServiceRole.entities.StripeTestEvent.create({
       event_type: "checkout.session.created",
       checkout_session_id: data.id,
+      customer_id: customerData.id,
+      clock_id: clockData.id,
       status: data.status,
       received_at: new Date().toISOString(),
       raw_payload: JSON.stringify(data),
     });
 
-    return Response.json({ success: true, checkout_url: data.url, session_id: data.id });
+    return Response.json({ success: true, checkout_url: data.url, session_id: data.id, clock_id: clockData.id });
   } catch (error) {
     console.error("[stripeCreateTestSubscription] error:", error.message);
     return Response.json({ error: error.message }, { status: 500 });

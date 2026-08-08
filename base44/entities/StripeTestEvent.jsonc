@@ -22,6 +22,10 @@
       "type": "string",
       "description": "ID do customer no Stripe"
     },
+    "clock_id": {
+      "type": "string",
+      "description": "ID do Test Clock associado ao customer (modo teste \u2014 permite avan\u00e7ar o tempo para validar renova\u00e7\u00e3o)"
+    },
     "amount_paid": {
       "type": "number",
       "description": "Valor pago em centavos (BRL)"

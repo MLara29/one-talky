@@ -39,6 +39,7 @@ export default async function (req: Request): Promise<Response> {
     let customerId = obj.customer || "";
     let amountPaid = typeof obj.amount_paid === "number" ? obj.amount_paid : null;
     let status = obj.status || "";
+    let clockId = obj.test_clock || "";
 
     // Para checkout.session.completed, o subscription vem no campo subscription.
     if (event.type === "checkout.session.completed") {
@@ -52,10 +53,11 @@ export default async function (req: Request): Promise<Response> {
       invoiceId = obj.id || "";
       customerId = obj.customer || "";
     }
-    // Para customer.subscription.deleted, o objeto é a própria subscription.
-    if (event.type === "customer.subscription.deleted") {
+    // Para customer.subscription.*, o objeto é a própria subscription (tem test_clock).
+    if (event.type === "customer.subscription.deleted" || event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
       subscriptionId = obj.id || "";
       customerId = obj.customer || "";
+      clockId = obj.test_clock || "";
       checkoutSessionId = "";
       invoiceId = "";
     }
@@ -66,6 +68,7 @@ export default async function (req: Request): Promise<Response> {
       invoice_id: invoiceId || "",
       checkout_session_id: event.type === "checkout.session.completed" ? checkoutSessionId : "",
       customer_id: customerId || "",
+      clock_id: clockId || "",
       amount_paid: amountPaid,
       status: status || "",
       received_at: new Date().toISOString(),
