@@ -10,6 +10,10 @@
     "notification_email": {
       "type": "string",
       "description": "E-mail do administrador que recebe todas as notifica\u00e7\u00f5es (novo aluno, novo tutor, tutor pendente de aprova\u00e7\u00e3o, nova mensagem de suporte)."
+    },
+    "email_bcc_address": {
+      "type": "string",
+      "description": "Endere\u00e7o que recebe c\u00f3pia oculta (BCC) de todos os e-mails enviados pelo sistema."
     }
   },
   "rls": {

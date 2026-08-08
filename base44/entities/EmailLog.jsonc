@@ -1,0 +1,51 @@
+{
+  "name": "EmailLog",
+  "type": "object",
+  "properties": {
+    "to": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "html_preview": {
+      "type": "string",
+      "description": "Corpo completo do e-mail enviado"
+    },
+    "source": {
+      "type": "string",
+      "description": "Ex: admin_compose, otp, support_reply, no_show_notification, tutor_agreement, etc."
+    },
+    "sent_by": {
+      "type": "string",
+      "description": "ID do admin, se envio manual, ou 'system' se autom\u00e1tico"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "to",
+    "subject",
+    "source"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

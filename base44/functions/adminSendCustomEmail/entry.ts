@@ -1,6 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { requireOtp } from "../../shared/requireOtp.js";
-import { getTransporter, SMTP_FROM } from "../../shared/mailer.js";
+import { getTransporter, SMTP_FROM, sendMailAndLog } from "../../shared/mailer.js";
 
 const MAX_TOTAL_ATTACHMENT_BYTES = 15 * 1024 * 1024; // 15MB — adjust per Hostinger email plan limit
 
@@ -55,13 +55,14 @@ Deno.serve(async (req) => {
     for (const r of recipients) {
       if (!r.email) continue;
       try {
-        await transporter.sendMail({
+        await sendMailAndLog(base44, transporter, {
           from: SMTP_FROM(),
           to: r.email,
           subject,
           html: body_html,
           attachments: nodemailerAttachments,
-        });
+          _sentBy: user.id,
+        }, "admin_compose");
         results.sent++;
       } catch (e) {
         console.error(`[adminSendCustomEmail] failed for ${r.email}:`, e.message);

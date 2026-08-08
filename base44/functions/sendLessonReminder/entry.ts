@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
 
         if (tutorEmail && reminderEnabled) {
           try {
-            await transporter.sendMail({
+            await sendMailAndLog(base44, transporter, {
               from: SMTP_FROM(),
               to: tutorEmail,
               subject: `⏰ Your lesson with ${lesson.student_name} starts in ${labelFor(tutorMinutes)}`,
@@ -224,7 +224,7 @@ Deno.serve(async (req) => {
                 lessonTime,
                 minutesBefore: tutorMinutes,
               }),
-            });
+            }, "lesson_reminder");
             sent++;
             results.push({ role: 'tutor', email: tutorEmail, lesson_id: lesson.id, status: 'sent' });
           } catch (e) {
@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
         const studentEmail = userMap[lesson.student_id]?.email || null;
         if (studentEmail) {
           try {
-            await transporter.sendMail({
+            await sendMailAndLog(base44, transporter, {
               from: SMTP_FROM(),
               to: studentEmail,
               subject: `🎙️ Your lesson with ${lesson.tutor_name} starts in ${labelFor(studentMinutes)}`,
@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
                 lessonTime,
                 minutesBefore: studentMinutes,
               }),
-            });
+            }, "lesson_reminder");
             sent++;
             results.push({ role: 'student', email: studentEmail, lesson_id: lesson.id, status: 'sent' });
           } catch (e) {

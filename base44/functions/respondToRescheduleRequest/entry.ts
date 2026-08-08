@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
 
       if (tutorEmail && Deno.env.get("SMTP_HOST")) {
         const transporter = getTransporter();
-        await transporter.sendMail({
+        await sendMailAndLog(base44, transporter, {
           from: SMTP_FROM(),
           to: tutorEmail,
           subject: `❌ Student declined your reschedule request`,
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
               </div>
             </div>
           `,
-        });
+        }, "reschedule_respond");
       }
 
       return Response.json({ success: true, action: "rejected" });
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
 
     if (tutorEmail && Deno.env.get("SMTP_HOST")) {
       const transporter = getTransporter();
-      await transporter.sendMail({
+      await sendMailAndLog(base44, transporter, {
         from: SMTP_FROM(),
         to: tutorEmail,
         subject: `✅ Student accepted your reschedule request`,
@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
             </div>
           </div>
         `,
-      });
+      }, "reschedule_respond");
     }
 
     return Response.json({ success: true, action: "accepted" });

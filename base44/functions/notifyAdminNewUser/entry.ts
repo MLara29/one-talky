@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
-import { getTransporter, SMTP_FROM } from "../../shared/mailer.js";
+import { getTransporter, SMTP_FROM, sendMailAndLog } from "../../shared/mailer.js";
 import { getAdminNotificationEmail } from "../../shared/adminNotificationEmail.js";
 
 Deno.serve(async (req) => {
@@ -50,12 +50,12 @@ Deno.serve(async (req) => {
 
     const transporter = getTransporter();
 
-    await transporter.sendMail({
+    await sendMailAndLog(base44, transporter, {
       from: SMTP_FROM(),
       to: adminEmail,
       subject: `[One Talky] Novo ${roleLabel}: ${full_name}`,
       html,
-    });
+    }, "admin_new_user");
 
     // Create in-app notification for all admins
     try {

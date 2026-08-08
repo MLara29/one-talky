@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
-import { getTransporter, SMTP_FROM } from "../../shared/mailer.js";
+import { getTransporter, SMTP_FROM, sendMailAndLog } from "../../shared/mailer.js";
 import { getAdminNotificationEmail } from "../../shared/adminNotificationEmail.js";
 
 const esc = (s: string) => String(s ?? "")
@@ -80,12 +80,12 @@ Deno.serve(async (req) => {
           </div>
         `;
         const transporter = getTransporter();
-        await transporter.sendMail({
+        await sendMailAndLog(base44, transporter, {
           from: SMTP_FROM(),
           to: adminEmail,
           subject: `[One Talky] Suporte: ${subject}`,
           html,
-        });
+        }, "support_message");
       }
     } catch (e) {
       console.error("[sendSupportMessage] email", e.message);

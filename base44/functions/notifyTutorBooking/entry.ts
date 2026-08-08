@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import { getTransporter, SMTP_FROM } from '../../shared/mailer.js';
+import { getTransporter, SMTP_FROM, sendMailAndLog } from '../../shared/mailer.js';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png';
 
@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
 
     const transporter = getTransporter();
 
-    await transporter.sendMail({
+    await sendMailAndLog(base44, transporter, {
       from: SMTP_FROM(),
       to: tutorEmail,
       subject: `📅 New lesson booked with ${studentName} – One Talky`,
@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
         objective,
         tutorTz: tutorProfile.timezone || 'America/Sao_Paulo',
       }),
-    });
+    }, "tutor_booking");
 
     return Response.json({ success: true, sent_to: tutorEmail });
   } catch (error) {

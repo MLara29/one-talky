@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Send, Bell, CheckCircle, AlertCircle, Clock, Eye, UserPlus, Calendar } from "lucide-react";
+import { Mail, Send, Bell, CheckCircle, AlertCircle, Clock, Eye, UserPlus, Calendar, History, Copy } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import ComposeEmailSection from "@/components/admin/ComposeEmailSection";
+import EmailHistorySection from "@/components/admin/EmailHistorySection";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const TIME_OPTIONS = [
   { label: "15 min", value: 15 },
@@ -167,6 +169,9 @@ export default function AdminEmail() {
   // Admin notification email settings
   const [adminNotifEmail, setAdminNotifEmail] = useState("");
   const [savingAdminEmail, setSavingAdminEmail] = useState(false);
+  const [bccEmail, setBccEmail] = useState("");
+  const [savingBcc, setSavingBcc] = useState(false);
+  const [activeTab, setActiveTab] = useState("configurar");
 
   const openPreview = (html, title) => { setPreviewHtml(html); setPreviewTitle(title); };
   const closePreview = () => setPreviewHtml(null);
@@ -209,7 +214,10 @@ export default function AdminEmail() {
 
   useEffect(() => {
     base44.entities.PayoutSettings.list("-created_date", 1)
-      .then(s => { if (s[0]?.notification_email) setAdminNotifEmail(s[0].notification_email); })
+      .then(s => {
+        if (s[0]?.notification_email) setAdminNotifEmail(s[0].notification_email);
+        if (s[0]?.email_bcc_address) setBccEmail(s[0].email_bcc_address);
+      })
       .catch(() => {});
   }, []);
 
@@ -226,11 +234,30 @@ export default function AdminEmail() {
     setSavingAdminEmail(false);
   };
 
+  const handleSaveBcc = async () => {
+    setSavingBcc(true);
+    try {
+      const response = await base44.functions.invoke("updatePayoutSettings", { email_bcc_address: bccEmail });
+      if (response.data?.error) throw new Error(response.data.error);
+      toast({ title: "✅ E-mail de cópia (BCC) salvo!" });
+    } catch (e) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+    setSavingBcc(false);
+  };
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="font-display font-bold text-2xl text-white mb-1">E-mails e Notificações</h1>
       <p className="text-gray-500 text-sm mb-7">Configure e teste todas as notificações automáticas por e-mail.</p>
 
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6 mx-auto flex w-fit">
+          <TabsTrigger value="configurar">Configurar & Compor</TabsTrigger>
+          <TabsTrigger value="historico">Histórico</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="configurar">
       <ComposeEmailSection />
 
       {/* ── SECTION 1: Admin Notification Email ─────────────────────────── */}
@@ -254,6 +281,22 @@ export default function AdminEmail() {
           >
             <Eye className="w-3.5 h-3.5" /> Ver modelo
           </button>
+        </div>
+      </Section>
+
+      {/* ── SECTION: BCC Copy ─────────────────────────────────────────── */}
+      <Section icon={Copy} iconColor="text-orange-400" title="Cópia automática (BCC)" description="Todos os e-mails enviados pelo sistema (manuais e automáticos) chegam como cópia oculta neste endereço. Deixe vazio para desativar.">
+        <div className="flex gap-2">
+          <Input
+            value={bccEmail}
+            onChange={e => setBccEmail(e.target.value)}
+            placeholder="copia@example.com (opcional)"
+            type="email"
+            className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 flex-1"
+          />
+          <Button onClick={handleSaveBcc} disabled={savingBcc} className="bg-orange-600 hover:bg-orange-700 text-white shrink-0">
+            Salvar
+          </Button>
         </div>
       </Section>
 
@@ -367,6 +410,12 @@ export default function AdminEmail() {
           )}
         </div>
       </Section>
+        </TabsContent>
+
+        <TabsContent value="historico">
+          <EmailHistorySection />
+        </TabsContent>
+      </Tabs>
 
       {/* Preview Modal */}
       {previewHtml && <PreviewModal html={previewHtml} title={previewTitle} onClose={closePreview} />}

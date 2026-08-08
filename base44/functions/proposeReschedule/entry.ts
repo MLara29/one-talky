@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
     if (studentEmail && Deno.env.get("SMTP_HOST")) {
       const transporter = getTransporter();
-      await transporter.sendMail({
+      await sendMailAndLog(base44, transporter, {
         from: SMTP_FROM(),
         to: studentEmail,
         subject: `📅 Seu tutor propôs mudar o horário da aula`,
@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
             </div>
           </div>
         `,
-      });
+      }, "reschedule_propose");
     }
 
     return Response.json({ success: true, request_id: request.id });

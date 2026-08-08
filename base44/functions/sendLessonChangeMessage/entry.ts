@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       const ctaText = isRecipientStudent ? "Ver mensagem" : "View message";
 
       const transporter = getTransporter();
-      await transporter.sendMail({
+      await sendMailAndLog(base44, transporter, {
         from: SMTP_FROM(),
         to: recipientEmail,
         subject,
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
             </div>
           </div>
         `,
-      });
+      }, "reschedule_message");
     }
 
     return Response.json({ success: true });

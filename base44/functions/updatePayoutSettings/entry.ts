@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
     const otpGate = await requireOtp(base44, req, user);
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
-    const { sweep_weekday, notification_email } = await req.json();
+    const { sweep_weekday, notification_email, email_bcc_address } = await req.json();
 
     const updates: Record<string, unknown> = {};
     if (sweep_weekday !== undefined) {
@@ -28,6 +28,13 @@ Deno.serve(async (req) => {
         return Response.json({ error: "notification_email inválido" }, { status: 400 });
       }
       updates.notification_email = email;
+    }
+    if (email_bcc_address !== undefined) {
+      const bcc = String(email_bcc_address).trim();
+      if (bcc && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bcc)) {
+        return Response.json({ error: "email_bcc_address inválido" }, { status: 400 });
+      }
+      updates.email_bcc_address = bcc;
     }
     if (Object.keys(updates).length === 0) {
       return Response.json({ error: "Nada para atualizar" }, { status: 400 });

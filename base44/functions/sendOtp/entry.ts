@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { getSessionHash } from '../../shared/sessionHash.js';
-import { getTransporter, SMTP_FROM } from '../../shared/mailer.js';
+import { getTransporter, SMTP_FROM, sendMailAndLog } from '../../shared/mailer.js';
 
 Deno.serve(async (req) => {
   try {
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    await transporter.sendMail({ from: SMTP_FROM(), to: user.email, subject, html });
+    await sendMailAndLog(base44, transporter, { from: SMTP_FROM(), to: user.email, subject, html }, "otp");
 
     return Response.json({ success: true, required: true });
   } catch (error) {

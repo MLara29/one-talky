@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { requireOtp } from '../../shared/requireOtp.js';
-import { getTransporter, SMTP_FROM } from '../../shared/mailer.js';
+import { getTransporter, SMTP_FROM, sendMailAndLog } from '../../shared/mailer.js';
 
 Deno.serve(async (req) => {
   try {
@@ -25,13 +25,14 @@ Deno.serve(async (req) => {
 
     const toList = Array.isArray(to) ? to : [to];
 
-    const info = await transporter.sendMail({
+    const info = await sendMailAndLog(base44, transporter, {
       from: SMTP_FROM(),
       to: toList.join(', '),
       subject,
       text: text || '',
       html: html || '',
-    });
+      _sentBy: user.id,
+    }, "admin_send_email");
 
     return Response.json({ success: true, messageId: info.messageId, sent_to: toList });
   } catch (error) {
