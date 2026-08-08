@@ -620,7 +620,7 @@ export default function Classroom() {
         if (profiles.length > 0 && profiles[0].full_name) senderName = profiles[0].full_name;
       } else if (user.role === "tutor") {
         const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
-        if (profiles.length > 0 && profiles[0].full_name) senderName = profiles[0].full_name;
+        if (profiles.length > 0) senderName = profiles[0].display_name || profiles[0].full_name || senderName;
       }
     } catch {}
 

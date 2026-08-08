@@ -138,8 +138,8 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <img
-              src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=F26A1B&color=fff&size=80`}
-              alt={tutor.full_name}
+              src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.display_name || tutor.full_name)}&background=F26A1B&color=fff&size=80`}
+              alt={tutor.display_name || tutor.full_name}
               className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10 group-hover:ring-orange-500/30 transition-all"
             />
             {online && !inLesson && (
@@ -152,7 +152,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="theme-heading font-display font-bold text-white group-hover:text-orange-400 transition-colors truncate">{tutor.full_name}</h3>
+            <h3 className="theme-heading font-display font-bold text-white group-hover:text-orange-400 transition-colors truncate">{tutor.display_name || tutor.full_name}</h3>
             <p className="theme-subtext text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
               <span className="text-lg leading-none">
                 {getCountryFlag(tutor.nationality) !== "🌍"

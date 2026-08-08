@@ -81,7 +81,7 @@ export default function TutorProfilePage() {
         action: 'book',
         duration_minutes: 30,
         tutor_user_id: tutor.user_id,
-        tutor_name: tutor.full_name,
+        tutor_name: tutor.display_name || tutor.full_name,
         student_name: sp?.full_name || user.full_name,
         language: tutor.native_languages?.[0] || 'english',
       });
@@ -137,8 +137,8 @@ export default function TutorProfilePage() {
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <div className="relative shrink-0">
               <img
-                src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.full_name)}&background=F26A1B&color=fff&size=120`}
-                alt={tutor.full_name}
+                src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.display_name || tutor.full_name)}&background=F26A1B&color=fff&size=120`}
+                alt={tutor.display_name || tutor.full_name}
                 className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-orange-500/20"
               />
               {isLive(tutor) && (
@@ -148,7 +148,7 @@ export default function TutorProfilePage() {
               )}
             </div>
             <div className="flex-1">
-              <h1 className="theme-heading font-display text-2xl font-bold text-white">{tutor.full_name}</h1>
+              <h1 className="theme-heading font-display text-2xl font-bold text-white">{tutor.display_name || tutor.full_name}</h1>
               <p className="theme-subtext text-gray-500 flex items-center gap-1 mt-1 text-sm">
                 <MapPin className="w-3.5 h-3.5" /> {getCountryFlag(tutor.country)} {tutor.country}
               </p>

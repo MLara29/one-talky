@@ -152,7 +152,7 @@ export default async function(req) {
         lesson = await base44.asServiceRole.entities.Lesson.create({
           tutor_id: tutor_user_id,
           student_id: studentId,
-          tutor_name: tutor_name || '',
+          tutor_name: tutorProfile.display_name || tutorProfile.full_name || tutor_name || '',
           student_name: student_name || '',
           language: language || 'english',
           status: 'scheduled',

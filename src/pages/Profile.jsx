@@ -46,12 +46,12 @@ export default function Profile() {
     setSaving(true);
     try {
       if (role === "tutor") {
-        const updates = { full_name: profile.full_name, bio: profile.bio, interests: profile.interests || [] };
+        const updates = { display_name: profile.display_name, bio: profile.bio, interests: profile.interests || [] };
         await base44.functions.invoke('updateMyProfile', { updates });
       } else {
         await base44.functions.invoke('updateMyProfile', { updates: { full_name: profile.full_name } });
+        await base44.auth.updateMe({ full_name: profile.full_name });
       }
-      await base44.auth.updateMe({ full_name: profile.full_name });
       toast({ title: "Profile saved! ✅" });
     } catch { toast({ title: "Error saving", variant: "destructive" }); } finally { setSaving(false); }
   };
@@ -170,7 +170,7 @@ export default function Profile() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-bold text-white truncate">{profile?.full_name || "Your name"}</h3>
+                  <h3 className="font-display font-bold text-white truncate">{profile?.display_name || profile?.full_name || "Your name"}</h3>
                   <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
                     <span className="text-lg leading-none">{getCountryFlag(profile?.nationality || profile?.country)}</span>
                     <span>{profile?.nationality || profile?.country || "Your country"}</span>
@@ -228,9 +228,9 @@ export default function Profile() {
               <Label className="theme-subtext text-gray-500 text-sm block mb-1">Public name</Label>
               <p className="text-xs text-orange-400 mb-2">👤 This is the name students will see on your card and profile. It can be your first name, nickname or whatever you prefer to be called.</p>
               <Input
-                value={profile?.full_name || ""}
-                onChange={e => setProfile({ ...profile, full_name: e.target.value })}
-                placeholder="e.g. Helena, Prof. Carlos, Teacher Ana..."
+                value={profile?.display_name || ""}
+                onChange={e => setProfile({ ...profile, display_name: e.target.value })}
+                placeholder="e.g. Helena, Prof. Carlos, Teacher Ana... (leave empty to use your legal name)"
                 className="theme-input bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-orange-500/50"
               />
             </div>

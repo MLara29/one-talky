@@ -9,6 +9,10 @@
     "full_name": {
       "type": "string"
     },
+    "display_name": {
+      "type": "string",
+      "description": "Nome exibido publicamente para os alunos (pode ser apelido, primeiro nome, etc.). Se vazio, o sistema usa full_name como respaldo."
+    },
     "photo_url": {
       "type": "string"
     },
