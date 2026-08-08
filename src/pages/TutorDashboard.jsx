@@ -6,7 +6,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Clock, DollarSign, Star, Users, AlertCircle, X, Bell, MessageSquare } from "lucide-react";
+import { Clock, DollarSign, Star, Users, AlertCircle, X, Bell, MessageSquare, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import SupportModal from "@/components/support/SupportModal";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
@@ -18,6 +18,19 @@ function AutoDismissAlert({ children, onDismiss, className }) {
     return () => clearTimeout(t);
   }, []);
   return <div className={className}>{children}</div>;
+}
+
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"];
+
+function buildCalendarDays(year, month) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return cells;
 }
 
 export default function TutorDashboard() {
@@ -37,6 +50,10 @@ export default function TutorDashboard() {
   const shownLiveRef = useRef(new Set());
   const lessonsRef = useRef([]);
   const [tick, setTick] = useState(0);
+  const today = new Date();
+  const [calMonth, setCalMonth] = useState(today.getMonth());
+  const [calYear, setCalYear] = useState(today.getFullYear());
+  const [selectedCalDay, setSelectedCalDay] = useState(null);
 
   useEffect(() => { loadData(); }, [user]);
 
@@ -203,6 +220,25 @@ export default function TutorDashboard() {
   const isUpcoming = (l) => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() + LESSON_JOIN_GRACE_PERIOD_MS > now;
   const upcomingLessons = lessons.filter(isUpcoming);
 
+  const lessonDayMap = {};
+  lessons.forEach(l => {
+    if (!l.scheduled_at) return;
+    const date = new Date(l.scheduled_at);
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    if (!lessonDayMap[key]) lessonDayMap[key] = [];
+    lessonDayMap[key].push(l);
+  });
+  const getDayLessons = (d) => lessonDayMap[`${calYear}-${calMonth}-${d}`];
+  const calendarDays = buildCalendarDays(calYear, calMonth);
+  const prevCalMonth = () => {
+    if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1);
+    setSelectedCalDay(null);
+  };
+  const nextCalMonth = () => {
+    if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1);
+    setSelectedCalDay(null);
+  };
+
   return (
     <div>
       {upcomingAlert && (
@@ -291,81 +327,141 @@ export default function TutorDashboard() {
 
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
 
-      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
-        <h2 className="theme-heading font-display font-bold text-white mb-5">{t(lang, "upcomingLessons")}</h2>
-        {upcomingLessons.length === 0 ? (
-          <p className="theme-subtext text-sm text-gray-500 py-6 text-center">{t(lang, "noUpcomingLessons")}</p>
-        ) : (
-          <div className="space-y-3">
-            {upcomingLessons
-              .sort((a, b) => {
-                if (a.status === "in_progress") return -1;
-                if (b.status === "in_progress") return 1;
-                return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
-              })
-              .map(l => {
-              const sp = studentProfiles[l.student_id];
-              return (
-                <div key={l.id} className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="theme-heading font-semibold text-white">{l.student_name}</p>
-                      <p className="theme-subtext text-sm text-gray-500 mt-0.5">
-                        {l.language} · {l.status === "in_progress" ? t(lang, "liveNow") : new Date(l.scheduled_at).toLocaleString()}
-                      </p>
-                      {sp && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium capitalize">
-                            {sp.level}
-                          </span>
-                          {sp.conversation_topics?.slice(0, 3).map(topic => (
-                            <span key={topic} className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
-                              {topic}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
+          <h2 className="theme-heading font-display font-bold text-white mb-5">{t(lang, "upcomingLessons")}</h2>
+          {upcomingLessons.length === 0 ? (
+            <p className="theme-subtext text-sm text-gray-500 py-6 text-center">{t(lang, "noUpcomingLessons")}</p>
+          ) : (
+            <div className="space-y-3">
+              {upcomingLessons
+                .sort((a, b) => {
+                  if (a.status === "in_progress") return -1;
+                  if (b.status === "in_progress") return 1;
+                  return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+                })
+                .map(l => {
+                const sp = studentProfiles[l.student_id];
+                return (
+                  <div key={l.id} className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="theme-heading font-semibold text-white">{l.student_name}</p>
+                        <p className="theme-subtext text-sm text-gray-500 mt-0.5">
+                          {l.language} · {l.status === "in_progress" ? t(lang, "liveNow") : new Date(l.scheduled_at).toLocaleString()}
+                        </p>
+                        {sp && (
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium capitalize">
+                              {sp.level}
                             </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {l.scheduled_at && l.status !== "in_progress" && (() => {
-                        const status = getLessonTimeStatus(l.scheduled_at, now);
-                        if (!status.label) return null;
-                        return (
-                          <span className={status.negative
-                            ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-ot-danger/10 border border-ot-danger/30 text-ot-danger animate-pulse"
-                            : "text-xs text-gray-400 font-medium"}>
-                            {status.label}
-                          </span>
-                        );
-                      })()}
-                      {canJoinLesson(l) ? (
-                        <Link to={`/classroom/${l.id}`}>
-                          <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"}`}>
-                            {l.status === "in_progress" ? t(lang, "joinNow") : t(lang, "join")}
-                          </Button>
-                        </Link>
-                      ) : null}
-                      {l.status === "in_progress" && (
-                        <button
-                          onClick={() => endActiveLesson(l)}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 border border-red-500/20 transition-all hover:scale-105"
-                          title="End lesson"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                      {l.status === "scheduled" && (
-                        <Link to="/my-lessons" className="text-xs text-gray-500 hover:text-orange-400 hover:underline">
-                          Manage in My Lessons →
-                        </Link>
-                      )}
+                            {sp.conversation_topics?.slice(0, 3).map(topic => (
+                              <span key={topic} className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                                {topic}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {l.scheduled_at && l.status !== "in_progress" && (() => {
+                          const status = getLessonTimeStatus(l.scheduled_at, now);
+                          if (!status.label) return null;
+                          return (
+                            <span className={status.negative
+                              ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-ot-danger/10 border border-ot-danger/30 text-ot-danger animate-pulse"
+                              : "text-xs text-gray-400 font-medium"}>
+                              {status.label}
+                            </span>
+                          );
+                        })()}
+                        {canJoinLesson(l) ? (
+                          <Link to={`/classroom/${l.id}`}>
+                            <Button size="sm" className={`text-white border-0 hover:scale-105 transition-transform shadow-lg ${l.status === "in_progress" ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/20" : "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"}`}>
+                              {l.status === "in_progress" ? t(lang, "joinNow") : t(lang, "join")}
+                            </Button>
+                          </Link>
+                        ) : null}
+                        {l.status === "in_progress" && (
+                          <button
+                            onClick={() => endActiveLesson(l)}
+                            className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 border border-red-500/20 transition-all hover:scale-105"
+                            title="End lesson"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                        {l.status === "scheduled" && (
+                          <Link to="/my-lessons" className="text-xs text-gray-500 hover:text-orange-400 hover:underline">
+                            Manage in My Lessons →
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Lessons Calendar — só desktop */}
+        <div className="hidden lg:block theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="theme-heading font-display font-bold text-white">Lessons Calendar</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={prevCalMonth} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                <ChevronLeft className="w-4 h-4 text-gray-400" />
+              </button>
+              <span className="text-sm font-semibold text-gray-300 min-w-[110px] text-center">{MONTH_NAMES[calMonth]} {calYear}</span>
+              <button onClick={nextCalMonth} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 mb-2">
+            {DAY_LABELS.map(d => (
+              <div key={d} className="text-center text-[10px] font-semibold uppercase tracking-wide py-1 text-gray-500">{d}</div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1.5">
+            {calendarDays.map((day, idx) => {
+              if (!day) return <div key={`e-${idx}`} />;
+              const dayLessons = getDayLessons(day);
+              const isToday = calYear === today.getFullYear() && calMonth === today.getMonth() && day === today.getDate();
+              const isSelected = selectedCalDay === day;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedCalDay(isSelected ? null : day)}
+                  className={`relative flex flex-col items-start rounded-xl p-2 transition-all border
+                    ${isSelected ? "bg-orange-600/20 border-orange-500/40" : dayLessons ? "bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/15 cursor-pointer" : "border-white/5 hover:bg-white/5 cursor-default"}`}
+                  style={{ minHeight: 60 }}
+                >
+                  <span className={`text-sm font-bold ${isToday ? "text-orange-400" : dayLessons ? "text-gray-300" : "text-gray-600"}`}>
+                    {day}
+                  </span>
+                  {dayLessons && (
+                    <p className="text-[10px] text-orange-300 font-semibold mt-0.5">{dayLessons.length} aula{dayLessons.length !== 1 ? "s" : ""}</p>
+                  )}
+                </button>
               );
             })}
           </div>
-        )}
+
+          {selectedCalDay && getDayLessons(selectedCalDay) && (
+            <div className="mt-5 pt-5 border-t border-white/10 space-y-2">
+              {getDayLessons(selectedCalDay).map(l => (
+                <div key={l.id} className="flex items-center justify-between text-xs bg-white/5 rounded-xl p-2.5">
+                  <span className="text-gray-300">{l.student_name || "Student"}</span>
+                  <span className="text-gray-500">{new Date(l.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
