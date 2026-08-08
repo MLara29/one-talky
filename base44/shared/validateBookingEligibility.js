@@ -50,7 +50,7 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
         error: "Você não possui minutos disponíveis. Assine um plano ou adicione créditos para agendar aulas.",
       };
     }
-    return { allowed: true };
+    // Fall through to RULE 1.5 and remaining checks — don't early-return.
   }
 
   // ── RULE 2: Cancelled or expired — check if still within paid period ──
@@ -134,6 +134,28 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
         return blockedError;
       }
     }
+  }
+
+  // ── RULE 1.5: Não permitir agendar além do saldo disponível ──
+  // Conta os minutos já comprometidos em aulas ativas (scheduled/in_progress)
+  // contra o saldo atual. Sem isso, o aluno pode agendar mais aulas do que o
+  // plano cobre, já que o débito só acontece quando a aula termina.
+  const activeLessons = await base44.asServiceRole.entities.Lesson.filter({
+    student_id: studentId,
+    status: { $in: ["scheduled", "in_progress"] },
+  });
+  const alreadyReservedMinutes = activeLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+  const availableCredits = sp.credits_minutes ?? 0;
+  const newTotal = alreadyReservedMinutes + (durationMinutes || 30);
+
+  if (newTotal > availableCredits) {
+    console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=insufficient_credits_for_booking reserved=${alreadyReservedMinutes} available=${availableCredits}`);
+    return {
+      allowed: false,
+      httpStatus: 403,
+      error_code: "insufficient_credits_for_booking",
+      error: `Você já tem aulas agendadas usando todo o seu saldo disponível (${availableCredits} minutos). Cancele uma aula existente ou adicione mais créditos para agendar outra.`,
+    };
   }
 
   return { allowed: true };

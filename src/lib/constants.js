@@ -3,7 +3,7 @@
 // the frontend should redirect to /plans for these. Other error codes
 // (e.g. first_week_wrong_duration, first_week_limit) are about timing/limits
 // and must NOT redirect.
-export const REDIRECT_TO_PLANS_ERROR_CODES = ["insufficient_credits", "subscription_inactive"];
+export const REDIRECT_TO_PLANS_ERROR_CODES = ["insufficient_credits", "subscription_inactive", "insufficient_credits_for_booking"];
 
 // Grace period a student/tutor has to join a scheduled lesson after its
 // scheduled_at time before it's considered a no-show. Used both for display
