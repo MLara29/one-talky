@@ -97,6 +97,17 @@ export default async function (req: Request): Promise<Response> {
       params.set("discounts[0][coupon]", stripeCouponId);
     }
 
+    // A Stripe NÃO copia automaticamente metadata da Checkout Session para
+    // a Subscription criada a partir dela. Replicamos os metadados essenciais
+    // no nível da assinatura para que o webhook (invoice.paid na renovação e
+    // customer.subscription.deleted no cancelamento) consiga localizar o
+    // user_id e o external_reference sem depender de uma lookup extra.
+    if (mode === "subscription") {
+      params.set("subscription_data[metadata][user_id]", user.id);
+      params.set("subscription_data[metadata][external_reference]", external_reference);
+      params.set("subscription_data[metadata][test]", "false");
+    }
+
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
       // Pin to a pre-2026-03-25 API version so ui_mode: "embedded" is still
