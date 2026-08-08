@@ -218,7 +218,11 @@ export default function TutorDashboard() {
   };
 
   const isUpcoming = (l) => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() + LESSON_JOIN_GRACE_PERIOD_MS > now;
-  const upcomingLessons = lessons.filter(isUpcoming);
+  const upcomingLessons = lessons.filter(isUpcoming).sort((a, b) => {
+    if (a.status === "in_progress") return -1;
+    if (b.status === "in_progress") return 1;
+    return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+  }).slice(0, 10);
 
   const lessonDayMap = {};
   lessons.forEach(l => {
@@ -333,14 +337,8 @@ export default function TutorDashboard() {
           {upcomingLessons.length === 0 ? (
             <p className="theme-subtext text-sm text-gray-500 py-6 text-center">{t(lang, "noUpcomingLessons")}</p>
           ) : (
-            <div className="space-y-3">
-              {upcomingLessons
-                .sort((a, b) => {
-                  if (a.status === "in_progress") return -1;
-                  if (b.status === "in_progress") return 1;
-                  return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
-                })
-                .map(l => {
+            <div className="space-y-3 overflow-y-auto pr-1" style={{ maxHeight: 440 }}>
+              {upcomingLessons.map(l => {
                 const sp = studentProfiles[l.student_id];
                 return (
                   <div key={l.id} className="p-4 rounded-2xl bg-white/5 border border-white/5">
@@ -444,7 +442,7 @@ export default function TutorDashboard() {
                     {day}
                   </span>
                   {dayLessons && (
-                    <p className="text-[10px] text-orange-300 font-semibold mt-0.5">{dayLessons.length} aula{dayLessons.length !== 1 ? "s" : ""}</p>
+                    <p className="text-[10px] text-orange-300 font-semibold mt-0.5">{dayLessons.length} lesson{dayLessons.length !== 1 ? "s" : ""}</p>
                   )}
                 </button>
               );
@@ -452,13 +450,30 @@ export default function TutorDashboard() {
           </div>
 
           {selectedCalDay && getDayLessons(selectedCalDay) && (
-            <div className="mt-5 pt-5 border-t border-white/10 space-y-2">
-              {getDayLessons(selectedCalDay).map(l => (
-                <div key={l.id} className="flex items-center justify-between text-xs bg-white/5 rounded-xl p-2.5">
-                  <span className="text-gray-300">{l.student_name || "Student"}</span>
-                  <span className="text-gray-500">{new Date(l.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                </div>
-              ))}
+            <div className="mt-5 pt-5 border-t border-white/10 space-y-3">
+              {getDayLessons(selectedCalDay).map(l => {
+                const sp = studentProfiles[l.student_id];
+                return (
+                  <div key={l.id} className="p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <p className="theme-heading font-semibold text-white text-sm">{l.student_name || "Student"}</p>
+                    <p className="theme-subtext text-xs text-gray-500 mt-0.5">
+                      {l.language} · {new Date(l.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                    {sp && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium capitalize">
+                          {sp.level}
+                        </span>
+                        {sp.conversation_topics?.slice(0, 2).map(topic => (
+                          <span key={topic} className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                            {topic}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

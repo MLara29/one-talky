@@ -274,7 +274,7 @@ export default function TutorEarnings() {
                 {data && (
                   <div className="mt-1 w-full">
                     <p className="text-xs font-bold text-emerald-400 leading-tight">${data.earnings.toFixed(2)}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{data.lessons} aula{data.lessons !== 1 ? "s" : ""}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{data.lessons} lesson{data.lessons !== 1 ? "s" : ""}</p>
                     {data.lessonList.some(l => l.status === "no_show") && (
                       <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" title="Has no-show" />
                     )}
