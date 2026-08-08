@@ -31,6 +31,12 @@ Deno.serve(async (req) => {
         ? Math.floor((Date.now() - new Date(lastConfirmedAt).getTime()) / (1000 * 60 * 60 * 24))
         : null;
 
+      const activeWithdrawals = await base44.asServiceRole.entities.WithdrawalRequest.filter(
+        { tutor_id: tutor.user_id, status: { $in: ["processing", "paid"] } },
+        "-created_date", 1
+      );
+      const activeStatus = activeWithdrawals[0]?.status || null;
+
       const entry = {
         user_id: tutor.user_id,
         full_name: tutor.full_name,
@@ -39,6 +45,7 @@ Deno.serve(async (req) => {
         payout_frequency: tutor.payout_frequency || "weekly",
         earned,
         days_since_paid: daysSincePaid,
+        active_status: activeStatus,
       };
 
       groups.all.push(entry);

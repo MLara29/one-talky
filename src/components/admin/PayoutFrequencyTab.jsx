@@ -85,34 +85,53 @@ export default function PayoutFrequencyTab({ tutors, onChanged, showFrequencyBad
 
             <div className="flex items-center gap-3 flex-wrap">
               <p className="text-xl font-bold text-emerald-400">${t.earned.toFixed(2)}</p>
-              <Button
-                size="sm"
-                onClick={() => markProcessing(t)}
-                disabled={!!processing}
-                className="bg-blue-500/20 border border-blue-500/30 text-blue-300 hover:bg-blue-500/30"
-              >
-                {processing === t.user_id + "_proc" ? "..." : "Marcar como processando"}
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => markPaid(t)}
-                disabled={!!processing}
-                className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30"
-              >
-                {processing === t.user_id + "_paid" ? "..." : "Marcar como pago"}
-              </Button>
+
+              {!t.active_status && (
+                <Button
+                  size="sm"
+                  onClick={() => markProcessing(t)}
+                  disabled={!!processing}
+                  className="bg-blue-500/20 border border-blue-500/30 text-blue-300 hover:bg-blue-500/30"
+                >
+                  {processing === t.user_id + "_proc" ? "..." : "Marcar como processando"}
+                </Button>
+              )}
+
+              {t.active_status === "processing" && (
+                <>
+                  <span className="text-xs px-3 py-1.5 rounded-full border bg-blue-500/15 border-blue-500/30 text-blue-300 font-medium">
+                    ⏳ Pagamento em processamento
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={() => markPaid(t)}
+                    disabled={!!processing}
+                    className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30"
+                  >
+                    {processing === t.user_id + "_paid" ? "..." : "Marcar como pago"}
+                  </Button>
+                </>
+              )}
+
+              {t.active_status === "paid" && (
+                <span className="text-xs px-3 py-1.5 rounded-full border bg-amber-500/15 border-amber-500/30 text-amber-300 font-medium">
+                  ⏳ Aguardando o tutor confirmar recebimento
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="mt-3">
-            <textarea
-              value={comments[t.user_id] || ""}
-              onChange={e => setComment(t.user_id, e.target.value)}
-              placeholder="Observação para o tutor (opcional) — ex: valor extra pago, motivo de ajuste"
-              rows={2}
-              className="w-full text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-600 px-3 py-2 resize-none focus:outline-none focus:border-orange-500/40"
-            />
-          </div>
+          {t.active_status !== "paid" && (
+            <div className="mt-3">
+              <textarea
+                value={comments[t.user_id] || ""}
+                onChange={e => setComment(t.user_id, e.target.value)}
+                placeholder="Observação para o tutor (opcional) — ex: valor extra pago, motivo de ajuste"
+                rows={2}
+                className="w-full text-xs rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-600 px-3 py-2 resize-none focus:outline-none focus:border-orange-500/40"
+              />
+            </div>
+          )}
         </div>
       ))}
     </div>
