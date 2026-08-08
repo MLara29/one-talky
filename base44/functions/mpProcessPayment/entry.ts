@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
-import { CATALOG, PRICE_CATALOG } from "../../shared/paymentCatalog.js";
+import { CATALOG } from "../../shared/paymentCatalog.js";
 import { validateAndApplyCoupon } from "../../shared/couponDiscount.js";
 import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
 
