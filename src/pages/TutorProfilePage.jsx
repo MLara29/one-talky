@@ -87,7 +87,12 @@ export default function TutorProfilePage() {
       });
 
       if (bookRes.data?.error) {
-        toast({ title: "Agendamento bloqueado", description: bookRes.data.error, variant: "destructive" });
+        const isLimitReached = bookRes.data?.error_code === "insufficient_credits_for_booking";
+        toast({
+          title: isLimitReached ? "Você já usou todo o seu saldo" : "Agendamento bloqueado",
+          description: bookRes.data.error,
+          variant: isLimitReached ? "warning" : "destructive",
+        });
         if (REDIRECT_TO_PLANS_ERROR_CODES.includes(bookRes.data?.error_code)) {
           navigate("/plans");
         }
