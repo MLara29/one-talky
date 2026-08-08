@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { User, Save, Camera, Upload, Eye, Video, Star, MessageSquare, Trash2 } from "lucide-react";
 import { getCountryFlag, getLanguageLabel, INTERESTS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
+import VideoRecorderModal from "@/components/profile/VideoRecorderModal";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [showRecorder, setShowRecorder] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
   const videoInputRef = useRef(null);
@@ -430,6 +432,15 @@ export default function Profile() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => setShowRecorder(true)}
+                    disabled={uploadingVideo}
+                    className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start flex-1"
+                  >
+                    <Video className="w-4 h-4 mr-2" /> Record video
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={handleRemoveVideo}
                     disabled={uploadingVideo}
                     className="theme-btn-ghost border-red-500/20 text-red-400 hover:text-red-300"
@@ -439,17 +450,35 @@ export default function Profile() {
                 </div>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => videoInputRef.current.click()}
-                disabled={uploadingVideo}
-                className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start"
-              >
-                <Upload className="w-4 h-4 mr-2" /> {uploadingVideo ? "Uploading..." : "Upload intro video"}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => videoInputRef.current.click()}
+                  disabled={uploadingVideo}
+                  className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start flex-1"
+                >
+                  <Upload className="w-4 h-4 mr-2" /> {uploadingVideo ? "Uploading..." : "Upload intro video"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowRecorder(true)}
+                  disabled={uploadingVideo}
+                  className="theme-btn-ghost border-white/10 text-gray-400 hover:text-white justify-start flex-1"
+                >
+                  <Video className="w-4 h-4 mr-2" /> Record video
+                </Button>
+              </div>
             )}
           </div>
+
+          {showRecorder && (
+            <VideoRecorderModal
+              onSave={(file) => { setShowRecorder(false); handleVideoUpload(file); }}
+              onClose={() => setShowRecorder(false)}
+            />
+          )}
 
           {/* Conversation Topics card */}
           <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
