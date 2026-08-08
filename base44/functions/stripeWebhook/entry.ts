@@ -171,6 +171,8 @@ async function handleCheckoutCompleted(base44, session) {
     updateData.subscription_status = "active";
     updateData.subscription_start_date = new Date().toISOString();
     updateData.subscription_cycle = 1;
+    updateData.subscription_provider = "stripe";
+    updateData.stripe_subscription_id = session.subscription || "";
   }
 
   await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);

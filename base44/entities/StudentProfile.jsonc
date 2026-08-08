@@ -102,6 +102,18 @@
       "default": 0,
       "description": "N\u00famero do ciclo atual (0 = sem assinatura, 1 = primeiro m\u00eas, 2+ = meses seguintes)"
     },
+    "subscription_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "mercadopago"
+      ],
+      "description": "Provedor de pagamento da assinatura ativa. Determina qual API cancelar ao chamar cancelMyPlan."
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "ID da assinatura no Stripe (sub_xxx). Preenchido pelo stripeWebhook quando uma assinatura \u00e9 criada via checkout."
+    },
     "first_week_lesson_id": {
       "type": "string",
       "description": "ID da Lesson agendada na janela dos primeiros 7 dias do ciclo 1. '__pending__:<token>' enquanto em andamento; ID real ap\u00f3s commit. Lock CAS anti-race-condition."

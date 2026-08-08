@@ -68,7 +68,10 @@ Deno.serve(async (req) => {
         const updateData: Record<string, unknown> = {
           credits_minutes: (profile.credits_minutes ?? 0) + item.minutes + bonusMinutes,
         };
-        if (item.plan) updateData.plan = item.plan;
+        if (item.plan) {
+          updateData.plan = item.plan;
+          updateData.subscription_provider = "mercadopago";
+        }
         await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
 
         // ── Increment coupon used_count (CAS) ──────────────────────────────────
