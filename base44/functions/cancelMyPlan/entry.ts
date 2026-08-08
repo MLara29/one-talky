@@ -48,6 +48,12 @@ Deno.serve(async (req) => {
 
       if (!res.ok) {
         const errData = await res.json();
+        // Se a Stripe disser que já está cancelada ou a assinatura não existe,
+        // tratar como sucesso — o resultado final desejado já foi alcançado.
+        const msg = (errData.error?.message || "").toLowerCase();
+        if (msg.includes("already") || msg.includes("no such subscription")) {
+          return Response.json({ success: true, provider: "stripe", already_cancelled: true });
+        }
         console.error("[cancelMyPlan] Stripe cancel error:", JSON.stringify(errData));
         return Response.json(
           { error: "Não foi possível cancelar a assinatura na Stripe. Tente novamente ou contate o suporte." },
