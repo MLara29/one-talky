@@ -178,20 +178,26 @@ export default function MyLessons() {
   };
 
   // Checa se o tutor está em outra aula ativa — só para alunos, e só para
-  // aulas que já estão na janela de "pode entrar" (canJoin). Informativo,
-  // não bloqueia nada.
+  // aulas que já estão na janela de "pode entrar" (canJoin). Reverifica
+  // a cada 20s para que o aviso suma assim que o tutor ficar livre.
   useEffect(() => {
     if (user?.role !== "student") return;
-    const lessonsToCheck = lessons.filter(l =>
-      canJoin(l) && l.status === "scheduled" && l.tutor_id
-    );
-    lessonsToCheck.forEach(async (l) => {
-      if (busyTutors[l.tutor_id] !== undefined) return; // já checado
-      try {
-        const res = await base44.functions.invoke("checkTutorBusy", { tutor_id: l.tutor_id });
-        setBusyTutors(prev => ({ ...prev, [l.tutor_id]: res.data?.busy || false }));
-      } catch { /* falha silenciosa, não bloqueia nada */ }
-    });
+
+    const checkBusyTutors = () => {
+      const lessonsToCheck = lessons.filter(l =>
+        canJoin(l) && l.status === "scheduled" && l.tutor_id
+      );
+      lessonsToCheck.forEach(async (l) => {
+        try {
+          const res = await base44.functions.invoke("checkTutorBusy", { tutor_id: l.tutor_id });
+          setBusyTutors(prev => ({ ...prev, [l.tutor_id]: res.data?.busy || false }));
+        } catch { /* falha silenciosa, não bloqueia nada */ }
+      });
+    };
+
+    checkBusyTutors(); // checagem imediata
+    const interval = setInterval(checkBusyTutors, 20000); // reverifica a cada 20s
+    return () => clearInterval(interval);
   }, [lessons, user?.role]);
 
   if (loading) return (
