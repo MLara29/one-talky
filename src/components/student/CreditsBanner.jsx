@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useId } from "react";
 import { base44 } from "@/api/base44Client";
 import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,23 +13,24 @@ function fmtBRL(val) {
 }
 
 export function PlanShield({ plan, size = 42 }) {
+  const uid = useId();
   if (plan === "premium") {
     return (
       <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">
         <defs>
-          <linearGradient id="blackFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+          <linearGradient id={`blackFill-${uid}`} x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
             <stop stopColor="#3a3a3a"/><stop offset="0.5" stopColor="#1a1a1a"/><stop offset="1" stopColor="#050505"/>
           </linearGradient>
-          <linearGradient id="goldStroke" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+          <linearGradient id={`goldStroke-${uid}`} x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
             <stop stopColor="#f7e08a"/><stop offset="0.5" stopColor="#d4af37"/><stop offset="1" stopColor="#a67c1a"/>
           </linearGradient>
-          <linearGradient id="goldCheck" x1="8" y1="10" x2="16" y2="16" gradientUnits="userSpaceOnUse">
+          <linearGradient id={`goldCheck-${uid}`} x1="8" y1="10" x2="16" y2="16" gradientUnits="userSpaceOnUse">
             <stop stopColor="#f9e59a"/><stop offset="1" stopColor="#d4af37"/>
           </linearGradient>
         </defs>
-        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#blackFill)" stroke="url(#goldStroke)" strokeWidth="1.1"/>
+        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill={`url(#blackFill-${uid})`} stroke={`url(#goldStroke-${uid})`} strokeWidth="1.1"/>
         <path d="M12 3.3l6.9 2.7v5.5c0 5-3 8.5-6.9 10.5V3.3z" fill="#fff" opacity="0.05"/>
-        <path d="M8.3 13.2l2.6 2.6 4.8-5.2" stroke="url(#goldCheck)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        <path d="M8.3 13.2l2.6 2.6 4.8-5.2" stroke={`url(#goldCheck-${uid})`} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
       </svg>
     );
   }
@@ -37,11 +38,11 @@ export function PlanShield({ plan, size = 42 }) {
     return (
       <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">
         <defs>
-          <linearGradient id="bronzeFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+          <linearGradient id={`bronzeFill-${uid}`} x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
             <stop stopColor="#e8b487"/><stop offset="0.5" stopColor="#c17d3f"/><stop offset="1" stopColor="#8a4f22"/>
           </linearGradient>
         </defs>
-        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#bronzeFill)" stroke="#6d3d18" strokeWidth="0.7"/>
+        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill={`url(#bronzeFill-${uid})`} stroke="#6d3d18" strokeWidth="0.7"/>
         <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25V1z" fill="#000" opacity="0.08"/>
         <path d="M8.3 13.2l2.6 2.6 4.8-5.2" stroke="#fff2e2" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
       </svg>
@@ -51,11 +52,11 @@ export function PlanShield({ plan, size = 42 }) {
     return (
       <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">
         <defs>
-          <linearGradient id="basicFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+          <linearGradient id={`basicFill-${uid}`} x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
             <stop stopColor="#f1f3f6"/><stop offset="0.5" stopColor="#c3c8d1"/><stop offset="1" stopColor="#8f96a3"/>
           </linearGradient>
         </defs>
-        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#basicFill)" stroke="#6b7280" strokeWidth="0.7"/>
+        <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill={`url(#basicFill-${uid})`} stroke="#6b7280" strokeWidth="0.7"/>
         <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25V1z" fill="#000" opacity="0.06"/>
         <path d="M8.3 13.2l2.6 2.6 4.8-5.2" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
       </svg>
@@ -65,11 +66,11 @@ export function PlanShield({ plan, size = 42 }) {
   return (
     <svg width={size} height={Math.round(size * 1.12)} viewBox="0 0 24 27" fill="none">
       <defs>
-        <linearGradient id="freeFill" x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+        <linearGradient id={`freeFill-${uid}`} x1="3" y1="1" x2="21" y2="25" gradientUnits="userSpaceOnUse">
           <stop stopColor="#a7f3d0"/><stop offset="1" stopColor="#4ade80"/>
         </linearGradient>
       </defs>
-      <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill="url(#freeFill)" stroke="#22c55e" strokeWidth="0.7"/>
+      <path d="M12 1l9 3.5v7C21 18 17 22.5 12 25 7 22.5 3 18 3 11.5v-7L12 1z" fill={`url(#freeFill-${uid})`} stroke="#22c55e" strokeWidth="0.7"/>
       <path d="M9.5 8.6h5M9.5 11.6h5M9.5 14.6h3" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" fill="none"/>
     </svg>
   );
