@@ -59,6 +59,20 @@ export default function Profile() {
 
   const handlePhotoUpload = async (file) => {
     if (!file || !profile) return;
+
+    // Bloquear HEIC/HEIF — Chrome não decodifica esse formato, mesmo
+    // funcionando no Safari (que tem suporte nativo da Apple).
+    const isHeic = file.type === "image/heic" || file.type === "image/heif"
+      || /\.(heic|heif)$/i.test(file.name);
+    if (isHeic) {
+      toast({
+        title: "Unsupported photo format",
+        description: "HEIC photos aren't supported by all browsers. Please convert to JPG or PNG first (most phones let you do this when sharing/exporting the photo), then try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setUploadingPhoto(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
