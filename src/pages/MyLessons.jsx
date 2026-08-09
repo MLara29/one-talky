@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video, Calendar, Clock, CheckCircle, Settings2, AlertTriangle } from "lucide-react";
-import { getLanguageLabel, LESSON_JOIN_GRACE_PERIOD_MS, getLessonTimeStatus } from "@/lib/constants";
+import { getLanguageLabel, LESSON_JOIN_GRACE_PERIOD_MS, LESSON_JOIN_WINDOW_BEFORE_MS, getLessonTimeStatus } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import CancelRescheduleModal from "@/components/lessons/CancelRescheduleModal";
 import StudentCancelModal from "@/components/lessons/StudentCancelModal";
@@ -173,7 +173,7 @@ export default function MyLessons() {
 
   const canJoin = (l) => {
     if (!l.scheduled_at) return true;
-    return new Date(l.scheduled_at).getTime() - now <= 10 * 60 * 1000;
+    return new Date(l.scheduled_at).getTime() - now <= LESSON_JOIN_WINDOW_BEFORE_MS;
   };
 
   if (loading) return (

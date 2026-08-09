@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { LESSON_JOIN_GRACE_PERIOD_MS, getLessonTimeStatus } from "@/lib/constants";
+import { LESSON_JOIN_GRACE_PERIOD_MS, LESSON_JOIN_WINDOW_BEFORE_MS, getLessonTimeStatus } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
@@ -214,7 +214,7 @@ export default function TutorDashboard() {
   const canJoinLesson = (l) => {
     if (l.status === "in_progress") return true;
     if (!l.scheduled_at) return true;
-    return new Date(l.scheduled_at).getTime() - now <= 10 * 60 * 1000;
+    return new Date(l.scheduled_at).getTime() - now <= LESSON_JOIN_WINDOW_BEFORE_MS;
   };
 
   const isUpcoming = (l) => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() + LESSON_JOIN_GRACE_PERIOD_MS > now;

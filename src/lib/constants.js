@@ -11,6 +11,11 @@ export const REDIRECT_TO_PLANS_ERROR_CODES = ["insufficient_credits", "subscript
 // server-side processNoShowLessons cron — keep both in sync.
 export const LESSON_JOIN_GRACE_PERIOD_MS = 10 * 60 * 1000;
 
+// Quanto tempo ANTES do horário marcado o botão de entrar na aula já
+// fica disponível (diferente de LESSON_JOIN_GRACE_PERIOD_MS, que é o
+// tempo de tolerância DEPOIS que a aula já deveria ter começado).
+export const LESSON_JOIN_WINDOW_BEFORE_MS = 2 * 60 * 1000;
+
 // Shared "time until lesson" formatter for upcoming-lesson cards.
 // Before scheduled_at: returns a positive "in Xd Xh" / "in Xh Xmin" / "in Xmin" label.
 // After scheduled_at but still within the grace period: returns a negative
