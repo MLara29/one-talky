@@ -411,6 +411,23 @@ export default function Classroom() {
     await createAndPublishLocalTracks();
     setJoined(true);
 
+    // Republicação preventiva: alguns publishes iniciais falham
+    // silenciosamente sem o lado que publica perceber (a própria prévia
+    // continua parecendo normal). Forçar um ciclo de
+    // despublicar+republicar uma vez, cedo, evita depender só da detecção
+    // reativa do outro lado.
+    setTimeout(async () => {
+      if (!localVideoTrackRef.current || !clientRef.current) return;
+      try {
+        await clientRef.current.unpublish(localVideoTrackRef.current);
+        await new Promise(r => setTimeout(r, 300));
+        await clientRef.current.publish(localVideoTrackRef.current);
+        console.log(`[Agora] preventive early republish completed (role=${user?.role})`);
+      } catch (e) {
+        console.error("[Agora] preventive early republish failed:", e);
+      }
+    }, 4000); // 4 segundos depois de entrar, tempo suficiente pra conexão estabilizar
+
     // Mark this participant as joined (presence tracking for no-show detection).
     // Fire-and-forget — must never block the classroom UI.
     base44.functions.invoke('markLessonJoined', { lesson_id: l.id }).catch(() => {});
