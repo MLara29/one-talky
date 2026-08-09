@@ -323,11 +323,38 @@ export default function MyLessons() {
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-4 h-4 text-violet-400" />
-...
-                  </div>
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="w-4 h-4 text-violet-400" />
+                      <div>
+                        <p className="theme-heading font-semibold text-white">
+                          {user?.role === "tutor" ? l.student_name : l.tutor_name}
+                        </p>
+                        <p className="theme-subtext text-sm text-gray-500">
+                          {getLanguageLabel(l.language)} · {l.scheduled_at ? new Date(l.scheduled_at).toLocaleDateString() : ""}
+                          {l.scheduled_at ? " · " + new Date(l.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {canJoin(l) && (
+                        <Link to={`/classroom/${l.id}`}>
+                          <Button size="sm" className="bg-orange-500 text-white hover:bg-orange-600 border-0">
+                            {user?.role === "student" ? T("joinBtn") : "Join"}
+                          </Button>
+                        </Link>
+                      )}
+                      {user?.role === "tutor" && (
+                        <Button size="sm" variant="outline" onClick={() => setManagingLesson(l)}>
+                          Manage
+                        </Button>
+                      )}
+                      {user?.role === "student" && (
+                        <Button size="sm" variant="outline" onClick={() => setCancellingLesson(l)}>
+                          {T("cancelBtn")}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   </div>
                 </div>
