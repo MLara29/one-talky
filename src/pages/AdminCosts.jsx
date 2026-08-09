@@ -134,23 +134,34 @@ export default function AdminCosts() {
   const [loadingReal, setLoadingReal] = useState(false);
 
   useEffect(() => {
-    base44.entities.TutorProfile.filter({ status: "approved" })
-      .then(data => {
-        setTutors(data);
-        const rates = {};
-        data.forEach(t => { rates[t.id] = (t.price_per_minute || globals.default_tutor_rate_hour / 60) * 60; });
-        setTutorRatesHour(rates);
-      })
-      .catch(() => {});
-    // Load persisted finance settings
     base44.functions.invoke("getFinanceSettings")
       .then(res => {
-        if (res.data) {
-          setFinance(res.data);
-          setGlobals({ default_tutor_rate_hour: res.data.default_tutor_rate_hour ?? 36 });
-        }
+        const defaultRate = res.data?.default_tutor_rate_hour ?? 36;
+        setFinance(res.data || DEFAULT_FINANCE);
+        setGlobals({ default_tutor_rate_hour: defaultRate });
+
+        // Só agora, com o valor real confirmado, carregar e calcular os tutores
+        base44.entities.TutorProfile.filter({ status: "approved" })
+          .then(data => {
+            setTutors(data);
+            const rates = {};
+            data.forEach(t => { rates[t.id] = (t.price_per_minute || defaultRate / 60) * 60; });
+            setTutorRatesHour(rates);
+          })
+          .catch(() => {});
       })
-      .catch(() => {});
+      .catch(() => {
+        // Se a configuração falhar ao carregar, ainda assim carregar os
+        // tutores usando o padrão de fallback (36), para a tela não travar
+        base44.entities.TutorProfile.filter({ status: "approved" })
+          .then(data => {
+            setTutors(data);
+            const rates = {};
+            data.forEach(t => { rates[t.id] = (t.price_per_minute || 36 / 60) * 60; });
+            setTutorRatesHour(rates);
+          })
+          .catch(() => {});
+      });
   }, []);
 
   const saveTutorRates = async () => {
