@@ -46,6 +46,9 @@ export default function Classroom() {
   const [micError, setMicError] = useState(null);
   const chatOpenRef = useRef(false);
 
+  const isEnglish = user?.role === "tutor";
+  const studentAccountCreditsRef = useRef(null);
+
   const clientRef = useRef(null);
   const reconcileRef = useRef(null);
   const joinGuardRef = useRef(false);
@@ -242,13 +245,14 @@ export default function Classroom() {
         }
       } catch {}
 
+      studentAccountCreditsRef.current = studentCredits;
       const effectiveMins = Math.min(scheduledMins, studentCredits);
       setTotalDurationMins(effectiveMins);
       totalDurationRef.current = effectiveMins * 60;
 
     } catch (e) {
       console.error("[Classroom] loadLesson error:", e);
-      toast({ title: "Erro ao carregar aula", description: "Não foi possível carregar a aula. Verifique sua conexão e tente novamente.", variant: "destructive" });
+      toast({ title: isEnglish ? "Error loading lesson" : "Erro ao carregar aula", description: isEnglish ? "Could not load the lesson. Check your connection and try again." : "Não foi possível carregar a aula. Verifique sua conexão e tente novamente.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -285,14 +289,20 @@ export default function Classroom() {
   };
 
   const deviceErrorMessage = (device, kind) => {
-    const label = device === "camera" ? "Câmera" : "Microfone";
+    const label = device === "camera" ? (isEnglish ? "Camera" : "Câmera") : (isEnglish ? "Microphone" : "Microfone");
     if (kind === "not_found") {
-      return `${label} não encontrado(a). Verifique se está conectado(a) e não está sendo usado por outro programa (Zoom, Teams, etc).`;
+      return isEnglish
+        ? `${label} not found. Check that it is connected and not in use by another program (Zoom, Teams, etc).`
+        : `${label} não encontrado(a). Verifique se está conectado(a) e não está sendo usado por outro programa (Zoom, Teams, etc).`;
     }
     if (kind === "permission_denied") {
-      return `Permissão de ${device === "camera" ? "câmera" : "microfone"} negada. Verifique as permissões do navegador para este site.`;
+      return isEnglish
+        ? `${label} permission denied. Check this site's browser permissions.`
+        : `Permissão de ${device === "camera" ? "câmera" : "microfone"} negada. Verifique as permissões do navegador para este site.`;
     }
-    return `Não foi possível acessar ${device === "camera" ? "sua câmera" : "seu microfone"}.`;
+    return isEnglish
+      ? `Could not access your ${device === "camera" ? "camera" : "microphone"}.`
+      : `Não foi possível acessar ${device === "camera" ? "sua câmera" : "seu microfone"}.`;
   };
 
   // Creates the local mic/camera tracks independently (one device failing
@@ -579,8 +589,8 @@ export default function Classroom() {
         console.error("[ScreenShare]", e);
       }
       toast({
-        title: "Não foi possível compartilhar a tela",
-        description: "Verifique as permissões do navegador ou tente em um computador.",
+        title: isEnglish ? "Could not share screen" : "Não foi possível compartilhar a tela",
+        description: isEnglish ? "Check browser permissions or try on a computer." : "Verifique as permissões do navegador ou tente em um computador.",
         variant: "destructive",
       });
     }
@@ -680,7 +690,7 @@ export default function Classroom() {
       }
     }
     if (!success) {
-      toast({ title: "Erro ao encerrar aula", description: "A aula pode não ter sido salva corretamente. Contate o suporte.", variant: "destructive" });
+      toast({ title: isEnglish ? "Error ending lesson" : "Erro ao encerrar aula", description: isEnglish ? "The lesson may not have been saved correctly. Contact support." : "A aula pode não ter sido salva corretamente. Contate o suporte.", variant: "destructive" });
     }
 
     setShowReview(true);
@@ -696,6 +706,7 @@ export default function Classroom() {
     : null;
 
   const minsRemaining = remainingSeconds !== null ? remainingSeconds / 60 : null;
+  const isAccountCreditLow = studentAccountCreditsRef.current !== null && studentAccountCreditsRef.current <= 10;
 
   useEffect(() => {
     if (remainingSeconds === null) return;
@@ -729,16 +740,20 @@ export default function Classroom() {
           <div className="flex items-center gap-2 text-ot-warn-text text-sm font-semibold min-w-0">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span className="truncate">
-              Restam {Math.ceil(minsRemaining)} minuto{Math.ceil(minsRemaining) !== 1 ? "s" : ""} de crédito nesta aula
+              {isEnglish
+                ? `${Math.ceil(minsRemaining)} minute(s) left in this lesson`
+                : `Restam ${Math.ceil(minsRemaining)} minuto${Math.ceil(minsRemaining) !== 1 ? "s" : ""} de crédito nesta aula`}
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => navigate("/plans")}
-              className="bg-gradient-to-br from-ot-primary to-[#FB9A3C] hover:brightness-95 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
-            >
-              Adicionar créditos
-            </button>
+            {isAccountCreditLow && (
+              <button
+                onClick={() => navigate("/plans")}
+                className="bg-gradient-to-br from-ot-primary to-[#FB9A3C] hover:brightness-95 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+              >
+                {isEnglish ? "Add credits" : "Adicionar créditos"}
+              </button>
+            )}
             <button onClick={() => setShowCreditWarning(false)} className="text-ot-warn-text/60 hover:text-ot-warn-text">
               <X className="w-4 h-4" />
             </button>
@@ -758,7 +773,7 @@ export default function Classroom() {
           </div>
           <div className="min-w-0">
             <p className="text-ot-text text-[15px] font-bold truncate">{otherPersonName}</p>
-            <p className="text-ot-text-secondary text-[12.5px] font-semibold capitalize truncate">{lesson?.language} · {studentLevel || "session"}</p>
+            <p className="text-ot-text-secondary text-[12.5px] font-semibold capitalize truncate">{lesson?.language} · {studentLevel || (isEnglish ? "session" : "sessão")}</p>
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -767,7 +782,7 @@ export default function Classroom() {
           }`}>
             <Clock className={`w-4 h-4 ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`} />
             <div className="leading-none">
-              <p className={`text-[9px] font-bold uppercase tracking-wide ${isLowTime ? "text-ot-danger/70" : "text-ot-primary/70"}`}>Restante</p>
+              <p className={`text-[9px] font-bold uppercase tracking-wide ${isLowTime ? "text-ot-danger/70" : "text-ot-primary/70"}`}>{isEnglish ? "Remaining" : "Restante"}</p>
               <p className={`text-[16px] font-extrabold tabular-nums ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`}>{formatTime(displaySeconds)}</p>
             </div>
           </div>
@@ -796,10 +811,14 @@ export default function Classroom() {
                 </div>
                 <p className="text-ot-text-secondary text-sm font-semibold">
                   {remoteUserPresent
-                    ? `${user?.role === "tutor" ? "Aluno" : "Tutor"} conectado (sem câmera)`
-                    : `Aguardando ${user?.role === "tutor" ? "o aluno" : "o tutor"} conectar…`}
+                    ? (isEnglish
+                        ? `${user?.role === "tutor" ? "Student" : "Tutor"} connected (no camera)`
+                        : `${user?.role === "tutor" ? "Aluno" : "Tutor"} conectado (sem câmera)`)
+                    : (isEnglish
+                        ? `Waiting for ${user?.role === "tutor" ? "the student" : "the tutor"} to connect…`
+                        : `Aguardando ${user?.role === "tutor" ? "o aluno" : "o tutor"} conectar…`)}
                 </p>
-                {joined && <p className="text-ot-online text-xs mt-1.5 font-semibold">● Você está conectado</p>}
+                {joined && <p className="text-ot-online text-xs mt-1.5 font-semibold">{isEnglish ? "● You are connected" : "● Você está conectado"}</p>}
               </div>
             </div>
           )}
@@ -807,7 +826,7 @@ export default function Classroom() {
           {screenShareActive && remoteVideoTrack && (
             <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/70 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg backdrop-blur-sm">
               <Monitor className="w-3.5 h-3.5" />
-              <span>{lesson?.tutor_name || "Tutor"} está compartilhando a tela</span>
+              <span>{isEnglish ? `${lesson?.tutor_name || "Tutor"} is sharing their screen` : `${lesson?.tutor_name || "Tutor"} está compartilhando a tela`}</span>
             </div>
           )}
 
@@ -827,7 +846,7 @@ export default function Classroom() {
                 onClick={retryDeviceAccess}
                 className="w-full bg-ot-primary text-white text-xs font-bold py-2 rounded-xl hover:brightness-95 transition-all"
               >
-                Tentar novamente
+                {isEnglish ? "Try again" : "Tentar novamente"}
               </button>
             </div>
           ) : (
@@ -847,7 +866,7 @@ export default function Classroom() {
                       onClick={retryDeviceAccess}
                       className="text-[10px] font-bold text-ot-primary underline underline-offset-2"
                     >
-                      Tentar novamente
+                      {isEnglish ? "Try again" : "Tentar novamente"}
                     </button>
                   </div>
                 ) : (
@@ -875,7 +894,7 @@ export default function Classroom() {
                       onClick={retryDeviceAccess}
                       className="text-[10px] font-bold text-ot-primary underline underline-offset-2 mt-0.5"
                     >
-                      Tentar novamente
+                      {isEnglish ? "Try again" : "Tentar novamente"}
                     </button>
                   </div>
                 </div>
@@ -888,7 +907,7 @@ export default function Classroom() {
         {chatOpen && (
           <div className="flex flex-col bg-white z-30 absolute inset-x-0 bottom-0 h-[70%] rounded-t-3xl shadow-2xl border-t border-ot-border md:static md:inset-auto md:h-full md:w-[360px] md:rounded-none md:shadow-none md:border-t-0 md:border-l">
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-ot-border">
-              <p className="text-ot-text text-sm font-bold">Chat da aula</p>
+              <p className="text-ot-text text-sm font-bold">{isEnglish ? "Lesson chat" : "Chat da aula"}</p>
               <button
                 onClick={() => { chatOpenRef.current = false; setChatOpen(false); }}
                 className="w-8 h-8 rounded-lg bg-[#F7F5F2] flex items-center justify-center text-ot-text-secondary hover:text-ot-text transition-colors"
@@ -899,7 +918,7 @@ export default function Classroom() {
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
               {messages.map((m, i) => {
                 const isMe = m.sender_id === user?.id;
-                const timeStr = new Date(m.ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+                const timeStr = new Date(m.ts).toLocaleTimeString(isEnglish ? "en-US" : "pt-BR", { hour: "2-digit", minute: "2-digit" });
                 return (
                   <div key={m.id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                     <div className={`px-3.5 py-2.5 text-sm leading-[1.45] font-medium max-w-[85%] ${
@@ -910,13 +929,13 @@ export default function Classroom() {
                       {m.text}
                     </div>
                     <p className="text-[11px] text-ot-text-secondary mt-1 px-1">
-                      {isMe ? "Você" : m.sender_name?.split("@")[0]} · {timeStr}
+                      {isMe ? (isEnglish ? "You" : "Você") : m.sender_name?.split("@")[0]} · {timeStr}
                     </p>
                   </div>
                 );
               })}
               {messages.length === 0 && (
-                <p className="text-ot-text-secondary text-xs text-center mt-4">Nenhuma mensagem ainda</p>
+                <p className="text-ot-text-secondary text-xs text-center mt-4">{isEnglish ? "No messages yet" : "Nenhuma mensagem ainda"}</p>
               )}
               <div ref={chatBottomRef} />
             </div>
@@ -926,7 +945,7 @@ export default function Classroom() {
                   value={msgInput}
                   onChange={e => setMsgInput(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && sendMessage()}
-                  placeholder="Digite uma mensagem..."
+                  placeholder={isEnglish ? "Type a message..." : "Digite uma mensagem..."}
                   className="bg-[#F7F5F2] border-ot-border text-ot-text placeholder:text-ot-text-secondary text-sm"
                 />
                 <Button size="icon" onClick={sendMessage} className="bg-gradient-to-br from-ot-primary to-[#FB9A3C] hover:brightness-95 text-white border-0 shrink-0">
@@ -943,26 +962,26 @@ export default function Classroom() {
           <button
             onClick={toggleMic}
             className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
-              micOn ? "bg-[#F7F5F2] hover:bg-ot-bg text-ot-text" : "bg-red-50 border border-red-200 text-red-600"
+              micOn ? "bg-ot-primary text-black hover:brightness-95" : "bg-ot-primary/25 text-black/50 hover:bg-ot-primary/35"
             }`}
           >
-            {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+            {micOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
           </button>
           <button
             onClick={toggleCamera}
             className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
-              cameraOn ? "bg-[#F7F5F2] hover:bg-ot-bg text-ot-text" : "bg-red-50 border border-red-200 text-red-600"
+              cameraOn ? "bg-ot-primary text-black hover:brightness-95" : "bg-ot-primary/25 text-black/50 hover:bg-ot-primary/35"
             }`}
           >
-            {cameraOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+            {cameraOn ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
           </button>
           <button
             onClick={() => { const next = !chatOpenRef.current; chatOpenRef.current = next; setChatOpen(next); if (next) setUnreadCount(0); }}
             className={`relative rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
-              chatOpen ? "bg-ot-tint border border-ot-primary/30 text-ot-primary" : "bg-[#F7F5F2] hover:bg-ot-bg text-ot-text"
+              chatOpen ? "bg-ot-primary text-black ring-2 ring-black/15 hover:brightness-95" : "bg-ot-primary text-black hover:brightness-95"
             }`}
           >
-            <MessageCircle className="w-5 h-5" />
+            <MessageCircle className="w-6 h-6" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-ot-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
                 {unreadCount > 9 ? "9+" : unreadCount}
@@ -972,14 +991,14 @@ export default function Classroom() {
           {user?.role === "tutor" && (
             <button
               onClick={toggleScreenShare}
-              title={isScreenSharing ? "Parar compartilhamento" : "Compartilhar tela"}
+              title={isScreenSharing ? (isEnglish ? "Stop sharing" : "Parar compartilhamento") : (isEnglish ? "Share screen" : "Compartilhar tela")}
               className={`hidden sm:flex rounded-2xl items-center justify-center transition-all hover:scale-105 w-14 h-14 ${
                 isScreenSharing
-                  ? "bg-ot-tint border border-ot-primary/30 text-ot-primary"
-                  : "bg-[#F7F5F2] hover:bg-ot-bg text-ot-text"
+                  ? "bg-ot-primary text-black ring-2 ring-black/15 hover:brightness-95"
+                  : "bg-ot-primary text-black hover:brightness-95"
               }`}
             >
-              {isScreenSharing ? <MonitorOff className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
+              {isScreenSharing ? <MonitorOff className="w-6 h-6" /> : <Monitor className="w-6 h-6" />}
             </button>
           )}
           <button
