@@ -1,0 +1,79 @@
+{
+  "name": "PaymentRecord",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "mercadopago",
+        "stripe"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "plan",
+        "pack"
+      ]
+    },
+    "reference": {
+      "type": "string",
+      "description": "external_reference, ex: plan:premium"
+    },
+    "gross_amount": {
+      "type": "number",
+      "description": "Valor bruto cobrado do aluno"
+    },
+    "coupon_code": {
+      "type": "string"
+    },
+    "discount_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "estimated_fee": {
+      "type": "number",
+      "description": "Taxa estimada do gateway, calculada com base na taxa configurada em AdminFinanceSettings no momento do pagamento"
+    },
+    "net_amount": {
+      "type": "number",
+      "description": "gross_amount - estimated_fee"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "student_id",
+    "provider",
+    "type",
+    "gross_amount",
+    "net_amount"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

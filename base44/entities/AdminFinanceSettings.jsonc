@@ -1,0 +1,69 @@
+{
+  "name": "AdminFinanceSettings",
+  "type": "object",
+  "properties": {
+    "mp_card_pct": {
+      "type": "number",
+      "default": 4.99
+    },
+    "mp_card_fixed": {
+      "type": "number",
+      "default": 0.39
+    },
+    "stripe_card_pct": {
+      "type": "number",
+      "default": 2.9
+    },
+    "stripe_card_fixed": {
+      "type": "number",
+      "default": 0.3
+    },
+    "agora_cost_per_min": {
+      "type": "number",
+      "default": 0.0099
+    },
+    "affiliate_commission_pct": {
+      "type": "number",
+      "default": 15
+    },
+    "avg_discount_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "tax_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "operational_monthly": {
+      "type": "number",
+      "default": 0
+    },
+    "default_tutor_rate_hour": {
+      "type": "number",
+      "default": 36
+    }
+  },
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "required": []
+}

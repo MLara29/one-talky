@@ -3,6 +3,7 @@ import { secrets } from "base44:runtime";
 import { CATALOG } from "../../shared/paymentCatalog.js";
 import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
 import { computeCreditUpdate } from "../../shared/studentCredits.js";
+import { getFinanceSettings } from "../../shared/financeSettings.js";
 
 // Stripe webhook — receives ALL Stripe events.
 // 1. Logs every event to StripeTestEvent (audit trail, admin dashboard).
@@ -229,6 +230,29 @@ async function handleCheckoutCompleted(base44, session) {
       paymentId: session.id,
     });
   }
+
+  // ── PaymentRecord (real revenue ledger) ──────────────────────────────────
+  // estimated_fee is CALCULATED from configured Stripe rates, not the exact
+  // fee returned by Stripe for this specific transaction.
+  try {
+    const grossAmount = (session.amount_total || 0) / 100; // cents → currency
+    const settings = await getFinanceSettings(base44);
+    const estimatedFee = (grossAmount * (settings.stripe_card_pct || 0) / 100) + (settings.stripe_card_fixed || 0);
+    await base44.asServiceRole.entities.PaymentRecord.create({
+      student_id: userId,
+      provider: "stripe",
+      type: externalReference.startsWith("plan:") ? "plan" : "pack",
+      reference: externalReference,
+      gross_amount: grossAmount,
+      coupon_code: couponCode || "",
+      discount_amount: (item.price - grossAmount) || 0,
+      estimated_fee: estimatedFee,
+      net_amount: grossAmount - estimatedFee,
+      created_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.warn("[stripeWebhook] PaymentRecord creation failed (checkout):", e.message);
+  }
 }
 
 // ── invoice.paid — renewal (cycle 2+) ────────────────────────────────────────
@@ -318,6 +342,27 @@ async function handleInvoicePaid(base44, invoice) {
     studentName: profile.full_name || "",
     paymentId: invoice.id,
   });
+
+  // ── PaymentRecord (real revenue ledger — renewal) ────────────────────────
+  try {
+    const grossAmount = (invoice.amount_paid || 0) / 100; // cents → currency
+    const settings = await getFinanceSettings(base44);
+    const estimatedFee = (grossAmount * (settings.stripe_card_pct || 0) / 100) + (settings.stripe_card_fixed || 0);
+    await base44.asServiceRole.entities.PaymentRecord.create({
+      student_id: userId,
+      provider: "stripe",
+      type: "plan",
+      reference: externalReference,
+      gross_amount: grossAmount,
+      coupon_code: profile.coupon_code || "",
+      discount_amount: 0, // renewals have no coupon discount
+      estimated_fee: estimatedFee,
+      net_amount: grossAmount - estimatedFee,
+      created_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.warn("[stripeWebhook] PaymentRecord creation failed (invoice):", e.message);
+  }
 }
 
 // ── customer.subscription.deleted — cancellation/expiry ──────────────────────

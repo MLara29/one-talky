@@ -3,6 +3,7 @@ import { CATALOG } from "../../shared/paymentCatalog.js";
 import { validateAndApplyCoupon } from "../../shared/couponDiscount.js";
 import { computeCreditUpdate } from "../../shared/studentCredits.js";
 import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
+import { getFinanceSettings } from "../../shared/financeSettings.js";
 
 Deno.serve(async (req) => {
   try {
@@ -116,6 +117,28 @@ Deno.serve(async (req) => {
           studentName: profile.full_name || user.email,
           paymentId: payment.id,
         });
+      }
+
+      // ── PaymentRecord (real revenue ledger) ────────────────────────────────
+      // estimated_fee is CALCULATED from configured rates, not the exact fee
+      // returned by Mercado Pago for this specific transaction.
+      try {
+        const settings = await getFinanceSettings(base44);
+        const estimatedFee = (finalPrice * (settings.mp_card_pct || 0) / 100) + (settings.mp_card_fixed || 0);
+        await base44.asServiceRole.entities.PaymentRecord.create({
+          student_id: user.id,
+          provider: "mercadopago",
+          type: external_reference.startsWith("plan:") ? "plan" : "pack",
+          reference: external_reference,
+          gross_amount: finalPrice,
+          coupon_code: coupon_code || "",
+          discount_amount: (item.price - finalPrice) || 0,
+          estimated_fee: estimatedFee,
+          net_amount: finalPrice - estimatedFee,
+          created_at: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.warn("[mpProcessPayment] PaymentRecord creation failed:", e.message);
       }
     }
 
