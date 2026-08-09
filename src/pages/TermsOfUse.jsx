@@ -74,6 +74,24 @@ const sections = [
     ),
   },
   {
+    title: "4.1 Período de Garantia (Primeiros 7 Dias)",
+    content: (
+      <>
+        <p>
+          Nos termos do Art. 49 do Código de Defesa do Consumidor, você tem direito de desistir da assinatura em até <strong>7 dias corridos</strong> a partir da contratação, sem necessidade de justificativa, com direito ao reembolso integral do valor pago.
+        </p>
+        <p style={{ marginTop: 10 }}>
+          Para viabilizar esse direito de forma equilibrada, durante os primeiros 7 dias da assinatura:
+        </p>
+        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+          <li>Você pode agendar <strong>apenas 1 aula, de 30 minutos</strong>, independentemente do plano contratado. Aulas adicionais só ficam disponíveis a partir do <strong>8º dia</strong> da assinatura.</li>
+          <li>Caso você cancele a assinatura dentro desse período de 7 dias, o valor pago será integralmente reembolsado, e os minutos de crédito do plano (usados ou não) serão <strong>extintos imediatamente</strong> no momento do cancelamento — diferente do cancelamento após esse período, que mantém os minutos restantes disponíveis por até 60 dias adicionais (ver Seção 4 acima).</li>
+          <li>Créditos comprados avulsamente (pacotes de minutos pré-pagos) não são afetados por essa regra, seguindo sua própria validade de 60 dias a partir da compra.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
     title: "5. Tolerância Zero — Conduta nas Salas de Vídeo",
     content: (
       <>
