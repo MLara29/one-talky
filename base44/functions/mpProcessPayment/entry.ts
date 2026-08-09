@@ -79,6 +79,14 @@ Deno.serve(async (req) => {
         if (item.plan) {
           updateData.plan = item.plan;
           updateData.subscription_provider = "mercadopago";
+          // CORREÇÃO DE LACUNA: antes este caminho nunca setava
+          // subscription_start_date nem incrementava subscription_cycle,
+          // então a regra da primeira semana (first_week_lesson_id) nunca
+          // funcionava para assinantes via Mercado Pago. Agora espelha o
+          // que o stripeWebhook já fazia no checkout.session.completed.
+          updateData.subscription_start_date = new Date().toISOString();
+          updateData.subscription_cycle = (profile.subscription_cycle || 0) + 1;
+          updateData.mp_payment_id = payment.id ? String(payment.id) : "";
         }
         await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
 

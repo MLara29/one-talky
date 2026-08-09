@@ -28,6 +28,13 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, already_free: true });
     }
 
+    // ── Garantia de 7 dias (Art. 49 CDC): cancelamento dentro da janela
+    //    zera os minutos do plano na hora e dispara reembolso automático.
+    const subStartDate = profile.subscription_start_date
+      ? new Date(profile.subscription_start_date) : null;
+    const isWithinGuarantee = subStartDate &&
+      (Date.now() - subStartDate.getTime()) < 7 * 24 * 60 * 60 * 1000;
+
     // ── Stripe: cancel the real subscription on Stripe's side ──────────────────
     if (profile.subscription_provider === "stripe" && profile.stripe_subscription_id) {
       // Already cancelled — no-op (access continues until valid_until).
@@ -61,6 +68,37 @@ Deno.serve(async (req) => {
         );
       }
 
+      // ── Reembolso automático dentro da garantia de 7 dias ──────────────────
+      // Zera os minutos do plano na hora e processa o reembolso na Stripe.
+      // Se a chamada de reembolso falhar, o cancelamento em si não é
+      // bloqueado — só logamos para revisão manual.
+      if (isWithinGuarantee && profile.stripe_payment_intent_id) {
+        try {
+          const refundRes = await fetch("https://api.stripe.com/v1/refunds", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${secretKey}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `payment_intent=${encodeURIComponent(profile.stripe_payment_intent_id)}`,
+          });
+          const refundData = await refundRes.json();
+          if (!refundRes.ok) {
+            console.error("[cancelMyPlan] Stripe refund failed:", JSON.stringify(refundData));
+          } else {
+            console.log(`[cancelMyPlan] Stripe refund issued: ${refundData.id}`);
+          }
+        } catch (e) {
+          console.error("[cancelMyPlan] Stripe refund error:", e.message);
+        }
+
+        await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+          plan_credits_minutes: 0,
+          plan_credits_grace_expires_at: null,
+          cancelled_within_guarantee: true,
+        });
+      }
+
       // The webhook (customer.subscription.deleted) will fire and set
       // subscription_status=cancelled + subscription_valid_until. We don't
       // duplicate that update here to avoid the two paths diverging.
@@ -68,16 +106,47 @@ Deno.serve(async (req) => {
     }
 
     // ── Mercado Pago: local downgrade (no real recurring subscription) ──────────
-    // Set grace period for plan credits (60 days). Don't zero plan_credits_minutes
-    // — the cron expirePlanGraceCredits will do that when the grace period ends.
-    // Prepaid credits are untouched (independent of the plan).
-    const mpGraceExpiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
-    await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
-      plan: "free",
-      subscription_status: "cancelled",
-      subscription_valid_until: mpGraceExpiresAt,
-      plan_credits_grace_expires_at: mpGraceExpiresAt,
-    });
+    // Dentro da garantia de 7 dias: zera minutos na hora + reembolso automático.
+    // Fora da garantia: grace period de 60 dias (comportamento normal).
+    // Prepaid credits são sempre intocados (independentes do plano).
+    if (isWithinGuarantee) {
+      if (profile.mp_payment_id) {
+        const mpAccessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+        if (mpAccessToken) {
+          try {
+            const refundRes = await fetch(
+              `https://api.mercadopago.com/v1/payments/${profile.mp_payment_id}/refunds`,
+              { method: "POST", headers: { Authorization: `Bearer ${mpAccessToken}` } }
+            );
+            const refundData = await refundRes.json();
+            if (!refundRes.ok) {
+              console.error("[cancelMyPlan] MP refund failed:", JSON.stringify(refundData));
+            } else {
+              console.log(`[cancelMyPlan] MP refund issued: ${refundData.id}`);
+            }
+          } catch (e) {
+            console.error("[cancelMyPlan] MP refund error:", e.message);
+          }
+        }
+      }
+
+      await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+        plan: "free",
+        subscription_status: "cancelled",
+        subscription_valid_until: new Date().toISOString(),
+        plan_credits_minutes: 0,
+        plan_credits_grace_expires_at: null,
+        cancelled_within_guarantee: true,
+      });
+    } else {
+      const mpGraceExpiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+      await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+        plan: "free",
+        subscription_status: "cancelled",
+        subscription_valid_until: mpGraceExpiresAt,
+        plan_credits_grace_expires_at: mpGraceExpiresAt,
+      });
+    }
 
     return Response.json({ success: true, provider: "mercadopago" });
   } catch (error) {

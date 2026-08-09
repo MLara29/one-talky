@@ -191,6 +191,9 @@ async function handleCheckoutCompleted(base44, session) {
     updateData.subscription_cycle = 1;
     updateData.subscription_provider = "stripe";
     updateData.stripe_subscription_id = session.subscription || "";
+    // Salvar o Payment Intent para permitir reembolso automático dentro da
+    // garantia de 7 dias (Art. 49 CDC) quando o aluno cancelar via cancelMyPlan.
+    updateData.stripe_payment_intent_id = session.payment_intent || "";
   }
 
   await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
@@ -343,16 +346,38 @@ async function handleSubscriptionDeleted(base44, subscription) {
     ? new Date(subscription.current_period_end * 1000).toISOString()
     : new Date().toISOString();
 
-  // Set grace period for plan credits (60 days from now). The subscription's
-  // current_period_end may be different — that controls scheduling access, while
-  // plan_credits_grace_expires_at controls when the plan credits are zeroed.
-  const planGraceExpiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
-  await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
-    subscription_status: "cancelled",
-    subscription_valid_until: validUntil,
-    plan_credits_grace_expires_at: planGraceExpiresAt,
-  });
-  console.log(`[stripeWebhook] subscription cancelled for user ${userId}, valid until ${validUntil}`);
+  // Garantia de 7 dias (Art. 49 CDC): se a Stripe cancelar a assinatura
+  // sozinha dentro da janela de garantia (ex: falha de pagamento recorrente
+  // logo no início), zerar plan_credits_minutes na hora em vez de aplicar
+  // o grace de 60 dias. Sem disparar reembolso automático neste caminho —
+  // o reembolso só é automático quando o PRÓPRIO aluno pede cancelamento
+  // via cancelMyPlan, não quando a Stripe cancela sozinha.
+  const subStartDate = profile.subscription_start_date
+    ? new Date(profile.subscription_start_date) : null;
+  const isWithinGuarantee = subStartDate &&
+    (Date.now() - subStartDate.getTime()) < 7 * 24 * 60 * 60 * 1000;
+
+  if (isWithinGuarantee) {
+    await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+      subscription_status: "cancelled",
+      subscription_valid_until: validUntil,
+      plan_credits_minutes: 0,
+      plan_credits_grace_expires_at: null,
+      cancelled_within_guarantee: true,
+    });
+    console.log(`[stripeWebhook] subscription cancelled within guarantee for user ${userId} — plan credits zeroed immediately`);
+  } else {
+    // Set grace period for plan credits (60 days from now). The subscription's
+    // current_period_end may be different — that controls scheduling access, while
+    // plan_credits_grace_expires_at controls when the plan credits are zeroed.
+    const planGraceExpiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+    await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+      subscription_status: "cancelled",
+      subscription_valid_until: validUntil,
+      plan_credits_grace_expires_at: planGraceExpiresAt,
+    });
+    console.log(`[stripeWebhook] subscription cancelled for user ${userId}, valid until ${validUntil}`);
+  }
 }
 
 // ── Stripe signature verification (HMAC-SHA256 via Web Crypto) ────────────────

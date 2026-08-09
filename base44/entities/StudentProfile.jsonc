@@ -135,6 +135,19 @@
       "type": "string",
       "description": "ID da assinatura no Stripe (sub_xxx). Preenchido pelo stripeWebhook quando uma assinatura \u00e9 criada via checkout."
     },
+    "mp_payment_id": {
+      "type": "string",
+      "description": "ID do pagamento na Mercado Pago, usado para processar reembolso se necess\u00e1rio."
+    },
+    "stripe_payment_intent_id": {
+      "type": "string",
+      "description": "ID do Payment Intent na Stripe, usado para processar reembolso se necess\u00e1rio."
+    },
+    "cancelled_within_guarantee": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marca se o cancelamento aconteceu dentro dos 7 dias de garantia (Art. 49 CDC), com reembolso processado."
+    },
     "first_week_lesson_id": {
       "type": "string",
       "description": "ID da Lesson agendada na janela dos primeiros 7 dias do ciclo 1. '__pending__:<token>' enquanto em andamento; ID real ap\u00f3s commit. Lock CAS anti-race-condition."
