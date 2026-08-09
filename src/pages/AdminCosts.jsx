@@ -286,6 +286,9 @@ export default function AdminCosts() {
     try {
       const res = await base44.functions.invoke("getMonthlyFinancials", { year: realYear, month: realMonth });
       if (res.data?.error) throw new Error(res.data.error);
+      if (!res.data?.breakdown) {
+        throw new Error("Resposta incompleta do servidor. Tente novamente.");
+      }
       setRealData(res.data);
     } catch (err) {
       const msg = err?.message === "otp_required" ? "Confirme o código 2FA para ver os dados reais." : err.message;
@@ -375,14 +378,14 @@ export default function AdminCosts() {
               <>
                 {/* Real metric cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <MetricCard label="Receita Bruta" value={fmtBRL(realData.gross_revenue)} sub={`${realData.tx_count} transações`} icon={DollarSign} color="emerald" />
-                  <MetricCard label="Receita Líquida" value={fmtBRL(realData.net_revenue)} sub={`Taxas: ${fmtBRL(realData.total_fees)}`} icon={TrendingUp} color="violet" />
-                  <MetricCard label="Ticket Médio" value={fmtBRL(realData.avg_ticket)} icon={BarChart3} color="blue" />
-                  <MetricCard label="Descontos" value={fmtBRL(realData.total_discount)} icon={Percent} color="amber" />
-                  <MetricCard label="Pago a Tutores" value={fmtBRL(realData.paid_to_tutors)} sub={`${realData.tutor_payouts_count} saques`} icon={Users} color="blue" />
-                  <MetricCard label="Pago a Afiliados" value={fmtBRL(realData.paid_to_affiliates)} sub={`${realData.affiliate_earnings_count} comissões`} icon={Users} color="amber" />
-                  <MetricCard label="Custo Agora.io" value={fmtUSD(realData.agora_cost)} sub={`${realData.agora_total_minutes} min (${realData.agora_audio_minutes} áudio + ${realData.agora_video_minutes} vídeo)`} icon={CreditCard} color="red" />
-                  <MetricCard label="Operacional + Impostos" value={fmtBRL(realData.operational + realData.tax_amount)} icon={CreditCard} color="amber" />
+                  <MetricCard label="Receita Bruta" value={fmtBRL(realData.gross_revenue ?? 0)} sub={`${realData.tx_count ?? 0} transações`} icon={DollarSign} color="emerald" />
+                  <MetricCard label="Receita Líquida" value={fmtBRL(realData.net_revenue ?? 0)} sub={`Taxas: ${fmtBRL(realData.total_fees ?? 0)}`} icon={TrendingUp} color="violet" />
+                  <MetricCard label="Ticket Médio" value={fmtBRL(realData.avg_ticket ?? 0)} icon={BarChart3} color="blue" />
+                  <MetricCard label="Descontos" value={fmtBRL(realData.total_discount ?? 0)} icon={Percent} color="amber" />
+                  <MetricCard label="Pago a Tutores" value={fmtBRL(realData.paid_to_tutors ?? 0)} sub={`${realData.tutor_payouts_count ?? 0} saques`} icon={Users} color="blue" />
+                  <MetricCard label="Pago a Afiliados" value={fmtBRL(realData.paid_to_affiliates ?? 0)} sub={`${realData.affiliate_earnings_count ?? 0} comissões`} icon={Users} color="amber" />
+                  <MetricCard label="Custo Agora.io" value={fmtUSD(realData.agora_cost ?? 0)} sub={`${realData.agora_total_minutes ?? 0} min (${realData.agora_audio_minutes ?? 0} áudio + ${realData.agora_video_minutes ?? 0} vídeo)`} icon={CreditCard} color="red" />
+                  <MetricCard label="Operacional + Impostos" value={fmtBRL((realData.operational ?? 0) + (realData.tax_amount ?? 0))} icon={CreditCard} color="amber" />
                 </div>
 
                 {/* Net profit highlight */}
@@ -390,18 +393,18 @@ export default function AdminCosts() {
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
                       <p className="theme-subtext text-xs text-gray-500 uppercase tracking-wide mb-1">Lucro Líquido Real</p>
-                      <p className={`theme-heading font-display text-3xl font-bold ${realData.net_profit >= 0 ? "text-emerald-400" : "text-red-400"}`}>{fmtBRL(realData.net_profit)}</p>
+                      <p className={`theme-heading font-display text-3xl font-bold ${(realData.net_profit ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>{fmtBRL(realData.net_profit ?? 0)}</p>
                     </div>
                     <div className="text-right">
                       <p className="theme-subtext text-xs text-gray-500 uppercase tracking-wide mb-1">Margem Real</p>
-                      <p className={`font-display text-2xl font-bold ${realData.margin >= 0 ? "text-emerald-400" : "text-red-400"}`}>{fmtPct(realData.margin)}</p>
+                      <p className={`font-display text-2xl font-bold ${(realData.margin ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>{fmtPct(realData.margin ?? 0)}</p>
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                    <div><span className="text-gray-500">Receita Líquida:</span> <span className="theme-heading text-white font-medium">{fmtBRL(realData.net_revenue)}</span></div>
-                    <div><span className="text-gray-500">Total de Custos:</span> <span className="theme-heading text-white font-medium">{fmtBRL(realData.total_costs)}</span></div>
-                    <div><span className="text-gray-500">MP:</span> <span className="theme-heading text-white font-medium">{realData.breakdown.mp_count}x · {fmtBRL(realData.breakdown.mp_gross)}</span></div>
-                    <div><span className="text-gray-500">Stripe:</span> <span className="theme-heading text-white font-medium">{realData.breakdown.stripe_count}x · {fmtBRL(realData.breakdown.stripe_gross)}</span></div>
+                    <div><span className="text-gray-500">Receita Líquida:</span> <span className="theme-heading text-white font-medium">{fmtBRL(realData.net_revenue ?? 0)}</span></div>
+                    <div><span className="text-gray-500">Total de Custos:</span> <span className="theme-heading text-white font-medium">{fmtBRL(realData.total_costs ?? 0)}</span></div>
+                    <div><span className="text-gray-500">MP:</span> <span className="theme-heading text-white font-medium">{realData.breakdown?.mp_count ?? 0}x · {fmtBRL(realData.breakdown?.mp_gross ?? 0)}</span></div>
+                    <div><span className="text-gray-500">Stripe:</span> <span className="theme-heading text-white font-medium">{realData.breakdown?.stripe_count ?? 0}x · {fmtBRL(realData.breakdown?.stripe_gross ?? 0)}</span></div>
                   </div>
                 </div>
 
@@ -414,7 +417,7 @@ export default function AdminCosts() {
                       A taxa do gateway é estimada (calculada com a taxa configurada), não o valor exato cobrado por provedor.
                     </p>
                   </div>
-                  {realData.payments.length === 0 ? (
+                  {(realData.payments ?? []).length === 0 ? (
                     <div className="text-center py-12">
                       <Calendar className="w-10 h-10 text-gray-600 mx-auto mb-3" />
                       <p className="theme-subtext text-sm text-gray-500">Nenhuma transação neste mês</p>
