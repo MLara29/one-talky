@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
         : null;
 
       const activeWithdrawals = await base44.asServiceRole.entities.WithdrawalRequest.filter(
-        { tutor_id: tutor.user_id, status: { $in: ["processing", "paid"] } },
+        { tutor_id: tutor.user_id, status: { $in: ["processing", "paid"] }, tutor_confirmed: false },
         "-created_date", 1
       );
       const activeStatus = activeWithdrawals[0]?.status || null;
