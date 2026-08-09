@@ -26,6 +26,7 @@ export default function MyLessons() {
   const [cancellingLesson, setCancellingLesson] = useState(null);
   const [pendingRequests, setPendingRequests] = useState({});
   const [tick, setTick] = useState(0);
+  const [busyTutors, setBusyTutors] = useState({});
   const lessonsRef = useRef(lessons);
 
   const T = (key) => t(lang, key);
@@ -176,6 +177,23 @@ export default function MyLessons() {
     return new Date(l.scheduled_at).getTime() - now <= LESSON_JOIN_WINDOW_BEFORE_MS;
   };
 
+  // Checa se o tutor está em outra aula ativa — só para alunos, e só para
+  // aulas que já estão na janela de "pode entrar" (canJoin). Informativo,
+  // não bloqueia nada.
+  useEffect(() => {
+    if (user?.role !== "student") return;
+    const lessonsToCheck = lessons.filter(l =>
+      canJoin(l) && l.status === "scheduled" && l.tutor_id
+    );
+    lessonsToCheck.forEach(async (l) => {
+      if (busyTutors[l.tutor_id] !== undefined) return; // já checado
+      try {
+        const res = await base44.functions.invoke("checkTutorBusy", { tutor_id: l.tutor_id });
+        setBusyTutors(prev => ({ ...prev, [l.tutor_id]: res.data?.busy || false }));
+      } catch { /* falha silenciosa, não bloqueia nada */ }
+    });
+  }, [lessons, user?.role]);
+
   if (loading) return (
     <div className="flex items-center justify-center py-24">
       <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
@@ -289,56 +307,21 @@ export default function MyLessons() {
                       onResolved={() => { loadPendingRequests(); loadData(); }}
                     />
                   )}
-                  <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center justify-between hover:bg-white/8 transition-all">
+                  <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/8 transition-all">
+                  {user?.role === "student" && canJoin(l) && l.status === "scheduled" && busyTutors[l.tutor_id] && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3"
+                      style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                      <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span className="text-xs text-amber-500">
+                        Seu tutor está terminando outra aula. Aguarde um instante antes de entrar.
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Calendar className="w-4 h-4 text-violet-400" />
-                    <div>
-                      <p className="theme-heading font-semibold text-white">{user?.role === "tutor" ? l.student_name : l.tutor_name}</p>
-                      <p className="theme-subtext text-sm text-gray-500">
-                        {getLanguageLabel(l.language)} · {l.scheduled_at ? new Date(l.scheduled_at).toLocaleString() : (user?.role === "student" ? T("instant") : "Instant")}
-                      </p>
-                    </div>
+...
                   </div>
-                  <div className="flex items-center gap-2">
-                    {user?.role === "tutor" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setManagingLesson(l)}
-                        className="border-white/10 text-gray-400 hover:text-white hover:border-white/20 bg-transparent"
-                        title="Manage lesson"
-                      >
-                        <Settings2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                    {user?.role === "student" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setCancellingLesson(l)}
-                        className="border-red-500/20 text-red-400 hover:text-red-300 hover:border-red-500/40 bg-transparent text-xs"
-                      >
-                        {T("cancelBtn")}
-                      </Button>
-                    )}
-                    {l.scheduled_at && (() => {
-                      const status = getLessonTimeStatus(l.scheduled_at, now);
-                      if (!status.label || (!status.negative && canJoin(l))) return null;
-                      return (
-                        <span className={status.negative
-                          ? "text-xs font-bold px-3 py-1.5 rounded-xl bg-ot-danger/10 border border-ot-danger/30 text-ot-danger animate-pulse"
-                          : "text-xs text-gray-500 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 font-medium"}>
-                          {status.label}
-                        </span>
-                      );
-                    })()}
-                    {canJoin(l) && (
-                      <Link to={`/classroom/${l.id}`}>
-                        <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white border-0">
-                          {user?.role === "student" ? T("joinBtn") : "Join"}
-                        </Button>
-                      </Link>
-                    )}
                   </div>
                   </div>
                 </div>
