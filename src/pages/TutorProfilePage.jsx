@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Star, Globe, Clock, MapPin, Video, Calendar, ChevronLeft } from "lucide-react";
 import { getCountryFlag, getLanguageLabel, REDIRECT_TO_PLANS_ERROR_CODES } from "@/lib/constants";
+import CountryFlagImg from "@/components/shared/CountryFlagImg";
 import { useToast } from "@/components/ui/use-toast";
 import ScheduleModal from "@/components/tutors/ScheduleModal";
 
@@ -145,6 +146,10 @@ export default function TutorProfilePage() {
                 src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.display_name || tutor.full_name)}&background=F26A1B&color=fff&size=120`}
                 alt={tutor.display_name || tutor.full_name}
                 className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-orange-500/20"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.display_name || tutor.full_name)}&background=F26A1B&color=fff&size=120`;
+                }}
               />
               {isLive(tutor) && (
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 border-2 border-white rounded-full">
@@ -155,7 +160,7 @@ export default function TutorProfilePage() {
             <div className="flex-1">
               <h1 className="theme-heading font-display text-2xl font-bold text-white">{tutor.display_name || tutor.full_name}</h1>
               <p className="theme-subtext text-gray-500 flex items-center gap-1 mt-1 text-sm">
-                <MapPin className="w-3.5 h-3.5" /> {getCountryFlag(tutor.country)} {tutor.country}
+                <MapPin className="w-3.5 h-3.5" /> <CountryFlagImg country={tutor.country} /> {tutor.country}
               </p>
               <div className="flex items-center gap-4 mt-3">
                 <span className="flex items-center gap-1 text-amber-500 font-bold">

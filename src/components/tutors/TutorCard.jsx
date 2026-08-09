@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Star, Video, Calendar } from "lucide-react";
 import { getCountryFlag, getLanguageLabel, REDIRECT_TO_PLANS_ERROR_CODES } from "@/lib/constants";
+import CountryFlagImg from "@/components/shared/CountryFlagImg";
 import { base44 } from "@/api/base44Client";
 import { useLang } from "@/lib/LanguageContext";
 import { useAuth } from "@/lib/AuthContext";
@@ -141,6 +142,10 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
               src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.display_name || tutor.full_name)}&background=F26A1B&color=fff&size=80`}
               alt={tutor.display_name || tutor.full_name}
               className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10 group-hover:ring-orange-500/30 transition-all"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.display_name || tutor.full_name)}&background=F26A1B&color=fff&size=80`;
+              }}
             />
             {online && !inLesson && (
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 border-2 border-slate-950 rounded-full">
@@ -154,11 +159,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
           <div className="flex-1 min-w-0">
             <h3 className="theme-heading font-display font-bold text-white group-hover:text-orange-400 transition-colors truncate">{tutor.display_name || tutor.full_name}</h3>
             <p className="theme-subtext text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
-              <span className="text-lg leading-none">
-                {getCountryFlag(tutor.nationality) !== "🌍"
-                  ? getCountryFlag(tutor.nationality)
-                  : getCountryFlag(tutor.country)}
-              </span>
+              <CountryFlagImg country={tutor.nationality || tutor.country} className="w-5 h-4 rounded-sm object-cover" />
               <span>{tutor.nationality || tutor.country}</span>
             </p>
             <div className="flex items-center gap-3 mt-1.5">

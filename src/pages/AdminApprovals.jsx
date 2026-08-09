@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Check, X, Play, MapPin } from "lucide-react";
 import { getLanguageLabel, getCountryFlag } from "@/lib/constants";
+import CountryFlagImg from "@/components/shared/CountryFlagImg";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function AdminApprovals() {
@@ -54,11 +55,15 @@ export default function AdminApprovals() {
                 <img
                   src={t.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=80`}
                   alt={t.full_name} className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=80`;
+                  }}
                 />
                 <div className="flex-1">
                   <h3 className="theme-heading font-display font-bold text-white">{t.full_name}</h3>
                   <p className="theme-subtext text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                    <MapPin className="w-3 h-3" /> {getCountryFlag(t.country)} {t.country}
+                    <MapPin className="w-3 h-3" /> <CountryFlagImg country={t.country} /> {t.country}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {t.native_languages?.map(l => (
