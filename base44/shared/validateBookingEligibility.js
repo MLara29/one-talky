@@ -125,7 +125,11 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
       const existingLessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: studentId });
       const windowLessons = existingLessons.filter(l => {
         if (l.status === "cancelled") return false;
-        const lessonDate = new Date(l.scheduled_at || l.created_date || l.started_at);
+        const rawDate = l.scheduled_at || l.started_at || l.created_date;
+        const normalizedDate = rawDate && !rawDate.endsWith("Z") && !rawDate.includes("+")
+          ? rawDate + "Z"
+          : rawDate;
+        const lessonDate = new Date(normalizedDate);
         return lessonDate >= subStartDate && lessonDate < sevenDaysAfterStart;
       });
 
