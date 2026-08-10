@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error("[verifyOtp]", error.message);
+    return Response.json({ error: "Erro ao verificar código. Tente novamente." }, { status: 500 });
   }
 });
