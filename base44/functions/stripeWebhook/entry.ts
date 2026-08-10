@@ -30,8 +30,8 @@ export default async function (req: Request): Promise<Response> {
       }
       event = JSON.parse(rawBody);
     } else {
-      console.warn("[stripeWebhook] STRIPE_WEBHOOK_SECRET não configurado — aceitando evento sem verificação (modo teste).");
-      event = JSON.parse(rawBody);
+      console.error("[stripeWebhook] STRIPE_WEBHOOK_SECRET não configurado — rejeitando evento por segurança.");
+      return Response.json({ error: "Webhook not configured" }, { status: 500 });
     }
 
     console.log("[stripeWebhook] event received:", event.type, event.id);
