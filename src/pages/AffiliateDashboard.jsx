@@ -39,13 +39,10 @@ export default function AffiliateDashboard() {
         );
         setEarnings(earns);
 
-        // Busca todos os alunos que usaram o cupom
-        const [freeProfiles, paidProfiles] = await Promise.all([
-          base44.entities.StudentProfile.filter({ coupon_code: aff.coupon_code, plan: "free" }, "-created_date", 200),
-          base44.entities.StudentProfile.filter({ coupon_code: aff.coupon_code }, "-created_date", 200),
-        ]);
-        setFreeStudents(freeProfiles);
-        setPaidStudents(paidProfiles.filter(s => s.plan !== "free"));
+        // Busca os alunos que usaram o cupom via function segura (não expõe outros alunos)
+        const studentsRes = await base44.functions.invoke("getMyReferredStudents", {});
+        setFreeStudents(studentsRes.data?.freeStudents || []);
+        setPaidStudents(studentsRes.data?.paidStudents || []);
       }
     } finally {
       setLoading(false);
