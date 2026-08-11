@@ -27,6 +27,16 @@ Deno.serve(async (req) => {
     for (const lesson of stale) {
       const result = await completeLesson(base44, lesson, {});
       if (!result.alreadyCompleted) completed++;
+
+      // ── Liberar o cadeado da primeira semana se a aula abandonada era a
+      // que travava a primeira aula do aluno — permite nova tentativa.
+      const sp = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: lesson.student_id });
+      if (sp[0]?.first_week_lesson_id === lesson.id) {
+        await base44.asServiceRole.entities.StudentProfile.update(sp[0].id, {
+          first_week_lesson_id: null,
+        });
+        console.log(`[timeoutStaleLessons] Released first-week lock for student=${lesson.student_id} (abandoned lesson=${lesson.id})`);
+      }
     }
 
     return Response.json({ success: true, checked: inProgress.length, completed });
