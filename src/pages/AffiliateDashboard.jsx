@@ -43,9 +43,10 @@ export default function AffiliateDashboard() {
 
         // Busca os alunos que usaram o cupom via function segura (não expõe outros alunos)
         const studentsRes = await base44.functions.invoke("getMyReferredStudents", {});
-        if (studentsRes.data?.error) {
-          console.error("[AffiliateDashboard] getMyReferredStudents error:", studentsRes.data.error);
-          setLoadError(studentsRes.data.error);
+        const errMsg = studentsRes.error || studentsRes.data?.error;
+        if (errMsg) {
+          console.error("[AffiliateDashboard] getMyReferredStudents error:", errMsg);
+          setLoadError(errMsg);
         }
         setFreeStudents(studentsRes.data?.freeStudents || []);
         setPaidStudents(studentsRes.data?.paidStudents || []);
