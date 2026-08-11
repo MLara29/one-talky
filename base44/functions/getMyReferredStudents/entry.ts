@@ -7,7 +7,11 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (user.role !== "affiliate") return Response.json({ error: "Forbidden" }, { status: 403 });
 
+    console.log("[getMyReferredStudents] DEBUG user.id:", user.id, "user.email:", user.email);
+
     const affiliates = await base44.asServiceRole.entities.Affiliate.filter({ user_id: user.id });
+    console.log("[getMyReferredStudents] DEBUG affiliates found:", affiliates.length, JSON.stringify(affiliates.map(a => ({ id: a.id, user_id: a.user_id, coupon_code: a.coupon_code }))));
+
     if (affiliates.length === 0) {
       return Response.json({ data: { freeStudents: [], paidStudents: [] } });
     }
@@ -18,6 +22,7 @@ Deno.serve(async (req) => {
       "-created_date",
       200
     );
+    console.log("[getMyReferredStudents] DEBUG coupon:", aff.coupon_code, "profiles found:", allProfiles.length);
 
     const freeStudents = allProfiles.filter(s => s.plan === "free");
     const paidStudents = allProfiles.filter(s => s.plan !== "free");
