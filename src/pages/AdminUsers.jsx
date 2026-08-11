@@ -335,11 +335,14 @@ export default function AdminUsers() {
 
                 // Indicadores de assinatura visíveis direto no card
                 const subStartDate = s.subscription_start_date ? new Date(s.subscription_start_date) : null;
-                const isInGuaranteePeriod = subStartDate &&
-                  (Date.now() - subStartDate.getTime()) < 7 * 24 * 60 * 60 * 1000;
+                const guaranteeEndDate = subStartDate ? new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
+                const isInGuaranteePeriod = guaranteeEndDate && Date.now() < guaranteeEndDate.getTime();
                 const isCancelled = s.subscription_status === "cancelled";
                 const subDateFormatted = subStartDate
                   ? subStartDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+                  : null;
+                const guaranteeEndFormatted = guaranteeEndDate
+                  ? guaranteeEndDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
                   : null;
                 return (
                   <div
@@ -356,7 +359,10 @@ export default function AdminUsers() {
                         </p>
                         {subDateFormatted && (
                           <p className="text-[11px] text-gray-600 truncate">
-                            Assinou em {subDateFormatted}
+                            Assinou {planKey !== "free" ? `plano ${planKey}` : ""} em {subDateFormatted}
+                            {isInGuaranteePeriod
+                              ? ` · garantia até ${guaranteeEndFormatted}`
+                              : ` · garantia expirou em ${guaranteeEndFormatted}`}
                           </p>
                         )}
                       </div>
