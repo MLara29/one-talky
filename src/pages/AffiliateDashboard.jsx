@@ -34,12 +34,8 @@ export default function AffiliateDashboard() {
       if (affiliates.length > 0) {
         const aff = affiliates[0];
         setAffiliate(aff);
-        const earns = await base44.entities.AffiliateEarning.filter(
-          { affiliate_id: aff.id },
-          "-sale_date",
-          200
-        );
-        setEarnings(earns);
+        const earningsRes = await base44.functions.invoke("getMyAffiliateEarnings", {});
+        setEarnings(earningsRes.earnings || earningsRes.data?.earnings || []);
 
         // Busca os alunos que usaram o cupom via function segura (não expõe outros alunos)
         const studentsRes = await base44.functions.invoke("getMyReferredStudents", {});
