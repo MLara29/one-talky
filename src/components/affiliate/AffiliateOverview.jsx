@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Users, DollarSign, Clock, TrendingUp, UserX, UserCheck } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 function fmtBRL(v) {
   return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -24,22 +24,20 @@ export default function AffiliateOverview({ affiliate, earnings, freeStudents = 
     { label: "Em carência (7 dias)", value: fmtBRL(pending), icon: Clock, gradient: "from-blue-500 to-cyan-500" },
   ];
 
-  // Monthly chart data (last 6 months)
+  // Cumulative commission growth over time
   const chartData = useMemo(() => {
-    const months = {};
-    const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      months[key] = { month: d.toLocaleString("pt-BR", { month: "short" }), amount: 0 };
-    }
-    earnings.forEach(e => {
-      if (!e.sale_date) return;
-      const d = new Date(e.sale_date);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      if (months[key]) months[key].amount += e.commission_amount || 0;
+    const sorted = [...earnings]
+      .filter(e => e.sale_date)
+      .sort((a, b) => new Date(a.sale_date) - new Date(b.sale_date));
+
+    let cumulative = 0;
+    return sorted.map(e => {
+      cumulative += e.commission_amount || 0;
+      return {
+        date: new Date(e.sale_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+        total: parseFloat(cumulative.toFixed(2)),
+      };
     });
-    return Object.values(months);
   }, [earnings]);
 
   return (
@@ -81,30 +79,37 @@ export default function AffiliateOverview({ affiliate, earnings, freeStudents = 
 
       {/* Monthly chart */}
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-6">
-        <h3 className="theme-heading font-display font-bold mb-5">Comissões por Mês</h3>
+        <h3 className="theme-heading font-display font-bold mb-5">Crescimento das Comissões</h3>
         {earnings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
             <TrendingUp className="w-8 h-8 text-gray-600" />
             <p className="theme-subtext text-gray-500 text-sm">Nenhuma comissão ainda. Compartilhe seu cupom!</p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={chartData} barSize={32}>
-              <XAxis dataKey="month" tick={{ fill: "#6b7280", fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v}`} />
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="affiliateGrowth" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+              <XAxis dataKey="date" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v}`} orientation="right" />
               <Tooltip
-                contentStyle={{ background: "#0f0f1f", border: "1px solid rgba(139,92,246,0.2)", borderRadius: 12 }}
+                contentStyle={{ background: "#0f0f1f", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 12 }}
                 labelStyle={{ color: "#fff" }}
-                formatter={v => [fmtBRL(v), "Comissão"]}
+                formatter={v => [fmtBRL(v), "Total acumulado"]}
               />
-              {chartData.map((entry, idx) => (
-                <Bar key={idx} dataKey="amount" radius={[8, 8, 0, 0]}>
-                  {chartData.map((_, i) => (
-                    <Cell key={i} fill={i === idx ? "#7c3aed" : "rgba(124,58,237,0.3)"} />
-                  ))}
-                </Bar>
-              ))}
-            </BarChart>
+              <Area
+                type="monotone"
+                dataKey="total"
+                stroke="#10b981"
+                strokeWidth={2}
+                fill="url(#affiliateGrowth)"
+              />
+            </AreaChart>
           </ResponsiveContainer>
         )}
       </div>
