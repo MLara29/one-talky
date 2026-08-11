@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { Users } from "lucide-react";
+import { Users, AlertTriangle } from "lucide-react";
 import AffiliateOverview from "@/components/affiliate/AffiliateOverview";
 import AffiliateEarningsTable from "@/components/affiliate/AffiliateEarningsTable";
 import AffiliatePayoutTab from "@/components/affiliate/AffiliatePayoutTab";
@@ -22,11 +22,13 @@ export default function AffiliateDashboard() {
   const [freeStudents, setFreeStudents] = useState([]);
   const [paidStudents, setPaidStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => { loadData(); }, [user]);
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const affiliates = await base44.entities.Affiliate.filter({ user_id: user.id });
       if (affiliates.length > 0) {
@@ -44,6 +46,9 @@ export default function AffiliateDashboard() {
         setFreeStudents(studentsRes.data?.freeStudents || []);
         setPaidStudents(studentsRes.data?.paidStudents || []);
       }
+    } catch (err) {
+      console.error("[AffiliateDashboard] loadData failed:", err);
+      setLoadError(err.message || "Erro ao carregar dados do afiliado.");
     } finally {
       setLoading(false);
     }
@@ -52,6 +57,22 @@ export default function AffiliateDashboard() {
   if (loading) return (
     <div className="flex items-center justify-center py-24">
       <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+    </div>
+  );
+
+  if (loadError) return (
+    <div className="max-w-md mx-auto mt-16 p-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-center space-y-3">
+      <div className="w-12 h-12 rounded-2xl bg-red-500/15 border border-red-500/25 flex items-center justify-center mx-auto">
+        <AlertTriangle className="w-6 h-6 text-red-400" />
+      </div>
+      <h2 className="theme-heading font-display text-lg font-bold">Erro ao carregar</h2>
+      <p className="theme-subtext text-gray-500 text-sm">{loadError}</p>
+      <button
+        onClick={loadData}
+        className="mt-2 px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-500 transition-colors"
+      >
+        Tentar novamente
+      </button>
     </div>
   );
 
