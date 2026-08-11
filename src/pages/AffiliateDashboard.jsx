@@ -48,8 +48,8 @@ export default function AffiliateDashboard() {
           console.error("[AffiliateDashboard] getMyReferredStudents error:", errMsg);
           setLoadError(errMsg);
         }
-        setFreeStudents(studentsRes.data?.freeStudents || []);
-        setPaidStudents(studentsRes.data?.paidStudents || []);
+        setFreeStudents(studentsRes.freeStudents || studentsRes.data?.freeStudents || []);
+        setPaidStudents(studentsRes.paidStudents || studentsRes.data?.paidStudents || []);
       }
     } catch (err) {
       console.error("[AffiliateDashboard] loadData failed:", err);
