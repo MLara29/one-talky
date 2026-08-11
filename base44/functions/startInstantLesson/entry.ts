@@ -27,6 +27,18 @@ export default async function(req) {
       return Response.json({ error: 'Missing required param: tutor_user_id' }, { status: 400 });
     }
 
+    // ── NOVO: Se já existe uma aula em andamento com esse tutor, apenas
+    // retomar ela — não é uma nova reserva, é o aluno voltando pra sala.
+    const activeLessons = await base44.asServiceRole.entities.Lesson.filter({
+      student_id: user.id,
+      tutor_id: tutor_user_id,
+      status: "in_progress",
+    });
+    if (activeLessons.length > 0) {
+      console.log(`[startInstantLesson] RESUMING existing lesson=${activeLessons[0].id} student=${user.id}`);
+      return Response.json({ success: true, lesson: activeLessons[0] });
+    }
+
     // ── RULE 0: Blocked students cannot start lessons ───────────────────────────
     const blockedGate = await requireNotBlocked(base44, user.id);
     if (!blockedGate.ok) return Response.json({ error: blockedGate.error }, { status: blockedGate.status });
