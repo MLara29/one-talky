@@ -9,6 +9,18 @@ import CountryFlagImg from "@/components/shared/CountryFlagImg";
 import { useToast } from "@/components/ui/use-toast";
 import ScheduleModal from "@/components/tutors/ScheduleModal";
 
+const FRIENDLY_WARNING_CODES = ["insufficient_credits_for_booking", "first_week_limit"];
+
+function getBookingErrorDisplay(errorCode, fallbackTitle) {
+  const isFriendly = FRIENDLY_WARNING_CODES.includes(errorCode);
+  const title = errorCode === "first_week_limit"
+    ? "Sua próxima aula já tem uma data 😊"
+    : errorCode === "insufficient_credits_for_booking"
+    ? "Você já usou todo o seu saldo"
+    : fallbackTitle;
+  return { variant: isFriendly ? "warning" : "destructive", title };
+}
+
 export default function TutorProfilePage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -62,7 +74,8 @@ export default function TutorProfilePage() {
       const message = err?.response?.data?.error || err?.message;
       const errorCode = err?.response?.data?.error_code;
       if (REDIRECT_TO_PLANS_ERROR_CODES.includes(errorCode)) navigate("/plans");
-      toast({ title: "Não foi possível iniciar a aula", description: message || "Tente novamente.", variant: "destructive" });
+      const { variant, title } = getBookingErrorDisplay(errorCode, "Não foi possível iniciar a aula");
+      toast({ title, description: message || "Tente novamente.", variant });
     } finally { setBooking(false); }
   };
 
@@ -88,12 +101,8 @@ export default function TutorProfilePage() {
       });
 
       if (bookRes.data?.error) {
-        const isLimitReached = bookRes.data?.error_code === "insufficient_credits_for_booking";
-        toast({
-          title: isLimitReached ? "Você já usou todo o seu saldo" : "Agendamento bloqueado",
-          description: bookRes.data.error,
-          variant: isLimitReached ? "warning" : "destructive",
-        });
+        const { variant, title } = getBookingErrorDisplay(bookRes.data?.error_code, "Agendamento bloqueado");
+        toast({ title, description: bookRes.data.error, variant });
         if (REDIRECT_TO_PLANS_ERROR_CODES.includes(bookRes.data?.error_code)) {
           navigate("/plans");
         }
@@ -115,7 +124,9 @@ export default function TutorProfilePage() {
       }
     } catch (err) {
       const msg = err?.response?.data?.error || err?.message || "Could not schedule.";
-      toast({ title: "Agendamento bloqueado", description: msg, variant: "destructive" });
+      const errorCode = err?.response?.data?.error_code;
+      const { variant, title } = getBookingErrorDisplay(errorCode, "Agendamento bloqueado");
+      toast({ title, description: msg, variant });
     } finally { setBooking(false); }
   };
 
