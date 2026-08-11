@@ -45,7 +45,10 @@ export async function acquireFirstWeekLock(base44, studentId, sp) {
   const myPendingValue = `__pending__:${casLockToken}`;
   const casCondition = isPending
     ? { user_id: studentId, first_week_lesson_id: existingLock }
-    : { user_id: studentId, first_week_lesson_id: { $exists: false } };
+    : { user_id: studentId, $or: [
+        { first_week_lesson_id: null },
+        { first_week_lesson_id: { $exists: false } },
+      ] };
 
   const casResult = await base44.asServiceRole.entities.StudentProfile.updateMany(
     casCondition,
