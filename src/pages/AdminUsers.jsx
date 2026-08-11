@@ -332,6 +332,15 @@ export default function AdminUsers() {
               {filteredStudents.map(s => {
                 const planKey = s.plan || "free";
                 const planColor = PLAN_COLORS[planKey] || PLAN_COLORS.free;
+
+                // Indicadores de assinatura visíveis direto no card
+                const subStartDate = s.subscription_start_date ? new Date(s.subscription_start_date) : null;
+                const isInGuaranteePeriod = subStartDate &&
+                  (Date.now() - subStartDate.getTime()) < 7 * 24 * 60 * 60 * 1000;
+                const isCancelled = s.subscription_status === "cancelled";
+                const subDateFormatted = subStartDate
+                  ? subStartDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+                  : null;
                 return (
                   <div
                     key={s.id}
@@ -345,10 +354,25 @@ export default function AdminUsers() {
                         <p className="text-xs text-gray-500 truncate">
                           {users[s.user_id]?.email || "—"}
                         </p>
+                        {subDateFormatted && (
+                          <p className="text-[11px] text-gray-600 truncate">
+                            Assinou em {subDateFormatted}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-xs text-gray-400 hidden sm:inline">{s.credits_minutes ?? 0} min</span>
+                      {isInGuaranteePeriod && (
+                        <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-orange-500/10 border-orange-500/20 text-orange-400">
+                          🔒 Garantia 7 dias
+                        </span>
+                      )}
+                      {isCancelled && (
+                        <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-gray-500/10 border-gray-500/20 text-gray-400">
+                          Cancelada
+                        </span>
+                      )}
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium border capitalize ${planColor}`}>
                         {planKey}
                       </span>
