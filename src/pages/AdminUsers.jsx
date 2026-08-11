@@ -386,7 +386,7 @@ export default function AdminUsers() {
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
-                            if (!confirm(`Desbloquear a primeira semana de ${s.full_name}? Isso permite que ele agende/inicie outra aula antes dos 7 dias terminarem.`)) return;
+                            if (!confirm(`Desbloquear a primeira semana de ${s.full_name}?\n\nIsso CANCELA qualquer aula agendada dentro dos primeiros 7 dias e limpa o cadeado, permitindo agendar/iniciar uma nova aula imediatamente.`)) return;
                             const res = await base44.functions.invoke("adminUnlockFirstWeek", { student_profile_id: s.id });
                             if (res.data?.error) { toast({ title: "Erro", description: res.data.error, variant: "destructive" }); return; }
                             setStudents(prev => prev.map(x => x.id === s.id ? { ...x, first_week_lesson_id: null } : x));

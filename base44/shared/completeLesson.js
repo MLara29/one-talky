@@ -90,5 +90,22 @@ export async function completeLesson(base44, lesson, { isRecorded = false, ended
     });
   }
 
+  // ── Liberar o cadeado da primeira semana se a aula terminou incompleta ──
+  // (qualquer motivo de encerramento: botão, timeout, término natural).
+  // Só destrava se a aula foi a que travava o lock E durou menos que o tempo
+  // completo esperado — aula legítima de 30 min mantém o lock (regra de negócio).
+  const FULL_FIRST_WEEK_DURATION = 30; // minutos completos esperados
+
+  const sp = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: lesson.student_id });
+  if (sp[0]?.first_week_lesson_id === lesson.id) {
+    const actualDuration = Math.round(durationMinutes);
+    if (actualDuration < FULL_FIRST_WEEK_DURATION) {
+      await base44.asServiceRole.entities.StudentProfile.update(sp[0].id, {
+        first_week_lesson_id: null,
+      });
+      console.log(`[completeLesson] Released first-week lock for student=${lesson.student_id} (incomplete lesson=${lesson.id}, only ${actualDuration}min)`);
+    }
+  }
+
   return { alreadyCompleted: false, durationMinutes, flagged };
 }

@@ -17,6 +17,27 @@ Deno.serve(async (req) => {
     const { student_profile_id } = await req.json();
     if (!student_profile_id) return Response.json({ error: 'student_profile_id required' }, { status: 400 });
 
+    const profiles = await base44.asServiceRole.entities.StudentProfile.filter({ id: student_profile_id });
+    const sp = profiles[0];
+    if (!sp) return Response.json({ error: 'Aluno não encontrado' }, { status: 404 });
+
+    // Cancelar qualquer aula "scheduled" dentro da janela de 7 dias da
+    // primeira semana, para não deixar resíduo conflitante ao destravar.
+    const subStartDate = sp.subscription_start_date ? new Date(sp.subscription_start_date) : null;
+    if (subStartDate) {
+      const sevenDaysAfter = new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const conflictingLessons = await base44.asServiceRole.entities.Lesson.filter({
+        student_id: sp.user_id, status: 'scheduled',
+      });
+      for (const l of conflictingLessons) {
+        const lessonDate = new Date(l.scheduled_at);
+        if (lessonDate >= subStartDate && lessonDate < sevenDaysAfter) {
+          await base44.asServiceRole.entities.Lesson.update(l.id, { status: 'cancelled' });
+          console.log(`[adminUnlockFirstWeek] Cancelled conflicting scheduled lesson=${l.id} for student=${sp.user_id}`);
+        }
+      }
+    }
+
     await base44.asServiceRole.entities.StudentProfile.update(student_profile_id, {
       first_week_lesson_id: null,
       first_week_lock_at: null,
