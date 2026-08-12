@@ -74,6 +74,25 @@ const sections = [
     ),
   },
   {
+    title: "4.1 Warranty Period (First 7 Days)",
+    content: (
+      <>
+        <p>
+          Under Article 49 of the Brazilian Consumer Protection Code (Código de Defesa do Consumidor), you have the right to withdraw from the subscription within <strong>7 calendar days</strong> of purchase, without needing to provide a reason, with a right to a full refund of the amount paid.
+        </p>
+        <p style={{ marginTop: 10 }}>
+          To enable this right in a balanced way, during the first 7 days of the subscription:
+        </p>
+        <ul style={{ marginTop: 10, paddingLeft: 20 }}>
+          <li>You may schedule <strong>only 1 lesson, of 30 minutes</strong>, regardless of the plan purchased. Additional lessons only become available starting on the <strong>8th day</strong> of the subscription.</li>
+          <li>During this 7-day period, the <strong>instant lesson</strong> feature is unavailable — the only lesson format allowed is the single scheduled lesson mentioned above. Instant lessons become available again starting on the <strong>8th day</strong> of the subscription.</li>
+          <li>If you cancel the subscription within this 7-day period, the amount paid will be fully refunded, and the plan's credit minutes (used or not) will be <strong>extinguished immediately</strong> upon cancellation — unlike cancellation after this period, which keeps remaining minutes available for up to 60 additional days (see Section 4 above).</li>
+          <li>Credits purchased separately (prepaid minute packages) are not affected by this rule, and follow their own 60-day validity period from the date of purchase.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
     title: "5. Zero Tolerance — Conduct in Video Rooms",
     content: (
       <>
