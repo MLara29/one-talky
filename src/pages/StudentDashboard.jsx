@@ -28,9 +28,15 @@ export default function StudentDashboard() {
   useEffect(() => {
     const unsubTutor = base44.entities.TutorProfile.subscribe((event) => {
       if (event.type === 'update') {
-        setTutors(prev => prev.map(t => t.id === event.data.id ? { ...t, ...event.data } : t));
+        setTutors(prev =>
+          prev
+            .map(t => t.id === event.data.id ? { ...t, ...event.data } : t)
+            .filter(t => Boolean(t.photo_url))
+        );
       } else if (event.type === 'create') {
-        setTutors(prev => [...prev, event.data]);
+        if (event.data.photo_url) {
+          setTutors(prev => [...prev, event.data]);
+        }
       } else if (event.type === 'delete') {
         setTutors(prev => prev.filter(t => t.id !== event.data.id));
       }
@@ -38,7 +44,7 @@ export default function StudentDashboard() {
     // When a new review is created, reload tutor list so ratings refresh
     const unsubReview = base44.entities.Review.subscribe((event) => {
       if (event.type === 'create' || event.type === 'update') {
-        base44.entities.TutorProfile.filter({ status: "approved" }).then(data => setTutors(data)).catch(() => {});
+        base44.entities.TutorProfile.filter({ status: "approved" }).then(data => setTutors(data.filter(t => Boolean(t.photo_url)))).catch(() => {});
       }
     });
     return () => { unsubTutor(); unsubReview(); };
@@ -57,7 +63,7 @@ export default function StudentDashboard() {
         base44.entities.TutorProfile.filter({ status: "approved" }),
         base44.entities.StudentProfile.filter({ user_id: user?.id }),
       ]);
-      setTutors(data);
+      setTutors(data.filter(t => Boolean(t.photo_url)));
       if (profiles.length > 0) setProfile(profiles[0]);
     } catch { setTutors([]); } finally { setLoading(false); }
   };
@@ -66,7 +72,7 @@ export default function StudentDashboard() {
     setLoading(true);
     try {
       const data = await base44.entities.TutorProfile.filter({ status: "approved" });
-      setTutors(data);
+      setTutors(data.filter(t => Boolean(t.photo_url)));
     } catch { setTutors([]); } finally { setLoading(false); }
   };
 
