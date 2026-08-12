@@ -21,7 +21,7 @@ const sections = [
           As aulas na One Talky são contabilizadas em minutos em tempo real, medidos automaticamente pela infraestrutura de vídeo da <strong>Agora.io</strong>. O consumo começa no momento em que a conexão de vídeo é estabelecida entre aluno e tutor e encerra no momento do desligamento.
         </p>
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
-          <li>Os minutos incluídos em cada plano mensal têm <strong>validade de 60 dias</strong> a partir da data de ativação do plano.</li>
+          <li>Os minutos incluídos em cada plano mensal têm <strong>validade de 30 dias</strong> a partir da data de ativação do plano.</li>
           <li>Minutos não utilizados dentro desse período <strong>expiram e não acumulam</strong> para o ciclo seguinte.</li>
           <li>O saldo de minutos disponível pode ser consultado a qualquer momento no painel do aluno.</li>
         </ul>
@@ -86,8 +86,8 @@ const sections = [
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
           <li>Você pode agendar <strong>apenas 1 aula, de 30 minutos</strong>, independentemente do plano contratado. Aulas adicionais só ficam disponíveis a partir do <strong>8º dia</strong> da assinatura.</li>
           <li>Durante esse período de 7 dias, a funcionalidade de <strong>aula instantânea</strong> fica indisponível — o único formato de aula permitido é o agendamento da aula única mencionada acima. A aula instantânea volta a ficar disponível a partir do <strong>8º dia</strong> da assinatura.</li>
-          <li>Caso você cancele a assinatura dentro desse período de 7 dias, o valor pago será integralmente reembolsado, e os minutos de crédito do plano (usados ou não) serão <strong>extintos imediatamente</strong> no momento do cancelamento — diferente do cancelamento após esse período, que mantém os minutos restantes disponíveis por até 60 dias adicionais (ver Seção 4 acima).</li>
-          <li>Créditos comprados avulsamente (pacotes de minutos pré-pagos) não são afetados por essa regra, seguindo sua própria validade de 60 dias a partir da compra.</li>
+          <li>Caso você cancele a assinatura dentro desse período de 7 dias, o valor pago será integralmente reembolsado, e os minutos de crédito do plano (usados ou não) serão <strong>extintos imediatamente</strong> no momento do cancelamento — diferente do cancelamento após esse período, que mantém os minutos restantes disponíveis por até 30 dias adicionais (ver Seção 4 acima).</li>
+          <li>Créditos comprados avulsamente (pacotes de minutos pré-pagos) não são afetados por essa regra, seguindo sua própria validade de 30 dias a partir da compra.</li>
         </ul>
       </>
     ),

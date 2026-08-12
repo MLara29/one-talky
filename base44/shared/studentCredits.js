@@ -7,8 +7,8 @@
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const PREPAID_EXPIRY_DAYS = 60;
-const PLAN_GRACE_EXPIRY_DAYS = 60;
+const PREPAID_EXPIRY_DAYS = 30;
+const PLAN_GRACE_EXPIRY_DAYS = 30;
 
 // Discount type → number of billing cycles the discount applies for.
 const DISCOUNT_CYCLES_BY_TYPE = {

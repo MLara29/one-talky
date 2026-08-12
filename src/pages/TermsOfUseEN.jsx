@@ -21,7 +21,7 @@ const sections = [
           Lessons on One Talky are counted in minutes in real time, measured automatically by the <strong>Agora.io</strong> video infrastructure. Consumption begins at the moment the video connection is established between student and tutor and ends at the moment of disconnection.
         </p>
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
-          <li>The minutes included in each monthly plan are <strong>valid for 60 days</strong> from the plan activation date.</li>
+          <li>The minutes included in each monthly plan are <strong>valid for 30 days</strong> from the plan activation date.</li>
           <li>Unused minutes within that period <strong>expire and do not carry over</strong> to the next cycle.</li>
           <li>The available minute balance can be checked at any time in the student dashboard.</li>
         </ul>
@@ -86,8 +86,8 @@ const sections = [
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
           <li>You may schedule <strong>only 1 lesson, of 30 minutes</strong>, regardless of the plan purchased. Additional lessons only become available starting on the <strong>8th day</strong> of the subscription.</li>
           <li>During this 7-day period, the <strong>instant lesson</strong> feature is unavailable — the only lesson format allowed is the single scheduled lesson mentioned above. Instant lessons become available again starting on the <strong>8th day</strong> of the subscription.</li>
-          <li>If you cancel the subscription within this 7-day period, the amount paid will be fully refunded, and the plan's credit minutes (used or not) will be <strong>extinguished immediately</strong> upon cancellation — unlike cancellation after this period, which keeps remaining minutes available for up to 60 additional days (see Section 4 above).</li>
-          <li>Credits purchased separately (prepaid minute packages) are not affected by this rule, and follow their own 60-day validity period from the date of purchase.</li>
+          <li>If you cancel the subscription within this 7-day period, the amount paid will be fully refunded, and the plan's credit minutes (used or not) will be <strong>extinguished immediately</strong> upon cancellation — unlike cancellation after this period, which keeps remaining minutes available for up to 30 additional days (see Section 4 above).</li>
+          <li>Credits purchased separately (prepaid minute packages) are not affected by this rule, and follow their own 30-day validity period from the date of purchase.</li>
         </ul>
       </>
     ),

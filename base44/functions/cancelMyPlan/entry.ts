@@ -1,6 +1,7 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { secrets } from "base44:runtime";
 import { requireNotBlocked } from "../../shared/requireNotBlocked.js";
+import { getPlanGraceExpiryDays } from "../../shared/studentCredits.js";
 
 // Cancels the student's paid plan.
 // - Stripe subscriptions: calls the Stripe API to cancel the real subscription.
@@ -139,7 +140,7 @@ Deno.serve(async (req) => {
         cancelled_within_guarantee: true,
       });
     } else {
-      const mpGraceExpiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+      const mpGraceExpiresAt = new Date(Date.now() + getPlanGraceExpiryDays() * 24 * 60 * 60 * 1000).toISOString();
       await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
         plan: "free",
         subscription_status: "cancelled",

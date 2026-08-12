@@ -2,7 +2,7 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { secrets } from "base44:runtime";
 import { CATALOG } from "../../shared/paymentCatalog.js";
 import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
-import { computeCreditUpdate } from "../../shared/studentCredits.js";
+import { computeCreditUpdate, getPlanGraceExpiryDays } from "../../shared/studentCredits.js";
 import { getFinanceSettings } from "../../shared/financeSettings.js";
 
 // Stripe webhook — receives ALL Stripe events.
@@ -415,7 +415,7 @@ async function handleSubscriptionDeleted(base44, subscription) {
     // Set grace period for plan credits (60 days from now). The subscription's
     // current_period_end may be different — that controls scheduling access, while
     // plan_credits_grace_expires_at controls when the plan credits are zeroed.
-    const planGraceExpiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+    const planGraceExpiresAt = new Date(Date.now() + getPlanGraceExpiryDays() * 24 * 60 * 60 * 1000).toISOString();
     await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
       subscription_status: "cancelled",
       subscription_valid_until: validUntil,
