@@ -31,7 +31,21 @@ Deno.serve(async (req) => {
       // (incomplete lesson < 30min releases it), so no duplicated logic here.
     }
 
-    return Response.json({ success: true, checked: inProgress.length, completed });
+    // Safety net: reset any tutor stuck with in_lesson=true but no in_progress
+    // lesson. Catches tutors whose completeLesson tutor-update failed
+    // transiently or whose completion raced — would otherwise stay "busy" forever.
+    let tutorsReset = 0;
+    const stuckTutors = await base44.asServiceRole.entities.TutorProfile.filter({ in_lesson: true });
+    for (const t of stuckTutors) {
+      const active = await base44.asServiceRole.entities.Lesson.filter({ tutor_id: t.user_id, status: 'in_progress' });
+      if (active.length === 0) {
+        await base44.asServiceRole.entities.TutorProfile.update(t.id, { in_lesson: false });
+        tutorsReset++;
+        console.log(`[timeoutStaleLessons] Reset stuck in_lesson for tutor=${t.user_id}`);
+      }
+    }
+
+    return Response.json({ success: true, checked: inProgress.length, completed, tutorsReset });
   } catch (error) {
     console.error('[timeoutStaleLessons]', error.message);
     return Response.json({ error: 'Erro interno do servidor' }, { status: 500 });

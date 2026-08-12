@@ -46,6 +46,19 @@ export async function completeLesson(base44, lesson, { isRecorded = false, ended
   );
 
   if (completionCas.updated === 0) {
+    // Self-heal: se perdemos a race de completion, o vencedor deveria ter
+    // resetado in_lesson — mas se o update dele falhou, o tutor fica travado.
+    // Garante que o tutor não fique marcado in_lesson se não há aula ativa.
+    const otherActive = await base44.asServiceRole.entities.Lesson.filter({
+      tutor_id: lesson.tutor_id, status: 'in_progress',
+    });
+    if (otherActive.length === 0) {
+      const tpList = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
+      if (tpList[0]?.in_lesson) {
+        await base44.asServiceRole.entities.TutorProfile.update(tpList[0].id, { in_lesson: false });
+        console.log(`[completeLesson] Self-healed stuck in_lesson for tutor=${lesson.tutor_id}`);
+      }
+    }
     return { alreadyCompleted: true };
   }
 
