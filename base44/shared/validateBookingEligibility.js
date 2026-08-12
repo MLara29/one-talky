@@ -125,6 +125,9 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
       const existingLessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: studentId });
       const windowLessons = existingLessons.filter(l => {
         if (l.status === "cancelled") return false;
+        // Aulas completadas incompletas (<30 min) tiveram o cadeado da primeira
+        // semana liberado por completeLesson — não contam contra o limite.
+        if (l.status === "completed" && (l.duration_minutes || 0) < 30) return false;
         const rawDate = l.scheduled_at || l.started_at || l.created_date;
         const normalizedDate = rawDate && !rawDate.endsWith("Z") && !rawDate.includes("+")
           ? rawDate + "Z"
