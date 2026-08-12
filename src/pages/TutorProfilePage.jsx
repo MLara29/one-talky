@@ -8,6 +8,7 @@ import { getCountryFlag, getLanguageLabel, REDIRECT_TO_PLANS_ERROR_CODES } from 
 import CountryFlagImg from "@/components/shared/CountryFlagImg";
 import { useToast } from "@/components/ui/use-toast";
 import ScheduleModal from "@/components/tutors/ScheduleModal";
+import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 
 const FRIENDLY_WARNING_CODES = ["insufficient_credits_for_booking", "first_week_limit"];
 
@@ -32,6 +33,7 @@ export default function TutorProfilePage() {
   const [booking, setBooking] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [inLesson, setInLesson] = useState(false);
+  const [studentProfile, setStudentProfile] = useState(null);
 
   const ONLINE_THRESHOLD_MS = 90 * 1000;
   const isOnline = (t) => t?.last_seen && (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
@@ -46,6 +48,10 @@ export default function TutorProfilePage() {
       const r = await base44.entities.Review.filter({ tutor_id: t.user_id, is_visible: true });
       setReviews(r);
       setInLesson(Boolean(t.in_lesson));
+      if (user?.role === "student") {
+        const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+        if (profiles.length > 0) setStudentProfile(profiles[0]);
+      }
     } catch {} finally { setLoading(false); }
   };
 
@@ -138,6 +144,8 @@ export default function TutorProfilePage() {
 
   if (!tutor) return <div className="theme-subtext text-center py-24 text-gray-500">Tutor not found</div>;
 
+  const showLessonNow = isLive(tutor) && !inLesson && !isFirstWeekActive(studentProfile);
+
   return (
     <div className="max-w-3xl mx-auto">
       <button
@@ -228,7 +236,7 @@ export default function TutorProfilePage() {
 
         {/* Action buttons */}
         <div className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row gap-3">
-          {isLive(tutor) && !inLesson && (
+          {showLessonNow && (
             <Button
               onClick={startInstantLesson} disabled={booking}
               className="flex-1 h-12 rounded-2xl border-0 shadow-lg transition-all bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-emerald-500/20 hover:scale-105"
@@ -240,7 +248,7 @@ export default function TutorProfilePage() {
           <Button
             onClick={async () => { if (await checkCredits()) setShowSchedule(true); }} disabled={booking}
             className={`flex-1 h-12 rounded-2xl border-0 transition-all hover:scale-105 shadow-lg ${
-              isLive(tutor)
+              showLessonNow
                 ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
                 : "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/20"
             }`}

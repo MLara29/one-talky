@@ -95,11 +95,12 @@ function translateTopic(topic, lang) {
   return TOPIC_TRANSLATIONS[lang]?.[topic] || topic;
 }
 
-export default function TutorCard({ tutor, forceEnglishTopics = false }) {
+export default function TutorCard({ tutor, forceEnglishTopics = false, firstWeekActive = false }) {
   const live = isLive(tutor);
   const online = isOnline(tutor);
   const canSchedule = hasSchedule(tutor);
   const inLesson = Boolean(tutor.in_lesson);
+  const showLessonNow = live && !inLesson && !firstWeekActive;
   const [booking, setBooking] = useState(false);
   const { lang } = useLang();
   const { user } = useAuth();
@@ -219,9 +220,9 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
         )}
 
         {/* Action buttons */}
-        {(live || canSchedule) && (
+        {(showLessonNow || canSchedule) && (
           <div className="mt-4 flex gap-2" style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: "14px" }}>
-            {live && !inLesson && (
+            {showLessonNow && (
               <button
                 onClick={handleLessonNow}
                 disabled={booking}
@@ -235,13 +236,13 @@ export default function TutorCard({ tutor, forceEnglishTopics = false }) {
               <button
                 onClick={handleSchedule}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold transition-all hover:scale-105 shadow-lg ${
-                  live && !inLesson
+                  showLessonNow
                     ? "bg-white/10 hover:bg-white/15 text-white border border-white/10"
                     : "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/20"
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
-                {live && !inLesson ? "Schedule" : "Schedule a lesson"}
+                {showLessonNow ? "Schedule" : "Schedule a lesson"}
               </button>
             )}
           </div>

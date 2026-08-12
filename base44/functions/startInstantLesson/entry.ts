@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { validateBookingEligibility } from '../../shared/validateBookingEligibility.js';
 import { requireNotBlocked } from '../../shared/requireNotBlocked.js';
-import { acquireFirstWeekLock, rollbackFirstWeekLock, commitFirstWeekLock } from '../../shared/firstWeekLock.js';
+import { isFirstWeekWindow, acquireFirstWeekLock, rollbackFirstWeekLock, commitFirstWeekLock } from '../../shared/firstWeekLock.js';
 
 // Minimum billable balance required to start an instant lesson — the same
 // server-side gate real bookings get, so a near-zero client-reported balance
@@ -43,6 +43,26 @@ export default async function(req) {
     const blockedGate = await requireNotBlocked(base44, user.id);
     if (!blockedGate.ok) return Response.json({ error: blockedGate.error }, { status: blockedGate.status });
 
+    // ── Fetch student profile once, reused by the checks below ──────────────────
+    const spProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: user.id });
+    const sp = spProfiles[0];
+
+    // ── First-week instant block: during the first 7 days of cycle 1, instant
+    //    lessons are fully blocked — the student can only use the 1 scheduled
+    //    30-min lesson that bookSlot already enforces. Instant lessons have no
+    //    fixed duration, so allowing them would break the financial guarantee
+    //    the first-week rule exists to protect. ────────────────────────────────
+    if (isFirstWeekWindow(sp)) {
+      const subStartDate = new Date(sp.subscription_start_date);
+      const unlockDate = new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+        .toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+      console.log(`[startInstantLesson] REJECTED student=${user.id} reason=first_week_instant_blocked unlock=${unlockDate}`);
+      return Response.json({
+        error_code: "first_week_instant_blocked",
+        error: `Aulas instantâneas ficam disponíveis a partir do dia ${unlockDate}. Nos primeiros 7 dias você pode agendar 1 aula de 30 minutos.`,
+      }, { status: 403 });
+    }
+
     // ── RULE 1: Subscription / first-week eligibility (same rule as bookSlot) ──
     const nowIso = new Date().toISOString();
     const eligibility = await validateBookingEligibility(base44, user.id, nowIso, FIRST_WEEK_DURATION_MINUTES);
@@ -52,8 +72,6 @@ export default async function(req) {
     }
 
     // ── RULE 2: Real credit balance (server-side, never trust the client) ──────
-    const spProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: user.id });
-    const sp = spProfiles[0];
     const credits = (sp?.plan_credits_minutes || 0) + (sp?.prepaid_credits_minutes || 0);
     if (credits < MIN_CREDIT_MINUTES) {
       return Response.json({

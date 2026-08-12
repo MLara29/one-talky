@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import TutorCard from "@/components/tutors/TutorCard";
 import CreditsBanner from "@/components/student/CreditsBanner";
 import SupportModal from "@/components/support/SupportModal";
+import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -163,7 +164,7 @@ export default function StudentDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
-          {filtered.map(t => <TutorCard key={t.id} tutor={t} />)}
+          {filtered.map(t => <TutorCard key={t.id} tutor={t} firstWeekActive={isFirstWeekActive(profile)} />)}
         </div>
       )}
     </div>
