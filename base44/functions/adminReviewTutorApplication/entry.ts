@@ -27,6 +27,15 @@ Deno.serve(async (req) => {
 
     if (decision === 'approved' && tutor.user_id) {
       await grantRole(base44, tutor.user_id, 'tutor');
+
+      await base44.asServiceRole.entities.Notification.create({
+        user_id: tutor.user_id,
+        title: '🎉 Welcome to the One Talky team!',
+        message: `Congrats, your profile has been approved! Before you start receiving students, keep two things in mind: 1) Profiles without a photo do not appear in student search results — if you haven't added one yet, it's required to be visible on the platform. 2) We also recommend recording a short intro video (2 minutes max) talking about your experience and what you enjoy teaching — it helps build trust and increases your chances of getting booked. You can add both in your Profile (the person icon in the top-right corner).`,
+        type: 'tutor_approved',
+        is_read: false,
+        link: '/profile',
+      });
     }
 
     return Response.json({ success: true });
