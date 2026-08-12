@@ -25,6 +25,18 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.Lesson.update(lesson_id, { status: "cancelled" });
 
+    // ── Liberar o cadeado da primeira semana se a aula cancelada era a que
+    // travava o lock — permite que o aluno agende/inicie outra aula no lugar.
+    const studentProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: lesson.student_id });
+    const sp = studentProfiles[0];
+    if (sp?.first_week_lesson_id === lesson_id) {
+      await base44.asServiceRole.entities.StudentProfile.update(sp.id, {
+        first_week_lesson_id: null,
+        first_week_lock_at: null,
+      });
+      console.log(`[cancelLesson] Released first-week lock for student=${lesson.student_id} (cancelled lesson=${lesson_id})`);
+    }
+
     // Release the booked slot on the tutor's profile
     if (lesson.scheduled_at) {
       const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
