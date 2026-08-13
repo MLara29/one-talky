@@ -398,7 +398,28 @@ export default function Classroom() {
       if (mediaType === "video") setRemoteTrack(null);
     });
 
-    client.on("user-joined", () => setRemoteUserPresent(true));
+    client.on("user-joined", async () => {
+      setRemoteUserPresent(true);
+
+      // Silent republish: when the remote participant joins, re-publish our
+      // local video track so they receive it. Fixes the common case where the
+      // student joined first and the tutor — arriving later — can't see the
+      // student's video even though the student sees the tutor fine.
+      // The camera button state (cameraOn) is never touched, so the student
+      // does not see any toggle happen — it's completely silent.
+      if (localVideoTrackRef.current && clientRef.current) {
+        try {
+          const track = localVideoTrackRef.current;
+          await clientRef.current.unpublish(track);
+          await new Promise(r => setTimeout(r, 300));
+          await clientRef.current.publish(track);
+          if (localVideoDiv.current) track.play(localVideoDiv.current);
+          console.log(`[Agora] silent republish on remote-join (role=${user?.role})`);
+        } catch (e) {
+          console.error("[Agora] silent republish on remote-join failed:", e);
+        }
+      }
+    });
 
     client.on("user-left", () => {
       setRemoteTrack(null);
