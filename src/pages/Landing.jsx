@@ -5,6 +5,7 @@ const ACCENT = "#F26A1B";
 
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
+import { Image } from "@/components/ui/image";
 
 const CONTENT = {
   pt: {
@@ -341,10 +342,12 @@ export default function Landing() {
           <div className="ot-hero-card" style={{ position: "relative", width: 300, borderRadius: 26, overflow: "hidden", boxShadow: "0 34px 64px -24px rgba(23,24,28,.34)", border: "5px solid #fff", background: "#fff", zIndex: 2 }}>
             {/* Photo */}
             <div style={{ position: "relative", aspectRatio: "1/1", overflow: "hidden" }}>
-              <img
-                src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/7144b090a_lucid-origin_cira_a_fot_de_uma_pessoa_em_uma_video_chamada_um_tutor_que_ensina_ingles_uma_mul-0.jpg"
+              <Image
+                src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/98ee9a0d6_IMG_0106.HEIC"
                 alt="English tutor"
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                fittingType="fill"
+                className="w-full h-full"
+                style={{ display: "block" }}
               />
               {/* EN badge top-left */}
               <div style={{ position: "absolute", top: 12, left: 12, display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", borderRadius: 999, padding: "5px 10px", fontSize: 12, fontWeight: 700, color: "#17181C" }}>
