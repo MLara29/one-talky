@@ -37,8 +37,20 @@ export default function useInactivityLogout(role) {
       markActivity();
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        localStorage.removeItem(LAST_ACTIVITY_KEY);
-        base44.auth.logout("/login");
+        // Mark tutor offline BEFORE clearing the token — same reason as
+        // AppLayout.handleLogout. The updateMyProfile call needs a valid
+        // token; base44.auth.logout invalidates it immediately.
+        const doLogout = () => {
+          localStorage.removeItem(LAST_ACTIVITY_KEY);
+          base44.auth.logout("/login");
+        };
+        if (role === "tutor") {
+          base44.functions.invoke('updateMyProfile', {
+            updates: { last_seen: new Date(0).toISOString(), is_available_now: false }
+          }).catch(() => {}).then(doLogout);
+        } else {
+          doLogout();
+        }
       }, timeout);
     };
 

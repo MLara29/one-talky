@@ -10,6 +10,7 @@ import { LEGAL_VERSIONS } from "@/lib/legalVersions";
 
 import { Button } from "@/components/ui/button";
 import useInactivityLogout, { LAST_ACTIVITY_KEY } from "@/hooks/useInactivityLogout";
+import { appParams } from "@/lib/app-params";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import NotificationBell from "@/components/NotificationBell";
 import SupportBadge, { useUnreadSupportCount } from "@/components/SupportBadge";
@@ -145,6 +146,33 @@ export default function AppLayout() {
     }).catch(() => {});
   }, [role, user?.id]);
 
+  // Tab/window close: fire a keepalive fetch to mark the tutor offline
+  // before the page unloads. The AuthContext cleanup on unmount tries this
+  // too, but its axios request can be cancelled mid-flight when the browser
+  // tears down the page. fetch with keepalive:true is guaranteed to be sent.
+  useEffect(() => {
+    if (role !== "tutor") return;
+    const handlePageHide = () => {
+      const token = localStorage.getItem("base44_access_token");
+      if (!token) return;
+      try {
+        fetch(`/api/apps/${appParams.appId}/functions/updateMyProfile`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            updates: { last_seen: new Date(0).toISOString(), is_available_now: false },
+          }),
+          keepalive: true,
+        }).catch(() => {});
+      } catch {}
+    };
+    window.addEventListener("pagehide", handlePageHide);
+    return () => window.removeEventListener("pagehide", handlePageHide);
+  }, [role]);
+
   const nav = role === "admin" ? ADMIN_NAV
     : role === "tutor" ? TUTOR_NAV
     : role === "affiliate" ? AFFILIATE_NAV
@@ -192,7 +220,17 @@ export default function AppLayout() {
     return <TutorAgreementGate onAccepted={() => window.location.reload()} />;
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Mark tutor offline BEFORE clearing the auth token — once
+    // base44.auth.logout runs, the token is gone and any profile update
+    // would fail with 401, leaving the tutor stuck "online" for students.
+    if (role === "tutor") {
+      try {
+        await base44.functions.invoke('updateMyProfile', {
+          updates: { last_seen: new Date(0).toISOString(), is_available_now: false }
+        });
+      } catch {}
+    }
     localStorage.removeItem(LAST_ACTIVITY_KEY);
     base44.auth.logout("/");
   };
