@@ -2,6 +2,50 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.38";
 import { secrets } from "base44:runtime";
 import { requireNotBlocked } from "../../shared/requireNotBlocked.js";
 import { getPlanGraceExpiryDays } from "../../shared/studentCredits.js";
+import { normalizeSlot } from "../../shared/slotUtils.js";
+
+async function cancelFutureScheduledLessons(base44, studentId) {
+  try {
+    const scheduledLessons = await base44.asServiceRole.entities.Lesson.filter({
+      student_id: studentId,
+      status: "scheduled",
+    });
+    for (const lesson of scheduledLessons) {
+      await base44.asServiceRole.entities.Lesson.update(lesson.id, { status: "cancelled" });
+
+      if (lesson.scheduled_at) {
+        try {
+          const tutorProfiles = await base44.asServiceRole.entities.TutorProfile.filter({ user_id: lesson.tutor_id });
+          const tutorProfile = tutorProfiles[0];
+          if (tutorProfile) {
+            const normalizedTarget = normalizeSlot(lesson.scheduled_at);
+            const updatedSlots = (tutorProfile.booked_slots || []).filter(s => normalizeSlot(s) !== normalizedTarget);
+            await base44.asServiceRole.entities.TutorProfile.update(tutorProfile.id, { booked_slots: updatedSlots });
+          }
+        } catch (e) {
+          console.error("[cancelMyPlan] failed to release tutor slot for lesson", lesson.id, e.message);
+        }
+      }
+
+      try {
+        await base44.asServiceRole.entities.Notification.create({
+          user_id: lesson.tutor_id,
+          title: "Lesson cancelled — student left the platform",
+          message: `Your lesson with ${lesson.student_name || "a student"} scheduled for ${lesson.scheduled_at ? new Date(lesson.scheduled_at).toLocaleString("en-US") : "an upcoming date"} was cancelled because the student cancelled their subscription.`,
+          type: "general",
+          is_read: false,
+        });
+      } catch (e) {
+        console.error("[cancelMyPlan] failed to notify tutor for lesson", lesson.id, e.message);
+      }
+    }
+    if (scheduledLessons.length > 0) {
+      console.log(`[cancelMyPlan] Cancelled ${scheduledLessons.length} future scheduled lesson(s) for student=${studentId}`);
+    }
+  } catch (e) {
+    console.error("[cancelMyPlan] failed to cancel future scheduled lessons for student", studentId, e.message);
+  }
+}
 
 // Cancels the student's paid plan.
 // - Stripe subscriptions: calls the Stripe API to cancel the real subscription.
@@ -69,6 +113,8 @@ Deno.serve(async (req) => {
         );
       }
 
+      await cancelFutureScheduledLessons(base44, user.id);
+
       // ── Reembolso automático dentro da garantia de 7 dias ──────────────────
       // Zera os minutos do plano na hora e processa o reembolso na Stripe.
       // Se a chamada de reembolso falhar, o cancelamento em si não é
@@ -110,6 +156,8 @@ Deno.serve(async (req) => {
     // Dentro da garantia de 7 dias: zera minutos na hora + reembolso automático.
     // Fora da garantia: grace period de 60 dias (comportamento normal).
     // Prepaid credits são sempre intocados (independentes do plano).
+    await cancelFutureScheduledLessons(base44, user.id);
+
     if (isWithinGuarantee) {
       if (profile.mp_payment_id) {
         const mpAccessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");

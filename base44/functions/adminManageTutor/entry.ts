@@ -1,5 +1,62 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { requireOtp } from '../../shared/requireOtp.js';
+import { getTransporter, SMTP_FROM, sendMailAndLog } from '../../shared/mailer.js';
+
+async function handleTutorDeactivation(base44, tutor) {
+  const scheduledLessons = await base44.asServiceRole.entities.Lesson.filter({
+    tutor_id: tutor.user_id,
+    status: "scheduled",
+  });
+  if (scheduledLessons.length === 0) return;
+
+  const transporter = getTransporter();
+  const affectedList = [];
+
+  for (const lesson of scheduledLessons) {
+    await base44.asServiceRole.entities.Lesson.update(lesson.id, { status: "cancelled" });
+
+    try {
+      const studentUser = await base44.asServiceRole.entities.User.get(lesson.student_id);
+      if (studentUser?.email) {
+        await sendMailAndLog(base44, transporter, {
+          from: SMTP_FROM(),
+          to: studentUser.email,
+          subject: "Your tutor is no longer available on One Talky",
+          html: `<p>Hi ${lesson.student_name || ""},</p><p>Your tutor ${lesson.tutor_name || "your tutor"} is no longer part of the One Talky platform, so your lesson scheduled for ${lesson.scheduled_at ? new Date(lesson.scheduled_at).toLocaleString("en-US") : "an upcoming date"} has been cancelled.</p><p>Please browse our other tutors and book a new lesson — we're here to help you find a great match. Your credits remain available in your account.</p><p>The One Talky Team</p>`,
+          _sentBy: "system",
+        }, "tutor_deactivation");
+      }
+
+      await base44.asServiceRole.entities.Notification.create({
+        user_id: lesson.student_id,
+        title: "Your tutor is no longer available",
+        message: `${lesson.tutor_name || "Your tutor"} is no longer part of One Talky. Your lesson has been cancelled — please book a new tutor when you're ready.`,
+        type: "general",
+        is_read: false,
+      });
+
+      affectedList.push(`${lesson.student_name || "Student"} (${studentUser?.email || "no email"}) — lesson was ${lesson.scheduled_at ? new Date(lesson.scheduled_at).toLocaleString("en-US") : "unscheduled"}`);
+    } catch (e) {
+      console.error("[adminManageTutor] failed to notify student for lesson", lesson.id, e.message);
+    }
+  }
+
+  try {
+    const admins = await base44.asServiceRole.entities.User.filter({ role: "admin" });
+    for (const admin of admins) {
+      if (!admin.email) continue;
+      await sendMailAndLog(base44, transporter, {
+        from: SMTP_FROM(),
+        to: admin.email,
+        subject: `Tutor deactivated: ${scheduledLessons.length} lesson(s) need manual reassignment`,
+        html: `<p>Tutor ${tutor.display_name || tutor.full_name} was deactivated with ${scheduledLessons.length} upcoming lesson(s) cancelled.</p><ul>${affectedList.map(a => `<li>${a}</li>`).join("")}</ul><p>These students have been notified and need to be matched with a new tutor manually.</p>`,
+        _sentBy: "system",
+      }, "tutor_deactivation_admin_alert");
+    }
+  } catch (e) {
+    console.error("[adminManageTutor] failed to notify admins", e.message);
+  }
+}
 
 // Admin-only tutor profile moderation actions — all writes go through this
 // gated function instead of direct entity.update()/delete() calls from the client.
@@ -22,6 +79,7 @@ Deno.serve(async (req) => {
     if (!tutor) return Response.json({ error: 'Tutor not found' }, { status: 404 });
 
     if (action === 'delete') {
+      await handleTutorDeactivation(base44, tutor);
       await base44.asServiceRole.entities.TutorProfile.delete(tutor_id);
       return Response.json({ success: true, deleted: true });
     }
@@ -29,6 +87,9 @@ Deno.serve(async (req) => {
     if (action === 'toggle_block') {
       const newStatus = tutor.status === 'rejected' ? 'approved' : 'rejected';
       await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { status: newStatus });
+      if (newStatus === 'rejected') {
+        await handleTutorDeactivation(base44, tutor);
+      }
       return Response.json({ success: true, status: newStatus });
     }
 
