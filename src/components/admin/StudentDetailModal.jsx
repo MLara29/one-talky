@@ -30,6 +30,39 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
   const planLabel = student.plan || "free";
   const planColor = PLAN_COLORS[planLabel] || PLAN_COLORS.free;
 
+  const loadHistory = async () => {
+    if (transactions !== null) return; // já carregado, não busca de novo
+    setLoadingHistory(true);
+    try {
+      const [payments, events, lessonsData] = await Promise.all([
+        base44.entities.PaymentRecord.filter({ student_id: student.user_id }),
+        base44.entities.StudentAccountEvent.filter({ student_id: student.user_id }),
+        base44.entities.Lesson.filter({ student_id: student.user_id }),
+      ]);
+      const merged = [
+        ...payments.map(p => ({
+          date: p.created_at,
+          label: p.type === "plan" ? `Assinou plano (${p.reference || ""})` : `Comprou pacote avulso (${p.reference || ""})`,
+          amount: p.gross_amount,
+        })),
+        ...events.map(e => ({
+          date: e.created_at,
+          label: e.type === "plan_cancelled" ? `Cancelou plano — ${e.details || ""}` : `Reembolso emitido — ${e.details || ""}`,
+          amount: e.amount,
+        })),
+      ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 50);
+      const sortedLessons = [...lessonsData]
+        .sort((a, b) => new Date(b.scheduled_at || b.started_at || 0) - new Date(a.scheduled_at || a.started_at || 0))
+        .slice(0, 50);
+      setTransactions(merged);
+      setLessons(sortedLessons);
+    } catch (e) {
+      toast({ title: "Erro ao carregar histórico", description: e?.message, variant: "destructive" });
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
   const handleAddMinutes = async () => {
     const mins = parseInt(minutesToAdd);
     if (!mins || mins <= 0) {
