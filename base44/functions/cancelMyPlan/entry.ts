@@ -124,7 +124,25 @@ Deno.serve(async (req) => {
       let refundId = null;
 
       if (isWithinGuarantee) {
-        if (profile.stripe_payment_intent_id) {
+        let paymentIntentId = profile.stripe_payment_intent_id;
+
+        // Fallback: se o webhook de checkout nunca salvou o payment_intent_id
+        // (ex: assinaturas de teste, que o webhook ignora por design), busca
+        // direto na Stripe a partir da assinatura.
+        if (!paymentIntentId) {
+          try {
+            const subRes = await fetch(
+              `https://api.stripe.com/v1/subscriptions/${profile.stripe_subscription_id}?expand[]=latest_invoice.payment_intent`,
+              { headers: { Authorization: `Bearer ${secretKey}` } }
+            );
+            const subData = await subRes.json();
+            paymentIntentId = subData?.latest_invoice?.payment_intent?.id || null;
+          } catch (e) {
+            console.error("[cancelMyPlan] failed to fetch fallback payment_intent_id:", e.message);
+          }
+        }
+
+        if (paymentIntentId) {
           refundAttempted = true;
           try {
             const refundRes = await fetch("https://api.stripe.com/v1/refunds", {
@@ -133,7 +151,7 @@ Deno.serve(async (req) => {
                 Authorization: `Bearer ${secretKey}`,
                 "Content-Type": "application/x-www-form-urlencoded",
               },
-              body: `payment_intent=${encodeURIComponent(profile.stripe_payment_intent_id)}`,
+              body: `payment_intent=${encodeURIComponent(paymentIntentId)}`,
             });
             const refundData = await refundRes.json();
             if (!refundRes.ok) {

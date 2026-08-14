@@ -142,7 +142,7 @@ export default function Plans() {
         <p className="theme-subtext text-sm" style={{ color: "#5A5B66" }}>R$ 29,90 por 30 minutos · Sem fidelidade obrigatória</p>
         {profile && (
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-sm font-semibold" style={{ background: "rgba(242,106,27,0.10)", border: "1px solid rgba(242,106,27,0.25)", color: ACCENT }}>
-            <Clock className="w-4 h-4" /> {profile.credits_minutes || 0} minutos disponíveis
+            <Clock className="w-4 h-4" /> {Math.round((profile.plan_credits_minutes || 0) + (profile.prepaid_credits_minutes || 0))} minutos disponíveis
           </div>
         )}
       </div>
