@@ -175,6 +175,88 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
           )}
         </div>
 
+        {/* Histórico completo (expansível) */}
+        <div>
+          <button
+            onClick={() => {
+              const next = !showHistory;
+              setShowHistory(next);
+              if (next) loadHistory();
+            }}
+            className="w-full flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 py-2"
+          >
+            <span className="flex items-center gap-1.5"><History className="w-4 h-4" /> Histórico completo</span>
+            {showHistory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+
+          {showHistory && (
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setHistoryTab("transactions")}
+                  className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all ${
+                    historyTab === "transactions"
+                      ? "bg-violet-500/20 border-violet-500/40 text-violet-300"
+                      : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500"
+                  }`}
+                >
+                  Extrato financeiro
+                </button>
+                <button
+                  onClick={() => setHistoryTab("lessons")}
+                  className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all ${
+                    historyTab === "lessons"
+                      ? "bg-violet-500/20 border-violet-500/40 text-violet-300"
+                      : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-500"
+                  }`}
+                >
+                  Histórico de aulas
+                </button>
+              </div>
+
+              {loadingHistory ? (
+                <p className="text-xs text-gray-500 text-center py-4">Carregando...</p>
+              ) : historyTab === "transactions" ? (
+                <div className="max-h-64 overflow-y-auto space-y-1.5">
+                  {(transactions || []).length === 0 && (
+                    <p className="text-xs text-gray-500 text-center py-4">Nenhuma transação registrada.</p>
+                  )}
+                  {(transactions || []).map((t, i) => (
+                    <div key={i} className="flex justify-between items-start gap-2 text-xs bg-gray-100 dark:bg-white/5 rounded-lg px-3 py-2 border border-gray-200 dark:border-white/8">
+                      <div className="min-w-0">
+                        <p className="text-gray-900 dark:text-white">{t.label}</p>
+                        <p className="text-gray-500">{new Date(t.date).toLocaleString("pt-BR")}</p>
+                      </div>
+                      {t.amount ? (
+                        <span className="text-gray-700 dark:text-gray-300 font-medium shrink-0">R$ {Number(t.amount).toFixed(2)}</span>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="max-h-64 overflow-y-auto space-y-1.5">
+                  {(lessons || []).length === 0 && (
+                    <p className="text-xs text-gray-500 text-center py-4">Nenhuma aula registrada.</p>
+                  )}
+                  {(lessons || []).map(l => (
+                    <div key={l.id} className="text-xs bg-gray-100 dark:bg-white/5 rounded-lg px-3 py-2 border border-gray-200 dark:border-white/8">
+                      <div className="flex justify-between gap-2">
+                        <p className="text-gray-900 dark:text-white">Aula com {l.tutor_name || "tutor"} · {l.duration_minutes || 0} min</p>
+                        <span className="text-gray-500 capitalize shrink-0">{l.status}</span>
+                      </div>
+                      <p className="text-gray-500">
+                        {l.scheduled_at ? new Date(l.scheduled_at).toLocaleString("pt-BR") : "—"}
+                        {l.student_joined_at && ` · entrou ${new Date(l.student_joined_at).toLocaleTimeString("pt-BR")}`}
+                        {l.ended_at && ` · saiu ${new Date(l.ended_at).toLocaleTimeString("pt-BR")}`}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Add minutes */}
         <div className="space-y-2">
           <Label className="text-gray-700 dark:text-gray-300 text-sm">Adicionar minutos</Label>
