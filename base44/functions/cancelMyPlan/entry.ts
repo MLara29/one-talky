@@ -149,7 +149,15 @@ Deno.serve(async (req) => {
               );
               const chargesData = await chargesRes.json();
               const charges = chargesData?.data || [];
-              const matchingCharge = charges.find(c => c.status === "succeeded" && !c.refunded);
+              const eligibleCharges = charges.filter(c => c.status === "succeeded" && !c.refunded);
+              // Prioridade: charge cujo metadata.external_reference é da
+              // assinatura (começa com "plan:") — evita reembolsar por engano
+              // um pacote avulso comprado separadamente pelo mesmo cliente.
+              // Se nenhum charge tiver essa metadata (ex: checkout antigo),
+              // cai para o mais recente, como antes.
+              const matchingCharge =
+                eligibleCharges.find(c => c.metadata?.external_reference?.startsWith("plan:")) ||
+                eligibleCharges[0];
               paymentIntentId = matchingCharge?.payment_intent || null;
             }
           } catch (e) {
