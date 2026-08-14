@@ -98,6 +98,7 @@ export default function EmailHistorySection() {
                 {log.html_preview ? (
                   <iframe
                     srcDoc={log.html_preview}
+                    sandbox=""
                     className="w-full"
                     style={{ height: 320, border: "none", background: "#fff" }}
                     title="Corpo do e-mail"
