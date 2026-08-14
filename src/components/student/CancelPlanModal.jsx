@@ -13,6 +13,7 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [refundInfo, setRefundInfo] = useState(null);
 
   const withinGuarantee = isFirstWeekActive(profile);
   const planMinutes = Math.round(profile?.plan_credits_minutes || 0);
@@ -23,6 +24,11 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
     try {
       const response = await base44.functions.invoke("cancelMyPlan", {});
       if (response.data?.error) throw new Error(response.data.error);
+      setRefundInfo({
+        attempted: response.data?.refund_attempted,
+        issued: response.data?.refund_issued,
+        refundId: response.data?.refund_id,
+      });
       onCancelled(response.data?.provider);
       setDone(true);
     } catch (e) {
@@ -52,6 +58,17 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
                 ? "Sua assinatura foi cancelada. Você mantém acesso aos minutos restantes até o fim do período já pago."
                 : "Seu plano voltou para Free. Você mantém seus minutos por até 30 dias. Pode assinar novamente quando quiser."}
             </p>
+              {withinGuarantee && (
+                refundInfo?.issued ? (
+                  <p className="text-xs mb-4 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700">
+                    Reembolso confirmado {refundInfo.refundId ? `(ID: ${refundInfo.refundId})` : ""}.
+                  </p>
+                ) : (
+                  <p className="text-xs mb-4 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-700">
+                    Não conseguimos confirmar o reembolso automaticamente. Nossa equipe vai verificar e processar manualmente em breve.
+                  </p>
+                )
+              )}
             <Button onClick={onClose} className="w-full bg-[#F26A1B] hover:bg-[#d9560e] text-white border-0">Fechar</Button>
           </div>
         ) : (

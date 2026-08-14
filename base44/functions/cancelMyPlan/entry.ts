@@ -119,24 +119,33 @@ Deno.serve(async (req) => {
       // Zera os minutos do plano na hora e processa o reembolso na Stripe.
       // Se a chamada de reembolso falhar, o cancelamento em si não é
       // bloqueado — só logamos para revisão manual.
-      if (isWithinGuarantee && profile.stripe_payment_intent_id) {
-        try {
-          const refundRes = await fetch("https://api.stripe.com/v1/refunds", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${secretKey}`,
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: `payment_intent=${encodeURIComponent(profile.stripe_payment_intent_id)}`,
-          });
-          const refundData = await refundRes.json();
-          if (!refundRes.ok) {
-            console.error("[cancelMyPlan] Stripe refund failed:", JSON.stringify(refundData));
-          } else {
-            console.log(`[cancelMyPlan] Stripe refund issued: ${refundData.id}`);
+      let refundAttempted = false;
+      let refundIssued = false;
+      let refundId = null;
+
+      if (isWithinGuarantee) {
+        if (profile.stripe_payment_intent_id) {
+          refundAttempted = true;
+          try {
+            const refundRes = await fetch("https://api.stripe.com/v1/refunds", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${secretKey}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: `payment_intent=${encodeURIComponent(profile.stripe_payment_intent_id)}`,
+            });
+            const refundData = await refundRes.json();
+            if (!refundRes.ok) {
+              console.error("[cancelMyPlan] Stripe refund failed:", JSON.stringify(refundData));
+            } else {
+              console.log(`[cancelMyPlan] Stripe refund issued: ${refundData.id}`);
+              refundIssued = true;
+              refundId = refundData.id;
+            }
+          } catch (e) {
+            console.error("[cancelMyPlan] Stripe refund error:", e.message);
           }
-        } catch (e) {
-          console.error("[cancelMyPlan] Stripe refund error:", e.message);
         }
 
         await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
@@ -149,7 +158,7 @@ Deno.serve(async (req) => {
       // The webhook (customer.subscription.deleted) will fire and set
       // subscription_status=cancelled + subscription_valid_until. We don't
       // duplicate that update here to avoid the two paths diverging.
-      return Response.json({ success: true, provider: "stripe" });
+      return Response.json({ success: true, provider: "stripe", refund_attempted: refundAttempted, refund_issued: refundIssued, refund_id: refundId });
     }
 
     // ── Mercado Pago: local downgrade (no real recurring subscription) ──────────
@@ -158,10 +167,15 @@ Deno.serve(async (req) => {
     // Prepaid credits são sempre intocados (independentes do plano).
     await cancelFutureScheduledLessons(base44, user.id);
 
+    let mpRefundAttempted = false;
+    let mpRefundIssued = false;
+    let mpRefundId = null;
+
     if (isWithinGuarantee) {
       if (profile.mp_payment_id) {
         const mpAccessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
         if (mpAccessToken) {
+          mpRefundAttempted = true;
           try {
             const refundRes = await fetch(
               `https://api.mercadopago.com/v1/payments/${profile.mp_payment_id}/refunds`,
@@ -172,6 +186,8 @@ Deno.serve(async (req) => {
               console.error("[cancelMyPlan] MP refund failed:", JSON.stringify(refundData));
             } else {
               console.log(`[cancelMyPlan] MP refund issued: ${refundData.id}`);
+              mpRefundIssued = true;
+              mpRefundId = refundData.id;
             }
           } catch (e) {
             console.error("[cancelMyPlan] MP refund error:", e.message);
@@ -197,7 +213,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ success: true, provider: "mercadopago" });
+    return Response.json({ success: true, provider: "mercadopago", refund_attempted: mpRefundAttempted, refund_issued: mpRefundIssued, refund_id: mpRefundId });
   } catch (error) {
     console.error("[cancelMyPlan]", error.message);
     return Response.json({ error: "Erro interno do servidor" }, { status: 500 });
