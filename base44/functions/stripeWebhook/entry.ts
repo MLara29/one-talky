@@ -194,7 +194,28 @@ async function handleCheckoutCompleted(base44, session) {
     updateData.stripe_subscription_id = session.subscription || "";
     // Salvar o Payment Intent para permitir reembolso automático dentro da
     // garantia de 7 dias (Art. 49 CDC) quando o aluno cancelar via cancelMyPlan.
-    updateData.stripe_payment_intent_id = session.payment_intent || "";
+    // Em Checkout Sessions de assinatura (mode=subscription), session.payment_intent
+    // é null — o PI vive na invoice/charge. A API version 2026-06-24.dahlia removeu
+    // `payment_intent` do objeto Invoice, então buscamos via charges do customer.
+    let paymentIntentId = session.payment_intent;
+    if (!paymentIntentId && session.customer) {
+      try {
+        const secretKey = secrets.get("STRIPE_SECRET_KEY");
+        if (secretKey) {
+          const chargesRes = await fetch(
+            `https://api.stripe.com/v1/charges?customer=${encodeURIComponent(session.customer)}&limit=5`,
+            { headers: { Authorization: `Bearer ${secretKey}` } }
+          );
+          const chargesData = await chargesRes.json();
+          const charges = chargesData?.data || [];
+          const matchingCharge = charges.find(c => c.status === "succeeded" && !c.refunded);
+          paymentIntentId = matchingCharge?.payment_intent || null;
+        }
+      } catch (e) {
+        console.error("[stripeWebhook] failed to fetch payment_intent from charges:", e.message);
+      }
+    }
+    updateData.stripe_payment_intent_id = paymentIntentId || "";
   }
 
   await base44.asServiceRole.entities.StudentProfile.update(profile.id, updateData);
