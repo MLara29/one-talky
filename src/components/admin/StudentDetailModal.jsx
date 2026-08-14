@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, BookOpen, Ban, CheckCircle, Trash2, Plus } from "lucide-react";
+import { Clock, BookOpen, Ban, CheckCircle, Trash2, Plus, History, ChevronDown, ChevronUp } from "lucide-react";
 
 const PLAN_COLORS = {
   free:     "bg-gray-500/10 border-gray-500/20 text-gray-400",
@@ -19,6 +19,11 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
   const [minutesToAdd, setMinutesToAdd] = useState("");
   const [addingMinutes, setAddingMinutes] = useState(false);
   const [blocking, setBlocking] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyTab, setHistoryTab] = useState("transactions");
+  const [transactions, setTransactions] = useState(null);
+  const [lessons, setLessons] = useState(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   if (!student) return null;
 
@@ -90,7 +95,7 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
         {/* Info cards */}
         <div className="grid grid-cols-3 gap-3 mt-2">
           <div className="bg-gray-100 dark:bg-white/5 rounded-xl p-3 text-center border border-gray-200 dark:border-white/8">
-            <div className="text-lg font-bold text-gray-900 dark:text-white">{student.credits_minutes ?? 0}</div>
+            <div className="text-lg font-bold text-gray-900 dark:text-white">{Math.round((student.plan_credits_minutes || 0) + (student.prepaid_credits_minutes || 0))}</div>
             <div className="text-xs text-gray-500 flex items-center justify-center gap-1 mt-0.5">
               <Clock className="w-3 h-3" /> Minutos
             </div>
