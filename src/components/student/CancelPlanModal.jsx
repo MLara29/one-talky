@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { X, AlertTriangle, CheckCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 
 // Standalone cancellation-confirmation modal used on Plans.jsx.
 // Cancellation is enforced server-side by cancelMyPlan — plan goes back to
@@ -12,6 +13,10 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+
+  const withinGuarantee = isFirstWeekActive(profile);
+  const planMinutes = Math.round(profile?.plan_credits_minutes || 0);
+  const prepaidMinutes = Math.round(profile?.prepaid_credits_minutes || 0);
 
   const handleCancel = async () => {
     setSaving(true);
@@ -41,9 +46,11 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
             </div>
             <h3 className="font-display font-bold text-lg mb-2" style={{ color: "#17181C" }}>Assinatura cancelada</h3>
             <p className="text-sm mb-6" style={{ color: "#5A5B66" }}>
-              {profile?.subscription_provider === "stripe"
+              {withinGuarantee
+                ? "Sua assinatura foi cancelada e o valor pago será reembolsado integralmente, já que você estava dentro do período de garantia de 7 dias. Os minutos do plano foram removidos imediatamente."
+                : profile?.subscription_provider === "stripe"
                 ? "Sua assinatura foi cancelada. Você mantém acesso aos minutos restantes até o fim do período já pago."
-                : "Seu plano voltou para Free. Você mantém seus minutos por até 60 dias. Pode assinar novamente quando quiser."}
+                : "Seu plano voltou para Free. Você mantém seus minutos por até 30 dias. Pode assinar novamente quando quiser."}
             </p>
             <Button onClick={onClose} className="w-full bg-[#F26A1B] hover:bg-[#d9560e] text-white border-0">Fechar</Button>
           </div>
@@ -58,7 +65,14 @@ export default function CancelPlanModal({ profile, onClose, onCancelled }) {
             </p>
             <ul className="text-sm mb-6 space-y-2" style={{ color: "#4B4C57" }}>
               <li>• Sua assinatura será cancelada.</li>
-              <li>• Você mantém os <strong>{(profile?.plan_credits_minutes || 0) + (profile?.prepaid_credits_minutes || 0)} minutos</strong> restantes por até <strong>60 dias</strong> após o cancelamento. Créditos pré-pagos não são afetados.</li>
+              {withinGuarantee ? (
+                <li>• Você está dentro do período de garantia de 7 dias: os <strong>{planMinutes} minutos do plano</strong> serão removidos imediatamente ao cancelar, e o valor pago será reembolsado integralmente.</li>
+              ) : (
+                <li>• Você mantém os <strong>{planMinutes} minutos do plano</strong> por até <strong>30 dias</strong> após o cancelamento.</li>
+              )}
+              {prepaidMinutes > 0 && (
+                <li>• Seus <strong>{prepaidMinutes} minutos avulsos</strong> continuam disponíveis para uso — não são cancelados automaticamente. Se quiser cancelar ou pedir estorno desses minutos também, entre em contato com o Suporte.</li>
+              )}
               <li>• Você pode assinar um novo plano a qualquer momento.</li>
             </ul>
             <div className="flex gap-3">
