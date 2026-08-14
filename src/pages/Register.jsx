@@ -10,11 +10,14 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
+import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Register() {
   const [searchParams] = useSearchParams();
   const defaultRole = searchParams.get("role") === "tutor" ? "tutor" : "student";
-  const nextUrl = searchParams.get("next") || null;
+  // Validado via safeReturnTo: rejeita javascript:, domínios externos e
+  // truques de path (//evil.com) — nunca usar o valor cru de "next" aqui.
+  const nextUrl = searchParams.get("next") ? safeReturnTo("next") : null;
   const [role] = useState(defaultRole); // role fixed by URL — no in-page switcher
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
