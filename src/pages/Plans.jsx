@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
 import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
+import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 
 const ACCENT = "#F26A1B";
 
@@ -125,12 +126,13 @@ export default function Plans() {
         <CancelPlanModal
           profile={profile}
           onClose={() => setShowCancelModal(false)}
-          onCancelled={(provider) => {
-            if (provider === "stripe") {
-              setProfile(prev => ({ ...prev, subscription_status: "cancelled" }));
-            } else {
-              setProfile(prev => ({ ...prev, plan: "free", subscription_status: "cancelled" }));
-            }
+          onCancelled={() => {
+            const wasWithinGuarantee = isFirstWeekActive(profile);
+            setProfile(prev => ({
+              ...prev,
+              plan: wasWithinGuarantee ? "free" : prev.plan,
+              subscription_status: "cancelled",
+            }));
           }}
         />
       )}

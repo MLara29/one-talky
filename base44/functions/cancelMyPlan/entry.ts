@@ -149,15 +149,28 @@ Deno.serve(async (req) => {
         }
 
         await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+          plan: "free",
+          subscription_status: "cancelled",
+          subscription_valid_until: new Date().toISOString(),
           plan_credits_minutes: 0,
           plan_credits_grace_expires_at: null,
           cancelled_within_guarantee: true,
         });
+      } else {
+        // Fora da garantia: aluno mantém acesso até o fim do período já pago
+        // (subscription_valid_until existente não é alterado). "plan" também
+        // permanece o mesmo — isso é o que faz Plans.jsx mostrar "cancelado,
+        // mas ainda ativo até X data" (ver isCancelledButActive em Plans.jsx).
+        await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+          subscription_status: "cancelled",
+        });
       }
 
-      // The webhook (customer.subscription.deleted) will fire and set
-      // subscription_status=cancelled + subscription_valid_until. We don't
-      // duplicate that update here to avoid the two paths diverging.
+      // NOTA: o webhook (customer.subscription.deleted) também roda e tenta
+      // fazer essa mesma atualização, mas agora é só redundante/idempotente —
+      // não é mais o único responsável por isso. Isso corrige o caso de
+      // assinaturas de teste (metadata.test === "true"), que o webhook ignora
+      // por design.
       return Response.json({ success: true, provider: "stripe", refund_attempted: refundAttempted, refund_issued: refundIssued, refund_id: refundId });
     }
 
