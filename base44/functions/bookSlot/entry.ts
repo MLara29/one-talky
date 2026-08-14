@@ -114,7 +114,7 @@ export default async function(req) {
     const spProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: studentId });
     const sp = spProfiles[0];
 
-    const lockResult = await acquireFirstWeekLock(base44, studentId, sp);
+    const lockResult = await acquireFirstWeekLock(base44, studentId, sp, scheduled_at);
     if (!lockResult.ok) {
       console.log(`[bookSlot] REJECTED student=${studentId} reason=first_week_cas`);
       return Response.json({ error: lockResult.error }, { status: lockResult.status });

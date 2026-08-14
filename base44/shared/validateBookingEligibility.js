@@ -71,11 +71,11 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
 
   // ── RULE 3: First-month (cycle 1) restriction within first 7 days ──
   if (subCycle === 1 && subStartDate) {
-    const now = new Date();
     const sevenDaysAfterStart = new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const isInFirstWeek = now < sevenDaysAfterStart;
+    const lessonTargetDate = scheduledAt ? new Date(scheduledAt) : new Date();
+    const targetIsInGuaranteeWindow = lessonTargetDate >= subStartDate && lessonTargetDate < sevenDaysAfterStart;
 
-    if (isInFirstWeek) {
+    if (targetIsInGuaranteeWindow) {
       // Check duration: must be exactly 30 minutes in the first week.
       // Treat missing/null/0 as a violation — no silent pass-through.
       if (durationMinutes !== 30) {

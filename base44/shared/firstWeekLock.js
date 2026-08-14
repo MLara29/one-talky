@@ -15,6 +15,16 @@ export function isFirstWeekWindow(sp) {
   return new Date() < sevenDaysAfterStart;
 }
 
+export function isDateInGuaranteeWindow(sp, dateToCheck) {
+  if (!sp) return false;
+  const subCycle = sp.subscription_cycle || 0;
+  const subStartDate = sp.subscription_start_date ? new Date(sp.subscription_start_date) : null;
+  if (subCycle !== 1 || !subStartDate) return false;
+  const sevenDaysAfterStart = new Date(subStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const target = dateToCheck ? new Date(dateToCheck) : new Date();
+  return target >= subStartDate && target < sevenDaysAfterStart;
+}
+
 const BLOCKED_MESSAGE = 'Durante os primeiros 7 dias da sua assinatura, você pode agendar apenas 1 aula de 30 minutos.';
 
 /**
@@ -24,8 +34,8 @@ const BLOCKED_MESSAGE = 'Durante os primeiros 7 dias da sua assinatura, você po
  *  - { ok: true, acquired: true, token } when the lock was claimed
  *  - { ok: false, status, error } when blocked (committed lesson exists or lock is fresh/taken)
  */
-export async function acquireFirstWeekLock(base44, studentId, sp) {
-  if (!isFirstWeekWindow(sp)) return { ok: true, acquired: false };
+export async function acquireFirstWeekLock(base44, studentId, sp, scheduledAt) {
+  if (!isDateInGuaranteeWindow(sp, scheduledAt)) return { ok: true, acquired: false };
 
   const blockedError = { ok: false, status: 409, error: BLOCKED_MESSAGE };
 
