@@ -245,6 +245,7 @@ Deno.serve(async (req) => {
     let mpRefundAttempted = false;
     let mpRefundIssued = false;
     let mpRefundId = null;
+    let mpRefundAmount = 0;
 
     if (isWithinGuarantee) {
       if (profile.mp_payment_id) {
@@ -263,6 +264,8 @@ Deno.serve(async (req) => {
               console.log(`[cancelMyPlan] MP refund issued: ${refundData.id}`);
               mpRefundIssued = true;
               mpRefundId = refundData.id;
+              // Mercado Pago retorna o valor já em reais (não em centavos, diferente da Stripe)
+              mpRefundAmount = refundData.amount || 0;
             }
           } catch (e) {
             console.error("[cancelMyPlan] MP refund error:", e.message);
@@ -286,6 +289,11 @@ Deno.serve(async (req) => {
         subscription_valid_until: mpGraceExpiresAt,
         plan_credits_grace_expires_at: mpGraceExpiresAt,
       });
+    }
+
+    await logAccountEvent(base44, user.id, "plan_cancelled", 0, `Plano ${profile.plan} cancelado via Mercado Pago${isWithinGuarantee ? " (dentro da garantia de 7 dias)" : ""}`);
+    if (mpRefundIssued) {
+      await logAccountEvent(base44, user.id, "refund_issued", mpRefundAmount, `Reembolso via Mercado Pago (${mpRefundId})`);
     }
 
     return Response.json({ success: true, provider: "mercadopago", refund_attempted: mpRefundAttempted, refund_issued: mpRefundIssued, refund_id: mpRefundId });
