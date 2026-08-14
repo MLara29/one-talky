@@ -4,6 +4,20 @@ import { requireNotBlocked } from "../../shared/requireNotBlocked.js";
 import { getPlanGraceExpiryDays } from "../../shared/studentCredits.js";
 import { normalizeSlot } from "../../shared/slotUtils.js";
 
+async function logAccountEvent(base44, studentId, type, amount, details) {
+  try {
+    await base44.asServiceRole.entities.StudentAccountEvent.create({
+      student_id: studentId,
+      type,
+      amount: amount || 0,
+      details: details || "",
+      created_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error("[cancelMyPlan] failed to log account event:", e.message);
+  }
+}
+
 async function cancelFutureScheduledLessons(base44, studentId) {
   try {
     const scheduledLessons = await base44.asServiceRole.entities.Lesson.filter({
