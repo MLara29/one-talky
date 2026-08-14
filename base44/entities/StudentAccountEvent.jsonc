@@ -1,0 +1,55 @@
+{
+  "name": "StudentAccountEvent",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "description": "User id (mesmo padr\u00e3o usado em Lesson.student_id e PaymentRecord.student_id)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "plan_cancelled",
+        "refund_issued"
+      ]
+    },
+    "amount": {
+      "type": "number",
+      "description": "Valor em reais, s\u00f3 usado para type=refund_issued"
+    },
+    "details": {
+      "type": "string",
+      "description": "Texto livre, ex: 'Plano standard cancelado via Stripe (dentro da garantia)'"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "student_id",
+    "type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
