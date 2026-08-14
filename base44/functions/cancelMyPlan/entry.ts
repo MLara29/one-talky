@@ -126,17 +126,32 @@ Deno.serve(async (req) => {
       if (isWithinGuarantee) {
         let paymentIntentId = profile.stripe_payment_intent_id;
 
-        // Fallback: se o webhook de checkout nunca salvou o payment_intent_id
-        // (ex: assinaturas de teste, que o webhook ignora por design), busca
-        // direto na Stripe a partir da assinatura.
+        // Fallback: o webhook salva stripe_payment_intent_id a partir de
+        // session.payment_intent, mas esse campo é null em Checkout Sessions
+        // de assinatura (mode=subscription) — o PI vive na invoice, não na
+        // session. Além disso, a API version 2026-06-24.dahlia removeu o campo
+        // `payment_intent` do objeto Invoice, então expand[]=latest_invoice.
+        // payment_intent também não funciona. Solução: buscar o customer na
+        // subscription, listar os charges do customer e usar o payment_intent
+        // do charge mais recente bem-sucedido e não reembolsado.
         if (!paymentIntentId) {
           try {
             const subRes = await fetch(
-              `https://api.stripe.com/v1/subscriptions/${profile.stripe_subscription_id}?expand[]=latest_invoice.payment_intent`,
+              `https://api.stripe.com/v1/subscriptions/${profile.stripe_subscription_id}`,
               { headers: { Authorization: `Bearer ${secretKey}` } }
             );
             const subData = await subRes.json();
-            paymentIntentId = subData?.latest_invoice?.payment_intent?.id || null;
+            const customerId = subData?.customer;
+            if (customerId) {
+              const chargesRes = await fetch(
+                `https://api.stripe.com/v1/charges?customer=${encodeURIComponent(customerId)}&limit=10`,
+                { headers: { Authorization: `Bearer ${secretKey}` } }
+              );
+              const chargesData = await chargesRes.json();
+              const charges = chargesData?.data || [];
+              const matchingCharge = charges.find(c => c.status === "succeeded" && !c.refunded);
+              paymentIntentId = matchingCharge?.payment_intent || null;
+            }
           } catch (e) {
             console.error("[cancelMyPlan] failed to fetch fallback payment_intent_id:", e.message);
           }
