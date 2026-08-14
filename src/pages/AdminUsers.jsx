@@ -147,6 +147,7 @@ export default function AdminUsers() {
   const [copied, setCopied] = useState(false);
   const [searchTutor, setSearchTutor] = useState("");
   const [searchStudent, setSearchStudent] = useState("");
+  const [planFilter, setPlanFilter] = useState("all");
   const [searchAffiliate, setSearchAffiliate] = useState("");
 
   const filteredTutors = tutors.filter(t => {
@@ -155,7 +156,9 @@ export default function AdminUsers() {
   });
   const filteredStudents = students.filter(s => {
     const q = searchStudent.toLowerCase();
-    return !q || s.full_name?.toLowerCase().includes(q) || users[s.user_id]?.email?.toLowerCase().includes(q);
+    const matchesSearch = !q || s.full_name?.toLowerCase().includes(q) || users[s.user_id]?.email?.toLowerCase().includes(q);
+    const matchesPlan = planFilter === "all" || (s.plan || "free") === planFilter;
+    return matchesSearch && matchesPlan;
   });
   const filteredAffiliates = affiliates.filter(a => {
     const q = searchAffiliate.toLowerCase();
