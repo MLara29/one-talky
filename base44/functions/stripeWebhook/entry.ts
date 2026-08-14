@@ -208,7 +208,13 @@ async function handleCheckoutCompleted(base44, session) {
           );
           const chargesData = await chargesRes.json();
           const charges = chargesData?.data || [];
-          const matchingCharge = charges.find(c => c.status === "succeeded" && !c.refunded);
+          const eligibleCharges = charges.filter(c => c.status === "succeeded" && !c.refunded);
+          // Mesmo critério usado no fallback de cancelMyPlan: prioriza o charge
+          // da assinatura (metadata.external_reference começa com "plan:"),
+          // para não confundir com um pacote avulso comprado por perto.
+          const matchingCharge =
+            eligibleCharges.find(c => c.metadata?.external_reference?.startsWith("plan:")) ||
+            eligibleCharges[0];
           paymentIntentId = matchingCharge?.payment_intent || null;
         }
       } catch (e) {
