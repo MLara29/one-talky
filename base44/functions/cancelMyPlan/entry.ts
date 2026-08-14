@@ -136,6 +136,7 @@ Deno.serve(async (req) => {
       let refundAttempted = false;
       let refundIssued = false;
       let refundId = null;
+      let refundAmount = 0;
 
       if (isWithinGuarantee) {
         let paymentIntentId = profile.stripe_payment_intent_id;
@@ -197,6 +198,7 @@ Deno.serve(async (req) => {
               console.log(`[cancelMyPlan] Stripe refund issued: ${refundData.id}`);
               refundIssued = true;
               refundId = refundData.id;
+              refundAmount = (refundData.amount || 0) / 100;
             }
           } catch (e) {
             console.error("[cancelMyPlan] Stripe refund error:", e.message);
@@ -226,6 +228,11 @@ Deno.serve(async (req) => {
       // não é mais o único responsável por isso. Isso corrige o caso de
       // assinaturas de teste (metadata.test === "true"), que o webhook ignora
       // por design.
+      await logAccountEvent(base44, user.id, "plan_cancelled", 0, `Plano ${profile.plan} cancelado via Stripe${isWithinGuarantee ? " (dentro da garantia de 7 dias)" : ""}`);
+      if (refundIssued) {
+        await logAccountEvent(base44, user.id, "refund_issued", refundAmount, `Reembolso via Stripe (${refundId})`);
+      }
+
       return Response.json({ success: true, provider: "stripe", refund_attempted: refundAttempted, refund_issued: refundIssued, refund_id: refundId });
     }
 
