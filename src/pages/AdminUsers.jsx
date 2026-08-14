@@ -321,6 +321,27 @@ export default function AdminUsers() {
         </TabsContent>
 
         <TabsContent value="students">
+          <div className="flex gap-2 mb-4 flex-wrap">
+            {[
+              { id: "all", label: "Todos" },
+              { id: "free", label: "Free" },
+              { id: "basic", label: "Básico" },
+              { id: "standard", label: "Standard" },
+              { id: "premium", label: "Premium" },
+            ].map(p => (
+              <button
+                key={p.id}
+                onClick={() => setPlanFilter(p.id)}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all ${
+                  planFilter === p.id
+                    ? "bg-violet-500/20 border-violet-500/40 text-violet-300"
+                    : "bg-white/5 border-white/10 text-gray-500 hover:bg-white/10"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
           <div className="relative mb-4 max-w-sm">
             <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
@@ -371,7 +392,7 @@ export default function AdminUsers() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-gray-400 hidden sm:inline">{s.credits_minutes ?? 0} min</span>
+                      <span className="text-xs text-gray-400 hidden sm:inline">{Math.round((s.plan_credits_minutes || 0) + (s.prepaid_credits_minutes || 0))} min</span>
                       {isInGuaranteePeriod && (
                         <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-orange-500/10 border-orange-500/20 text-orange-400">
                           🔒 Garantia 7 dias
