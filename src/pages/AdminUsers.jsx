@@ -24,6 +24,7 @@ export default function AdminUsers() {
   const [students, setStudents] = useState([]);
   const [affiliates, setAffiliates] = useState([]);
   const [users, setUsers] = useState({});
+  const [tutorStats, setTutorStats] = useState({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -43,7 +44,47 @@ export default function AdminUsers() {
       setStudents(sortByName(s));
       setAffiliates(sortByName(a));
       setUsers(userMap);
+      loadTutorStats(); // não bloqueia a renderização inicial da lista
     } catch {} finally { setLoading(false); }
+  };
+
+  // Resumo de aulas por tutor (este mês / próximos meses / instantâneas já dadas).
+  // Busca tudo de uma vez (2 queries no total) e agrupa no cliente — evita
+  // fazer 1 query por tutor. "total_lessons" (dadas no total) já vem pronto
+  // direto do TutorProfile, não precisa buscar aqui.
+  const loadTutorStats = async () => {
+    try {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+      const [scheduledLessons, instantCompleted] = await Promise.all([
+        base44.entities.Lesson.filter({ status: "scheduled" }),
+        base44.entities.Lesson.filter({ status: "completed", type: "instant" }),
+      ]);
+
+      const stats = {};
+      const bump = (tutorId, field) => {
+        if (!stats[tutorId]) stats[tutorId] = { thisMonth: 0, futureMonths: 0, instantCompleted: 0 };
+        stats[tutorId][field] += 1;
+      };
+
+      scheduledLessons.forEach(l => {
+        if (!l.tutor_id || !l.scheduled_at) return;
+        const d = new Date(l.scheduled_at);
+        if (d >= monthStart && d < nextMonthStart) bump(l.tutor_id, "thisMonth");
+        else if (d >= nextMonthStart) bump(l.tutor_id, "futureMonths");
+      });
+
+      instantCompleted.forEach(l => {
+        if (!l.tutor_id) return;
+        bump(l.tutor_id, "instantCompleted");
+      });
+
+      setTutorStats(stats);
+    } catch {
+      // Resumo é informativo — se falhar, a lista de tutores continua funcionando normal.
+    }
   };
 
   const blockTutor = async (t) => {
