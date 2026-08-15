@@ -334,6 +334,26 @@ export default function AdminUsers() {
                       </Button>
                     </div>
                   </div>
+                  {/* Resumo de aulas — dadas no total, este mês, próximos meses, instantâneas já dadas */}
+                  {(() => {
+                    const st = tutorStats[t.user_id] || { thisMonth: 0, futureMonths: 0, instantCompleted: 0 };
+                    return (
+                      <div className="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
+                        <span className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                          🎓 {t.total_lessons ?? 0} dadas no total
+                        </span>
+                        <span className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                          📅 {st.thisMonth} este mês
+                        </span>
+                        <span className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                          🔮 {st.futureMonths} próximos meses
+                        </span>
+                        <span className="px-2 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                          ⚡ {st.instantCompleted} instantâneas dadas
+                        </span>
+                      </div>
+                    );
+                  })()}
                   {t.ban_suggested && (
                     <div className="mt-2 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
                       <span className="text-xs text-red-400 flex-1">
