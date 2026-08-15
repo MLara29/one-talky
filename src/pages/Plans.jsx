@@ -147,33 +147,41 @@ export default function Plans() {
         )}
       </div>
 
-      {/* ── Seletor de método de pagamento — Stripe (principal) / Mercado Pago (alternativo) ── */}
+      {/* ── Seletor de método de pagamento ──────────────────────────────────────
+          TEMPORARIAMENTE só Stripe: o botão do Mercado Pago foi escondido
+          (não removido) enquanto uma vulnerabilidade em mpConfirmPayment não
+          é corrigida. Pra reativar: descomentar o bloco abaixo e trocar
+          "false &&" por nada nessa condição. Nenhuma lógica de MP foi apagada. */}
       <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
-        <span className="text-xs font-semibold" style={{ color: "#8A8B94" }}>Pagamento via:</span>
-        <div className="inline-flex rounded-full overflow-hidden" style={{ border: "1px solid #EEE7DD", background: "#fff" }}>
-          <button
-            onClick={() => setPaymentMethod("stripe")}
-            style={{
-              padding: "7px 18px", fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-              background: paymentMethod === "stripe" ? "#635BFF" : "transparent",
-              color: paymentMethod === "stripe" ? "#fff" : "#8A8B94",
-              border: "none", cursor: "pointer", transition: "all .2s",
-            }}
-          >
-            Stripe {paymentMethod === "stripe" && "✓"}
-          </button>
-          <button
-            onClick={() => setPaymentMethod("mercadopago")}
-            style={{
-              padding: "7px 18px", fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-              background: paymentMethod === "mercadopago" ? "#00B1EA" : "transparent",
-              color: paymentMethod === "mercadopago" ? "#fff" : "#8A8B94",
-              border: "none", cursor: "pointer", transition: "all .2s",
-            }}
-          >
-            Mercado Pago
-          </button>
-        </div>
+        {false && (
+          <>
+            <span className="text-xs font-semibold" style={{ color: "#8A8B94" }}>Pagamento via:</span>
+            <div className="inline-flex rounded-full overflow-hidden" style={{ border: "1px solid #EEE7DD", background: "#fff" }}>
+              <button
+                onClick={() => setPaymentMethod("stripe")}
+                style={{
+                  padding: "7px 18px", fontSize: 13, fontWeight: 700, fontFamily: "inherit",
+                  background: paymentMethod === "stripe" ? "#635BFF" : "transparent",
+                  color: paymentMethod === "stripe" ? "#fff" : "#8A8B94",
+                  border: "none", cursor: "pointer", transition: "all .2s",
+                }}
+              >
+                Stripe {paymentMethod === "stripe" && "✓"}
+              </button>
+              <button
+                onClick={() => setPaymentMethod("mercadopago")}
+                style={{
+                  padding: "7px 18px", fontSize: 13, fontWeight: 700, fontFamily: "inherit",
+                  background: paymentMethod === "mercadopago" ? "#00B1EA" : "transparent",
+                  color: paymentMethod === "mercadopago" ? "#fff" : "#8A8B94",
+                  border: "none", cursor: "pointer", transition: "all .2s",
+                }}
+              >
+                Mercado Pago
+              </button>
+            </div>
+          </>
+        )}
         {paymentMethod === "stripe" && (
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(99,91,255,0.10)", color: "#635BFF" }}>
             Recomendado
