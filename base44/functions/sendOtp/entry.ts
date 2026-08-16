@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
     const html = isEnglish ? `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px;border:1px solid #e5e7eb">
-        <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style="width:48px;height:48px;object-fit:contain;display:block;margin:0 auto 24px"/>
+        <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style="width:auto;max-width:200px;height:40px;object-fit:contain;display:block;margin:0 auto 24px"/>
         <h2 style="text-align:center;color:#111827;font-size:20px;margin:0 0 8px">Two-factor verification</h2>
         <p style="text-align:center;color:#6b7280;font-size:14px;margin:0 0 32px">Use the code below to confirm your access.</p>
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
       </div>
     ` : `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px;border:1px solid #e5e7eb">
-        <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style="width:48px;height:48px;object-fit:contain;display:block;margin:0 auto 24px"/>
+        <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style="width:auto;max-width:200px;height:40px;object-fit:contain;display:block;margin:0 auto 24px"/>
         <h2 style="text-align:center;color:#111827;font-size:20px;margin:0 0 8px">Verificação em duas etapas</h2>
         <p style="text-align:center;color:#6b7280;font-size:14px;margin:0 0 32px">Use o código abaixo para confirmar seu acesso.</p>
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
