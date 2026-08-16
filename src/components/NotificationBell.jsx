@@ -4,10 +4,14 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { safeSubscribe } from "@/lib/safeSubscribe";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
 export default function NotificationBell() {
   const { user } = useAuth();
+  const { lang: studentLang } = useLang();
   const navigate = useNavigate();
+  const lang = user?.role === "tutor" ? "en" : user?.role === "student" ? (studentLang || "en") : "pt_br";
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const ref = useRef(null);
@@ -72,11 +76,11 @@ export default function NotificationBell() {
     const now = new Date();
     const diffMs = now - d;
     const diffMins = Math.floor(diffMs / 60000);
-    if (diffMins < 1) return "agora";
-    if (diffMins < 60) return `${diffMins}m atrás`;
+    if (diffMins < 1) return t(lang, "justNow");
+    if (diffMins < 60) return `${diffMins}${t(lang, "minAgo")}`;
     const diffHrs = Math.floor(diffMins / 60);
-    if (diffHrs < 24) return `${diffHrs}h atrás`;
-    return d.toLocaleDateString("pt-BR");
+    if (diffHrs < 24) return `${diffHrs}${t(lang, "hAgo")}`;
+    return d.toLocaleDateString(lang === "en" ? "en-US" : "pt-BR");
   };
 
   return (
@@ -105,7 +109,7 @@ export default function NotificationBell() {
             style={{ borderBottom: "1px solid var(--app-border)" }}
           >
             <span className="font-semibold text-sm" style={{ color: "var(--app-text-primary)" }}>
-              Notificações
+              {t(lang, "notifications")}
             </span>
             {unreadCount > 0 && (
               <button
@@ -113,7 +117,7 @@ export default function NotificationBell() {
                 className="text-xs font-medium"
                 style={{ color: "#F26A1B" }}
               >
-                Marcar todas como lidas
+                {t(lang, "markAllRead")}
               </button>
             )}
           </div>
@@ -123,7 +127,7 @@ export default function NotificationBell() {
             {notifications.length === 0 ? (
               <div className="py-10 text-center">
                 <Bell className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--app-text-muted)" }} />
-                <p className="text-xs" style={{ color: "var(--app-text-secondary)" }}>Sem notificações</p>
+                <p className="text-xs" style={{ color: "var(--app-text-secondary)" }}>{t(lang, "noNotifications")}</p>
               </div>
             ) : (
               notifications.map(n => (
