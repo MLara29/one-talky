@@ -1,6 +1,14 @@
 // Simple UI language strings
 export const TRANSLATIONS = {
   en: {
+    // Notification bell
+    notifications: "Notifications",
+    markAllRead: "Mark all as read",
+    noNotifications: "No notifications",
+    justNow: "now",
+    minAgo: "m ago",
+    hAgo: "h ago",
+
     // Dashboard - Student
     myLessons: "My Lessons",
     upcomingTab: "Upcoming",
@@ -76,6 +84,14 @@ export const TRANSLATIONS = {
     noShowBadge: "No-show",
   },
   pt_br: {
+    // Notification bell
+    notifications: "Notificações",
+    markAllRead: "Marcar todas como lidas",
+    noNotifications: "Sem notificações",
+    justNow: "agora",
+    minAgo: "m atrás",
+    hAgo: "h atrás",
+
     // Dashboard - Student
     myLessons: "Minhas Aulas",
     upcomingTab: "Próximas",
