@@ -442,7 +442,7 @@ export default function TutorDashboard() {
                     {day}
                   </span>
                   {dayLessons && (
-                    <p className="text-[10px] text-orange-300 font-semibold mt-0.5">{dayLessons.length} lesson{dayLessons.length !== 1 ? "s" : ""}</p>
+                    <p className="text-[10px] font-semibold mt-0.5" style={{ color: "#F26A1B" }}>{dayLessons.length} lesson{dayLessons.length !== 1 ? "s" : ""}</p>
                   )}
                 </button>
               );
