@@ -63,12 +63,9 @@ function tutorEmailHtml({ tutorName, studentName, lessonTime, minutesBefore }) {
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #e5e7eb;">
         <tr>
-          <td style="background:#F26A1B;padding:32px 36px;text-align:center;">
-            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:8px 12px;margin-bottom:14px;">
-              <img src="${LOGO_URL}" alt="One Talky" width="40" height="40" style="border-radius:10px;display:block;object-fit:cover;" />
-            </div>
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">One Talky</h1>
-            <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Language conversation platform</p>
+          <td style="background:#ffffff;padding:32px 36px 20px;text-align:center;border-bottom:1px solid #f3f4f6;">
+            <img src="${LOGO_URL}" alt="One Talky" height="40" style="width:auto;max-width:220px;display:block;margin:0 auto 8px;object-fit:contain;" />
+            <p style="margin:0;color:#9ca3af;font-size:13px;">Language conversation platform</p>
           </td>
         </tr>
         <tr>
@@ -128,12 +125,9 @@ function studentEmailHtml({ studentName, tutorName, lessonTime, minutesBefore })
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #e5e7eb;">
         <tr>
-          <td style="background:#F26A1B;padding:32px 36px;text-align:center;">
-            <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:8px 12px;margin-bottom:14px;">
-              <img src="${LOGO_URL}" alt="One Talky" width="40" height="40" style="border-radius:10px;display:block;object-fit:cover;" />
-            </div>
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">One Talky</h1>
-            <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Plataforma de conversação em idiomas</p>
+          <td style="background:#ffffff;padding:32px 36px 20px;text-align:center;border-bottom:1px solid #f3f4f6;">
+            <img src="${LOGO_URL}" alt="One Talky" height="40" style="width:auto;max-width:220px;display:block;margin:0 auto 8px;object-fit:contain;" />
+            <p style="margin:0;color:#9ca3af;font-size:13px;">Plataforma de conversação em idiomas</p>
           </td>
         </tr>
         <tr>
