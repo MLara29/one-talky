@@ -11,6 +11,16 @@ function formatDateTime(isoString) {
   });
 }
 
+// Versão em português da data/hora — usada só no e-mail do aluno.
+function formatDateTimePt(isoString) {
+  const d = new Date(isoString);
+  return d.toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
 function escapeHtml(str: string): string {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -27,7 +37,17 @@ function labelFor(minutes) {
   return '24 hours';
 }
 
-const LOGO_URL = 'https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png';
+// Versão em português do rótulo de tempo — usada só no e-mail do aluno.
+function labelForPt(minutes) {
+  if (minutes < 60) return `${minutes} minutos`;
+  if (minutes === 60) return '1 hora';
+  if (minutes < 1440) return `${minutes / 60} horas`;
+  return '24 horas';
+}
+
+// Logo oficial (mesma usada no cabeçalho do site em AppLayout.jsx) — antes este
+// arquivo usava um asset diferente ("ChatGPTImage...") que não era o logo oficial.
+const LOGO_URL = 'https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png';
 
 function tutorEmailHtml({ tutorName, studentName, lessonTime, minutesBefore }) {
   tutorName = escapeHtml(tutorName);
@@ -38,53 +58,53 @@ function tutorEmailHtml({ tutorName, studentName, lessonTime, minutesBefore }) {
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#030309;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#030309;padding:40px 20px;">
+<body style="margin:0;padding:0;background:#f9fafb;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 20px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f0f1f,#1a0a2e);border-radius:20px;overflow:hidden;border:1px solid rgba(139,92,246,0.25);">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #e5e7eb;">
         <tr>
-          <td style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:32px 36px;text-align:center;">
+          <td style="background:#F26A1B;padding:32px 36px;text-align:center;">
             <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:8px 12px;margin-bottom:14px;">
               <img src="${LOGO_URL}" alt="One Talky" width="40" height="40" style="border-radius:10px;display:block;object-fit:cover;" />
             </div>
             <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">One Talky</h1>
-            <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Language conversation platform</p>
+            <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Language conversation platform</p>
           </td>
         </tr>
         <tr>
           <td style="padding:36px 36px 28px;">
-            <p style="margin:0 0 8px;color:#a78bfa;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">⏰ Lesson Reminder</p>
-            <h2 style="margin:0 0 20px;color:#ffffff;font-size:20px;font-weight:700;">Hi, ${tutorName}!</h2>
-            <p style="margin:0 0 24px;color:#c4b5fd;font-size:15px;line-height:1.6;">
-              Your lesson with <strong style="color:#ffffff;">${studentName}</strong> starts in <strong style="color:#a78bfa;">${timeLabel}</strong>. Get ready! 🚀
+            <p style="margin:0 0 8px;color:#F26A1B;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">⏰ Lesson Reminder</p>
+            <h2 style="margin:0 0 20px;color:#111827;font-size:20px;font-weight:700;">Hi, ${tutorName}!</h2>
+            <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.6;">
+              Your lesson with <strong style="color:#111827;">${studentName}</strong> starts in <strong style="color:#F26A1B;">${timeLabel}</strong>. Get ready! 🚀
             </p>
-            <div style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:20px 22px;margin-bottom:24px;">
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:20px 22px;margin-bottom:24px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding:6px 0;">
                     <span style="color:#9ca3af;font-size:12px;">👤 Student</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${studentName}</span>
+                    <span style="color:#111827;font-size:15px;font-weight:600;">${studentName}</span>
                   </td>
                 </tr>
-                <tr><td style="padding:10px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr><td style="padding:10px 0;border-top:1px solid #fed7aa;"></td></tr>
                 <tr>
                   <td style="padding:6px 0;">
                     <span style="color:#9ca3af;font-size:12px;">📅 Date & Time (Brasília time)</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${lessonTime}</span>
+                    <span style="color:#111827;font-size:15px;font-weight:600;">${lessonTime}</span>
                   </td>
                 </tr>
               </table>
             </div>
             <div style="text-align:center;">
-              <a href="https://onetalky.com/dashboard" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
+              <a href="https://onetalky.com/dashboard" style="display:inline-block;background:#F26A1B;color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
                 Go to the platform →
               </a>
             </div>
           </td>
         </tr>
         <tr>
-          <td style="padding:20px 36px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
-            <p style="margin:0;color:#4b5563;font-size:11px;">OneTalky · You are receiving this email because you have an upcoming lesson.</p>
+          <td style="padding:20px 36px;border-top:1px solid #e5e7eb;text-align:center;">
+            <p style="margin:0;color:#9ca3af;font-size:11px;">OneTalky · You are receiving this email because you have an upcoming lesson.</p>
           </td>
         </tr>
       </table>
@@ -98,58 +118,58 @@ function studentEmailHtml({ studentName, tutorName, lessonTime, minutesBefore })
   studentName = escapeHtml(studentName);
   tutorName = escapeHtml(tutorName);
   lessonTime = escapeHtml(lessonTime);
-  const timeLabel = labelFor(minutesBefore);
+  const timeLabel = labelForPt(minutesBefore);
   return `
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#030309;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#030309;padding:40px 20px;">
+<body style="margin:0;padding:0;background:#f9fafb;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 20px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f0f1f,#0a1a2e);border-radius:20px;overflow:hidden;border:1px solid rgba(99,102,241,0.25);">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #e5e7eb;">
         <tr>
-          <td style="background:linear-gradient(135deg,#4f46e5,#0ea5e9);padding:32px 36px;text-align:center;">
+          <td style="background:#F26A1B;padding:32px 36px;text-align:center;">
             <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:8px 12px;margin-bottom:14px;">
               <img src="${LOGO_URL}" alt="One Talky" width="40" height="40" style="border-radius:10px;display:block;object-fit:cover;" />
             </div>
             <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">One Talky</h1>
-            <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Language conversation platform</p>
+            <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Plataforma de conversação em idiomas</p>
           </td>
         </tr>
         <tr>
           <td style="padding:36px 36px 28px;">
-            <p style="margin:0 0 8px;color:#818cf8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">⏰ Your lesson is coming up!</p>
-            <h2 style="margin:0 0 20px;color:#ffffff;font-size:20px;font-weight:700;">Hi, ${studentName}!</h2>
-            <p style="margin:0 0 24px;color:#c7d2fe;font-size:15px;line-height:1.6;">
-              Your lesson with tutor <strong style="color:#ffffff;">${tutorName}</strong> starts in <strong style="color:#818cf8;">${timeLabel}</strong>. Log in and get ready! 🌟
+            <p style="margin:0 0 8px;color:#F26A1B;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">⏰ Sua aula está chegando!</p>
+            <h2 style="margin:0 0 20px;color:#111827;font-size:20px;font-weight:700;">Olá, ${studentName}!</h2>
+            <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.6;">
+              Sua aula com o tutor <strong style="color:#111827;">${tutorName}</strong> começa em <strong style="color:#F26A1B;">${timeLabel}</strong>. Entre na plataforma e se prepare! 🌟
             </p>
-            <div style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);border-radius:14px;padding:20px 22px;margin-bottom:24px;">
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:20px 22px;margin-bottom:24px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding:6px 0;">
                     <span style="color:#9ca3af;font-size:12px;">🎙️ Tutor</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${tutorName}</span>
+                    <span style="color:#111827;font-size:15px;font-weight:600;">${tutorName}</span>
                   </td>
                 </tr>
-                <tr><td style="padding:10px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr><td style="padding:10px 0;border-top:1px solid #fed7aa;"></td></tr>
                 <tr>
                   <td style="padding:6px 0;">
-                    <span style="color:#9ca3af;font-size:12px;">📅 Date & Time (Brasília time)</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${lessonTime}</span>
+                    <span style="color:#9ca3af;font-size:12px;">📅 Data e horário (horário de Brasília)</span><br>
+                    <span style="color:#111827;font-size:15px;font-weight:600;">${lessonTime}</span>
                   </td>
                 </tr>
               </table>
             </div>
             <div style="text-align:center;">
-              <a href="https://onetalky.com/dashboard" style="display:inline-block;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
-                Enter the platform →
+              <a href="https://onetalky.com/dashboard" style="display:inline-block;background:#F26A1B;color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
+                Entrar na plataforma →
               </a>
             </div>
           </td>
         </tr>
         <tr>
-          <td style="padding:20px 36px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
-            <p style="margin:0;color:#4b5563;font-size:11px;">OneTalky · You are receiving this email because you have a scheduled lesson.</p>
+          <td style="padding:20px 36px;border-top:1px solid #e5e7eb;text-align:center;">
+            <p style="margin:0;color:#9ca3af;font-size:11px;">OneTalky · Você está recebendo este e-mail porque tem uma aula agendada.</p>
           </td>
         </tr>
       </table>
@@ -197,6 +217,7 @@ Deno.serve(async (req) => {
       if (diffMinutes < 0) continue;
 
       const lessonTime = formatDateTime(lesson.scheduled_at);
+      const lessonTimePt = formatDateTimePt(lesson.scheduled_at);
 
       // ---- TUTOR ----
       if (diffMinutes <= tutorMinutes) {
@@ -243,11 +264,11 @@ Deno.serve(async (req) => {
             await sendMailAndLog(base44, transporter, {
               from: SMTP_FROM(),
               to: studentEmail,
-              subject: `🎙️ Your lesson with ${lesson.tutor_name} starts in ${labelFor(studentMinutes)}`,
+              subject: `🎙️ Sua aula com ${lesson.tutor_name} começa em ${labelForPt(studentMinutes)}`,
               html: studentEmailHtml({
-                studentName: lesson.student_name || 'Student',
+                studentName: lesson.student_name || 'Aluno',
                 tutorName: lesson.tutor_name || 'Tutor',
-                lessonTime,
+                lessonTime: lessonTimePt,
                 minutesBefore: studentMinutes,
               }),
             }, "lesson_reminder");
