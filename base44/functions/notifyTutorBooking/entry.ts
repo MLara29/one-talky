@@ -1,7 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { getTransporter, SMTP_FROM, sendMailAndLog } from '../../shared/mailer.js';
 
-const LOGO_URL = 'https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/58595725d_ChatGPTImage19dejulde202620_57_33.png';
+// Logo oficial (mesma usada no cabeçalho do site em AppLayout.jsx) — antes este
+// arquivo usava um asset diferente ("ChatGPTImage...") que não era o logo oficial.
+const LOGO_URL = 'https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png';
 
 function escapeHtml(str: string): string {
   return String(str || '')
@@ -32,73 +34,73 @@ function buildEmail({ tutorName, studentName, scheduledAt, level, topics, object
   const tutorLocalTime = tutorTz && tutorTz !== brasiliaTz ? formatInTz(scheduledAt, tutorTz) : null;
 
   const topicsList = topics && topics.length > 0
-    ? topics.map(t => `<li style="margin:3px 0;color:#c4b5fd;font-size:14px;">• ${escapeHtml(t)}</li>`).join('')
+    ? topics.map(t => `<li style="margin:3px 0;color:#374151;font-size:14px;">• ${escapeHtml(t)}</li>`).join('')
     : '<li style="margin:3px 0;color:#9ca3af;font-size:14px;">Not specified</li>';
 
   const tutorTzRow = tutorLocalTime ? `
-    <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+    <tr><td style="padding:4px 0;border-top:1px solid #fed7aa;"></td></tr>
     <tr>
       <td style="padding:8px 0;">
         <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">🕐 Date & Time (your local timezone — ${escapeHtml(tutorTz)})</span><br>
-        <span style="color:#a78bfa;font-size:15px;font-weight:600;">${escapeHtml(tutorLocalTime)}</span>
+        <span style="color:#F26A1B;font-size:15px;font-weight:600;">${escapeHtml(tutorLocalTime)}</span>
       </td>
     </tr>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#030309;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#030309;padding:40px 20px;">
+<body style="margin:0;padding:0;background:#f9fafb;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 20px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f0f1f,#1a0a2e);border-radius:20px;overflow:hidden;border:1px solid rgba(139,92,246,0.25);">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #e5e7eb;">
         <tr>
-          <td style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:32px 36px;text-align:center;">
+          <td style="background:#F26A1B;padding:32px 36px;text-align:center;">
             <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:14px;padding:8px 12px;margin-bottom:14px;">
               <img src="${LOGO_URL}" alt="One Talky" width="40" height="40" style="border-radius:10px;display:block;object-fit:cover;" />
             </div>
             <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">One Talky</h1>
-            <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Language conversation platform</p>
+            <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;">Language conversation platform</p>
           </td>
         </tr>
         <tr>
           <td style="padding:36px 36px 28px;">
-            <p style="margin:0 0 8px;color:#a78bfa;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">📅 New Lesson Scheduled</p>
-            <h2 style="margin:0 0 8px;color:#ffffff;font-size:20px;font-weight:700;">Hi, ${escapeHtml(tutorName)}!</h2>
-            <p style="margin:0 0 24px;color:#c4b5fd;font-size:15px;line-height:1.6;">
-              A new lesson has been booked with you by <strong style="color:#ffffff;">${escapeHtml(studentName)}</strong>. Here are the details:
+            <p style="margin:0 0 8px;color:#F26A1B;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">📅 New Lesson Scheduled</p>
+            <h2 style="margin:0 0 8px;color:#111827;font-size:20px;font-weight:700;">Hi, ${escapeHtml(tutorName)}!</h2>
+            <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.6;">
+              A new lesson has been booked with you by <strong style="color:#111827;">${escapeHtml(studentName)}</strong>. Here are the details:
             </p>
 
-            <div style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:20px 22px;margin-bottom:20px;">
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:20px 22px;margin-bottom:20px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding:8px 0;">
                     <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">👤 Student</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(studentName)}</span>
+                    <span style="color:#111827;font-size:15px;font-weight:600;">${escapeHtml(studentName)}</span>
                   </td>
                 </tr>
-                <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr><td style="padding:4px 0;border-top:1px solid #fed7aa;"></td></tr>
                 <tr>
                   <td style="padding:8px 0;">
                     <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">🇧🇷 Date & Time (Brasília — America/Sao_Paulo)</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(brasiliaTime)}</span>
+                    <span style="color:#111827;font-size:15px;font-weight:600;">${escapeHtml(brasiliaTime)}</span>
                   </td>
                 </tr>
                 ${tutorTzRow}
-                <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr><td style="padding:4px 0;border-top:1px solid #fed7aa;"></td></tr>
                 <tr>
                   <td style="padding:8px 0;">
                     <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">📊 Student Level</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(levelLabel(level))}</span>
+                    <span style="color:#111827;font-size:15px;font-weight:600;">${escapeHtml(levelLabel(level))}</span>
                   </td>
                 </tr>
-                <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr><td style="padding:4px 0;border-top:1px solid #fed7aa;"></td></tr>
                 <tr>
                   <td style="padding:8px 0;">
                     <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">🎯 Learning Objective</span><br>
-                    <span style="color:#ffffff;font-size:15px;font-weight:600;">${escapeHtml(objective || 'Not specified')}</span>
+                    <span style="color:#111827;font-size:15px;font-weight:600;">${escapeHtml(objective || 'Not specified')}</span>
                   </td>
                 </tr>
-                <tr><td style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.06);"></td></tr>
+                <tr><td style="padding:4px 0;border-top:1px solid #fed7aa;"></td></tr>
                 <tr>
                   <td style="padding:8px 0;">
                     <span style="color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.5px;">💬 Conversation Topics</span><br>
@@ -108,22 +110,22 @@ function buildEmail({ tutorName, studentName, scheduledAt, level, topics, object
               </table>
             </div>
 
-            <div style="background:rgba(242,106,27,0.1);border:1px solid rgba(242,106,27,0.25);border-radius:12px;padding:14px 18px;margin-bottom:24px;">
-              <p style="margin:0;color:#fdba74;font-size:14px;line-height:1.5;">
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 18px;margin-bottom:24px;">
+              <p style="margin:0;color:#9a3412;font-size:14px;line-height:1.5;">
                 💡 <strong>Tip:</strong> Use the student's topics and objective to personalize the lesson and make them feel more comfortable speaking.
               </p>
             </div>
 
             <div style="text-align:center;">
-              <a href="https://onetalky.com/schedule" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
+              <a href="https://onetalky.com/schedule" style="display:inline-block;background:#F26A1B;color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
                 View my schedule →
               </a>
             </div>
           </td>
         </tr>
         <tr>
-          <td style="padding:20px 36px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
-            <p style="margin:0;color:#4b5563;font-size:11px;">One Talky · You are receiving this email because a student has booked a lesson with you.</p>
+          <td style="padding:20px 36px;border-top:1px solid #e5e7eb;text-align:center;">
+            <p style="margin:0;color:#9ca3af;font-size:11px;">One Talky · You are receiving this email because a student has booked a lesson with you.</p>
           </td>
         </tr>
       </table>
