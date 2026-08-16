@@ -21,8 +21,8 @@ async function handleTutorDeactivation(base44, tutor) {
         await sendMailAndLog(base44, transporter, {
           from: SMTP_FROM(),
           to: studentUser.email,
-          subject: "Your tutor is no longer available on One Talky",
-          html: `<p>Hi ${lesson.student_name || ""},</p><p>Your tutor ${lesson.tutor_name || "your tutor"} is no longer part of the One Talky platform, so your lesson scheduled for ${lesson.scheduled_at ? new Date(lesson.scheduled_at).toLocaleString("en-US") : "an upcoming date"} has been cancelled.</p><p>Please browse our other tutors and book a new lesson — we're here to help you find a great match. Your credits remain available in your account.</p><p>The One Talky Team</p>`,
+          subject: "Seu tutor não está mais disponível na One Talky",
+          html: `<p>Olá ${lesson.student_name || ""},</p><p>Seu tutor ${lesson.tutor_name || "seu tutor"} não faz mais parte da plataforma One Talky, então sua aula agendada para ${lesson.scheduled_at ? new Date(lesson.scheduled_at).toLocaleString("pt-BR") : "uma data futura"} foi cancelada.</p><p>Dê uma olhada nos nossos outros tutores e agende uma nova aula — estamos aqui para te ajudar a encontrar um ótimo par. Seus créditos continuam disponíveis na sua conta.</p><p>Equipe One Talky</p>`,
           _sentBy: "system",
         }, "tutor_deactivation");
       }
