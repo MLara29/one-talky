@@ -23,6 +23,17 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, already_started: true });
     }
 
+    // Hard block: past the 10-minute join grace period, this lesson belongs
+    // to the no-show system, not to a fresh start. Must match
+    // LESSON_JOIN_GRACE_PERIOD_MS in src/lib/constants.js.
+    const GRACE_PERIOD_MS = 10 * 60 * 1000;
+    if (lesson.scheduled_at) {
+      const overdueMs = Date.now() - new Date(lesson.scheduled_at).getTime();
+      if (overdueMs > GRACE_PERIOD_MS) {
+        return Response.json({ error: "join_window_closed" }, { status: 410 });
+      }
+    }
+
     await base44.asServiceRole.entities.Lesson.update(lesson_id, {
       status: "in_progress",
       started_at: new Date().toISOString(),
