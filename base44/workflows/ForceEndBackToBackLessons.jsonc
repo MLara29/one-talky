@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "force_end_back_to_back_lessons",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "force_end_lessons": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "forceEndBackToBackLessons",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Encerrar aulas coladas no hor\u00e1rio",
+            "description": "Encerra automaticamente aulas em andamento que j\u00e1 passaram do hor\u00e1rio previsto de t\u00e9rmino e t\u00eam uma pr\u00f3xima aula colada pro mesmo tutor"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Every minute, finds in-progress lessons past their scheduled end time that have another lesson booked back-to-back for the same tutor, and force-ends them exactly at the originally scheduled end time so the next lesson is never delayed.",
+  "name": "Force End Back-to-Back Lessons",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "* * * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}
