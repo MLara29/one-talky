@@ -768,6 +768,19 @@ export default function Classroom() {
     </div>
   );
 
+  if (joinWindowClosed) return (
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-ot-bg font-jakarta text-center px-6">
+      <AlertTriangle className="w-10 h-10 text-amber-500 mb-4" />
+      <h2 className="text-lg font-bold text-white mb-2">This lesson can no longer be joined</h2>
+      <p className="text-sm text-gray-400 max-w-sm mb-6">
+        The 10-minute window to join this lesson has passed. This lesson is being processed by our system.
+      </p>
+      <Button onClick={() => navigate(user?.role === "student" ? "/" : "/my-lessons")} className="bg-ot-primary text-white border-0">
+        Back
+      </Button>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 bg-ot-bg flex flex-col z-50 font-jakarta">
       {/* Credit warning banner */}
