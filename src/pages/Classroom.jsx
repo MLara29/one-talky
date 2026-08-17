@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
 import AgoraRTC from "agora-rtc-sdk-ng";
+import { LESSON_JOIN_GRACE_PERIOD_MS } from "@/lib/constants";
 
 const ONE_TALKY_LOGO_URL = "https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png";
 const initialsOf = (name) => (name || "").trim().slice(0, 2).toUpperCase() || "??";
@@ -24,6 +25,7 @@ export default function Classroom() {
 
   const [lesson, setLesson] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [joinWindowClosed, setJoinWindowClosed] = useState(false);
   const [cameraOn, setCameraOn] = useState(true);
   const [micOn, setMicOn] = useState(true);
   const [chatOpen, setChatOpen] = useState(false);
