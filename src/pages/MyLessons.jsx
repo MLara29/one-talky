@@ -334,12 +334,14 @@ export default function MyLessons() {
                     />
                   )}
                   <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/8 transition-all">
-                  {user?.role === "student" && canJoin(l) && l.status === "scheduled" && busyTutors[l.tutor_id] && (
+                  {user?.role === "student" && canJoin(l) && l.status === "scheduled" && !(onlineTutors[l.tutor_id] && !busyTutors[l.tutor_id]) && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3"
                       style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}>
                       <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                       <span className="text-xs text-amber-500">
-                        Seu tutor está terminando outra aula. Aguarde um instante antes de entrar.
+                        {busyTutors[l.tutor_id]
+                          ? "Seu tutor está em outra aula. Aguarde — o botão de entrar aparece assim que ele estiver livre."
+                          : "Aguarde seu tutor entrar na plataforma. Você tem até 10 minutos após o horário marcado."}
                       </span>
                     </div>
                   )}
@@ -357,7 +359,7 @@ export default function MyLessons() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {canJoin(l) && (
+                      {(user?.role === "student" ? (canJoin(l) && onlineTutors[l.tutor_id] && !busyTutors[l.tutor_id]) : canJoin(l)) && (
                         <Link to={`/classroom/${l.id}`}>
                           <Button size="sm" className="bg-orange-500 text-white hover:bg-orange-600 border-0">
                             {user?.role === "student" ? T("joinBtn") : "Join"}
