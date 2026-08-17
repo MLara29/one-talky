@@ -32,6 +32,11 @@ export async function processNoShow(base44, lesson) {
 
   const studentJoined = !!lesson.student_joined_at;
   const tutorJoined = !!lesson.tutor_joined_at;
+  // Sinal mais leve que student_joined_at: a tela do aluno mostrou "aguardando
+  // o tutor" pra essa aula, mesmo sem ele ter aberto a sala de vídeo (ex: o
+  // botão de entrar nunca apareceu porque o tutor não estava disponível).
+  // Conta como presença do aluno pra fins de atribuir a falta ao tutor.
+  const studentWaited = !!lesson.student_waiting_at;
 
   // ── CASO A: tutor entrou, aluno não → falta do ALUNO ──────────────────────
   if (tutorJoined && !studentJoined) {
@@ -67,8 +72,8 @@ export async function processNoShow(base44, lesson) {
     return { alreadyProcessed: false, durationMinutes, studentFault: true };
   }
 
-  // ── CASO B: aluno entrou, tutor não → falta do TUTOR ──────────────────────
-  if (studentJoined && !tutorJoined) {
+  // ── CASO B: aluno entrou (ou estava esperando), tutor não → falta do TUTOR ─
+  if ((studentJoined || studentWaited) && !tutorJoined) {
     const cas = await base44.asServiceRole.entities.Lesson.updateMany(
       { id: lessonId, status: 'scheduled' },
       { $set: { status: 'tutor_no_show', ended_at: nowIso } }
@@ -86,8 +91,8 @@ export async function processNoShow(base44, lesson) {
     return { alreadyProcessed: false, tutorFault: true };
   }
 
-  // ── CASO C: nenhum dos dois entrou → benefício da dúvida ──────────────────
-  if (!studentJoined && !tutorJoined) {
+  // ── CASO C: nenhum sinal de nenhum dos dois → benefício da dúvida ─────────
+  if (!studentJoined && !tutorJoined && !studentWaited) {
     const cas = await base44.asServiceRole.entities.Lesson.updateMany(
       { id: lessonId, status: 'scheduled' },
       { $set: { status: 'cancelled', ended_at: nowIso, notes: 'Nenhum participante entrou na sala' } }
