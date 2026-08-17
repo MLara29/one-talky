@@ -18,8 +18,22 @@ export async function completeLesson(base44, lesson, { isRecorded = false, ended
   const lessonId = lesson.id;
   const now = endedAtOverride ? new Date(endedAtOverride) : new Date();
   const nowIso = now.toISOString();
+
+  // Billing/earnings clock starts when BOTH participants have actually
+  // connected to the classroom (tutor_joined_at / student_joined_at, set by
+  // markLessonJoined on real Agora join) — not when just one side opened the
+  // page. This means: student is never charged, and tutor never earns, for
+  // the time either side spent alone waiting for the other to connect.
+  // Falls back to the old started_at-based behavior if either presence
+  // timestamp is missing (e.g. a tracking hiccup) — never worse than before.
+  const tutorJoinedMs = lesson.tutor_joined_at ? new Date(lesson.tutor_joined_at).getTime() : null;
+  const studentJoinedMs = lesson.student_joined_at ? new Date(lesson.student_joined_at).getTime() : null;
   const startedAtMs = lesson.started_at ? new Date(lesson.started_at).getTime() : now.getTime();
-  let durationSeconds = Math.max(1, (now.getTime() - startedAtMs) / 1000);
+  const billingStartMs = (tutorJoinedMs && studentJoinedMs)
+    ? Math.max(tutorJoinedMs, studentJoinedMs)
+    : startedAtMs;
+
+  let durationSeconds = Math.max(1, (now.getTime() - billingStartMs) / 1000);
 
   // Cap: the greater of the absolute floor or 2x the scheduled duration.
   const scheduledDurationMin = lesson.duration_minutes || 30;
