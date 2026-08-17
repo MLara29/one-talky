@@ -21,6 +21,18 @@ Deno.serve(async (req) => {
       : lesson.student_id === user.id ? 'student_joined_at' : null;
     if (!field) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
+    // Hard block: if the lesson never started (still "scheduled") and the
+    // 10-minute join grace period has passed, don't record a join — the
+    // no-show system already owns this lesson. Must match
+    // LESSON_JOIN_GRACE_PERIOD_MS in src/lib/constants.js.
+    const GRACE_PERIOD_MS = 10 * 60 * 1000;
+    if (lesson.status === 'scheduled' && lesson.scheduled_at) {
+      const overdueMs = Date.now() - new Date(lesson.scheduled_at).getTime();
+      if (overdueMs > GRACE_PERIOD_MS) {
+        return Response.json({ error: 'join_window_closed' }, { status: 410 });
+      }
+    }
+
     // Only set if not already recorded (idempotent — re-joins don't overwrite).
     if (!lesson[field]) {
       await base44.asServiceRole.entities.Lesson.update(lesson_id, { [field]: new Date().toISOString() });
