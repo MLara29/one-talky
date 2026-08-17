@@ -199,6 +199,19 @@ export default function Classroom() {
     try {
       const l = await base44.entities.Lesson.get(id);
       setLesson(l);
+
+      // Hard block: se a aula nunca começou (ainda "scheduled") e já passou
+      // a janela de 10 minutos de tolerância, ninguém entra mais — a partir
+      // daqui é o sistema de no-show que decide o que aconteceu, não esta tela.
+      if (l.status === "scheduled" && l.scheduled_at) {
+        const overdueMs = Date.now() - new Date(l.scheduled_at).getTime();
+        if (overdueMs > LESSON_JOIN_GRACE_PERIOD_MS) {
+          setJoinWindowClosed(true);
+          setLoading(false);
+          return;
+        }
+      }
+
       await Promise.all([
         notifyTutor(l).catch(() => {}),
         joinChannel(l),
