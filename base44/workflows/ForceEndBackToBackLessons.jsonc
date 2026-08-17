@@ -23,7 +23,7 @@
       }
     ]
   },
-  "description": "Every minute, finds in-progress lessons past their scheduled end time that have another lesson booked back-to-back for the same tutor, and force-ends them exactly at the originally scheduled end time so the next lesson is never delayed.",
+  "description": "Every 5 minutes, finds in-progress lessons past their scheduled end time that have another lesson booked back-to-back for the same tutor, and force-ends them exactly at the originally scheduled end time so the next lesson is never delayed.",
   "name": "Force End Back-to-Back Lessons",
   "trigger": {
     "condition": null,
@@ -31,7 +31,7 @@
       "trigger_type": "scheduled",
       "events": [],
       "schedule_mode": "recurring",
-      "cron_expression": "* * * * *",
+      "cron_expression": "*/5 * * * *",
       "one_time_date": null,
       "timezone": "America/Sao_Paulo",
       "interval_value": null,
