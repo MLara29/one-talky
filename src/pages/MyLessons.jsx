@@ -27,6 +27,8 @@ export default function MyLessons() {
   const [pendingRequests, setPendingRequests] = useState({});
   const [tick, setTick] = useState(0);
   const [busyTutors, setBusyTutors] = useState({});
+  const [onlineTutors, setOnlineTutors] = useState({});
+  const waitingMarkedRef = useRef(new Set());
   const lessonsRef = useRef(lessons);
 
   const T = (key) => t(lang, key);
@@ -177,26 +179,44 @@ export default function MyLessons() {
     return new Date(l.scheduled_at).getTime() - now <= LESSON_JOIN_WINDOW_BEFORE_MS;
   };
 
-  // Checa se o tutor está em outra aula ativa — só para alunos, e só para
-  // aulas que já estão na janela de "pode entrar" (canJoin). Reverifica
-  // a cada 20s para que o aviso suma assim que o tutor ficar livre.
+  // Checa se o tutor está em outra aula ativa e se está online — só para
+  // alunos, e só para aulas que já estão na janela de "pode entrar" (canJoin).
+  // Reverifica a cada 20s para que o botão apareça assim que o tutor ficar
+  // pronto. Enquanto o tutor não estiver pronto (offline ou ocupado), marca
+  // silenciosamente que o aluno está esperando essa aula (uma vez só por
+  // aula) — isso é o que permite ao sistema de no-show culpar o tutor
+  // corretamente mesmo quando o botão de entrar nunca chega a aparecer.
+  const ONLINE_THRESHOLD_MS = 90 * 1000;
   useEffect(() => {
     if (user?.role !== "student") return;
 
-    const checkBusyTutors = () => {
+    const checkTutorReadiness = () => {
       const lessonsToCheck = lessons.filter(l =>
         canJoin(l) && l.status === "scheduled" && l.tutor_id
       );
       lessonsToCheck.forEach(async (l) => {
         try {
-          const res = await base44.functions.invoke("checkTutorBusy", { tutor_id: l.tutor_id });
-          setBusyTutors(prev => ({ ...prev, [l.tutor_id]: res.data?.busy || false }));
+          const [busyRes, tutorProfiles] = await Promise.all([
+            base44.functions.invoke("checkTutorBusy", { tutor_id: l.tutor_id }),
+            base44.entities.TutorProfile.filter({ user_id: l.tutor_id }),
+          ]);
+          const busy = busyRes.data?.busy || false;
+          const tp = tutorProfiles[0];
+          const online = tp?.last_seen && (Date.now() - new Date(tp.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
+          setBusyTutors(prev => ({ ...prev, [l.tutor_id]: busy }));
+          setOnlineTutors(prev => ({ ...prev, [l.tutor_id]: online }));
+
+          const ready = online && !busy;
+          if (!ready && !waitingMarkedRef.current.has(l.id)) {
+            waitingMarkedRef.current.add(l.id);
+            base44.functions.invoke("markStudentWaiting", { lesson_id: l.id }).catch(() => {});
+          }
         } catch { /* falha silenciosa, não bloqueia nada */ }
       });
     };
 
-    checkBusyTutors(); // checagem imediata
-    const interval = setInterval(checkBusyTutors, 20000); // reverifica a cada 20s
+    checkTutorReadiness(); // checagem imediata
+    const interval = setInterval(checkTutorReadiness, 20000); // reverifica a cada 20s
     return () => clearInterval(interval);
   }, [lessons, user?.role]);
 
