@@ -17,14 +17,20 @@ export const LESSON_JOIN_GRACE_PERIOD_MS = 10 * 60 * 1000;
 export const LESSON_JOIN_WINDOW_BEFORE_MS = 2 * 60 * 1000;
 
 // Shared "time until lesson" formatter for upcoming-lesson cards.
-// Before scheduled_at: returns a positive "in Xd Xh" / "in Xh Xmin" / "in Xmin" label.
+// Before scheduled_at, more than 2 minutes out: returns a coarse positive
+// label ("in Xd Xh" / "in Xh Xmin" / "in Xmin").
+// Within the last 2 minutes before scheduled_at: returns a LIVE "MM:SS"
+// countdown (positive:true implied by absence of "negative"), ticking down
+// to 00:00 — this is the same visual family as the negative countdown below,
+// just not urgent/red yet (caller decides styling via `live`/`negative`).
 // After scheduled_at but still within the grace period: returns a negative
 // "-MM:SS" label (elapsed time since scheduled_at) with negative:true, so the
 // caller can style it as an urgent/red countdown.
 // Past the grace period: returns { label: null } (lesson should no longer show as upcoming).
 export function getLessonTimeStatus(scheduledAt, now = Date.now()) {
   const diff = new Date(scheduledAt).getTime() - now;
-  if (diff > 0) {
+
+  if (diff > LESSON_JOIN_WINDOW_BEFORE_MS) {
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const mins = Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -32,16 +38,25 @@ export function getLessonTimeStatus(scheduledAt, now = Date.now()) {
     if (days > 0) label = `in ${days}d ${hours}h`;
     else if (hours > 0) label = `in ${hours}h ${mins}min`;
     else label = `in ${mins}min`;
-    return { label, negative: false };
+    return { label, negative: false, live: false };
   }
+
+  if (diff > 0) {
+    // Últimos 2 minutos antes do horário — cronômetro ativo contando pra baixo.
+    const totalSecs = Math.ceil(diff / 1000);
+    const mm = String(Math.floor(totalSecs / 60)).padStart(2, "0");
+    const ss = String(totalSecs % 60).padStart(2, "0");
+    return { label: `${mm}:${ss}`, negative: false, live: true };
+  }
+
   const elapsed = -diff;
   if (elapsed <= LESSON_JOIN_GRACE_PERIOD_MS) {
     const totalSecs = Math.floor(elapsed / 1000);
     const mm = String(Math.floor(totalSecs / 60)).padStart(2, "0");
     const ss = String(totalSecs % 60).padStart(2, "0");
-    return { label: `-${mm}:${ss}`, negative: true };
+    return { label: `-${mm}:${ss}`, negative: true, live: true };
   }
-  return { label: null, negative: false };
+  return { label: null, negative: false, live: false };
 }
 
 export const LANGUAGES = [
