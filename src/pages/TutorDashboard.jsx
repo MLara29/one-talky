@@ -63,8 +63,9 @@ export default function TutorDashboard() {
 
   useEffect(() => { lessonsRef.current = lessons; }, [lessons]);
 
-  // Ticks every 30s normally, speeding up to every 1s while a lesson is inside
-  // its post-scheduled no-show grace window (negative countdown badge).
+  // Ticks every 30s normally, speeding up to every 1s while a lesson is within
+  // its last 2 minutes before scheduled_at (live countdown) OR inside its
+  // post-scheduled no-show grace window (negative countdown badge).
   useEffect(() => {
     let timeoutId;
     const scheduleTick = () => {
@@ -72,7 +73,7 @@ export default function TutorDashboard() {
       const anyInGrace = lessonsRef.current.some(l => {
         if (l.status !== "scheduled" || !l.scheduled_at) return false;
         const diff = now - new Date(l.scheduled_at).getTime();
-        return diff > 0 && diff <= LESSON_JOIN_GRACE_PERIOD_MS;
+        return diff > -LESSON_JOIN_WINDOW_BEFORE_MS && diff <= LESSON_JOIN_GRACE_PERIOD_MS;
       });
       timeoutId = setTimeout(() => {
         setTick(n => n + 1);
