@@ -345,6 +345,15 @@ export default function MyLessons() {
                       </span>
                     </div>
                   )}
+                  {user?.role === "tutor" && canJoin(l) && l.status === "scheduled" && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3"
+                      style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                      <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span className="text-xs text-amber-500">
+                        Waiting for the student to join. You'll be notified and the Join button will appear once they enter.
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between flex-wrap gap-3">
                     <div className="flex items-center gap-3">
                       <Calendar className="w-4 h-4 text-violet-400" />
