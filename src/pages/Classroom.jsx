@@ -807,7 +807,7 @@ export default function Classroom() {
     }
   }, [Math.floor(remainingSeconds ?? 999)]);
 
-  const displaySeconds = remainingSeconds !== null ? remainingSeconds : elapsed;
+  const displaySeconds = remainingSeconds ?? 0;
 
   // Student sees the remote (tutor) video enlarged when screen sharing is active
   const screenShareActive = user?.role === "student" && remoteIsScreenSharing;
@@ -879,15 +879,22 @@ export default function Classroom() {
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-colors ${
-            isLowTime ? "border-red-300 bg-red-50 animate-pulse" : "border-ot-primary/20 bg-ot-tint"
-          }`}>
-            <Clock className={`w-4 h-4 ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`} />
-            <div className="leading-none">
-              <p className={`text-[9px] font-bold uppercase tracking-wide ${isLowTime ? "text-ot-danger/70" : "text-ot-primary/70"}`}>{isEnglish ? "Remaining" : "Restante"}</p>
-              <p className={`text-[16px] font-extrabold tabular-nums ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`}>{formatTime(displaySeconds)}</p>
+          {remainingSeconds !== null ? (
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-colors ${
+              isLowTime ? "border-red-300 bg-red-50 animate-pulse" : "border-ot-primary/20 bg-ot-tint"
+            }`}>
+              <Clock className={`w-4 h-4 ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`} />
+              <div className="leading-none">
+                <p className={`text-[9px] font-bold uppercase tracking-wide ${isLowTime ? "text-ot-danger/70" : "text-ot-primary/70"}`}>{isEnglish ? "Remaining" : "Restante"}</p>
+                <p className={`text-[16px] font-extrabold tabular-nums ${isLowTime ? "text-ot-danger" : "text-ot-primary"}`}>{formatTime(displaySeconds)}</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-ot-primary/20 bg-ot-tint">
+              <Clock className="w-4 h-4 text-ot-primary animate-pulse" />
+              <p className="text-[11px] font-bold text-ot-primary/70">{isEnglish ? "Waiting for both..." : "Aguardando os dois..."}</p>
+            </div>
+          )}
         </div>
       </div>
 
