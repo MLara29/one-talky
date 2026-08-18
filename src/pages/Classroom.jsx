@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, AlertTriangle, Monitor, MonitorOff } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, AlertTriangle, Monitor, MonitorOff, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
@@ -997,6 +997,18 @@ export default function Classroom() {
                         : `Aguardando ${user?.role === "tutor" ? "o aluno" : "o tutor"} conectar…`)}
                 </p>
                 {joined && <p className="text-ot-online text-xs mt-1.5 font-semibold">{isEnglish ? "● You are connected" : "● Você está conectado"}</p>}
+                {autoRetriesExhausted && remoteUserPresent && (
+                  <button
+                    onClick={manualReconnect}
+                    disabled={manualReconnecting}
+                    className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-ot-primary hover:brightness-95 transition-all disabled:opacity-60"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${manualReconnecting ? "animate-spin" : ""}`} />
+                    {manualReconnecting
+                      ? (isEnglish ? "Reconnecting…" : "Reconectando…")
+                      : (isEnglish ? "Reconnect video" : "Reconectar vídeo")}
+                  </button>
+                )}
               </div>
             </div>
           )}
