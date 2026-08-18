@@ -203,11 +203,11 @@ export default function StudentDashboard() {
               <Calendar className="w-5 h-5 text-orange-500" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-gray-900 truncate">Upcoming lesson with {upcomingLesson.tutor_name}</p>
+              <p className="font-bold text-gray-900 truncate">{t(lang, "upcomingLessonWith")} {upcomingLesson.tutor_name}</p>
               <p className="text-sm text-gray-500 truncate">
                 {upcomingLesson.language} · {new Date(upcomingLesson.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 {!upcomingTutorReady && (
-                  <span className="text-amber-600"> · {upcomingTutorBusy ? "Tutor is finishing another lesson" : "Waiting for your tutor to come online"}</span>
+                  <span className="text-amber-600"> · {upcomingTutorBusy ? t(lang, "tutorFinishingAnotherLesson") : t(lang, "waitingForTutorOnline")}</span>
                 )}
               </p>
             </div>
