@@ -142,6 +142,7 @@ export default function AdminAffiliates() {
     aguardando_7_dias: { label: "Em carência", cls: "bg-amber-500/10 border-amber-500/20 text-amber-400" },
     liberado: { label: "Liberado", cls: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" },
     pago: { label: "Pago", cls: "bg-blue-500/10 border-blue-500/20 text-blue-400" },
+    cancelado: { label: "Cancelado (venda reembolsada)", cls: "bg-red-500/10 border-red-500/20 text-red-400" },
   };
 
   return (
