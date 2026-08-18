@@ -879,6 +879,21 @@ export default function Classroom() {
         </div>
       )}
 
+      {/* Tutor: aviso de que a aula está terminando (sempre em inglês) */}
+      {user?.role === "tutor" && showCreditWarning && minsRemaining !== null && minsRemaining > 0 && (
+        <div className="flex items-center justify-between gap-3 px-5 py-3 bg-ot-warn-bg border-b border-ot-warn-border">
+          <div className="flex items-center gap-2 text-ot-warn-text text-sm font-semibold min-w-0">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span className="truncate">
+              This lesson will end in {Math.ceil(minsRemaining)} minute{Math.ceil(minsRemaining) !== 1 ? "s" : ""} — please wrap up.
+            </span>
+          </div>
+          <button onClick={() => setShowCreditWarning(false)} className="text-ot-warn-text/60 hover:text-ot-warn-text shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="relative flex items-center justify-between px-5 py-2 bg-white border-b border-ot-border shadow-sm gap-3">
         <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center pointer-events-none">
