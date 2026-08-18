@@ -118,7 +118,10 @@ export default function Classroom() {
     return () => clearInterval(interval);
   }, []);
 
-  // Poll for remote lesson end
+  // Poll for remote lesson end + cálculo do horário-alvo de término (uma vez
+  // só, assim que os dois participantes estiverem confirmados na sala).
+  const NEXT_LESSON_BUFFER_MS = 5 * 60 * 1000; // mesmo buffer usado no backend (forceEndBackToBackLessons)
+
   useEffect(() => {
     const poll = setInterval(async () => {
       if (endingRef.current) return;
@@ -129,6 +132,42 @@ export default function Classroom() {
           clearInterval(poll);
           await leaveChannel();
           setShowReview(true);
+          return;
+        }
+
+        // Assim que tutor_joined_at E student_joined_at estiverem preenchidos,
+        // calcula o horário-alvo de término (uma vez só — não recalcula depois).
+        if (!mutualPresenceComputedRef.current && l.tutor_joined_at && l.student_joined_at && l.scheduled_at) {
+          mutualPresenceComputedRef.current = true;
+          const mutualJoinAtMs = Math.max(
+            new Date(l.tutor_joined_at).getTime(),
+            new Date(l.student_joined_at).getTime()
+          );
+          const scheduledDurationMs = (l.duration_minutes || 30) * 60 * 1000;
+          const scheduledEndMs = new Date(l.scheduled_at).getTime() + scheduledDurationMs;
+          const creditCappedMs = totalDurationRef.current !== null
+            ? mutualJoinAtMs + totalDurationRef.current * 1000
+            : mutualJoinAtMs + scheduledDurationMs;
+
+          let hasNext = false;
+          try {
+            const nextLessons = await base44.entities.Lesson.filter({
+              tutor_id: l.tutor_id,
+              status: "scheduled",
+            });
+            hasNext = nextLessons.some((nl) => {
+              if (!nl.scheduled_at || nl.id === l.id) return false;
+              const nextStartMs = new Date(nl.scheduled_at).getTime();
+              return nextStartMs >= scheduledEndMs && (nextStartMs - scheduledEndMs) <= NEXT_LESSON_BUFFER_MS;
+            });
+          } catch { /* se falhar, trata como se não tivesse próxima aula */ }
+
+          // Com próxima aula colada: encerra no horário original (ou antes,
+          // se o crédito do aluno acabar primeiro). Sem próxima aula: usa o
+          // tempo completo (crédito) a partir da conexão mútua.
+          const target = hasNext ? Math.min(scheduledEndMs, creditCappedMs) : creditCappedMs;
+          lessonEndTargetRef.current = target;
+          setLessonEndTargetMs(target);
         }
       } catch {}
     }, 3000);
