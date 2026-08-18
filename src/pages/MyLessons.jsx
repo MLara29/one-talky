@@ -36,7 +36,8 @@ export default function MyLessons() {
   useEffect(() => { lessonsRef.current = lessons; }, [lessons]);
 
   // Tick to refresh countdown and join button visibility — ticks every 30s
-  // normally, but speeds up to every 1s while a lesson is in its post-scheduled
+  // normally, but speeds up to every 1s while a lesson is within its last
+  // 2 minutes before scheduled_at (live countdown) OR in its post-scheduled
   // no-show grace window (negative countdown), then slows back down.
   useEffect(() => {
     let timeoutId;
@@ -45,7 +46,9 @@ export default function MyLessons() {
       const anyInGrace = lessonsRef.current.some(l => {
         if (l.status !== "scheduled" || !l.scheduled_at) return false;
         const diff = now - new Date(l.scheduled_at).getTime();
-        return diff > 0 && diff <= LESSON_JOIN_GRACE_PERIOD_MS;
+        // diff negativo grande = ainda longe (fora dos 2min antes); diff
+        // positivo além da tolerância = já passou da janela de no-show.
+        return diff > -LESSON_JOIN_WINDOW_BEFORE_MS && diff <= LESSON_JOIN_GRACE_PERIOD_MS;
       });
       timeoutId = setTimeout(() => {
         setTick(n => n + 1);
