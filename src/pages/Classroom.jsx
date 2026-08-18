@@ -203,6 +203,17 @@ export default function Classroom() {
             setRemoteIsScreenSharing(m.text === "__SCREEN_SHARE:true");
             return;
           }
+          // System signal: the OTHER participant is asking ME to silently
+          // toggle my OWN camera (they can't see my video). Only the side
+          // matching the target role reacts — never touches the visible
+          // camera button state, completely invisible to whoever receives it.
+          if (m.text?.startsWith("__TOGGLE_CAMERA_REQUEST:")) {
+            const targetRole = m.text.split(":")[1];
+            if (targetRole === user?.role) {
+              performSilentCameraToggle();
+            }
+            return;
+          }
           if (m.sender_id === user?.id) return;
           setMessages(prev => [...prev, {
             id: m.id,
