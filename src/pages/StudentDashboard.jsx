@@ -1,15 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
-import { Search, X, MessageSquare } from "lucide-react";
+import { Search, X, MessageSquare, Clock, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import TutorCard from "@/components/tutors/TutorCard";
 import CreditsBanner from "@/components/student/CreditsBanner";
 import SupportModal from "@/components/support/SupportModal";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
+import { LESSON_JOIN_GRACE_PERIOD_MS, LESSON_JOIN_WINDOW_BEFORE_MS, getLessonTimeStatus } from "@/lib/constants";
+
+const UPCOMING_CARD_WINDOW_MS = 5 * 60 * 1000; // card aparece a partir de 5min antes
+const ONLINE_THRESHOLD_MS = 90 * 1000;
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -22,7 +27,15 @@ export default function StudentDashboard() {
   const [showSupport, setShowSupport] = useState(false);
   const [tick, setTick] = useState(0);
 
+  // Aula agendada prestes a começar (aparece 5min antes) + prontidão do tutor dela
+  const [upcomingLesson, setUpcomingLesson] = useState(null);
+  const [upcomingTutorReady, setUpcomingTutorReady] = useState(false);
+  const [upcomingTutorBusy, setUpcomingTutorBusy] = useState(false);
+  const upcomingLessonRef = useRef(null);
+  const waitingMarkedRef = useRef(new Set());
+
   useEffect(() => { loadData(); }, [user]);
+  useEffect(() => { upcomingLessonRef.current = upcomingLesson; }, [upcomingLesson]);
 
   // Realtime: update tutor cards when availability or rating changes
   useEffect(() => {
@@ -50,11 +63,80 @@ export default function StudentDashboard() {
     return () => { unsubTutor(); unsubReview(); };
   }, []);
 
-  // Tick every 30s so isOnline (Date.now()-based) re-evaluates and cards re-sort dynamically
+  // Tick — normalmente a cada 30s, acelera pra 1s enquanto tem uma aula na
+  // janela de cronômetro ativo (2min antes até 10min de tolerância depois).
   useEffect(() => {
-    const interval = setInterval(() => setTick(n => n + 1), 30_000);
-    return () => clearInterval(interval);
+    let timeoutId;
+    const scheduleTick = () => {
+      const now = Date.now();
+      const l = upcomingLessonRef.current;
+      const fast = l && l.scheduled_at && (() => {
+        const diff = now - new Date(l.scheduled_at).getTime();
+        return diff > -LESSON_JOIN_WINDOW_BEFORE_MS && diff <= LESSON_JOIN_GRACE_PERIOD_MS;
+      })();
+      timeoutId = setTimeout(() => {
+        setTick(n => n + 1);
+        scheduleTick();
+      }, fast ? 1000 : 30_000);
+    };
+    scheduleTick();
+    return () => clearTimeout(timeoutId);
   }, []);
+
+  // Busca a próxima aula agendada do aluno, dentro da janela de 5min antes
+  // até a tolerância de 10min depois — essa é a que aparece no card.
+  useEffect(() => {
+    if (!user?.id) return;
+    const checkUpcoming = async () => {
+      try {
+        const lessons = await base44.entities.Lesson.filter({ student_id: user.id, status: "scheduled" });
+        const now = Date.now();
+        const next = lessons.find(l => {
+          if (!l.scheduled_at) return false;
+          const diff = now - new Date(l.scheduled_at).getTime();
+          return diff > -UPCOMING_CARD_WINDOW_MS && diff <= LESSON_JOIN_GRACE_PERIOD_MS;
+        });
+        setUpcomingLesson(next || null);
+      } catch { /* silencioso — não bloqueia o resto do dashboard */ }
+    };
+    checkUpcoming();
+    const interval = setInterval(checkUpcoming, 20_000);
+    return () => clearInterval(interval);
+  }, [user?.id]);
+
+  // Checa se o tutor da próxima aula está pronto (online e livre) — mesma
+  // regra usada em My Lessons. Enquanto não estiver pronto, marca
+  // silenciosamente "aluno esperando" (uma vez por aula), pro sistema de
+  // no-show conseguir culpar o tutor corretamente mesmo sem o aluno abrir a sala.
+  useEffect(() => {
+    if (!upcomingLesson?.tutor_id) {
+      setUpcomingTutorReady(false);
+      setUpcomingTutorBusy(false);
+      return;
+    }
+    const check = async () => {
+      try {
+        const [busyRes, tutorProfiles] = await Promise.all([
+          base44.functions.invoke("checkTutorBusy", { tutor_id: upcomingLesson.tutor_id }),
+          base44.entities.TutorProfile.filter({ user_id: upcomingLesson.tutor_id }),
+        ]);
+        const busy = busyRes.data?.busy || false;
+        const tp = tutorProfiles[0];
+        const online = tp?.last_seen && (Date.now() - new Date(tp.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
+        setUpcomingTutorBusy(busy);
+        setUpcomingTutorReady(Boolean(online) && !busy);
+
+        const ready = online && !busy;
+        if (!ready && !waitingMarkedRef.current.has(upcomingLesson.id)) {
+          waitingMarkedRef.current.add(upcomingLesson.id);
+          base44.functions.invoke("markStudentWaiting", { lesson_id: upcomingLesson.id }).catch(() => {});
+        }
+      } catch { /* silencioso */ }
+    };
+    check();
+    const interval = setInterval(check, 20_000);
+    return () => clearInterval(interval);
+  }, [upcomingLesson?.id, upcomingLesson?.tutor_id]);
 
   const loadData = async () => {
     setLoading(true);
@@ -68,15 +150,6 @@ export default function StudentDashboard() {
     } catch { setTutors([]); } finally { setLoading(false); }
   };
 
-  const loadTutors = async () => {
-    setLoading(true);
-    try {
-      const data = await base44.entities.TutorProfile.filter({ status: "approved" });
-      setTutors(data.filter(t => Boolean(t.photo_url)));
-    } catch { setTutors([]); } finally { setLoading(false); }
-  };
-
-  const ONLINE_THRESHOLD_MS = 90 * 1000; // 90 seconds
   const isOnline = (t) => {
     if (!t.last_seen) return false;
     return (Date.now() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
@@ -110,12 +183,57 @@ export default function StudentDashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   [tutors, search, availableNow, tick]);
 
+  const upcomingStatus = upcomingLesson?.scheduled_at ? getLessonTimeStatus(upcomingLesson.scheduled_at, Date.now()) : null;
+  const canShowJoin = upcomingLesson && upcomingStatus && (upcomingStatus.live || upcomingStatus.negative)
+    && new Date(upcomingLesson.scheduled_at).getTime() - Date.now() <= LESSON_JOIN_WINDOW_BEFORE_MS
+    && upcomingTutorReady;
+
   return (
     <div>
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
 
       {/* Credits Banner */}
       {profile && <CreditsBanner profile={profile} onUpdate={setProfile} />}
+
+      {/* Upcoming lesson card — aparece 5min antes da aula agendada */}
+      {upcomingLesson && (
+        <div className="mb-6 rounded-3xl bg-white border border-orange-200 shadow-sm p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-orange-100 flex items-center justify-center shrink-0">
+              <Calendar className="w-5 h-5 text-orange-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-gray-900 truncate">Upcoming lesson with {upcomingLesson.tutor_name}</p>
+              <p className="text-sm text-gray-500 truncate">
+                {upcomingLesson.language} · {new Date(upcomingLesson.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {!upcomingTutorReady && (
+                  <span className="text-amber-600"> · {upcomingTutorBusy ? "Tutor is finishing another lesson" : "Waiting for your tutor to come online"}</span>
+                )}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            {upcomingStatus?.label && (
+              <span className={
+                upcomingStatus.negative
+                  ? "text-sm font-bold px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 text-red-500 animate-pulse tabular-nums"
+                  : upcomingStatus.live
+                    ? "text-sm font-bold px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-500 tabular-nums"
+                    : "text-sm text-gray-500 font-medium"
+              }>
+                {upcomingStatus.label}
+              </span>
+            )}
+            {canShowJoin && (
+              <Link to={`/classroom/${upcomingLesson.id}`}>
+                <Button size="sm" className="bg-orange-500 text-white hover:bg-orange-600 border-0">
+                  {t(lang, "joinBtn")}
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Welcome header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
