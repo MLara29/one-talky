@@ -235,31 +235,6 @@ export default function TutorDashboard() {
 
   return (
     <div>
-      {upcomingAlert && (
-        <AutoDismissAlert onDismiss={() => setUpcomingAlert(null)}
-          className="mb-4 flex items-center justify-between gap-4 bg-gradient-to-r from-orange-500/20 to-orange-600/10 border border-orange-500/40 rounded-2xl px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5 text-orange-400" />
-            </div>
-            <div>
-              <p className="font-semibold text-white text-sm">⏰ Lesson starting soon!</p>
-              <p className="text-xs text-orange-400">{upcomingAlert.student_name} — {upcomingAlert.language} — in less than 5 minutes</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link to={`/classroom/${upcomingAlert.id}`}>
-              <Button size="sm" className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/30">
-                Open classroom
-              </Button>
-            </Link>
-            <button onClick={() => setUpcomingAlert(null)} className="text-orange-300 hover:text-white transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </AutoDismissAlert>
-      )}
-
       {liveAlert && (
         <AutoDismissAlert onDismiss={() => setLiveAlert(null)}
           className="mb-6 flex items-center justify-between gap-4 bg-gradient-to-r from-orange-500/20 to-orange-700/10 border border-orange-500/50 rounded-2xl px-5 py-4 animate-pulse">
