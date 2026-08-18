@@ -975,6 +975,25 @@ export default function Classroom() {
             </div>
           )}
 
+          {/* Botão discreto de reconexão manual — SEMPRE disponível enquanto a
+              outra pessoa está na sala, mesmo quando o sistema "acha" que já
+              tem o vídeo dela (remoteVideoTrack pode ficar preenchido mesmo
+              sem o vídeo aparecer de verdade na tela — não dá pra confiar só
+              nesse estado pra decidir se mostra o botão ou não). */}
+          {remoteUserPresent && (
+            <button
+              onClick={requestRemoteCameraFix}
+              disabled={requestingRemoteFix}
+              title={isEnglish ? "Reconnect video" : "Reconectar vídeo"}
+              className="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-black/60 hover:bg-black/75 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg backdrop-blur-sm transition-all disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${requestingRemoteFix ? "animate-spin" : ""}`} />
+              {requestingRemoteFix
+                ? (isEnglish ? "Requesting…" : "Solicitando…")
+                : (isEnglish ? "Reconnect video" : "Reconectar vídeo")}
+            </button>
+          )}
+
           {/* Local video (PiP) — nested inside the remote video area so it stays
               positioned relative to the video stage, not the whole layout
               (including the chat panel) — shrinks when watching screen share */}
