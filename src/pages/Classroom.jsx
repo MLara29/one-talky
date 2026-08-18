@@ -102,15 +102,16 @@ export default function Classroom() {
     return () => leaveChannel();
   }, [id]);
 
-  // Main countdown timer
+  // Ticker — só força re-render a cada segundo, pra o cronômetro (calculado a
+  // partir de lessonEndTargetMs, um horário-alvo fixo) se atualizar na tela.
+  // O encerramento automático de verdade é acionado mais abaixo, comparando
+  // Date.now() com lessonEndTargetMs — não depende mais de quanto tempo faz
+  // que ESTA página específica carregou.
   useEffect(() => {
     const interval = setInterval(() => {
       setElapsed(e => {
         const next = e + 1;
         elapsedRef.current = next;
-        if (totalDurationRef.current !== null && next >= totalDurationRef.current && !endingRef.current) {
-          endLesson();
-        }
         return next;
       });
     }, 1000);
