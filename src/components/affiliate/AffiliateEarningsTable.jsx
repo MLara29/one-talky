@@ -1,5 +1,5 @@
 import React from "react";
-import { Clock, CheckCircle, DollarSign } from "lucide-react";
+import { Clock, CheckCircle, DollarSign, XCircle } from "lucide-react";
 
 function fmtBRL(v) {
   return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -13,6 +13,7 @@ const STATUS_CONFIG = {
   aguardando_7_dias: { label: "Em carência", icon: Clock, cls: "bg-amber-500/10 border-amber-500/20 text-amber-400" },
   liberado: { label: "Liberado", icon: CheckCircle, cls: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" },
   pago: { label: "Pago", icon: DollarSign, cls: "bg-blue-500/10 border-blue-500/20 text-blue-400" },
+  cancelado: { label: "Cancelado (venda reembolsada)", icon: XCircle, cls: "bg-red-500/10 border-red-500/20 text-red-400" },
 };
 
 export default function AffiliateEarningsTable({ earnings }) {
