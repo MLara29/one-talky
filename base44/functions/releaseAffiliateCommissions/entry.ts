@@ -15,20 +15,58 @@ Deno.serve(async (req) => {
     });
 
     const now = new Date();
-    const toRelease = pending.filter((e) => {
+    const toProcess = pending.filter((e) => {
       if (!e.release_date) return false;
       return new Date(e.release_date) <= now;
     });
 
     let released = 0;
-    for (const earning of toRelease) {
+    let voided = 0;
+
+    for (const earning of toProcess) {
+      // Antes de liberar, confere se o aluno recebeu um reembolso (dentro da
+      // garantia de 7 dias) ENTRE a data da venda e a data de liberação desta
+      // comissão específica. Se sim, a venda que gerou essa comissão foi
+      // revertida — a comissão não deve ser paga ao afiliado.
+      // Usa StudentAccountEvent (type: "refund_issued"), que já registra o
+      // horário exato de cada reembolso — mais preciso do que um flag genérico
+      // no perfil, porque permite casar o reembolso com a venda certa mesmo
+      // que o aluno tenha assinado e cancelado mais de uma vez ao longo do tempo.
+      let wasRefunded = false;
+      if (earning.sale_date && earning.release_date) {
+        try {
+          const refundEvents = await base44.asServiceRole.entities.StudentAccountEvent.filter({
+            student_id: earning.student_id,
+            type: "refund_issued",
+          });
+          const saleMs = new Date(earning.sale_date).getTime();
+          const releaseMs = new Date(earning.release_date).getTime();
+          wasRefunded = refundEvents.some((ev) => {
+            if (!ev.created_at) return false;
+            const evMs = new Date(ev.created_at).getTime();
+            return evMs >= saleMs && evMs <= releaseMs;
+          });
+        } catch (e) {
+          console.error("[releaseAffiliateCommissions] failed to check refund events for earning", earning.id, e.message);
+        }
+      }
+
+      if (wasRefunded) {
+        await base44.asServiceRole.entities.AffiliateEarning.update(earning.id, {
+          status: "cancelado",
+        });
+        voided++;
+        console.log(`[releaseAffiliateCommissions] voided earning ${earning.id} — refund found between sale and release`);
+        continue;
+      }
+
       await base44.asServiceRole.entities.AffiliateEarning.update(earning.id, {
         status: "liberado",
       });
       released++;
     }
 
-    return Response.json({ success: true, released, checked: pending.length });
+    return Response.json({ success: true, released, voided, checked: pending.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
