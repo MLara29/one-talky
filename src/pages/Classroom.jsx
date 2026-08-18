@@ -14,9 +14,6 @@ import { LESSON_JOIN_GRACE_PERIOD_MS } from "@/lib/constants";
 const ONE_TALKY_LOGO_URL = "https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png";
 const initialsOf = (name) => (name || "").trim().slice(0, 2).toUpperCase() || "??";
 
-const MAX_REPUBLISH_ATTEMPTS = 3;
-const REPUBLISH_RETRY_INTERVAL_MS = 5000;
-
 export default function Classroom() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -35,11 +32,9 @@ export default function Classroom() {
   const [showReview, setShowReview] = useState(false);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
   const [remoteUserPresent, setRemoteUserPresent] = useState(false);
-  // Fica true quando as 3 tentativas automáticas de republicar o vídeo já se
-  // esgotaram e ainda assim não estamos recebendo o vídeo remoto — só nesse
-  // ponto o botão manual de reconexão aparece.
-  const [autoRetriesExhausted, setAutoRetriesExhausted] = useState(false);
-  const [manualReconnecting, setManualReconnecting] = useState(false);
+  // Enquanto o pedido de reconexão remota está sendo enviado (feedback só
+  // pra quem clicou — o outro lado não vê nada, o toggle nele é silencioso).
+  const [requestingRemoteFix, setRequestingRemoteFix] = useState(false);
   const [joined, setJoined] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
@@ -59,8 +54,6 @@ export default function Classroom() {
   const clientRef = useRef(null);
   const reconcileRef = useRef(null);
   const joinGuardRef = useRef(false);
-  const autoRepublishAttemptsRef = useRef(0);
-  const lastRepublishAtRef = useRef(0);
   const remoteVideoTrackRef = useRef(null);
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
@@ -361,7 +354,6 @@ export default function Classroom() {
   const setRemoteTrack = (track) => {
     remoteVideoTrackRef.current = track;
     setRemoteVideoTrack(track);
-    if (track) setAutoRetriesExhausted(false);
   };
 
   // Classifies a camera/mic creation error into a friendly reason
