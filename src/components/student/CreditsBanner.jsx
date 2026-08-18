@@ -306,7 +306,9 @@ export default function CreditsBanner({ profile, onUpdate }) {
             {/* Plan credits bar */}
             <div className="w-full" style={{ maxWidth: 280 }}>
               <div className="flex items-center justify-between mb-1">
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>Plano</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>
+                  Plano {planObj?.name || "Free"} {planMaxMinutes} min
+                </span>
                 {graceDate && (
                   <span style={{ fontSize: 11, fontWeight: 600, color: "#f59e0b" }}>
                     Cancelado · até {graceDate}
@@ -327,8 +329,13 @@ export default function CreditsBanner({ profile, onUpdate }) {
                   transition: "width 0.5s ease",
                 }} />
                 <span style={{
-                  position: "absolute", left: "50%", top: "50%",
-                  transform: "translate(-50%,-50%)",
+                  position: "absolute", left: 10, top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: 11, fontWeight: 800, color: "#f97316",
+                }}>{planPct}%</span>
+                <span style={{
+                  position: "absolute", right: 10, top: "50%",
+                  transform: "translateY(-50%)",
                   fontSize: 12, fontWeight: 800, color: "#f97316",
                 }}>{Math.floor(planMins)} min</span>
               </div>
