@@ -1148,33 +1148,34 @@ export default function Classroom() {
         )}
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-3 py-4 px-4">
+      {/* Controls — estilo Google Meet: círculo cinza escuro, ícone laranja
+          (cor da marca), botão de desligar em vermelho. */}
+      <div className="flex items-center justify-center gap-3 py-4 px-4" style={{ background: "#202124" }}>
           <button
             onClick={toggleMic}
-            className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
-              micOn ? "bg-ot-primary text-black hover:brightness-95" : "bg-ot-primary/25 text-black/50 hover:bg-ot-primary/35"
+            className={`rounded-full flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
+              micOn ? "bg-[#3c4043] hover:bg-[#4a4d51] text-ot-primary" : "bg-[#3c4043] hover:bg-[#4a4d51] text-ot-danger"
             }`}
           >
             {micOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
           </button>
           <button
             onClick={toggleCamera}
-            className={`rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
-              cameraOn ? "bg-ot-primary text-black hover:brightness-95" : "bg-ot-primary/25 text-black/50 hover:bg-ot-primary/35"
+            className={`rounded-full flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
+              cameraOn ? "bg-[#3c4043] hover:bg-[#4a4d51] text-ot-primary" : "bg-[#3c4043] hover:bg-[#4a4d51] text-ot-danger"
             }`}
           >
             {cameraOn ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
           </button>
           <button
             onClick={() => { const next = !chatOpenRef.current; chatOpenRef.current = next; setChatOpen(next); if (next) setUnreadCount(0); }}
-            className={`relative rounded-2xl flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 ${
-              chatOpen ? "bg-ot-primary text-black ring-2 ring-black/15 hover:brightness-95" : "bg-ot-primary text-black hover:brightness-95"
+            className={`relative rounded-full flex items-center justify-center transition-all hover:scale-105 w-[52px] h-[52px] sm:w-14 sm:h-14 bg-[#3c4043] hover:bg-[#4a4d51] ${
+              chatOpen ? "text-white ring-2 ring-ot-primary/60" : "text-ot-primary"
             }`}
           >
             <MessageCircle className="w-6 h-6" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-ot-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-ot-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#202124]">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
@@ -1183,10 +1184,8 @@ export default function Classroom() {
             <button
               onClick={toggleScreenShare}
               title={isScreenSharing ? (isEnglish ? "Stop sharing" : "Parar compartilhamento") : (isEnglish ? "Share screen" : "Compartilhar tela")}
-              className={`hidden sm:flex rounded-2xl items-center justify-center transition-all hover:scale-105 w-14 h-14 ${
-                isScreenSharing
-                  ? "bg-ot-primary text-black ring-2 ring-black/15 hover:brightness-95"
-                  : "bg-ot-primary text-black hover:brightness-95"
+              className={`hidden sm:flex rounded-full items-center justify-center transition-all hover:scale-105 w-14 h-14 bg-[#3c4043] hover:bg-[#4a4d51] ${
+                isScreenSharing ? "text-white ring-2 ring-ot-primary/60" : "text-ot-primary"
               }`}
             >
               {isScreenSharing ? <MonitorOff className="w-6 h-6" /> : <Monitor className="w-6 h-6" />}
@@ -1195,7 +1194,7 @@ export default function Classroom() {
           <button
             onClick={endLesson}
             disabled={lessonEnding}
-            className="bg-ot-danger hover:brightness-95 text-white rounded-2xl flex items-center justify-center transition-all hover:scale-105 disabled:opacity-50 w-14 h-[52px] sm:h-14"
+            className="bg-ot-danger hover:brightness-95 text-white rounded-full flex items-center justify-center transition-all hover:scale-105 disabled:opacity-50 w-14 h-[52px] sm:h-14"
           >
             <PhoneOff className="w-5 h-5" />
           </button>
