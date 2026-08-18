@@ -461,6 +461,7 @@ export default function Classroom() {
   const joinChannel = async (l) => {
     if (joinGuardRef.current) return;
     joinGuardRef.current = true;
+    setAutoRetriesExhausted(false);
 
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     clientRef.current = client;
