@@ -379,7 +379,20 @@ export default function MyLessons() {
                           : status.live
                             ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-500 tabular-nums"
                             : "text-xs text-gray-500 font-medium";
-                        return <span className={cls}>{status.label}</span>;
+                        // status.label bruto é sempre em inglês ("in 2h 30min").
+                        // Pro tutor, mantém assim (regra: tutor sempre inglês).
+                        // Pro aluno, remonta o texto no idioma escolhido dele,
+                        // usando os valores crus (days/hours/mins) — só o rótulo
+                        // "grosso" precisa disso; o cronômetro ativo/negativo já
+                        // é só número, não precisa de tradução.
+                        let displayLabel = status.label;
+                        if (user?.role === "student" && !status.live && !status.negative) {
+                          const prefix = T("inTimePrefix");
+                          if (status.days > 0) displayLabel = `${prefix} ${status.days}d ${status.hours}h`;
+                          else if (status.hours > 0) displayLabel = `${prefix} ${status.hours}h ${status.mins}min`;
+                          else displayLabel = `${prefix} ${status.mins}min`;
+                        }
+                        return <span className={cls}>{displayLabel}</span>;
                       })()}
                       {(user?.role === "student"
                         ? (canJoin(l) && onlineTutors[l.tutor_id] && !busyTutors[l.tutor_id])
