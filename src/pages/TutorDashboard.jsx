@@ -211,11 +211,10 @@ export default function TutorDashboard() {
 
   const now = Date.now();
 
-  const canJoinLesson = (l) => {
-    if (l.status === "in_progress") return true;
-    if (!l.scheduled_at) return true;
-    return new Date(l.scheduled_at).getTime() - now <= LESSON_JOIN_WINDOW_BEFORE_MS;
-  };
+  // Só libera quando o aluno já entrou de verdade (status vira "in_progress"
+  // só via startLesson, que só o aluno pode disparar) — não é mais baseado
+  // em janela de tempo antes do horário marcado.
+  const canJoinLesson = (l) => l.status === "in_progress";
 
   const isUpcoming = (l) => l.status === "in_progress" || !l.scheduled_at || new Date(l.scheduled_at).getTime() + LESSON_JOIN_GRACE_PERIOD_MS > now;
   const upcomingLessons = lessons.filter(isUpcoming).sort((a, b) => {
