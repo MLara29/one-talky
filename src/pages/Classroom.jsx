@@ -598,6 +598,16 @@ export default function Classroom() {
           console.error(`[Agora][CRITICAL] auto-republish attempt ${attempt}/${MAX_REPUBLISH_ATTEMPTS} FAILED (role=${user?.role}) — the other participant may still not receive video`, e);
         }
       }
+
+      // As 3 tentativas automáticas já se esgotaram e ainda não estamos
+      // recebendo vídeo remoto — libera o botão manual de reconexão.
+      if (
+        client.remoteUsers.length > 0 &&
+        !remoteVideoTrackRef.current &&
+        autoRepublishAttemptsRef.current >= MAX_REPUBLISH_ATTEMPTS
+      ) {
+        setAutoRetriesExhausted(true);
+      }
     };
     reconcile();
     reconcileRef.current = setInterval(reconcile, 2000);
