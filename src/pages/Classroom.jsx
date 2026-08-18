@@ -539,45 +539,11 @@ export default function Classroom() {
         }
       }
 
-      // Symmetric republish reconciliation (runs for both tutor and student):
-      // if the other participant is in the room but we still haven't received
-      // their video after REPUBLISH_RETRY_INTERVAL_MS, force a full republish
-      // (unpublish + publish) of our own video track. This forces Agora to
-      // fully renegotiate the publication and re-fire "user-published" on the
-      // other side — more reliable than just muting/unmuting the track.
-      // Retries up to MAX_REPUBLISH_ATTEMPTS times if the remote video still
-      // doesn't show up.
-      if (
-        client.remoteUsers.length > 0 &&
-        !remoteVideoTrackRef.current &&
-        autoRepublishAttemptsRef.current < MAX_REPUBLISH_ATTEMPTS &&
-        localVideoTrackRef.current &&
-        Date.now() - lastRepublishAtRef.current > REPUBLISH_RETRY_INTERVAL_MS
-      ) {
-        autoRepublishAttemptsRef.current += 1;
-        lastRepublishAtRef.current = Date.now();
-        const attempt = autoRepublishAttemptsRef.current;
-        const videoTrack = localVideoTrackRef.current;
-        try {
-          await client.unpublish(videoTrack);
-          await new Promise(r => setTimeout(r, 300));
-          await client.publish(videoTrack);
-          if (localVideoDiv.current) videoTrack.play(localVideoDiv.current);
-          console.log(`[Agora] auto-republish attempt ${attempt}/${MAX_REPUBLISH_ATTEMPTS} completed (role=${user?.role})`);
-        } catch (e) {
-          console.error(`[Agora][CRITICAL] auto-republish attempt ${attempt}/${MAX_REPUBLISH_ATTEMPTS} FAILED (role=${user?.role}) — the other participant may still not receive video`, e);
-        }
-      }
-
-      // As 3 tentativas automáticas já se esgotaram e ainda não estamos
-      // recebendo vídeo remoto — libera o botão manual de reconexão.
-      if (
-        client.remoteUsers.length > 0 &&
-        !remoteVideoTrackRef.current &&
-        autoRepublishAttemptsRef.current >= MAX_REPUBLISH_ATTEMPTS
-      ) {
-        setAutoRetriesExhausted(true);
-      }
+      // Republicação automática removida — fica só a inscrição normal (acima)
+      // se a Agora já sinalizou hasVideo mas ainda não recebemos a faixa.
+      // A correção de "vídeo remoto não aparece" agora é 100% manual: o botão
+      // "Reconnect video" envia um sinal pro OUTRO lado, que faz o toggle
+      // silencioso na própria câmera dele (ver requestRemoteCameraFix).
     };
     reconcile();
     reconcileRef.current = setInterval(reconcile, 2000);
