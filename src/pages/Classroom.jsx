@@ -137,35 +137,51 @@ export default function Classroom() {
 
         // Assim que tutor_joined_at E student_joined_at estiverem preenchidos,
         // calcula o horário-alvo de término (uma vez só — não recalcula depois).
-        if (!mutualPresenceComputedRef.current && l.tutor_joined_at && l.student_joined_at && l.scheduled_at) {
+        // IMPORTANTE: aula instantânea nunca tem scheduled_at — por isso esse
+        // campo não pode ser exigido aqui, senão o cronômetro nunca aparece
+        // pra esse tipo de aula. O limite de crédito (sempre 30min por
+        // padrão, via totalDurationRef) já cobre a aula instantânea sozinho.
+        if (!mutualPresenceComputedRef.current && l.tutor_joined_at && l.student_joined_at) {
           mutualPresenceComputedRef.current = true;
           const mutualJoinAtMs = Math.max(
             new Date(l.tutor_joined_at).getTime(),
             new Date(l.student_joined_at).getTime()
           );
-          const scheduledDurationMs = (l.duration_minutes || 30) * 60 * 1000;
-          const scheduledEndMs = new Date(l.scheduled_at).getTime() + scheduledDurationMs;
+          // Teto de crédito: tempo completo (respeitando o crédito do aluno)
+          // a partir da conexão mútua. totalDurationRef já foi calculado em
+          // loadLesson (min entre duração agendada — ou 30min padrão pra
+          // instantânea — e o crédito disponível do aluno).
           const creditCappedMs = totalDurationRef.current !== null
             ? mutualJoinAtMs + totalDurationRef.current * 1000
-            : mutualJoinAtMs + scheduledDurationMs;
+            : mutualJoinAtMs + 30 * 60 * 1000; // segurança extra, nunca deveria cair aqui
 
-          let hasNext = false;
-          try {
-            const nextLessons = await base44.entities.Lesson.filter({
-              tutor_id: l.tutor_id,
-              status: "scheduled",
-            });
-            hasNext = nextLessons.some((nl) => {
-              if (!nl.scheduled_at || nl.id === l.id) return false;
-              const nextStartMs = new Date(nl.scheduled_at).getTime();
-              return nextStartMs >= scheduledEndMs && (nextStartMs - scheduledEndMs) <= NEXT_LESSON_BUFFER_MS;
-            });
-          } catch { /* se falhar, trata como se não tivesse próxima aula */ }
+          let target = creditCappedMs;
 
-          // Com próxima aula colada: encerra no horário original (ou antes,
-          // se o crédito do aluno acabar primeiro). Sem próxima aula: usa o
-          // tempo completo (crédito) a partir da conexão mútua.
-          const target = hasNext ? Math.min(scheduledEndMs, creditCappedMs) : creditCappedMs;
+          // Só aulas AGENDADAS podem ter uma próxima aula "colada" que force
+          // o encerramento no horário original — aula instantânea não tem
+          // scheduled_at, então essa checagem simplesmente não se aplica a ela.
+          if (l.scheduled_at) {
+            const scheduledDurationMs = (l.duration_minutes || 30) * 60 * 1000;
+            const scheduledEndMs = new Date(l.scheduled_at).getTime() + scheduledDurationMs;
+
+            let hasNext = false;
+            try {
+              const nextLessons = await base44.entities.Lesson.filter({
+                tutor_id: l.tutor_id,
+                status: "scheduled",
+              });
+              hasNext = nextLessons.some((nl) => {
+                if (!nl.scheduled_at || nl.id === l.id) return false;
+                const nextStartMs = new Date(nl.scheduled_at).getTime();
+                return nextStartMs >= scheduledEndMs && (nextStartMs - scheduledEndMs) <= NEXT_LESSON_BUFFER_MS;
+              });
+            } catch { /* se falhar, trata como se não tivesse próxima aula */ }
+
+            if (hasNext) {
+              target = Math.min(scheduledEndMs, creditCappedMs);
+            }
+          }
+
           lessonEndTargetRef.current = target;
           setLessonEndTargetMs(target);
         }
