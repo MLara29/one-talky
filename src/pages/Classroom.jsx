@@ -785,9 +785,14 @@ export default function Classroom() {
     return `${Math.floor(totalSecs / 60).toString().padStart(2, "0")}:${(totalSecs % 60).toString().padStart(2, "0")}`;
   };
 
-  const remainingSeconds = totalDurationMins !== null
-    ? Math.max(0, totalDurationMins * 60 - elapsed)
+  // remainingSeconds só existe depois que os dois participantes se conectaram
+  // (lessonEndTargetMs definido) — antes disso o cronômetro fica escondido.
+  // "elapsed" aqui não é mais usado pro cálculo, só serve de gatilho de
+  // re-render (o valor real vem de Date.now() vs. o horário-alvo fixo).
+  const remainingSeconds = lessonEndTargetMs !== null
+    ? Math.max(0, (lessonEndTargetMs - Date.now()) / 1000)
     : null;
+  void elapsed; // gatilho de re-render a cada segundo, valor em si não é usado
 
   const minsRemaining = remainingSeconds !== null ? remainingSeconds / 60 : null;
   const isAccountCreditLow = studentAccountCreditsRef.current !== null && studentAccountCreditsRef.current <= 10;
