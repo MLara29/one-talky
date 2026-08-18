@@ -43,10 +43,14 @@ export default function TutorDashboard() {
   const [studentProfiles, setStudentProfiles] = useState({});
   const [loading, setLoading] = useState(true);
   const [liveAlert, setLiveAlert] = useState(null);
-  const [upcomingAlert, setUpcomingAlert] = useState(null);
+  // upcomingAlert removido — era uma implementação duplicada do aviso "aula
+  // em 5 minutos", com um bug: a lista de "já mostrados" (shownUpcomingRef)
+  // vivia só na memória do componente e resetava toda vez que o tutor saía
+  // e voltava pra essa página, fazendo o aviso repetir. O LessonReminderPopup
+  // (montado globalmente no AppLayout) já cobre exatamente esse aviso, sem
+  // esse problema — não precisa de duas implementações da mesma coisa.
   const [showSupport, setShowSupport] = useState(false);
   const prevLessonsRef = useRef([]);
-  const shownUpcomingRef = useRef(new Set());
   const shownLiveRef = useRef(new Set());
   const lessonsRef = useRef([]);
   const [tick, setTick] = useState(0);
