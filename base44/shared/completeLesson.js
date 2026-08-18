@@ -14,6 +14,14 @@ import { debitStudentCredits } from './studentCredits.js';
 
 const MAX_DURATION_CAP_MINUTES_FLOOR = 120;
 
+// Aula instantânea nunca deveria durar mais que ~30min — não tem o mesmo
+// mecanismo de "aulas coladas" que a agendada tem (esse empilhamento só se
+// aplica a status "scheduled", que aula instantânea nunca assume). O teto de
+// segurança pra ela é bem mais apertado que o das agendadas, com uma
+// margem pequena (35min) só pra absorver pequenas diferenças de relógio —
+// não depende só do cronômetro do navegador pra parar em 30min.
+const MAX_INSTANT_DURATION_CAP_MINUTES = 35;
+
 export async function completeLesson(base44, lesson, { isRecorded = false, endedAtOverride = null } = {}) {
   const lessonId = lesson.id;
   const now = endedAtOverride ? new Date(endedAtOverride) : new Date();
@@ -35,9 +43,13 @@ export async function completeLesson(base44, lesson, { isRecorded = false, ended
 
   let durationSeconds = Math.max(1, (now.getTime() - billingStartMs) / 1000);
 
-  // Cap: the greater of the absolute floor or 2x the scheduled duration.
+  // Cap: aula instantânea usa um teto apertado e fixo (35min); aula agendada
+  // usa o maior entre o piso absoluto ou 2x a duração agendada (cobre o
+  // empilhamento de aulas coladas do mesmo aluno+tutor).
   const scheduledDurationMin = lesson.duration_minutes || 30;
-  const capMinutes = Math.max(MAX_DURATION_CAP_MINUTES_FLOOR, scheduledDurationMin * 2);
+  const capMinutes = lesson.type === 'instant'
+    ? MAX_INSTANT_DURATION_CAP_MINUTES
+    : Math.max(MAX_DURATION_CAP_MINUTES_FLOOR, scheduledDurationMin * 2);
   let flagged = false;
   if (durationSeconds / 60 > capMinutes) {
     flagged = true;
