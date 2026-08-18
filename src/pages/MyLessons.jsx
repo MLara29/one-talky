@@ -359,7 +359,9 @@ export default function MyLessons() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {(user?.role === "student" ? (canJoin(l) && onlineTutors[l.tutor_id] && !busyTutors[l.tutor_id]) : canJoin(l)) && (
+                      {(user?.role === "student"
+                        ? (canJoin(l) && onlineTutors[l.tutor_id] && !busyTutors[l.tutor_id])
+                        : (canJoin(l) && l.status === "in_progress")) && (
                         <Link to={`/classroom/${l.id}`}>
                           <Button size="sm" className="bg-orange-500 text-white hover:bg-orange-600 border-0">
                             {user?.role === "student" ? T("joinBtn") : "Join"}
