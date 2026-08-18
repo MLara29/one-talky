@@ -371,6 +371,16 @@ export default function MyLessons() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      {l.scheduled_at && l.status === "scheduled" && (() => {
+                        const status = getLessonTimeStatus(l.scheduled_at, Date.now());
+                        if (!status.label) return null;
+                        const cls = status.negative
+                          ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 animate-pulse tabular-nums"
+                          : status.live
+                            ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-500 tabular-nums"
+                            : "text-xs text-gray-500 font-medium";
+                        return <span className={cls}>{status.label}</span>;
+                      })()}
                       {(user?.role === "student"
                         ? (canJoin(l) && onlineTutors[l.tutor_id] && !busyTutors[l.tutor_id])
                         : (canJoin(l) && l.status === "in_progress")) && (
