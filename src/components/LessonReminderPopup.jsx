@@ -84,13 +84,22 @@ export default function LessonReminderPopup() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-orange-700 mb-1">⏰ Lesson Reminder</p>
           <p className="text-sm text-gray-700 leading-snug">{reminder.message}</p>
-          <Link
-            to={`/classroom/${reminder.lessonId}`}
-            className="inline-block mt-3 px-4 py-1.5 rounded-full text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
-            onClick={() => setReminder(null)}
-          >
-            Join now →
-          </Link>
+          {user?.role === "student" ? (
+            <Link
+              to={`/classroom/${reminder.lessonId}`}
+              className="inline-block mt-3 px-4 py-1.5 rounded-full text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+              onClick={() => setReminder(null)}
+            >
+              Join now →
+            </Link>
+          ) : (
+            // Tutor: this reminder always fires BEFORE the scheduled time, so
+            // the student hasn't joined yet — no actionable Join link here.
+            // The tutor is notified separately once the student actually enters.
+            <p className="mt-2 text-xs text-gray-500 italic">
+              You'll be notified as soon as the student joins.
+            </p>
+          )}
         </div>
         <button
           onClick={() => setReminder(null)}
