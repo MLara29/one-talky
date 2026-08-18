@@ -68,6 +68,14 @@ export default function Classroom() {
   const totalDurationRef = useRef(null);
   const endingRef = useRef(false);
   const elapsedRef = useRef(0);
+  // Horário-alvo (timestamp absoluto) em que a aula deve terminar — só é
+  // definido quando tutor E aluno já estão conectados (tutor_joined_at e
+  // student_joined_at preenchidos). Antes disso o cronômetro fica escondido.
+  // É um valor fixo, não uma contagem local — por isso os dois lados sempre
+  // veem exatamente o mesmo número.
+  const [lessonEndTargetMs, setLessonEndTargetMs] = useState(null);
+  const lessonEndTargetRef = useRef(null);
+  const mutualPresenceComputedRef = useRef(false);
 
   // Keep refs in sync
   useEffect(() => { lessonRef.current = lesson; }, [lesson]);
