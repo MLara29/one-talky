@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
 import { X, Clock } from "lucide-react";
-import { Link } from "react-router-dom";
 
 const REMINDER_WINDOW_MS = 5 * 60 * 1000;   // 5 minutes before
 const CHECK_INTERVAL_MS  = 30 * 1000;         // check every 30s
@@ -24,10 +23,13 @@ const STUDENT_MSG = {
   it:    (name) => `Promemoria: la tua lezione con il tutor "${name}" inizia tra 5 minuti.`,
 };
 
+// Aviso puramente informativo — sem link/botão pra entrar na aula, pra
+// nenhum dos dois papéis. O aluno é quem sempre inicia a aula via "My
+// Lessons"; o tutor é avisado separadamente quando o aluno de fato entrar.
 export default function LessonReminderPopup() {
   const { user } = useAuth();
   const { lang } = useLang();
-  const [reminder, setReminder] = useState(null); // { message, lessonId }
+  const [reminder, setReminder] = useState(null); // { message }
   const notifiedIds = useRef(new Set());
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function LessonReminderPopup() {
             const message = user.role === "tutor"
               ? getTutorMessage(lesson)
               : (STUDENT_MSG[lang] || STUDENT_MSG.en)(lesson.tutor_name);
-            setReminder({ message, lessonId: lesson.id });
+            setReminder({ message });
             break; // show one at a time
           }
         }
@@ -69,7 +71,7 @@ export default function LessonReminderPopup() {
   if (!reminder) return null;
 
   return (
-    <div className="fixed top-24 right-5 z-[9999] max-w-sm w-full animate-fade-up">
+    <div className="fixed bottom-5 right-5 z-[9999] max-w-sm w-full animate-fade-up">
       <div
         className="rounded-2xl shadow-2xl border p-5 flex gap-4 items-start"
         style={{
@@ -84,22 +86,6 @@ export default function LessonReminderPopup() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-orange-700 mb-1">⏰ Lesson Reminder</p>
           <p className="text-sm text-gray-700 leading-snug">{reminder.message}</p>
-          {user?.role === "student" ? (
-            <Link
-              to={`/classroom/${reminder.lessonId}`}
-              className="inline-block mt-3 px-4 py-1.5 rounded-full text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
-              onClick={() => setReminder(null)}
-            >
-              Join now →
-            </Link>
-          ) : (
-            // Tutor: this reminder always fires BEFORE the scheduled time, so
-            // the student hasn't joined yet — no actionable Join link here.
-            // The tutor is notified separately once the student actually enters.
-            <p className="mt-2 text-xs text-gray-500 italic">
-              You'll be notified as soon as the student joins.
-            </p>
-          )}
         </div>
         <button
           onClick={() => setReminder(null)}
