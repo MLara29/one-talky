@@ -331,13 +331,12 @@ export default function TutorDashboard() {
                         {l.scheduled_at && l.status !== "in_progress" && (() => {
                           const status = getLessonTimeStatus(l.scheduled_at, now);
                           if (!status.label) return null;
-                          return (
-                            <span className={status.negative
-                              ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-ot-danger/10 border border-ot-danger/30 text-ot-danger animate-pulse"
-                              : "text-xs text-gray-400 font-medium"}>
-                              {status.label}
-                            </span>
-                          );
+                          const cls = status.negative
+                            ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-ot-danger/10 border border-ot-danger/30 text-ot-danger animate-pulse tabular-nums"
+                            : status.live
+                              ? "text-xs font-bold px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 tabular-nums"
+                              : "text-xs text-gray-400 font-medium";
+                          return <span className={cls}>{status.label}</span>;
                         })()}
                         {canJoinLesson(l) ? (
                           <Link to={`/classroom/${l.id}`}>
