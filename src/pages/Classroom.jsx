@@ -35,6 +35,11 @@ export default function Classroom() {
   const [showReview, setShowReview] = useState(false);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
   const [remoteUserPresent, setRemoteUserPresent] = useState(false);
+  // Fica true quando as 3 tentativas automáticas de republicar o vídeo já se
+  // esgotaram e ainda assim não estamos recebendo o vídeo remoto — só nesse
+  // ponto o botão manual de reconexão aparece.
+  const [autoRetriesExhausted, setAutoRetriesExhausted] = useState(false);
+  const [manualReconnecting, setManualReconnecting] = useState(false);
   const [joined, setJoined] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showCreditWarning, setShowCreditWarning] = useState(false);
@@ -356,6 +361,7 @@ export default function Classroom() {
   const setRemoteTrack = (track) => {
     remoteVideoTrackRef.current = track;
     setRemoteVideoTrack(track);
+    if (track) setAutoRetriesExhausted(false);
   };
 
   // Classifies a camera/mic creation error into a friendly reason
