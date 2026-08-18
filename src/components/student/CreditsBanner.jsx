@@ -344,7 +344,9 @@ export default function CreditsBanner({ profile, onUpdate }) {
             {prepaidMins > 0 && (
               <div className="w-full" style={{ maxWidth: 280 }}>
                 <div className="flex items-center justify-between mb-1">
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>Pré-pago</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>
+                    Pré-pago {Math.floor(prepaidMins)} min
+                  </span>
                   {prepaidExpiresDate && (
                     <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>
                       expira em {prepaidExpiresDate}
@@ -365,8 +367,13 @@ export default function CreditsBanner({ profile, onUpdate }) {
                     transition: "width 0.5s ease",
                   }} />
                   <span style={{
-                    position: "absolute", left: "50%", top: "50%",
-                    transform: "translate(-50%,-50%)",
+                    position: "absolute", left: 10, top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: 11, fontWeight: 800, color: "#6366f1",
+                  }}>{prepaidPct}%</span>
+                  <span style={{
+                    position: "absolute", right: 10, top: "50%",
+                    transform: "translateY(-50%)",
                     fontSize: 12, fontWeight: 800, color: "#6366f1",
                   }}>{Math.floor(prepaidMins)} min</span>
                 </div>
