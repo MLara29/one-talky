@@ -738,6 +738,28 @@ export default function Classroom() {
     setRemoteUserPresent(false);
   };
 
+  // Último recurso, acionado manualmente pelo usuário: sai da conexão de
+  // vídeo e entra de novo do zero — só do lado de quem clicou, sem tirar a
+  // outra pessoa da aula. Diferente da republicação automática (que só
+  // republica a própria faixa de vídeo), isso reinicia a conexão inteira.
+  const manualReconnect = async () => {
+    if (manualReconnecting) return;
+    setManualReconnecting(true);
+    try {
+      await leaveChannel();
+      await joinChannel(lessonRef.current);
+    } catch (e) {
+      console.error("[Classroom] manual reconnect failed:", e);
+      toast({
+        title: isEnglish ? "Reconnection failed" : "Falha ao reconectar",
+        description: isEnglish ? "Please try again in a moment." : "Tente novamente em instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setManualReconnecting(false);
+    }
+  };
+
   const toggleCamera = async () => {
     if (localVideoTrackRef.current) {
       await localVideoTrackRef.current.setEnabled(!cameraOn);
