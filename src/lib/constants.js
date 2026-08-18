@@ -38,7 +38,10 @@ export function getLessonTimeStatus(scheduledAt, now = Date.now()) {
     if (days > 0) label = `in ${days}d ${hours}h`;
     else if (hours > 0) label = `in ${hours}h ${mins}min`;
     else label = `in ${mins}min`;
-    return { label, negative: false, live: false };
+    // days/hours/mins também expostos crus, pra quem precisar remontar o
+    // texto traduzido (ex: MyLessons.jsx do lado do aluno) em vez de usar
+    // "label" direto, que é sempre em inglês.
+    return { label, negative: false, live: false, days, hours, mins };
   }
 
   if (diff > 0) {
