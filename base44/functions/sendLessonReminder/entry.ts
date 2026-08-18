@@ -92,11 +92,9 @@ function tutorEmailHtml({ tutorName, studentName, lessonTime, minutesBefore }) {
                 </tr>
               </table>
             </div>
-            <div style="text-align:center;">
-              <a href="https://onetalky.com/dashboard" style="display:inline-block;background:#F26A1B;color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
-                Go to the platform →
-              </a>
-            </div>
+            <p style="text-align:center;color:#9ca3af;font-size:12px;margin:0;">
+              This is just a reminder — no action needed here.
+            </p>
           </td>
         </tr>
         <tr>
@@ -154,11 +152,9 @@ function studentEmailHtml({ studentName, tutorName, lessonTime, minutesBefore })
                 </tr>
               </table>
             </div>
-            <div style="text-align:center;">
-              <a href="https://onetalky.com/dashboard" style="display:inline-block;background:#F26A1B;color:#ffffff;text-decoration:none;padding:13px 32px;border-radius:12px;font-weight:600;font-size:14px;">
-                Entrar na plataforma →
-              </a>
-            </div>
+            <p style="text-align:center;color:#9ca3af;font-size:12px;margin:0;">
+              Este é só um lembrete — nenhuma ação necessária aqui.
+            </p>
           </td>
         </tr>
         <tr>
