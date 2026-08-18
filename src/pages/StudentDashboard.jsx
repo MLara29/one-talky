@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
-import { Search, X, MessageSquare, Clock, Calendar } from "lucide-react";
+import { Search, X, MessageSquare, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import TutorCard from "@/components/tutors/TutorCard";
