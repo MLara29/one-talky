@@ -572,6 +572,47 @@ export default function Classroom() {
     } catch {}
   };
 
+  // Toggle silencioso da PRÓPRIA câmera — desliga, espera um instante, liga
+  // de novo. Nunca toca no estado visível do botão de câmera (cameraOn),
+  // então quem recebe o pedido não vê nada acontecer, só o outro lado passa
+  // a receber o vídeo. Acionado quando o OUTRO participante manda o sinal
+  // __TOGGLE_CAMERA_REQUEST — nunca por conta própria.
+  const performSilentCameraToggle = async () => {
+    const track = localVideoTrackRef.current;
+    const client = clientRef.current;
+    if (!track || !client) return;
+    try {
+      await client.unpublish(track);
+      await new Promise(r => setTimeout(r, 300));
+      await client.publish(track);
+      if (localVideoDiv.current) track.play(localVideoDiv.current);
+      console.log(`[Agora] silent camera toggle requested by remote side completed (role=${user?.role})`);
+    } catch (e) {
+      console.error("[Agora] silent camera toggle failed:", e);
+    }
+  };
+
+  // Pedido de reconexão manual: NÃO reconecta a própria conexão — manda um
+  // sinal pro OUTRO lado (o dono da câmera que não está aparecendo) pedindo
+  // pra ele fazer o toggle silencioso na câmera dele mesmo. Só o Agora do
+  // outro lado pode ligar/desligar a câmera dele; daqui só dá pra pedir.
+  const requestRemoteCameraFix = async () => {
+    if (requestingRemoteFix) return;
+    setRequestingRemoteFix(true);
+    try {
+      const targetRole = user?.role === "tutor" ? "student" : "tutor";
+      await base44.functions.invoke("sendClassroomMessage", {
+        lesson_id: id,
+        sender_name: "__system",
+        text: `__TOGGLE_CAMERA_REQUEST:${targetRole}`,
+      });
+    } catch (e) {
+      console.error("[Classroom] requestRemoteCameraFix failed:", e);
+    } finally {
+      setTimeout(() => setRequestingRemoteFix(false), 2000);
+    }
+  };
+
   const stopScreenShare = async () => {
     const client = clientRef.current;
     const screenTrack = screenVideoTrackRef.current;
