@@ -952,15 +952,15 @@ export default function Classroom() {
                         : `Aguardando ${user?.role === "tutor" ? "o aluno" : "o tutor"} conectar…`)}
                 </p>
                 {joined && <p className="text-ot-online text-xs mt-1.5 font-semibold">{isEnglish ? "● You are connected" : "● Você está conectado"}</p>}
-                {autoRetriesExhausted && remoteUserPresent && (
+                {remoteUserPresent && !remoteVideoTrack && (
                   <button
-                    onClick={manualReconnect}
-                    disabled={manualReconnecting}
+                    onClick={requestRemoteCameraFix}
+                    disabled={requestingRemoteFix}
                     className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-ot-primary hover:brightness-95 transition-all disabled:opacity-60"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${manualReconnecting ? "animate-spin" : ""}`} />
-                    {manualReconnecting
-                      ? (isEnglish ? "Reconnecting…" : "Reconectando…")
+                    <RefreshCw className={`w-3.5 h-3.5 ${requestingRemoteFix ? "animate-spin" : ""}`} />
+                    {requestingRemoteFix
+                      ? (isEnglish ? "Requesting…" : "Solicitando…")
                       : (isEnglish ? "Reconnect video" : "Reconectar vídeo")}
                   </button>
                 )}
