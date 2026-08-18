@@ -106,19 +106,6 @@ export default function TutorDashboard() {
           return stillLive ? prev : null;
         });
 
-        // Upcoming alert: scheduled lesson starting within 5 minutes
-        const now = Date.now();
-        const upcoming = sched.find(l => {
-          if (!l.scheduled_at) return false;
-          const startsIn = new Date(l.scheduled_at).getTime() - now;
-          return startsIn > 0 && startsIn <= 5 * 60 * 1000 && !shownUpcomingRef.current.has(l.id);
-        });
-        if (upcoming) {
-          shownUpcomingRef.current.add(upcoming.id);
-          setUpcomingAlert(upcoming);
-          toast({ title: "⏰ Lesson starting soon!", description: `${upcoming.student_name}'s lesson starts in less than 5 minutes.` });
-        }
-
         prevLessonsRef.current = allLessons;
         setLessons(allLessons);
       } catch {}
