@@ -450,6 +450,13 @@ export default function AdminAffiliates() {
                                       Marcar pago
                                     </Button>
                                   )}
+                                  <button
+                                    onClick={() => deleteEarning(e)}
+                                    title="Excluir registro"
+                                    className="w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-colors"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
                                 </div>
                               </div>
                             );
