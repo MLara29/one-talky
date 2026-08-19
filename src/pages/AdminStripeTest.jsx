@@ -26,6 +26,29 @@ export default function AdminStripeTest() {
   const [redirectMsg, setRedirectMsg] = useState("");
   const [advancingClock, setAdvancingClock] = useState(null);
   const [advanceDays, setAdvanceDays] = useState(1);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogResult, setCatalogResult] = useState(null);
+  const [catalogError, setCatalogError] = useState("");
+
+  const handleCreateCatalog = async () => {
+    if (!window.confirm("Criar/verificar o catálogo de produtos e preços na Stripe (conta de produção)? Isso é idempotente — não duplica produtos já existentes.")) return;
+    setCatalogLoading(true);
+    setCatalogError("");
+    setCatalogResult(null);
+    try {
+      const res = await base44.functions.invoke("stripeCreateCatalog", {});
+      if (res.data?.success) {
+        setCatalogResult(res.data.catalog);
+      } else {
+        throw new Error(res.data?.error || "Falha ao criar catálogo");
+      }
+    } catch (err) {
+      console.error("[AdminStripeTest] catalog error:", err);
+      setCatalogError(err.message || "Erro ao criar catálogo");
+    } finally {
+      setCatalogLoading(false);
+    }
+  };
 
   const loadEvents = () => {
     setLoadingEvents(true);
@@ -154,6 +177,42 @@ export default function AdminStripeTest() {
           {redirectMsg}
         </div>
       )}
+
+      {/* Catálogo de produção — cria products/prices na conta Stripe live */}
+      <div className="mb-8 bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 max-w-2xl">
+        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
+          <Zap className="w-4 h-4 text-orange-500" />
+          <span className="font-semibold text-sm text-gray-800">Catálogo de Produção · Stripe</span>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Cria os 8 produtos/preços (3 planos mensais + 5 pacotes avulsos) na conta Stripe de produção,
+          espelhando o <span className="font-mono">paymentCatalog.js</span>. Idempotente — pode rodar quantas vezes quiser.
+        </p>
+        <Button
+          onClick={handleCreateCatalog}
+          disabled={catalogLoading}
+          className="bg-orange-500 hover:bg-orange-600 text-white border-0"
+        >
+          {catalogLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+          {catalogLoading ? "Criando catálogo…" : "Criar/verificar catálogo na Stripe"}
+        </Button>
+        {catalogError && (
+          <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{catalogError}</span>
+          </div>
+        )}
+        {catalogResult && (
+          <div className="mt-4">
+            <p className="text-sm text-emerald-600 font-semibold mb-2 flex items-center gap-1.5">
+              <CheckCircle className="w-4 h-4" /> Catálogo criado! Copie o mapeamento abaixo e cole para o assistente atualizar o stripeCatalog.js:
+            </p>
+            <pre className="text-[11px] text-gray-700 bg-gray-50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap max-h-80 border border-gray-100">
+{JSON.stringify(catalogResult, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
 
       {/* Form card */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 mb-8 max-w-md">
