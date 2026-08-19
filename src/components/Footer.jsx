@@ -2,8 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 // Compact legal footer shown at the bottom of every authenticated screen.
-// NOTE: company legal name / CNPJ below are placeholders — replace with the
-// real registered data before publishing.
+// NOTE: sem CNPJ / razão social por enquanto — MVP ainda não tem empresa
+// registrada. Adicionar aqui assim que o CNPJ existir de verdade.
 export default function Footer({ role }) {
   return (
     <footer className="pb-16 lg:pb-6 pt-6 mt-4">
@@ -27,7 +27,7 @@ export default function Footer({ role }) {
           </p>
         </div>
         <p className="mt-2 text-[11px] text-center sm:text-left" style={{ color: "#b7b3ab" }}>
-          One Talky Tecnologia Ltda. · CNPJ 00.000.000/0001-00 · support@onetalky.com
+          One Talky · support@onetalky.com
         </p>
       </div>
     </footer>
