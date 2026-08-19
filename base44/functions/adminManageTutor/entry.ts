@@ -94,32 +94,15 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'toggle_hidden') {
-      // Diferente de toggle_block: só esconde o tutor das buscas/listagens de
-      // alunos. Não cancela aulas já agendadas, não manda e-mail pra ninguém,
-      // não mexe no status de aprovação. Serve tanto pra tutores de teste
-      // quanto pra qualquer tutor que o admin não quer mais exibir sem
-      // aplicar o bloqueio completo (mais pesado).
-      const newHidden = !tutor.is_hidden;
-      try {
-        const updateResult = await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { is_hidden: newHidden });
-        console.log('[adminManageTutor] toggle_hidden update() returned:', JSON.stringify(updateResult));
-      } catch (updateErr) {
-        console.error('[adminManageTutor] toggle_hidden update() threw:', updateErr.message, updateErr.stack);
-        return Response.json({ error: `Falha ao gravar: ${updateErr.message}` }, { status: 500 });
-      }
-
-      let confirmed;
-      try {
-        confirmed = await base44.asServiceRole.entities.TutorProfile.get(tutor_id);
-      } catch (getErr) {
-        console.error('[adminManageTutor] toggle_hidden re-fetch threw:', getErr.message, getErr.stack);
-        // A gravação em si não lançou erro — segue com o valor calculado
-        // localmente em vez de falhar por causa só da re-checagem.
-        return Response.json({ success: true, is_hidden: newHidden, unverified: true });
-      }
-
-      console.log('[adminManageTutor] toggle_hidden confirmed value:', confirmed?.is_hidden, 'expected:', newHidden);
-      return Response.json({ success: true, is_hidden: confirmed?.is_hidden ?? newHidden });
+      // Reaproveita o campo "status" (mesmo mecanismo já comprovado do
+      // toggle_block) em vez de um campo booleano separado — evita um bug de
+      // sincronização observado especificamente com campos novos isolados.
+      // 'hidden' = tutor aprovado mas oculto das buscas/listagens de alunos,
+      // sem os efeitos colaterais do bloqueio completo (não cancela aulas,
+      // não envia e-mail, não mexe no contador de faltas).
+      const newStatus = tutor.status === 'hidden' ? 'approved' : 'hidden';
+      await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { status: newStatus });
+      return Response.json({ success: true, status: newStatus });
     }
 
     if (action === 'toggle_contract_type') {
