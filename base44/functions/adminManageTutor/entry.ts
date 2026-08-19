@@ -101,7 +101,16 @@ Deno.serve(async (req) => {
       // aplicar o bloqueio completo (mais pesado).
       const newHidden = !tutor.is_hidden;
       await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { is_hidden: newHidden });
-      return Response.json({ success: true, is_hidden: newHidden });
+
+      // Confirma de verdade lendo de volta do banco, em vez de confiar cegamente
+      // no valor calculado localmente — assim a resposta nunca "mente" sobre
+      // sucesso se a gravação silenciosamente não tiver colado.
+      const confirmed = await base44.asServiceRole.entities.TutorProfile.get(tutor_id);
+      if (confirmed?.is_hidden !== newHidden) {
+        console.error(`[adminManageTutor] toggle_hidden write did not persist for tutor ${tutor_id}: expected ${newHidden}, got ${confirmed?.is_hidden}`);
+        return Response.json({ error: 'A gravação não foi confirmada no banco. Tente novamente.' }, { status: 500 });
+      }
+      return Response.json({ success: true, is_hidden: confirmed.is_hidden });
     }
 
     if (action === 'toggle_contract_type') {
