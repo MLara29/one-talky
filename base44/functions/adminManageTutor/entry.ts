@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const { tutor_id, action } = await req.json();
-    if (!tutor_id || !['toggle_block', 'delete', 'toggle_contract_type', 'dismiss_ban_suggestion'].includes(action)) {
+    if (!tutor_id || !['toggle_block', 'delete', 'toggle_contract_type', 'dismiss_ban_suggestion', 'toggle_hidden'].includes(action)) {
       return Response.json({ error: 'tutor_id and valid action are required' }, { status: 400 });
     }
 
@@ -91,6 +91,17 @@ Deno.serve(async (req) => {
         await handleTutorDeactivation(base44, tutor);
       }
       return Response.json({ success: true, status: newStatus });
+    }
+
+    if (action === 'toggle_hidden') {
+      // Diferente de toggle_block: só esconde o tutor das buscas/listagens de
+      // alunos. Não cancela aulas já agendadas, não manda e-mail pra ninguém,
+      // não mexe no status de aprovação. Serve tanto pra tutores de teste
+      // quanto pra qualquer tutor que o admin não quer mais exibir sem
+      // aplicar o bloqueio completo (mais pesado).
+      const newHidden = !tutor.is_hidden;
+      await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { is_hidden: newHidden });
+      return Response.json({ success: true, is_hidden: newHidden });
     }
 
     if (action === 'toggle_contract_type') {
