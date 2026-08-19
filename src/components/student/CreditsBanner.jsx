@@ -142,7 +142,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
           </button>
         ))}
       </div>
-      <p className="text-[10px] text-gray-400 mt-3 text-center">Créditos expiram em 60 dias · Pagamento via Mercado Pago</p>
+      <p className="text-[10px] text-gray-400 mt-3 text-center">Créditos expiram em 60 dias · Pagamento via Stripe</p>
     </div>
   );
 
