@@ -57,8 +57,8 @@ const sections = [
           A One Talky <strong>não armazena, processa nem tem acesso a dados de cartão de crédito</strong> em seus servidores.
         </p>
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
-          <li>Todas as transações financeiras são processadas de forma <strong>100% criptografada e externa</strong> pelo parceiro de pagamentos <strong>Mercado Pago</strong>.</li>
-          <li>Os dados de cartão do usuário são inseridos diretamente em um ambiente seguro do Mercado Pago (PCI DSS Compliant), nunca transitando pelos servidores da One Talky.</li>
+          <li>Todas as transações financeiras são processadas de forma <strong>100% criptografada e externa</strong> pelo parceiro de pagamentos <strong>Stripe</strong>.</li>
+          <li>Os dados de cartão do usuário são inseridos diretamente em um ambiente seguro da Stripe (PCI DSS Compliant), nunca transitando pelos servidores da One Talky.</li>
           <li>A One Talky recebe apenas a confirmação do status do pagamento (aprovado/recusado) e o identificador da transação, sem qualquer dado financeiro sensível.</li>
         </ul>
       </>
@@ -100,7 +100,7 @@ const sections = [
         </p>
         <ul style={{ marginTop: 10, paddingLeft: 20 }}>
           <li><strong>Agora.io</strong> — infraestrutura de videochamada;</li>
-          <li><strong>Mercado Pago</strong> — processamento de pagamentos de alunos;</li>
+          <li><strong>Stripe</strong> — processamento de pagamentos de alunos;</li>
           <li><strong>Hostinger</strong> — envio de e-mails transacionais (verificação,
             notificações);</li>
           <li><strong>Brevo</strong> — envio de e-mails do sistema;</li>
