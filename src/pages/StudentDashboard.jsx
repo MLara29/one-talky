@@ -57,10 +57,10 @@ export default function StudentDashboard() {
         setTutors(prev =>
           prev
             .map(t => t.id === event.data.id ? { ...t, ...event.data } : t)
-            .filter(t => Boolean(t.photo_url))
+            .filter(t => Boolean(t.photo_url) && !t.is_hidden)
         );
       } else if (event.type === 'create') {
-        if (event.data.photo_url) {
+        if (event.data.photo_url && !event.data.is_hidden) {
           setTutors(prev => [...prev, event.data]);
         }
       } else if (event.type === 'delete') {
@@ -70,7 +70,7 @@ export default function StudentDashboard() {
     // When a new review is created, reload tutor list so ratings refresh
     const unsubReview = base44.entities.Review.subscribe((event) => {
       if (event.type === 'create' || event.type === 'update') {
-        base44.entities.TutorProfile.filter({ status: "approved" }).then(data => setTutors(data.filter(t => Boolean(t.photo_url)))).catch(() => {});
+        base44.entities.TutorProfile.filter({ status: "approved" }).then(data => setTutors(data.filter(t => Boolean(t.photo_url) && !t.is_hidden))).catch(() => {});
       }
     });
     return () => { unsubTutor(); unsubReview(); };
@@ -158,7 +158,10 @@ export default function StudentDashboard() {
         base44.entities.TutorProfile.filter({ status: "approved" }),
         base44.entities.StudentProfile.filter({ user_id: user?.id }),
       ]);
-      setTutors(data.filter(t => Boolean(t.photo_url)));
+      // Tutores marcados como escondidos pelo admin (is_hidden) não aparecem
+      // pra nenhum aluno — usado pra tutores de teste ou que o admin não
+      // quer mais exibir, sem aplicar o bloqueio completo.
+      setTutors(data.filter(t => Boolean(t.photo_url) && !t.is_hidden));
       if (profiles.length > 0) setProfile(profiles[0]);
     } catch { setTutors([]); } finally { setLoading(false); }
   };
