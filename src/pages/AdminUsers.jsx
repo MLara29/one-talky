@@ -321,11 +321,13 @@ export default function AdminUsers() {
                           {isSuspended && " · suspenso"}
                         </span>
                       )}
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
-                        t.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" :
-                        t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
-                        "bg-red-500/10 border-red-500/20 text-red-600"
-                      }`}>{t.status}</span>
+                      {t.status !== "hidden" && (
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium border hidden sm:inline ${
+                          t.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" :
+                          t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
+                          "bg-red-500/10 border-red-500/20 text-red-600"
+                        }`}>{t.status}</span>
+                      )}
                       {t.status === "hidden" && (
                         <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-gray-500/10 border-gray-500/20 text-gray-400">
                           Escondido
