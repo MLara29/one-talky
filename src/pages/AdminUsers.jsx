@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck, Search } from "lucide-react";
+import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck, Search, Eye, EyeOff } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -326,6 +326,19 @@ export default function AdminUsers() {
                         t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
                         "bg-red-500/10 border-red-500/20 text-red-600"
                       }`}>{t.status}</span>
+                      {t.is_hidden && (
+                        <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-gray-500/10 border-gray-500/20 text-gray-400">
+                          Escondido
+                        </span>
+                      )}
+                      <Button
+                        size="sm" variant="ghost"
+                        onClick={() => toggleHidden(t)}
+                        className={`px-2 h-8 ${t.is_hidden ? "text-violet-500 hover:text-violet-400" : "text-gray-400 hover:text-gray-300"}`}
+                        title={t.is_hidden ? "Mostrar pros alunos" : "Esconder dos alunos (sem bloquear)"}
+                      >
+                        {t.is_hidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </Button>
                       <Button
                         size="sm" variant="ghost"
                         onClick={() => blockTutor(t)}
