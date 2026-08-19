@@ -107,6 +107,16 @@ export default function AdminUsers() {
     } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
+  const toggleHidden = async (t) => {
+    try {
+      const response = await base44.functions.invoke("adminManageTutor", { tutor_id: t.id, action: "toggle_hidden" });
+      if (response.data?.error) throw new Error(response.data.error);
+      const newHidden = response.data.is_hidden;
+      setTutors(prev => prev.map(x => x.id === t.id ? { ...x, is_hidden: newHidden } : x));
+      toast({ title: newHidden ? "Tutor escondido dos alunos" : "Tutor visível pros alunos novamente" });
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
+  };
+
   const toggleContractType = async (t) => {
     try {
       const response = await base44.functions.invoke("adminManageTutor", { tutor_id: t.id, action: "toggle_contract_type" });
