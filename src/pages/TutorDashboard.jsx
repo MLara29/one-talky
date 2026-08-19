@@ -92,8 +92,18 @@ export default function TutorDashboard() {
         const sched = await base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" });
         const allLessons = [...live, ...sched];
 
-        // Live alert: only show for truly in_progress lessons not seen before
-        const newLive = live.find(l => !shownLiveRef.current.has(l.id));
+        // Live alert: só mostra pra aulas em andamento genuinamente recentes,
+        // nunca vistas antes NESSA sessão do componente. O corte por tempo
+        // (15 min desde que começou) é o que realmente evita o popup
+        // reaparecer pra uma aula "presa" (esquecida, nunca fechada direito)
+        // toda vez que o tutor sai da página e volta — sem esse corte, o
+        // shownLiveRef sozinho não resolve, porque ele reseta a cada remount.
+        const LIVE_ALERT_MAX_AGE_MS = 15 * 60 * 1000;
+        const newLive = live.find(l => {
+          if (shownLiveRef.current.has(l.id)) return false;
+          if (!l.started_at) return true;
+          return (Date.now() - new Date(l.started_at).getTime()) <= LIVE_ALERT_MAX_AGE_MS;
+        });
         if (newLive) {
           shownLiveRef.current.add(newLive.id);
           setLiveAlert(newLive);
