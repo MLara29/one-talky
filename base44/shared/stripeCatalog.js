@@ -10,14 +10,14 @@
 // mode: "subscription" → recurring monthly plan (plan:*)
 // mode: "payment"     → one-time prepaid pack (pack:*)
 export const STRIPE_CATALOG = {
-  "plan:basic":    { price_id: "price_1U1y6gPuHVs0PU8YzCpk4hc3", mode: "subscription", product_id: "prod_V22BBhu55PoXX8" },
-  "plan:standard": { price_id: "price_1U1y6hPuHVs0PU8YS6J8LjYO", mode: "subscription", product_id: "prod_V22B9fvvYpXu17" },
-  "plan:premium":  { price_id: "price_1U1y6hPuHVs0PU8YpxZGLGhJ", mode: "subscription", product_id: "prod_V22BeB4uZO2yiQ" },
-  "pack:pp_30":   { price_id: "price_1U1y6iPuHVs0PU8YPSvSDZnU", mode: "payment", product_id: "prod_V22BUcp3BtBENj" },
-  "pack:pp_60":   { price_id: "price_1U1y6iPuHVs0PU8YbIi17n94", mode: "payment", product_id: "prod_V22BPDD4pRXfPk" },
-  "pack:pp_120":  { price_id: "price_1U1y6iPuHVs0PU8YPVIG6s2C", mode: "payment", product_id: "prod_V22BP6jHXBTtvw" },
-  "pack:pp_300":  { price_id: "price_1U1y6jPuHVs0PU8Y8gD9fpHw", mode: "payment", product_id: "prod_V22BJVSvy3WxsV" },
-  "pack:pp_600":  { price_id: "price_1U1y6jPuHVs0PU8Yw6Ro16bs", mode: "payment", product_id: "prod_V22BvwdtZZDCHi" },
+  "plan:basic":    { price_id: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", mode: "subscription", product_id: "prod_V6A6uyCQxsiiX1" },
+  "plan:standard": { price_id: "price_1U5xmSLrbgaxg9EVSb3ExLSc", mode: "subscription", product_id: "prod_V6A6EqpSDVLc2p" },
+  "plan:premium":  { price_id: "price_1U5xmSLrbgaxg9EV0GpkQCKv", mode: "subscription", product_id: "prod_V6A65X2k2sRNoq" },
+  "pack:pp_30":   { price_id: "price_1U5xmSLrbgaxg9EV3pwYcNNu", mode: "payment", product_id: "prod_V6A6AFfvDlruK9" },
+  "pack:pp_60":   { price_id: "price_1U5xmTLrbgaxg9EVVKxtcvSL", mode: "payment", product_id: "prod_V6A6W96pVHh4kA" },
+  "pack:pp_120":  { price_id: "price_1U5xmTLrbgaxg9EV4U1TF2xR", mode: "payment", product_id: "prod_V6A6ZdjG7OQrlT" },
+  "pack:pp_300":  { price_id: "price_1U5xmTLrbgaxg9EVhi3iN6Dp", mode: "payment", product_id: "prod_V6A6Sw8FtADJuK" },
+  "pack:pp_600":  { price_id: "price_1U5xmULrbgaxg9EVJgeP8Piu", mode: "payment", product_id: "prod_V6A6DguxHWcmNW" },
 };
 
 // Resolve the checkout mode from the external_reference prefix.
