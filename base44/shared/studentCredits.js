@@ -164,6 +164,14 @@ export async function computeCreditUpdate(base44, {
   const finalPrepaid = updateData.prepaid_credits_minutes ?? (profile.prepaid_credits_minutes ?? 0);
   updateData.credits_minutes = Math.round((finalPlan + finalPrepaid) * 100) / 100;
 
+  // Teto de referência (100%) da barra visual de minutos avulsos no dashboard
+  // do aluno. Sempre que o saldo avulso aumenta (pacote novo ou bônus de
+  // cupom), o teto sobe junto — fica fixo enquanto o aluno só usa, e sobe de
+  // novo na próxima compra. Só atualiza aqui, nunca no débito de aula.
+  if (updateData.prepaid_credits_minutes !== undefined) {
+    updateData.prepaid_credits_ceiling = Math.round(updateData.prepaid_credits_minutes * 100) / 100;
+  }
+
   return updateData;
 }
 
