@@ -111,9 +111,9 @@ export default function AdminUsers() {
     try {
       const response = await base44.functions.invoke("adminManageTutor", { tutor_id: t.id, action: "toggle_hidden" });
       if (response.data?.error) throw new Error(response.data.error);
-      const newHidden = response.data.is_hidden;
-      setTutors(prev => prev.map(x => x.id === t.id ? { ...x, is_hidden: newHidden } : x));
-      toast({ title: newHidden ? "Tutor escondido dos alunos" : "Tutor visível pros alunos novamente" });
+      const newStatus = response.data.status;
+      setTutors(prev => prev.map(x => x.id === t.id ? { ...x, status: newStatus } : x));
+      toast({ title: newStatus === "hidden" ? "Tutor escondido dos alunos" : "Tutor visível pros alunos novamente" });
     } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
@@ -326,7 +326,7 @@ export default function AdminUsers() {
                         t.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600" :
                         "bg-red-500/10 border-red-500/20 text-red-600"
                       }`}>{t.status}</span>
-                      {t.is_hidden && (
+                      {t.status === "hidden" && (
                         <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-gray-500/10 border-gray-500/20 text-gray-400">
                           Escondido
                         </span>
@@ -334,10 +334,10 @@ export default function AdminUsers() {
                       <Button
                         size="sm" variant="ghost"
                         onClick={() => toggleHidden(t)}
-                        className={`px-2 h-8 ${t.is_hidden ? "text-violet-500 hover:text-violet-400" : "text-gray-400 hover:text-gray-300"}`}
-                        title={t.is_hidden ? "Mostrar pros alunos" : "Esconder dos alunos (sem bloquear)"}
+                        className={`px-2 h-8 ${t.status === "hidden" ? "text-violet-500 hover:text-violet-400" : "text-gray-400 hover:text-gray-300"}`}
+                        title={t.status === "hidden" ? "Mostrar pros alunos" : "Esconder dos alunos (sem bloquear)"}
                       >
-                        {t.is_hidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {t.status === "hidden" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </Button>
                       <Button
                         size="sm" variant="ghost"
