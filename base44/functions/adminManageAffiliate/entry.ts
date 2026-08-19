@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const { action, payload = {} } = await req.json();
-    const VALID_ACTIONS = ['create', 'toggle_status', 'update_commission', 'delete', 'link_coupon', 'mark_earning_paid'];
+    const VALID_ACTIONS = ['create', 'toggle_status', 'update_commission', 'delete', 'link_coupon', 'mark_earning_paid', 'delete_earning'];
     if (!VALID_ACTIONS.includes(action)) {
       return Response.json({ error: 'Valid action is required' }, { status: 400 });
     }
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     // Every other action operates on an existing affiliate record
     const { affiliate_id } = payload;
-    if (action !== 'mark_earning_paid' && !affiliate_id) {
+    if (!['mark_earning_paid', 'delete_earning'].includes(action) && !affiliate_id) {
       return Response.json({ error: 'affiliate_id required' }, { status: 400 });
     }
 
@@ -106,6 +106,21 @@ Deno.serve(async (req) => {
         paid_at: new Date().toISOString(),
       });
       return Response.json({ success: true });
+    }
+
+    if (action === 'delete_earning') {
+      // Exclusão manual de um registro de comissão individual — usada tanto
+      // pra limpar registros errados/duplicados quanto como fallback manual
+      // além da limpeza automática que já acontece quando o aluno é excluído
+      // (ver adminManageStudent).
+      const { earning_id } = payload;
+      if (!earning_id) return Response.json({ error: 'earning_id required' }, { status: 400 });
+
+      const earning = await base44.asServiceRole.entities.AffiliateEarning.get(earning_id);
+      if (!earning) return Response.json({ error: 'Earning not found' }, { status: 404 });
+
+      await base44.asServiceRole.entities.AffiliateEarning.delete(earning_id);
+      return Response.json({ success: true, deleted: true });
     }
   } catch (error) {
     console.error('[adminManageAffiliate]', error.message);
