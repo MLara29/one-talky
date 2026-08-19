@@ -111,7 +111,7 @@ const sections = [
     title: "6. Responsabilidades da Plataforma",
     content: (
       <p>
-        A One Talky atua como intermediadora tecnológica entre alunos e tutores independentes. Não nos responsabilizamos por interrupções de serviço causadas por falhas de internet do usuário, indisponibilidade de provedores terceiros (Agora.io, Mercado Pago) ou eventos de força maior. Em caso de falha técnica comprovada da plataforma, os minutos consumidos indevidamente serão restituídos ao aluno.
+        A One Talky atua como intermediadora tecnológica entre alunos e tutores independentes. Não nos responsabilizamos por interrupções de serviço causadas por falhas de internet do usuário, indisponibilidade de provedores terceiros (Agora.io, Stripe) ou eventos de força maior. Em caso de falha técnica comprovada da plataforma, os minutos consumidos indevidamente serão restituídos ao aluno.
       </p>
     ),
   },

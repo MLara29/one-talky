@@ -111,7 +111,7 @@ const sections = [
     title: "6. Platform Responsibilities",
     content: (
       <p>
-        One Talky acts as a technological intermediary between students and independent tutors. We are not responsible for service interruptions caused by user internet failures, unavailability of third-party providers (Agora.io, Mercado Pago), or force majeure events. In the event of a proven technical failure of the platform, minutes unduly consumed will be refunded to the student.
+        One Talky acts as a technological intermediary between students and independent tutors. We are not responsible for service interruptions caused by user internet failures, unavailability of third-party providers (Agora.io, Stripe), or force majeure events. In the event of a proven technical failure of the platform, minutes unduly consumed will be refunded to the student.
       </p>
     ),
   },
