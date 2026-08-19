@@ -144,6 +144,13 @@ export default function TutorProfilePage() {
 
   if (!tutor) return <div className="theme-subtext text-center py-24 text-gray-500">Tutor not found</div>;
 
+  // Tutor escondido pelo admin (is_hidden) não deve ser acessível por link
+  // direto por um aluno — mesmo tratamento visual de "não encontrado". Admin
+  // e o próprio tutor continuam acessando normalmente.
+  if (tutor.is_hidden && user?.role === "student") {
+    return <div className="theme-subtext text-center py-24 text-gray-500">Tutor not found</div>;
+  }
+
   const showLessonNow = isLive(tutor) && !inLesson && !isFirstWeekActive(studentProfile);
 
   return (
