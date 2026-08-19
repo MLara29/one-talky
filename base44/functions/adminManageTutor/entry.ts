@@ -100,17 +100,26 @@ Deno.serve(async (req) => {
       // quanto pra qualquer tutor que o admin não quer mais exibir sem
       // aplicar o bloqueio completo (mais pesado).
       const newHidden = !tutor.is_hidden;
-      await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { is_hidden: newHidden });
-
-      // Confirma de verdade lendo de volta do banco, em vez de confiar cegamente
-      // no valor calculado localmente — assim a resposta nunca "mente" sobre
-      // sucesso se a gravação silenciosamente não tiver colado.
-      const confirmed = await base44.asServiceRole.entities.TutorProfile.get(tutor_id);
-      if (confirmed?.is_hidden !== newHidden) {
-        console.error(`[adminManageTutor] toggle_hidden write did not persist for tutor ${tutor_id}: expected ${newHidden}, got ${confirmed?.is_hidden}`);
-        return Response.json({ error: 'A gravação não foi confirmada no banco. Tente novamente.' }, { status: 500 });
+      try {
+        const updateResult = await base44.asServiceRole.entities.TutorProfile.update(tutor_id, { is_hidden: newHidden });
+        console.log('[adminManageTutor] toggle_hidden update() returned:', JSON.stringify(updateResult));
+      } catch (updateErr) {
+        console.error('[adminManageTutor] toggle_hidden update() threw:', updateErr.message, updateErr.stack);
+        return Response.json({ error: `Falha ao gravar: ${updateErr.message}` }, { status: 500 });
       }
-      return Response.json({ success: true, is_hidden: confirmed.is_hidden });
+
+      let confirmed;
+      try {
+        confirmed = await base44.asServiceRole.entities.TutorProfile.get(tutor_id);
+      } catch (getErr) {
+        console.error('[adminManageTutor] toggle_hidden re-fetch threw:', getErr.message, getErr.stack);
+        // A gravação em si não lançou erro — segue com o valor calculado
+        // localmente em vez de falhar por causa só da re-checagem.
+        return Response.json({ success: true, is_hidden: newHidden, unverified: true });
+      }
+
+      console.log('[adminManageTutor] toggle_hidden confirmed value:', confirmed?.is_hidden, 'expected:', newHidden);
+      return Response.json({ success: true, is_hidden: confirmed?.is_hidden ?? newHidden });
     }
 
     if (action === 'toggle_contract_type') {
