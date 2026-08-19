@@ -17,6 +17,11 @@ const STATUS_CONFIG = {
 };
 
 export default function AffiliateEarningsTable({ earnings }) {
+  // Esconde os marcadores de "cadastro pelo cupom" (onboarding_bonus, sempre
+  // R$ 0,00, criados no momento do cadastro) — não são comissão de verdade,
+  // só confundiam no extrato sem representar nenhum ganho.
+  earnings = earnings.filter(e => e.plan_id !== "onboarding_bonus");
+
   if (earnings.length === 0) {
     return (
       <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-12 text-center">
