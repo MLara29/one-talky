@@ -288,7 +288,10 @@ export default function AdminAffiliates() {
           {affiliates.map(aff => {
             const summary = getSummary(aff.id);
             const isExpanded = expanded === aff.id;
-            const affEarnings = getAffiliateEarnings(aff.id);
+            // Esconde os marcadores de "cadastro pelo cupom" (onboarding_bonus,
+            // sempre R$ 0,00, criados no momento do cadastro, não são comissão
+            // de verdade) — só polui o extrato sem agregar nada útil pro admin.
+            const affEarnings = getAffiliateEarnings(aff.id).filter(e => e.plan_id !== "onboarding_bonus");
 
             return (
               <div key={aff.id} className="theme-card bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
