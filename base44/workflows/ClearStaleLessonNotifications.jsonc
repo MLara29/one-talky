@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "clear_stale_lesson_notifications",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "clear_notifications": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "clearStaleLessonNotifications",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Limpar notifica\u00e7\u00f5es de aula obsoletas",
+            "description": "Marca como lidas as notifica\u00e7\u00f5es de 'aula come\u00e7ou / aluno esperando' cuja aula j\u00e1 terminou h\u00e1 mais de 15 minutos"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Every 15 minutes, marks 'lesson started' notifications as read once the underlying lesson ended more than 15 minutes ago, so tutors don't see stale 'student is waiting' alerts from lessons that finished a day earlier.",
+  "name": "Clear Stale Lesson Notifications",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/15 * * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}
