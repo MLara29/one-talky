@@ -91,7 +91,12 @@ export default function CreditsBanner({ profile, onUpdate }) {
   const pct = Math.min(100, Math.round((mins / 120) * 100));
   const planMaxMinutes = planObj?.minutes || 60;
   const planPct = Math.min(100, Math.round((planMins / planMaxMinutes) * 100));
-  const prepaidPct = Math.min(100, Math.round((prepaidMins / 120) * 100));
+  // Teto real (100%) = saldo avulso logo após a última compra/bônus,
+  // guardado em prepaid_credits_ceiling. Fallback pro próprio saldo atual
+  // (mostra 100% cheio) só pra perfis antigos que nunca tiveram esse campo
+  // preenchido — evita dividir por zero ou mostrar 0% errado.
+  const prepaidCeiling = profile?.prepaid_credits_ceiling || prepaidMins || 1;
+  const prepaidPct = Math.min(100, Math.round((prepaidMins / prepaidCeiling) * 100));
 
   // Grace period warning for cancelled plan credits.
   const graceExpiresAt = profile?.plan_credits_grace_expires_at;
