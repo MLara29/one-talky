@@ -37,6 +37,19 @@ export default function StudentDashboard() {
   useEffect(() => { loadData(); }, [user]);
   useEffect(() => { upcomingLessonRef.current = upcomingLesson; }, [upcomingLesson]);
 
+  // Mantém os minutos do card de créditos sempre atualizados em tempo real —
+  // sem isso, se o aluno gastar minutos numa aula (em outra tela) e voltar
+  // pro dashboard sem recarregar a página, o número ficava desatualizado.
+  useEffect(() => {
+    if (!user?.id) return;
+    const unsub = base44.entities.StudentProfile.subscribe((event) => {
+      if (event.type === 'update' && event.data?.user_id === user.id) {
+        setProfile(prev => (prev ? { ...prev, ...event.data } : event.data));
+      }
+    });
+    return () => unsub();
+  }, [user?.id]);
+
   // Realtime: update tutor cards when availability or rating changes
   useEffect(() => {
     const unsubTutor = base44.entities.TutorProfile.subscribe((event) => {
