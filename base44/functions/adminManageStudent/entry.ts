@@ -21,6 +21,18 @@ Deno.serve(async (req) => {
     if (!student) return Response.json({ error: 'Student not found' }, { status: 404 });
 
     if (action === 'delete') {
+      // Antes de excluir o aluno, remove também as comissões de afiliado
+      // vinculadas a ele — senão ficam registros "fantasmas" apontando pra
+      // um aluno que não existe mais na tela de afiliados do admin.
+      try {
+        const earnings = await base44.asServiceRole.entities.AffiliateEarning.filter({ student_id: student.user_id });
+        for (const earning of earnings) {
+          await base44.asServiceRole.entities.AffiliateEarning.delete(earning.id);
+        }
+      } catch (e) {
+        console.error('[adminManageStudent] failed to clean up affiliate earnings for student', student_id, e.message);
+      }
+
       await base44.asServiceRole.entities.StudentProfile.delete(student_id);
       return Response.json({ success: true, deleted: true });
     }
