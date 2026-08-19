@@ -89,6 +89,16 @@ export default function AdminAffiliates() {
     } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
   };
 
+  const deleteEarning = async (earning) => {
+    if (!window.confirm(`Excluir este registro de comissão de ${earning.student_name || "aluno"} (${fmtBRL(earning.commission_amount)})? Essa ação não pode ser desfeita.`)) return;
+    try {
+      const response = await base44.functions.invoke("adminManageAffiliate", { action: "delete_earning", payload: { earning_id: earning.id } });
+      if (response.data?.error) throw new Error(response.data.error);
+      toast({ title: "Registro excluído" });
+      loadData();
+    } catch (err) { toast({ title: "Erro", description: err.message, variant: "destructive" }); }
+  };
+
   const saveCommission = async (aff) => {
     const newPct = Number(editingCommission[aff.id]);
     if (isNaN(newPct) || newPct < 1 || newPct > 100) {
