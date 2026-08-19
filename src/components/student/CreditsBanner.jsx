@@ -329,9 +329,9 @@ export default function CreditsBanner({ profile, onUpdate }) {
                   transition: "width 0.5s ease",
                 }} />
                 <span style={{
-                  position: "absolute", left: 10, top: "50%",
-                  transform: "translateY(-50%)",
-                  fontSize: 11, fontWeight: 800, color: "#f97316",
+                  position: "absolute", left: "50%", top: "50%",
+                  transform: "translate(-50%,-50%)",
+                  fontSize: 12, fontWeight: 800, color: "#1a1a1a",
                 }}>{planPct}%</span>
                 <span style={{
                   position: "absolute", right: 10, top: "50%",
@@ -367,9 +367,9 @@ export default function CreditsBanner({ profile, onUpdate }) {
                     transition: "width 0.5s ease",
                   }} />
                   <span style={{
-                    position: "absolute", left: 10, top: "50%",
-                    transform: "translateY(-50%)",
-                    fontSize: 11, fontWeight: 800, color: "#6366f1",
+                    position: "absolute", left: "50%", top: "50%",
+                    transform: "translate(-50%,-50%)",
+                    fontSize: 12, fontWeight: 800, color: "#1a1a1a",
                   }}>{prepaidPct}%</span>
                   <span style={{
                     position: "absolute", right: 10, top: "50%",
