@@ -53,13 +53,20 @@ Deno.serve(async (req) => {
         record.discount_start = payload.discount_start || undefined;
         record.discount_end = payload.discount_end || undefined;
       }
+      let coupon = await base44.asServiceRole.entities.Coupon.create(record);
+
       // Validade geral do cupom — independente de ter desconto ou não.
-      // Diferente de discount_start/discount_end (só existe pra período).
+      // IMPORTANTE: gravado num segundo passo (update), não junto do create.
+      // Testado e confirmado: campos novos de esquema às vezes são
+      // silenciosamente descartados num create, mas gravam certo num update
+      // logo em seguida — por segurança, sempre fazemos assim aqui.
       if (payload.expires_at) {
-        record.expires_at = String(payload.expires_at);
+        await base44.asServiceRole.entities.Coupon.update(coupon.id, {
+          expires_at: String(payload.expires_at),
+        });
+        coupon = await base44.asServiceRole.entities.Coupon.get(coupon.id);
       }
 
-      const coupon = await base44.asServiceRole.entities.Coupon.create(record);
       return Response.json({ success: true, coupon });
     }
 
