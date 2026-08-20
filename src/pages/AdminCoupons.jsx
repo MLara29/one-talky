@@ -252,6 +252,18 @@ export default function AdminCoupons() {
                         <span className={c.is_active ? "text-emerald-500" : "text-red-500"}>
                           {c.is_active ? "Ativo" : "Inativo"}
                         </span>
+                        {c.expires_at && (() => {
+                          const expired = new Date() > new Date(c.expires_at + "T23:59:59");
+                          return (
+                            <>
+                              {" · "}
+                              <span className={expired ? "text-red-500 font-semibold" : "text-gray-400"}>
+                                {expired ? "Expirou em " : "Válido até "}
+                                {new Date(c.expires_at).toLocaleDateString("pt-BR")}
+                              </span>
+                            </>
+                          );
+                        })()}
                       </p>
                     </div>
                   </div>
