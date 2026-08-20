@@ -106,6 +106,12 @@ export async function computeCreditUpdate(base44, {
       coupon_code: code,
     });
     let usage = usageRecords[0];
+    // Captura ANTES de criar o registro — é essa flag que decide se os
+    // minutos de bônus podem ser concedidos (só na primeira vez de verdade).
+    // Cobre tanto "cupom já usado no cadastro" quanto "cupom já usado numa
+    // compra anterior" — qualquer registro de uso pré-existente bloqueia um
+    // novo bônus, evitando a duplicação de minutos grátis.
+    const isFirstUseOfCoupon = !usage;
 
     if (!usage) {
       // First time — create with cycles + bonus expiry based on discount_type.
@@ -134,8 +140,11 @@ export async function computeCreditUpdate(base44, {
       });
     }
 
-    // Add bonus minutes to prepaid with the coupon's specific expiry.
-    if (hasBonus) {
+    // Add bonus minutes to prepaid with the coupon's specific expiry — só na
+    // primeira vez que esse cupom é usado por esse aluno (cadastro OU compra,
+    // o que vier primeiro). Sem essa checagem, um aluno que já ganhou o bônus
+    // no cadastro ganhava ele de novo ao usar o mesmo cupom numa assinatura.
+    if (hasBonus && isFirstUseOfCoupon) {
       const bonusExpiry = usage.bonus_minutes_expires_at
         ? new Date(usage.bonus_minutes_expires_at)
         : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
