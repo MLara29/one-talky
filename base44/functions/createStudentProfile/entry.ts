@@ -33,8 +33,20 @@ Deno.serve(async (req) => {
       });
       const coupon = coupons[0];
       if (coupon && (coupon.used_count || 0) < (coupon.max_uses || 100)) {
-        freeCredits = coupon.credits_minutes ?? 0;
-        couponRecord = coupon;
+        // Reserva a vaga ATOMICAMENTE (CAS) antes de conceder qualquer bônus —
+        // evita que vários cadastros simultâneos usando o mesmo cupom
+        // ultrapassem o limite de usos configurado. Mesma técnica já usada
+        // em stripeWebhook.js e mpProcessPayment.js pro mesmo contador.
+        const cas = await base44.asServiceRole.entities.Coupon.updateMany(
+          { id: coupon.id, used_count: coupon.used_count },
+          { $set: { used_count: (coupon.used_count || 0) + 1 } }
+        );
+        if (cas.updated > 0) {
+          freeCredits = coupon.credits_minutes ?? 0;
+          couponRecord = coupon;
+        } else {
+          console.warn(`[createStudentProfile] CAS mismatch on Coupon.used_count for ${coupon.code} — concurrent redemption, bonus not granted for this signup.`);
+        }
       }
     }
 
@@ -75,12 +87,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Increment coupon usage and record affiliate earning if applicable
+    // Record affiliate earning if applicable — o incremento de used_count já
+    // aconteceu de forma atômica (CAS) lá em cima, antes do bônus ser concedido.
     if (couponRecord) {
-      await base44.asServiceRole.entities.Coupon.update(couponRecord.id, {
-        used_count: (couponRecord.used_count || 0) + 1,
-      });
-
       if (couponRecord.affiliate_id) {
         // Guard: one use per student
         const alreadyUsed = await base44.asServiceRole.entities.AffiliateEarning.filter({
