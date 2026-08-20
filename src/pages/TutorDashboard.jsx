@@ -274,7 +274,7 @@ export default function TutorDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">
-            {t(lang, "welcomeBack")}, {profile.full_name?.split(" ")[0]} 👋
+            {t(lang, "welcomeBack")}, {profile.full_name?.split(" ")[0]}
           </h1>
           <p className="theme-subtext text-gray-500 text-sm mt-1">{t(lang, "teachingOverview")}</p>
         </div>
