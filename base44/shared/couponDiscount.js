@@ -39,6 +39,14 @@ export async function validateAndApplyCoupon(base44, couponCode, originalPrice) 
     return { finalPrice: originalPrice, coupon: null, bonusMinutes: 0, error: "Cupom esgotado" };
   }
 
+  // Validade geral do cupom — independente de ter desconto, minutos, ou os
+  // dois. Diferente do período (discount_start/discount_end), que só existe
+  // pra discount_type="period", este campo sempre vale, pra qualquer cupom.
+  // Expirado = cupom inteiro (desconto E bônus) para de funcionar, sem exceção.
+  if (coupon.expires_at && new Date() > new Date(coupon.expires_at + "T23:59:59")) {
+    return { finalPrice: originalPrice, coupon: null, bonusMinutes: 0, error: "Cupom expirado" };
+  }
+
   // Validate period (only for discount_type === "period").
   if (coupon.discount_type === "period") {
     const now = new Date();
