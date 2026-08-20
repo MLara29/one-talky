@@ -19,6 +19,7 @@ const DISCOUNT_TYPES = [
 const EMPTY_FORM = {
   code: "", credits_minutes: 0, max_uses: 100, description: "",
   discount_percent: 0, discount_type: "none", discount_start: "", discount_end: "",
+  expires_at: "",
 };
 
 export default function AdminCoupons() {
@@ -55,6 +56,9 @@ export default function AdminCoupons() {
       if (form.discount_type === "period") {
         payload.discount_start = form.discount_start || undefined;
         payload.discount_end = form.discount_end || undefined;
+      }
+      if (form.expires_at) {
+        payload.expires_at = form.expires_at;
       }
       const response = await base44.functions.invoke("adminManageCoupon", { action: "create", payload });
       if (response.data?.error) throw new Error(response.data.error);
