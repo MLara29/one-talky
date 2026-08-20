@@ -189,6 +189,18 @@ export default function AdminCoupons() {
               />
             </div>
             <div>
+              <Label className="theme-subtext text-sm mb-1 block">Validade do cupom (opcional)</Label>
+              <Input
+                type="date"
+                value={form.expires_at}
+                onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
+                className="theme-input"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Depois dessa data, o cupom para de funcionar por completo — desconto e minutos de bônus juntos. Vale pra qualquer cupom, com ou sem desconto. Vazio = nunca expira.
+              </p>
+            </div>
+            <div>
               <Label className="theme-subtext text-sm mb-1 block">Descrição (opcional)</Label>
               <Input
                 value={form.description}
