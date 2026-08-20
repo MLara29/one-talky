@@ -32,7 +32,11 @@ Deno.serve(async (req) => {
         is_active: true,
       });
       const coupon = coupons[0];
-      if (coupon && (coupon.used_count || 0) < (coupon.max_uses || 100)) {
+      // Validade geral do cupom — mesma checagem usada nas compras (Stripe e
+      // Mercado Pago, via couponDiscount.js). Sem ela, um cupom vencido ainda
+      // funcionaria pra sempre se usado no cadastro, mesmo já esgotado por data.
+      const isExpired = coupon?.expires_at && new Date() > new Date(coupon.expires_at + "T23:59:59");
+      if (coupon && !isExpired && (coupon.used_count || 0) < (coupon.max_uses || 100)) {
         // Reserva a vaga ATOMICAMENTE (CAS) antes de conceder qualquer bônus —
         // evita que vários cadastros simultâneos usando o mesmo cupom
         // ultrapassem o limite de usos configurado. Mesma técnica já usada
