@@ -53,6 +53,11 @@ Deno.serve(async (req) => {
         record.discount_start = payload.discount_start || undefined;
         record.discount_end = payload.discount_end || undefined;
       }
+      // Validade geral do cupom — independente de ter desconto ou não.
+      // Diferente de discount_start/discount_end (só existe pra período).
+      if (payload.expires_at) {
+        record.expires_at = String(payload.expires_at);
+      }
 
       const coupon = await base44.asServiceRole.entities.Coupon.create(record);
       return Response.json({ success: true, coupon });
