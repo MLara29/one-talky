@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, CheckCircle, AlertCircle, Users, User as UserIcon } from "lucide-react";
+import { Send, CheckCircle, AlertCircle, Users, User as UserIcon, FileText } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import RecipientPicker from "./RecipientPicker";
 import EmailAttachmentsInput from "./EmailAttachmentsInput";
@@ -13,6 +13,27 @@ const TARGETS = [
   { value: "specific_student", label: "Um aluno específico", icon: UserIcon },
   { value: "all_tutors", label: "Todos os tutores", icon: Users },
   { value: "all_students", label: "Todos os alunos", icon: Users },
+];
+
+// Modelos prontos de e-mail — disponíveis só quando o alvo é "Um aluno
+// específico" (a personalização usa o nome de quem já foi selecionado no
+// RecipientPicker). Preenchem Assunto e Corpo automaticamente ao clicar;
+// depois disso o texto continua 100% editável, como qualquer outro envio.
+const EMAIL_TEMPLATES = [
+  {
+    id: "welcome_15min",
+    label: "Boas-vindas — 15 minutos grátis",
+    subject: (firstName) => `${firstName}, você ganhou 15 minutos grátis na One Talky! 🎁`,
+    body: (firstName) => `Olá, ${firstName}!
+
+Temos uma novidade especial pra você: acabamos de adicionar **15 minutos grátis** na sua conta, pra você testar uma aula de conversação com um dos nossos tutores nativos ou fluentes, sem gastar nada.
+
+É só entrar na plataforma e agendar uma aula (ou iniciar uma aula instantânea, se algum tutor estiver online no momento) — os minutos já estão disponíveis aí na sua conta, prontos pra usar.
+
+Aproveita! 🚀
+
+Equipe One Talky`,
+  },
 ];
 
 // Converte texto colado (quebras de linha e **negrito** estilo markdown)
