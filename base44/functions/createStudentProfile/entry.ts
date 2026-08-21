@@ -104,6 +104,12 @@ Deno.serve(async (req) => {
       conversation_topics: Array.isArray(profile.conversation_topics) ? profile.conversation_topics.slice(0, 30) : [],
       plan_credits_minutes: 0,
       prepaid_credits_minutes: freeCredits,
+      // Teto de referência (100%) da barra visual — precisa ser gravado aqui
+      // também, não só nas compras (computeCreditUpdate). Sem isso, a tela
+      // cai no modo de segurança que usa o saldo ATUAL como teto, fazendo o
+      // 100% "andar junto" com o saldo a cada minuto gasto — exatamente o
+      // bug reportado.
+      prepaid_credits_ceiling: freeCredits,
       prepaid_expires_at: prepaidExpiresAt,
       credits_minutes: freeCredits,
       plan: "free",
