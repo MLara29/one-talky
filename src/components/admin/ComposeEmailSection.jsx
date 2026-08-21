@@ -73,6 +73,12 @@ export default function ComposeEmailSection() {
     setResult(null);
   };
 
+  const applyTemplate = (tpl) => {
+    const firstName = recipient?.full_name?.split(" ")[0] || "aluno(a)";
+    setSubject(tpl.subject(firstName));
+    setBodyHtml(tpl.body(firstName));
+  };
+
   const doSend = async () => {
     setSending(true);
     setResult(null);
@@ -131,6 +137,31 @@ export default function ComposeEmailSection() {
           {target === "specific_tutor" && <RecipientPicker role="tutor" value={recipient} onChange={setRecipient} />}
           {target === "specific_student" && <RecipientPicker role="student" value={recipient} onChange={setRecipient} />}
         </div>
+
+        {target === "specific_student" && (
+          <div>
+            <label className="text-xs text-gray-500 mb-1.5 block flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5" /> Modelo pronto (opcional)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {EMAIL_TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  disabled={!recipient}
+                  onClick={() => applyTemplate(tpl)}
+                  title={!recipient ? "Selecione um aluno primeiro" : "Preenche Assunto e Corpo com o nome dele"}
+                  className="text-xs px-3 py-2 rounded-lg border bg-white/5 border-white/10 text-gray-300 hover:border-emerald-500/40 hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {tpl.label}
+                </button>
+              ))}
+            </div>
+            {!recipient && (
+              <p className="text-[11px] text-gray-600 mt-1.5">Selecione o aluno acima pra liberar os modelos — o nome dele já vem preenchido automaticamente.</p>
+            )}
+          </div>
+        )}
 
         <div>
           <label className="text-xs text-gray-500 mb-1.5 block">Assunto</label>
