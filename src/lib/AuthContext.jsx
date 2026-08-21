@@ -195,6 +195,10 @@ export const AuthProvider = ({ children }) => {
         clearInterval(heartbeatRef.current);
         base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date(0).toISOString(), is_available_now: false } }).catch(() => {});
       }
+      if (studentActiveRef.current) {
+        clearInterval(studentHeartbeatRef.current);
+        base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
+      }
     };
   }, []);
 
