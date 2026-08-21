@@ -51,7 +51,7 @@ function StatCard({ label, value, sub, icon: Icon, color = "violet", trendPct })
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState({
-    tutorsActive: 0, students: 0, lessonsCompleted: 0, inProgress: 0,
+    tutorsActive: 0, students: 0, studentsOnline: 0, lessonsCompleted: 0, inProgress: 0,
     newStudentsThisMonth: 0, revenueThisMonth: 0, revenueTrendPct: null,
     lessonsScheduledThisMonth: 0, pendingApprovals: 0,
   });
@@ -178,9 +178,17 @@ export default function AdminDashboard() {
       });
       const plansThisMonthData = PLANS.map(p => ({ name: p.name, id: p.id, count: planCounts[p.id] || 0 }));
 
+      // Alunos online agora — usa o mesmo campo/janela (90s) já usado pro
+      // tutor. students já vem carregado acima, não precisa de consulta nova.
+      const ONLINE_THRESHOLD_MS = 90 * 1000;
+      const studentsOnline = students.filter(
+        s => s.last_seen && (now.getTime() - new Date(s.last_seen).getTime()) < ONLINE_THRESHOLD_MS
+      ).length;
+
       setKpis({
         tutorsActive: approvedTutors.length,
         students: students.length,
+        studentsOnline,
         lessonsCompleted: completedLessons.length,
         inProgress: inProgressLessons.length,
         newStudentsThisMonth,
