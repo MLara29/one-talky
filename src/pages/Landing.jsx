@@ -546,7 +546,7 @@ export default function Landing() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: 16, alignItems: "stretch" }}>
             {plans.map((p, i) => (
-              <div key={i} style={{ position: "relative", background: p.highlight ? "#FFF7F1" : "#fff", border: `2px solid ${p.highlight ? ACCENT : "#EEE7DD"}`, borderRadius: 22, padding: "28px 22px", display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 14px 34px -24px rgba(23,24,28,.35)" }}>
+              <div key={i} className="ot-price-card" style={{ position: "relative", background: p.highlight ? "#FFF7F1" : "#fff", border: `2px solid ${p.highlight ? ACCENT : "#EEE7DD"}`, borderRadius: 22, padding: "28px 22px", display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 14px 34px -24px rgba(23,24,28,.35)", cursor: "pointer" }}>
                 {p.badge && <span style={{ position: "absolute", top: -13, left: 22, background: ACCENT, color: "#fff", fontSize: 11.5, fontWeight: 800, padding: "5px 12px", borderRadius: 999 }}>{p.badge}</span>}
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "#A29A8C" }}>{p.tag}</div>
