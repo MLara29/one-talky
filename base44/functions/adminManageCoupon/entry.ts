@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     if (!otpGate.ok) return Response.json({ error: otpGate.error }, { status: otpGate.status });
 
     const { action, payload = {} } = await req.json();
-    const VALID_ACTIONS = ['create', 'toggle_active', 'delete'];
+    const VALID_ACTIONS = ['create', 'update', 'toggle_active', 'delete'];
     if (!VALID_ACTIONS.includes(action)) {
       return Response.json({ error: 'Valid action is required' }, { status: 400 });
     }
@@ -72,6 +72,45 @@ Deno.serve(async (req) => {
 
     const { coupon_id } = payload;
     if (!coupon_id) return Response.json({ error: 'coupon_id required' }, { status: 400 });
+
+    if (action === 'update') {
+      const coupon = await base44.asServiceRole.entities.Coupon.get(coupon_id);
+      if (!coupon) return Response.json({ error: 'Coupon not found' }, { status: 404 });
+
+      // Mesmas validações da criação — o código do cupom e o used_count NÃO
+      // são editáveis aqui de propósito: mudar o código depois de já ter sido
+      // usado bagunçaria os registros de uso existentes; mexer no contador de
+      // uso manualmente criaria inconsistência com o histórico real.
+      const discountPercent = Number(payload.discount_percent) || 0;
+      if (discountPercent < 0 || discountPercent > 100) {
+        return Response.json({ error: 'discount_percent must be between 0 and 100' }, { status: 400 });
+      }
+
+      const creditsMinutes = Number(payload.credits_minutes) || 0;
+      if (creditsMinutes < 0 || creditsMinutes > 120) {
+        return Response.json({ error: 'credits_minutes must be between 0 and 120' }, { status: 400 });
+      }
+
+      const maxUses = Number(payload.max_uses) || 100;
+      if (maxUses < (coupon.used_count || 0)) {
+        return Response.json({ error: `Máximo de usos não pode ser menor que os ${coupon.used_count} usos já registrados` }, { status: 400 });
+      }
+
+      const updateData = {
+        credits_minutes: creditsMinutes,
+        discount_percent: discountPercent,
+        discount_type: discountPercent > 0 ? (payload.discount_type || 'none') : 'none',
+        max_uses: maxUses,
+        description: payload.description || undefined,
+        discount_start: payload.discount_type === 'period' ? (payload.discount_start || undefined) : undefined,
+        discount_end: payload.discount_type === 'period' ? (payload.discount_end || undefined) : undefined,
+        expires_at: payload.expires_at || undefined,
+      };
+
+      await base44.asServiceRole.entities.Coupon.update(coupon_id, updateData);
+      const updated = await base44.asServiceRole.entities.Coupon.get(coupon_id);
+      return Response.json({ success: true, coupon: updated });
+    }
 
     if (action === 'toggle_active') {
       const coupon = await base44.asServiceRole.entities.Coupon.get(coupon_id);
