@@ -206,6 +206,8 @@ const CSS = `
 @keyframes ot-marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .ot-marquee-track { animation: ot-marquee 46s linear infinite; }
 .ot-marquee-wrap:hover .ot-marquee-track { animation-play-state: paused; }
+.ot-price-card { transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.ot-price-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 26px 46px -20px rgba(23,24,28,.30); border-color: #F26A1B !important; }
 @keyframes ot-floaty2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(9px)} }
 @keyframes ot-floaty3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 
