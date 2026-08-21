@@ -144,7 +144,37 @@ export async function computeCreditUpdate(base44, {
     // primeira vez que esse cupom é usado por esse aluno (cadastro OU compra,
     // o que vier primeiro). Sem essa checagem, um aluno que já ganhou o bônus
     // no cadastro ganhava ele de novo ao usar o mesmo cupom numa assinatura.
-    if (hasBonus && isFirstUseOfCoupon) {
+    //
+    // Limite separado de bônus (max_bonus_uses): mesmo dentro do limite geral
+    // de usos do cupom (max_uses), pode existir um teto MENOR só pra quantos
+    // ganham os minutos — atingido esse teto, o cupom continua válido pro
+    // desconto normalmente, só para de conceder minutos. Reserva a vaga do
+    // bônus de forma atômica (CAS), mesma técnica já usada pro used_count —
+    // evita conceder bônus além do limite configurado em caso de simultaneidade.
+    let bonusAllowed = hasBonus && isFirstUseOfCoupon;
+    if (bonusAllowed && appliedCoupon.max_bonus_uses) {
+      const currentBonusCount = appliedCoupon.bonus_used_count || 0;
+      if (currentBonusCount >= appliedCoupon.max_bonus_uses) {
+        bonusAllowed = false;
+      } else {
+        const bonusCas = await base44.asServiceRole.entities.Coupon.updateMany(
+          { id: appliedCoupon.id, bonus_used_count: currentBonusCount },
+          { $set: { bonus_used_count: currentBonusCount + 1 } }
+        );
+        if (bonusCas.updated === 0) {
+          console.warn(`[computeCreditUpdate] CAS mismatch on Coupon.bonus_used_count for ${code} — concurrent redemption, bonus not granted this time.`);
+          bonusAllowed = false;
+        }
+      }
+    } else if (bonusAllowed) {
+      // Sem limite separado configurado — ainda assim conta pro histórico,
+      // sem CAS (não há teto pra proteger aqui).
+      await base44.asServiceRole.entities.Coupon.update(appliedCoupon.id, {
+        bonus_used_count: (appliedCoupon.bonus_used_count || 0) + 1,
+      });
+    }
+
+    if (bonusAllowed) {
       const bonusExpiry = usage.bonus_minutes_expires_at
         ? new Date(usage.bonus_minutes_expires_at)
         : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
