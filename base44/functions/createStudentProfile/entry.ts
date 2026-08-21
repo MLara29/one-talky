@@ -46,8 +46,38 @@ Deno.serve(async (req) => {
           { $set: { used_count: (coupon.used_count || 0) + 1 } }
         );
         if (cas.updated > 0) {
-          freeCredits = coupon.credits_minutes ?? 0;
           couponRecord = coupon;
+
+          // Limite separado de bônus (max_bonus_uses): mesmo dentro do limite
+          // geral do cupom, pode existir um teto MENOR só pra quantos
+          // cadastros ganham os minutos grátis. Atingido esse teto, o cupom
+          // continua válido normalmente (desconto em compras futuras, se
+          // tiver), só não concede minutos nesse cadastro. Mesma proteção
+          // atômica (CAS) usada acima pro used_count geral.
+          const hasBonusToGrant = (coupon.credits_minutes || 0) > 0;
+          let bonusAllowed = hasBonusToGrant;
+          if (hasBonusToGrant && coupon.max_bonus_uses) {
+            const currentBonusCount = coupon.bonus_used_count || 0;
+            if (currentBonusCount >= coupon.max_bonus_uses) {
+              bonusAllowed = false;
+            } else {
+              const bonusCas = await base44.asServiceRole.entities.Coupon.updateMany(
+                { id: coupon.id, bonus_used_count: currentBonusCount },
+                { $set: { bonus_used_count: currentBonusCount + 1 } }
+              );
+              bonusAllowed = bonusCas.updated > 0;
+              if (!bonusAllowed) {
+                console.warn(`[createStudentProfile] CAS mismatch on Coupon.bonus_used_count for ${coupon.code} — concurrent redemption, bonus not granted for this signup.`);
+              }
+            }
+          } else if (hasBonusToGrant) {
+            // Sem limite separado configurado — ainda assim conta pro histórico.
+            await base44.asServiceRole.entities.Coupon.update(coupon.id, {
+              bonus_used_count: (coupon.bonus_used_count || 0) + 1,
+            });
+          }
+
+          freeCredits = bonusAllowed ? (coupon.credits_minutes ?? 0) : 0;
         } else {
           console.warn(`[createStudentProfile] CAS mismatch on Coupon.used_count for ${coupon.code} — concurrent redemption, bonus not granted for this signup.`);
         }
