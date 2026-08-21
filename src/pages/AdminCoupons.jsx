@@ -308,6 +308,10 @@ export default function AdminCoupons() {
                       className="p-2 rounded-lg hover:bg-white/10 transition-colors theme-subtext text-gray-400">
                       {copied === c.code ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                     </button>
+                    <button onClick={() => startEdit(c)} title="Editar"
+                      className="p-2 rounded-lg hover:bg-white/10 transition-colors theme-subtext text-gray-400">
+                      <Pencil className="w-4 h-4" />
+                    </button>
                     <button onClick={() => toggleActive(c)} title="Ativar/Desativar"
                       className="p-2 rounded-lg hover:bg-white/10 transition-colors">
                       {c.is_active
