@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Users, GraduationCap, Video, BookOpen, AlertCircle, DollarSign,
-  TrendingUp, TrendingDown, Calendar, Trophy, BarChart3, PieChart, Zap, CalendarClock,
+  TrendingUp, TrendingDown, Calendar, Trophy, BarChart3, PieChart, Zap, CalendarClock, Wifi,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -239,6 +239,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <StatCard label="Tutores ativos" value={kpis.tutorsActive} icon={GraduationCap} color="violet" />
         <StatCard label="Alunos" value={kpis.students} icon={Users} color="blue" sub={`+${kpis.newStudentsThisMonth} novos este mês`} />
+        <StatCard label="Alunos online agora" value={kpis.studentsOnline} icon={Wifi} color="emerald" />
         <StatCard label="Aulas concluídas" value={kpis.lessonsCompleted} icon={BookOpen} color="emerald" />
         <StatCard label="Em andamento agora" value={kpis.inProgress} icon={Video} color="orange" />
       </div>
