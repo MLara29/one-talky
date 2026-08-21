@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import createGlobe from "cobe";
 
 // Mesmos tutores fakes já usados na seção "TUTORS" da Landing Page — reaproveita
@@ -15,7 +15,7 @@ const TUTOR_MARKERS = [
 
 // Projeta um ponto (latitude/longitude) da esfera pra coordenada 2D na tela,
 // considerando a rotação atual do globo (phi) e a inclinação (theta).
-// z > 0 = ponto está de frente pra câmera (visível); z <= 0 = do lado escondido.
+// z > 0 = ponto de frente pra câmera (visível); z <= 0 = do lado escondido.
 function projectMarker(lat, lng, phi, theta) {
   const latRad = (lat * Math.PI) / 180;
   const lngRad = (lng * Math.PI) / 180 + phi;
@@ -29,112 +29,127 @@ function projectMarker(lat, lng, phi, theta) {
   return { x, y, z };
 }
 
+const THETA = 0.32;
+
 export function TutorGlobe({ className = "" }) {
-  const wrapRef = useRef(null);
   const canvasRef = useRef(null);
   const markerElRefs = useRef({});
-  const pointerInteracting = useRef(false);
-  const pointerStartX = useRef(0);
-  const dragPhi = useRef(0);
-  const dragStartPhi = useRef(0);
-  const [size, setSize] = useState(0);
+  const pointerInteracting = useRef(null);
+  const pointerInteractionMovement = useRef(0);
 
-  useEffect(() => {
-    if (!wrapRef.current) return;
-    const ro = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width;
-      if (w) setSize(w);
+  const updateMarkerPositions = useCallback((phi, theta, width) => {
+    TUTOR_MARKERS.forEach((m) => {
+      const el = markerElRefs.current[m.id];
+      if (!el) return;
+      const p = projectMarker(m.location[0], m.location[1], phi, theta);
+      if (p.z < 0.15) {
+        el.style.opacity = "0";
+        return;
+      }
+      const screenX = width / 2 + p.x * (width / 2) * 0.9;
+      const screenY = width / 2 - p.y * (width / 2) * 0.9;
+      el.style.transform = `translate(${screenX}px, ${screenY}px) translate(-50%, -130%)`;
+      el.style.opacity = String(Math.min(1, (p.z - 0.15) * 3));
     });
-    ro.observe(wrapRef.current);
-    return () => ro.disconnect();
   }, []);
 
   const handlePointerDown = useCallback((e) => {
-    pointerInteracting.current = true;
-    pointerStartX.current = e.clientX;
-    dragStartPhi.current = dragPhi.current;
+    pointerInteracting.current = e.clientX - pointerInteractionMovement.current;
     if (canvasRef.current) canvasRef.current.style.cursor = "grabbing";
   }, []);
 
-  useEffect(() => {
-    const handleMove = (e) => {
-      if (!pointerInteracting.current) return;
-      const delta = e.clientX - pointerStartX.current;
-      dragPhi.current = dragStartPhi.current + delta / 200;
-    };
-    const handleUp = () => {
-      pointerInteracting.current = false;
-      if (canvasRef.current) canvasRef.current.style.cursor = "grab";
-    };
-    window.addEventListener("pointermove", handleMove, { passive: true });
-    window.addEventListener("pointerup", handleUp, { passive: true });
-    return () => {
-      window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("pointerup", handleUp);
-    };
+  const handlePointerUp = useCallback(() => {
+    pointerInteracting.current = null;
+    if (canvasRef.current) canvasRef.current.style.cursor = "grab";
+  }, []);
+
+  const handlePointerMove = useCallback((e) => {
+    if (pointerInteracting.current !== null) {
+      pointerInteractionMovement.current = e.clientX - pointerInteracting.current;
+    }
   }, []);
 
   useEffect(() => {
-    if (!canvasRef.current || !size) return;
+    window.addEventListener("pointerup", handlePointerUp, { passive: true });
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+    };
+  }, [handlePointerUp, handlePointerMove]);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    let globe = null;
     let autoPhi = 0;
-    const theta = 0.32;
-    const width = size;
+    let ro;
 
-    const globe = createGlobe(canvasRef.current, {
-      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
-      width: width * 2,
-      height: width * 2,
-      phi: 0,
-      theta,
-      dark: 0,
-      diffuse: 1.2,
-      mapSamples: 15000,
-      mapBrightness: 7,
-      baseColor: [0.93, 0.91, 0.88],
-      markerColor: [0.949, 0.416, 0.106],
-      glowColor: [1, 0.97, 0.94],
-      markerElevation: 0.15,
-      opacity: 1,
-      markers: TUTOR_MARKERS.map((m) => ({ location: m.location, size: 0.1 })),
-      onRender: (state) => {
-        if (!pointerInteracting.current) autoPhi += 0.0032;
-        const phi = autoPhi + dragPhi.current;
-        state.phi = phi;
-        state.theta = theta;
+    function init() {
+      const width = canvas.offsetWidth;
+      if (width === 0 || globe) return;
 
-        TUTOR_MARKERS.forEach((m) => {
-          const el = markerElRefs.current[m.id];
-          if (!el) return;
-          const p = projectMarker(m.location[0], m.location[1], phi, theta);
-          if (p.z < 0.12) {
-            el.style.opacity = "0";
-            el.style.pointerEvents = "none";
-            return;
+      globe = createGlobe(canvas, {
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+        width: width * 2,
+        height: width * 2,
+        phi: 0,
+        theta: THETA,
+        dark: 0,
+        diffuse: 1.2,
+        mapSamples: 16000,
+        mapBrightness: 6,
+        baseColor: [1, 1, 1],
+        markerColor: [0.949, 0.416, 0.106],
+        glowColor: [0.96, 0.94, 0.9],
+        markerElevation: 0,
+        opacity: 0.9,
+        // Sem marcadores nativos da Cobe — os "balões" com foto/nome são
+        // desenhados 100% em HTML por cima, via updateMarkerPositions.
+        markers: [],
+        onRender: (state) => {
+          if (pointerInteracting.current === null) {
+            autoPhi += 0.0035;
           }
-          const screenX = width / 2 + p.x * (width / 2) * 0.92;
-          const screenY = width / 2 - p.y * (width / 2) * 0.92;
-          el.style.transform = `translate(${screenX}px, ${screenY}px) translate(-50%, -130%)`;
-          el.style.opacity = String(Math.min(1, (p.z - 0.12) * 3));
-          el.style.pointerEvents = "none";
-        });
-      },
-    });
+          const phi = autoPhi + pointerInteractionMovement.current / 200;
+          state.phi = phi;
+          state.theta = THETA;
+          updateMarkerPositions(phi, THETA, width);
+        },
+      });
 
-    return () => globe.destroy();
-  }, [size]);
+      setTimeout(() => { canvas.style.opacity = "1"; });
+    }
+
+    if (canvas.offsetWidth > 0) {
+      init();
+    } else {
+      ro = new ResizeObserver((entries) => {
+        if (entries[0]?.contentRect.width > 0 && !globe) {
+          init();
+        }
+      });
+      ro.observe(canvas);
+    }
+
+    return () => {
+      if (ro) ro.disconnect();
+      if (globe) globe.destroy();
+    };
+  }, [updateMarkerPositions]);
 
   return (
-    <div ref={wrapRef} className={className} style={{ position: "relative", width: "100%", maxWidth: 480, aspectRatio: "1 / 1", margin: "0 auto" }}>
+    <div className={className} style={{ position: "relative", width: "100%", maxWidth: 480, aspectRatio: "1 / 1", margin: "0 auto" }}>
       <canvas
         ref={canvasRef}
         onPointerDown={handlePointerDown}
-        style={{ width: "100%", height: "100%", cursor: "grab", touchAction: "none" }}
+        style={{ width: "100%", height: "100%", cursor: "grab", opacity: 0, transition: "opacity 1s ease", touchAction: "none" }}
       />
       {TUTOR_MARKERS.map((m) => (
         <div
           key={m.id}
           ref={(el) => { markerElRefs.current[m.id] = el; }}
-          style={{ position: "absolute", top: 0, left: 0, transition: "opacity .15s ease", willChange: "transform" }}
+          style={{ position: "absolute", top: 0, left: 0, opacity: 0, transition: "opacity .15s ease", willChange: "transform, opacity" }}
         >
           <div
             style={{
