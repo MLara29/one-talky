@@ -19,7 +19,7 @@ const DISCOUNT_TYPES = [
 const EMPTY_FORM = {
   code: "", credits_minutes: 0, max_uses: 100, description: "",
   discount_percent: 0, discount_type: "none", discount_start: "", discount_end: "",
-  expires_at: "",
+  expires_at: "", max_bonus_uses: "",
 };
 
 export default function AdminCoupons() {
@@ -45,6 +45,7 @@ export default function AdminCoupons() {
       discount_start: c.discount_start || "",
       discount_end: c.discount_end || "",
       expires_at: c.expires_at || "",
+      max_bonus_uses: c.max_bonus_uses || "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -82,6 +83,9 @@ export default function AdminCoupons() {
       }
       if (form.expires_at) {
         payload.expires_at = form.expires_at;
+      }
+      if (Number(form.credits_minutes) > 0 && form.max_bonus_uses) {
+        payload.max_bonus_uses = form.max_bonus_uses;
       }
       if (isEditing) payload.coupon_id = editingId;
 
@@ -168,6 +172,21 @@ export default function AdminCoupons() {
                 className="theme-input"
               />
             </div>
+            {Number(form.credits_minutes) > 0 && (
+              <div>
+                <Label className="theme-subtext text-sm mb-1 block">Limite de usos com bônus (opcional)</Label>
+                <Input
+                  type="number" min={1}
+                  value={form.max_bonus_uses}
+                  onChange={e => setForm(f => ({ ...f, max_bonus_uses: e.target.value }))}
+                  placeholder={`Vazio = todos os ${form.max_uses || "usos"} podem ganhar`}
+                  className="theme-input"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Independente do máximo de usos geral do cupom — depois desse número, ele continua funcionando pro desconto normalmente, só para de dar os minutos grátis.
+                </p>
+              </div>
+            )}
             <div>
               <Label className="theme-subtext text-sm mb-1 block">Desconto (%)</Label>
               <Input
