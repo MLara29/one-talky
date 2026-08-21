@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Users, GraduationCap, Video, BookOpen, AlertCircle, DollarSign,
-  TrendingUp, TrendingDown, Calendar, Trophy, BarChart3, PieChart,
+  TrendingUp, TrendingDown, Calendar, Trophy, BarChart3, PieChart, Zap, CalendarClock,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
