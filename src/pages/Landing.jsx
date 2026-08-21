@@ -5,7 +5,6 @@ const ACCENT = "#F26A1B";
 
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
-import { GlassCard } from "@/components/ui/glass-card";
 
 const CONTENT = {
   pt: {
