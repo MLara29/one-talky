@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, ToggleLeft, ToggleRight, Tag, Copy, Check } from "lucide-react";
+import { Plus, Trash2, ToggleLeft, ToggleRight, Tag, Copy, Check, Pencil, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const DISCOUNT_TYPES = [
@@ -29,8 +29,30 @@ export default function AdminCoupons() {
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [editingId, setEditingId] = useState(null); // null = criando novo; senão, id do cupom em edição
 
   useEffect(() => { loadCoupons(); }, []);
+
+  const startEdit = (c) => {
+    setEditingId(c.id);
+    setForm({
+      code: c.code,
+      credits_minutes: c.credits_minutes || 0,
+      max_uses: c.max_uses || 100,
+      description: c.description || "",
+      discount_percent: c.discount_percent || 0,
+      discount_type: c.discount_type || "none",
+      discount_start: c.discount_start || "",
+      discount_end: c.discount_end || "",
+      expires_at: c.expires_at || "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+  };
 
   const loadCoupons = async () => {
     try {
