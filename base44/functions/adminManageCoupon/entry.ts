@@ -102,9 +102,11 @@ Deno.serve(async (req) => {
         discount_type: discountPercent > 0 ? (payload.discount_type || 'none') : 'none',
         max_uses: maxUses,
         description: payload.description || undefined,
-        discount_start: payload.discount_type === 'period' ? (payload.discount_start || undefined) : undefined,
-        discount_end: payload.discount_type === 'period' ? (payload.discount_end || undefined) : undefined,
-        expires_at: payload.expires_at || undefined,
+        // null (não undefined) pra permitir limpar um valor já gravado antes
+        // — undefined seria ignorado na gravação, deixando o valor antigo preso.
+        discount_start: payload.discount_type === 'period' ? (payload.discount_start || null) : null,
+        discount_end: payload.discount_type === 'period' ? (payload.discount_end || null) : null,
+        expires_at: payload.expires_at || null,
       };
 
       await base44.asServiceRole.entities.Coupon.update(coupon_id, updateData);
