@@ -6,7 +6,7 @@ import { isFirstWeekWindow, acquireFirstWeekLock, rollbackFirstWeekLock, commitF
 // Minimum billable balance required to start an instant lesson — the same
 // server-side gate real bookings get, so a near-zero client-reported balance
 // can't be used to sneak into a lesson.
-const MIN_CREDIT_MINUTES = 1;
+const MIN_CREDIT_MINUTES = 10;
 
 // Same "1 lesson / 30 min" rule scheduled bookings enforce during the first
 // 7 days of subscription cycle 1 — instant lessons are not exempt.
