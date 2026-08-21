@@ -293,7 +293,14 @@ export default function AdminCoupons() {
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         {c.credits_minutes > 0 && (
-                          <p className="theme-heading text-sm font-semibold">{c.credits_minutes} min grátis</p>
+                          <p className="theme-heading text-sm font-semibold">
+                            {c.credits_minutes} min grátis
+                            {c.max_bonus_uses > 0 && (
+                              <span className="text-xs font-normal text-gray-500 ml-1">
+                                ({c.bonus_used_count || 0}/{c.max_bonus_uses} usaram o bônus)
+                              </span>
+                            )}
+                          </p>
                         )}
                         {dl && (
                           <span className="text-xs font-medium text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">
