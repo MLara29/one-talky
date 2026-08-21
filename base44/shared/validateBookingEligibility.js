@@ -143,17 +143,22 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
     }
   }
 
-  // ── RULE 1.5: Não permitir agendar além do saldo disponível ──
+  // ── RULE 1.5: Exige um mínimo de saldo disponível pra agendar ──
   // Conta os minutos já comprometidos em aulas ativas (scheduled/in_progress)
-  // contra o saldo atual. Sem isso, o aluno pode agendar mais aulas do que o
-  // plano cobre, já que o débito só acontece quando a aula termina.
+  // contra o saldo atual. Não exige mais o saldo da duração INTEIRA da aula
+  // (antes: 30 min) — só um mínimo fixo, pra permitir que alunos com crédito
+  // reduzido (ex: cupom de teste de 15 min) consigam agendar mesmo sem ter o
+  // valor cheio. Vale pra todo mundo, com ou sem assinatura. Se o crédito
+  // acabar no meio da aula, ela é encerrada automaticamente nesse momento —
+  // mesmo comportamento já existente na aula instantânea.
+  const MIN_SCHEDULING_CREDIT_MINUTES = 15;
   const activeLessons = await base44.asServiceRole.entities.Lesson.filter({
     student_id: studentId,
     status: { $in: ["scheduled", "in_progress"] },
   });
   const alreadyReservedMinutes = activeLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
   const availableCredits = (sp.plan_credits_minutes || 0) + (sp.prepaid_credits_minutes || 0);
-  const newTotal = alreadyReservedMinutes + (durationMinutes || 30);
+  const newTotal = alreadyReservedMinutes + MIN_SCHEDULING_CREDIT_MINUTES;
 
   if (newTotal > availableCredits) {
     console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=insufficient_credits_for_booking reserved=${alreadyReservedMinutes} available=${availableCredits}`);
@@ -161,7 +166,7 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
       allowed: false,
       httpStatus: 403,
       error_code: "insufficient_credits_for_booking",
-      error: `Você já tem aulas agendadas usando todo o seu saldo disponível (${availableCredits} minutos). Cancele uma aula existente ou adicione mais créditos para agendar outra.`,
+      error: `Você precisa de pelo menos ${MIN_SCHEDULING_CREDIT_MINUTES} minutos de saldo disponível para agendar (saldo atual: ${availableCredits} minutos). Cancele uma aula existente ou adicione mais créditos.`,
     };
   }
 
