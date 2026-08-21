@@ -64,6 +64,7 @@ export default function AdminCoupons() {
   const handleCreate = async (e) => {
     e.preventDefault();
     setCreating(true);
+    const isEditing = Boolean(editingId);
     try {
       const code = form.code.trim().toUpperCase();
       if (!code) return;
@@ -82,13 +83,16 @@ export default function AdminCoupons() {
       if (form.expires_at) {
         payload.expires_at = form.expires_at;
       }
-      const response = await base44.functions.invoke("adminManageCoupon", { action: "create", payload });
+      if (isEditing) payload.coupon_id = editingId;
+
+      const response = await base44.functions.invoke("adminManageCoupon", { action: isEditing ? "update" : "create", payload });
       if (response.data?.error) throw new Error(response.data.error);
       setForm(EMPTY_FORM);
-      toast({ title: "Cupom criado! 🎟️" });
+      setEditingId(null);
+      toast({ title: isEditing ? "Cupom atualizado! ✏️" : "Cupom criado! 🎟️" });
       loadCoupons();
     } catch (err) {
-      toast({ title: "Erro", description: err?.message || "Não foi possível criar o cupom.", variant: "destructive" });
+      toast({ title: "Erro", description: err?.message || `Não foi possível ${isEditing ? "atualizar" : "criar"} o cupom.`, variant: "destructive" });
     } finally { setCreating(false); }
   };
 
