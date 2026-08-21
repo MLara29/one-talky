@@ -55,15 +55,17 @@ Deno.serve(async (req) => {
       }
       let coupon = await base44.asServiceRole.entities.Coupon.create(record);
 
-      // Validade geral do cupom — independente de ter desconto ou não.
-      // IMPORTANTE: gravado num segundo passo (update), não junto do create.
-      // Testado e confirmado: campos novos de esquema às vezes são
-      // silenciosamente descartados num create, mas gravam certo num update
-      // logo em seguida — por segurança, sempre fazemos assim aqui.
-      if (payload.expires_at) {
-        await base44.asServiceRole.entities.Coupon.update(coupon.id, {
-          expires_at: String(payload.expires_at),
-        });
+      // Validade geral + limite separado de minutos de bônus — gravados num
+      // segundo passo (update), não junto do create. Testado e confirmado:
+      // campos novos de esquema às vezes são silenciosamente descartados num
+      // create, mas gravam certo num update logo em seguida.
+      const followUp = {};
+      if (payload.expires_at) followUp.expires_at = String(payload.expires_at);
+      if (creditsMinutes > 0 && payload.max_bonus_uses) {
+        followUp.max_bonus_uses = Number(payload.max_bonus_uses);
+      }
+      if (Object.keys(followUp).length > 0) {
+        await base44.asServiceRole.entities.Coupon.update(coupon.id, followUp);
         coupon = await base44.asServiceRole.entities.Coupon.get(coupon.id);
       }
 
@@ -96,6 +98,11 @@ Deno.serve(async (req) => {
         return Response.json({ error: `Máximo de usos não pode ser menor que os ${coupon.used_count} usos já registrados` }, { status: 400 });
       }
 
+      const maxBonusUses = Number(payload.max_bonus_uses) || 0;
+      if (maxBonusUses > 0 && maxBonusUses < (coupon.bonus_used_count || 0)) {
+        return Response.json({ error: `Máximo de usos com bônus não pode ser menor que os ${coupon.bonus_used_count} bônus já concedidos` }, { status: 400 });
+      }
+
       const updateData = {
         credits_minutes: creditsMinutes,
         discount_percent: discountPercent,
@@ -107,6 +114,7 @@ Deno.serve(async (req) => {
         discount_start: payload.discount_type === 'period' ? (payload.discount_start || null) : null,
         discount_end: payload.discount_type === 'period' ? (payload.discount_end || null) : null,
         expires_at: payload.expires_at || null,
+        max_bonus_uses: creditsMinutes > 0 ? (maxBonusUses || null) : null,
       };
 
       await base44.asServiceRole.entities.Coupon.update(coupon_id, updateData);
