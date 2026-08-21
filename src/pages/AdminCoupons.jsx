@@ -142,9 +142,9 @@ export default function AdminCoupons() {
         </div>
       </div>
 
-      {/* Create form */}
+      {/* Create / edit form */}
       <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-6">
-        <h2 className="theme-heading font-semibold mb-4">Novo Cupom</h2>
+        <h2 className="theme-heading font-semibold mb-4">{editingId ? `Editar cupom — ${form.code}` : "Novo Cupom"}</h2>
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -153,8 +153,10 @@ export default function AdminCoupons() {
                 value={form.code}
                 onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                 placeholder="Ex: BEMVINDO20"
-                className="theme-input uppercase font-mono"
+                className="theme-input uppercase font-mono disabled:opacity-60"
                 required
+                disabled={Boolean(editingId)}
+                title={editingId ? "O código não pode ser alterado depois de criado" : undefined}
               />
             </div>
             <div>
@@ -236,10 +238,18 @@ export default function AdminCoupons() {
               />
             </div>
           </div>
-          <Button type="submit" disabled={creating || !form.code.trim()}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20">
-            <Plus className="w-4 h-4 mr-1.5" /> {creating ? "Criando..." : "Criar cupom"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button type="submit" disabled={creating || !form.code.trim()}
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20">
+              {editingId ? <Check className="w-4 h-4 mr-1.5" /> : <Plus className="w-4 h-4 mr-1.5" />}
+              {creating ? "Salvando..." : editingId ? "Salvar alterações" : "Criar cupom"}
+            </Button>
+            {editingId && (
+              <Button type="button" variant="ghost" onClick={cancelEdit} className="theme-subtext">
+                <X className="w-4 h-4 mr-1.5" /> Cancelar edição
+              </Button>
+            )}
+          </div>
         </form>
       </div>
 
