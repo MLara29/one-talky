@@ -56,6 +56,8 @@ export default function AdminDashboard() {
     lessonsScheduledThisMonth: 0, pendingApprovals: 0,
   });
   const [topTutors, setTopTutors] = useState([]);
+  const [topInstantTutors, setTopInstantTutors] = useState([]);
+  const [topScheduledTutors, setTopScheduledTutors] = useState([]);
   const [newStudentsByMonth, setNewStudentsByMonth] = useState([]);
   const [plansThisMonth, setPlansThisMonth] = useState([]);
   const [revenueBreakdown, setRevenueBreakdown] = useState({ planRevenueThisMonth: 0, packRevenueThisMonth: 0, packTrendPct: null });
@@ -98,6 +100,31 @@ export default function AdminDashboard() {
         tutorLessonCounts[l.tutor_id] = (tutorLessonCounts[l.tutor_id] || 0) + 1;
       });
       const topTutorsData = Object.entries(tutorLessonCounts)
+        .map(([tutorId, count]) => ({ name: tutorNameById[tutorId] || "Tutor", count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+
+      // Tutores com mais aulas INSTANTÂNEAS concluídas este mês
+      const instantCounts = {};
+      completedLessons.forEach(l => {
+        if (l.type !== "instant") return;
+        const d = l.started_at ? new Date(l.started_at) : null;
+        if (!d || d < monthStart || d >= nextMonthStart || !l.tutor_id) return;
+        instantCounts[l.tutor_id] = (instantCounts[l.tutor_id] || 0) + 1;
+      });
+      const topInstantTutorsData = Object.entries(instantCounts)
+        .map(([tutorId, count]) => ({ name: tutorNameById[tutorId] || "Tutor", count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+
+      // Tutores com mais aulas AGENDADAS (futuras, ainda não aconteceram) — total
+      // atual na agenda de cada um, não restrito a este mês.
+      const scheduledCounts = {};
+      scheduledLessons.forEach(l => {
+        if (!l.tutor_id) return;
+        scheduledCounts[l.tutor_id] = (scheduledCounts[l.tutor_id] || 0) + 1;
+      });
+      const topScheduledTutorsData = Object.entries(scheduledCounts)
         .map(([tutorId, count]) => ({ name: tutorNameById[tutorId] || "Tutor", count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 8);
@@ -163,6 +190,8 @@ export default function AdminDashboard() {
         pendingApprovals: pendingTutors.length,
       });
       setTopTutors(topTutorsData);
+      setTopInstantTutors(topInstantTutorsData);
+      setTopScheduledTutors(topScheduledTutorsData);
       setNewStudentsByMonth(newStudentsByMonthData);
       setPlansThisMonth(plansThisMonthData);
       setRevenueBreakdown({ planRevenueThisMonth, packRevenueThisMonth, packTrendPct });
