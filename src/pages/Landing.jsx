@@ -495,6 +495,15 @@ export default function Landing() {
             </div>
           </div>
         </div>
+
+        {/* Globo com tutores conectados de vários países */}
+        <div style={{ marginTop: 64, textAlign: "center" }}>
+          <div style={eyebrowStyle}>{lang === "pt" ? "AO VIVO" : "LIVE"}</div>
+          <h3 style={{ fontSize: "clamp(20px,2.6vw,28px)", fontWeight: 900, letterSpacing: -0.5, margin: "6px 0 30px" }}>
+            {lang === "pt" ? "Tutores conectados agora, de todo o mundo" : "Tutors online right now, from all over the world"}
+          </h3>
+          <TutorGlobe />
+        </div>
       </section>
 
       {/* PRICING */}
