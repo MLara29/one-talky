@@ -162,6 +162,32 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user?.id, user?.role]);
 
+  // Student heartbeat — mesmo padrão do tutor, usado pro admin ver quantos
+  // alunos estão online agora. Roda em qualquer página, atualiza a cada 20s.
+  const studentHeartbeatRef = useRef(null);
+  const studentActiveRef = useRef(false);
+
+  useEffect(() => {
+    const isStudent = user?.role === 'student';
+
+    if (isStudent && !studentActiveRef.current) {
+      studentActiveRef.current = true;
+
+      const beat = () => {
+        base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date().toISOString() } }).catch(() => {});
+      };
+
+      beat();
+      studentHeartbeatRef.current = setInterval(beat, 20 * 1000);
+    }
+
+    if (!isStudent && studentActiveRef.current) {
+      studentActiveRef.current = false;
+      clearInterval(studentHeartbeatRef.current);
+      base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
+    }
+  }, [user?.id, user?.role]);
+
   // Cleanup on unmount (tab close / full reload)
   useEffect(() => {
     return () => {
