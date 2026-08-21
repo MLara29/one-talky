@@ -191,12 +191,12 @@ const CONTENT = {
 };
 
 const TUTORS = [
-  { name: "Marcus", country: "South Africa", flag: "🇿🇦", line: "I go at your pace. If you freeze, we breathe and start again.", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face" },
-  { name: "Aileen", country: "Philippines", flag: "🇵🇭", line: "I love everyday small talk — that's where English loosens up.", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face" },
-  { name: "David", country: "United Kingdom", flag: "🇬🇧", line: "I correct you calmly and write in the chat so it sticks.", photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face" },
-  { name: "Sarah", country: "United States", flag: "🇺🇸", line: "No pressure. The whole half hour is a real conversation.", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face" },
-  { name: "Chidi", country: "Nigeria", flag: "🇳🇬", line: "From zero to advanced: I adjust the vocabulary with every answer.", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" },
-  { name: "Priya", country: "India", flag: "🇮🇳", line: "I like working real situations: work, travel, interviews.", photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face" },
+  { name: "Marcus", country: "South Africa", flag: "🇿🇦", iso: "za", line: "I go at your pace. If you freeze, we breathe and start again.", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face" },
+  { name: "Aileen", country: "Philippines", flag: "🇵🇭", iso: "ph", line: "I love everyday small talk — that's where English loosens up.", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face" },
+  { name: "David", country: "United Kingdom", flag: "🇬🇧", iso: "gb", line: "I correct you calmly and write in the chat so it sticks.", photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face" },
+  { name: "Sarah", country: "United States", flag: "🇺🇸", iso: "us", line: "No pressure. The whole half hour is a real conversation.", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face" },
+  { name: "Chidi", country: "Nigeria", flag: "🇳🇬", iso: "ng", line: "From zero to advanced: I adjust the vocabulary with every answer.", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" },
+  { name: "Priya", country: "India", flag: "🇮🇳", iso: "in", line: "I like working real situations: work, travel, interviews.", photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face" },
 ];
 
 const CSS = `
