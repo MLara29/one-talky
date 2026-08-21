@@ -278,6 +278,44 @@ export default function AdminDashboard() {
 
         <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5">
           <h3 className="theme-heading font-display font-bold text-white mb-5 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-amber-400" /> Tutores com mais aulas instantâneas este mês
+          </h3>
+          {topInstantTutors.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-16">Nenhuma aula instantânea concluída este mês ainda.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={Math.max(220, topInstantTutors.length * 34)}>
+              <BarChart data={topInstantTutors} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                <XAxis type="number" allowDecimals={false} tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" width={110} tick={{ fill: "#9ca3af", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: "#0f0f1f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff" }} />
+                <Bar dataKey="count" name="Aulas instantâneas" fill="#f59e0b" radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5">
+          <h3 className="theme-heading font-display font-bold text-white mb-5 flex items-center gap-2">
+            <CalendarClock className="w-4 h-4 text-sky-400" /> Tutores com mais aulas agendadas
+          </h3>
+          {topScheduledTutors.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-16">Nenhuma aula agendada no momento.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={Math.max(220, topScheduledTutors.length * 34)}>
+              <BarChart data={topScheduledTutors} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                <XAxis type="number" allowDecimals={false} tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" width={110} tick={{ fill: "#9ca3af", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: "#0f0f1f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff" }} />
+                <Bar dataKey="count" name="Aulas agendadas" fill="#0ea5e9" radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-5">
+          <h3 className="theme-heading font-display font-bold text-white mb-5 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-violet-400" /> Novos alunos por mês
           </h3>
           <ResponsiveContainer width="100%" height={260}>
