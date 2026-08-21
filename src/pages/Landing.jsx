@@ -5,6 +5,7 @@ const ACCENT = "#F26A1B";
 
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
+import { TutorGlobe } from "@/components/ui/tutor-globe";
 
 const CONTENT = {
   pt: {
