@@ -474,24 +474,55 @@ export default function Landing() {
           <h2 style={h2Style}>{c.tutTitle}</h2>
           <p style={{ marginTop: 14, fontSize: 16, color: "#5A5B66", maxWidth: 600, marginInline: "auto" }}>{c.tutSub}</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 18 }}>
-          {TUTORS.map((t, i) => (
-            <GlassCard
-              key={i}
-              className="border-black/[0.08] shadow-[0_10px_30px_-22px_rgba(23,24,28,0.25)] py-0"
-              style={{ padding: 24, textAlign: "center" }}
-            >
-              <div style={{ position: "relative", width: 80, height: 80, borderRadius: "50%", margin: "0 auto 14px", overflow: "hidden", border: "3px solid #FDECE0" }}>
-                <img src={t.photo} alt={t.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        {/* Carrossel automático (direita pra esquerda, devagar) — a lista de
+            tutores é duplicada uma vez, e a faixa desliza de 0 a -50% da sua
+            própria largura, criando um loop contínuo e sem emenda visível. */}
+        <div className="ot-marquee-wrap" style={{ overflow: "hidden", width: "100%" }}>
+          <div className="ot-marquee-track" style={{ display: "flex", gap: 18, width: "max-content" }}>
+            {[...TUTORS, ...TUTORS].map((t, i) => (
+              <div
+                key={i}
+                style={{
+                  position: "relative", width: 250, flexShrink: 0,
+                  borderRadius: 20, overflow: "hidden",
+                  boxShadow: "0 10px 30px -22px rgba(23,24,28,.25)",
+                  border: "1px solid rgba(0,0,0,.08)",
+                }}
+              >
+                {/* Bandeira do país preenchendo o card inteiro, em diagonal —
+                    escalada bem além do tamanho do card pra não sobrar canto
+                    sem cobrir depois da rotação. */}
+                <div
+                  style={{
+                    position: "absolute", inset: -60,
+                    backgroundImage: `url(https://flagcdn.com/w320/${t.iso}.png)`,
+                    backgroundSize: "cover", backgroundPosition: "center",
+                    transform: "rotate(22deg) scale(1.7)",
+                  }}
+                />
+                {/* Gradiente semi-transparente por cima, só pra dar contraste
+                    ao texto — sem esconder a bandeira por completo. */}
+                <div
+                  style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(160deg, rgba(23,24,28,.80) 0%, rgba(23,24,28,.55) 55%, rgba(23,24,28,.72) 100%)",
+                  }}
+                />
+                {/* Conteúdo, por cima de tudo */}
+                <div style={{ position: "relative", zIndex: 2, padding: 24, textAlign: "center" }}>
+                  <div style={{ position: "relative", width: 80, height: 80, borderRadius: "50%", margin: "0 auto 14px", overflow: "hidden", border: "3px solid rgba(255,255,255,.85)" }}>
+                    <img src={t.photo} alt={t.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 6 }}>
+                    <span style={{ fontSize: 18 }}>{t.flag}</span>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>{t.name}</div>
+                  </div>
+                  <div style={{ display: "inline-block", fontSize: 12, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,.18)", border: "1px solid rgba(255,255,255,.3)", padding: "3px 10px", borderRadius: 999 }}>{t.country}</div>
+                  <p style={{ marginTop: 12, fontSize: 14, color: "rgba(255,255,255,.92)", fontStyle: "italic" }}>"{t.line}"</p>
+                </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 6 }}>
-                <span style={{ fontSize: 18 }}>{t.flag}</span>
-                <div style={{ fontSize: 17, fontWeight: 800 }}>{t.name}</div>
-              </div>
-              <div style={{ display: "inline-block", fontSize: 12, fontWeight: 700, color: "#7A7B85", background: "#F4EFE8", padding: "3px 10px", borderRadius: 999 }}>{t.country}</div>
-              <p style={{ marginTop: 12, fontSize: 14, color: "#5A5B66", fontStyle: "italic" }}>"{t.line}"</p>
-            </GlassCard>
-          ))}
+            ))}
+          </div>
         </div>
         <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #EEE7DD", borderRadius: 14, padding: "12px 18px" }}>
