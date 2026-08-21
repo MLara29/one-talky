@@ -204,6 +204,9 @@ const CSS = `
 .ot-lp { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #17181C; background: #FDFBF9; -webkit-font-smoothing: antialiased; }
 .ot-lp * { box-sizing: border-box; }
 @keyframes ot-floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes ot-marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.ot-marquee-track { animation: ot-marquee 46s linear infinite; }
+.ot-marquee-wrap:hover .ot-marquee-track { animation-play-state: paused; }
 @keyframes ot-floaty2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(9px)} }
 @keyframes ot-floaty3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 
