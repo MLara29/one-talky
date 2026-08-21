@@ -65,7 +65,14 @@ export default async function(req) {
 
     // ── RULE 1: Subscription / first-week eligibility (same rule as bookSlot) ──
     const nowIso = new Date().toISOString();
-    const eligibility = await validateBookingEligibility(base44, user.id, nowIso, FIRST_WEEK_DURATION_MINUTES);
+    // Passa MIN_CREDIT_MINUTES (não FIRST_WEEK_DURATION_MINUTES) pro checador de
+    // saldo (RULE 1.5) — aula instantânea não reserva um bloco fixo de tempo,
+    // só precisa do mínimo real pra iniciar (1 min). Usar 30 aqui bloqueava
+    // por engano alunos sem assinatura com menos de 30 min de crédito (ex:
+    // cupom de teste com 15 min) — a regra dos 30 min da primeira semana
+    // continua intacta, protegida por isFirstWeekWindow() logo acima, que já
+    // barra aula instantânea por completo nesse caso antes de chegar aqui.
+    const eligibility = await validateBookingEligibility(base44, user.id, nowIso, MIN_CREDIT_MINUTES);
     if (!eligibility.allowed) {
       console.log(`[startInstantLesson] REJECTED student=${user.id} reason=${eligibility.error}`);
       return Response.json({ error: eligibility.error, error_code: eligibility.error_code }, { status: eligibility.httpStatus || 403 });
