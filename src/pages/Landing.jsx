@@ -6,6 +6,7 @@ const ACCENT = "#F26A1B";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
 import { TutorGlobe } from "@/components/ui/tutor-globe";
+import { GlassCard } from "@/components/ui/glass-card";
 
 const CONTENT = {
   pt: {
@@ -473,7 +474,11 @@ export default function Landing() {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 18 }}>
           {TUTORS.map((t, i) => (
-            <div key={i} style={{ background: "#fff", border: "1px solid #EEE7DD", borderRadius: 20, padding: 24, textAlign: "center", boxShadow: "0 10px 30px -22px rgba(23,24,28,.25)" }}>
+            <GlassCard
+              key={i}
+              className="border-black/[0.08] shadow-[0_10px_30px_-22px_rgba(23,24,28,0.25)] py-0"
+              style={{ padding: 24, textAlign: "center" }}
+            >
               <div style={{ position: "relative", width: 80, height: 80, borderRadius: "50%", margin: "0 auto 14px", overflow: "hidden", border: "3px solid #FDECE0" }}>
                 <img src={t.photo} alt={t.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
@@ -483,7 +488,7 @@ export default function Landing() {
               </div>
               <div style={{ display: "inline-block", fontSize: 12, fontWeight: 700, color: "#7A7B85", background: "#F4EFE8", padding: "3px 10px", borderRadius: 999 }}>{t.country}</div>
               <p style={{ marginTop: 12, fontSize: 14, color: "#5A5B66", fontStyle: "italic" }}>"{t.line}"</p>
-            </div>
+            </GlassCard>
           ))}
         </div>
         <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
