@@ -5,7 +5,6 @@ const ACCENT = "#F26A1B";
 
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
-import { TutorGlobe } from "@/components/ui/tutor-globe";
 import { GlassCard } from "@/components/ui/glass-card";
 
 const CONTENT = {
@@ -499,15 +498,6 @@ export default function Landing() {
               <div style={{ fontSize: 12.5, color: "#7A7B85" }}>{c.sealSub}</div>
             </div>
           </div>
-        </div>
-
-        {/* Globo com tutores conectados de vários países */}
-        <div style={{ marginTop: 64, textAlign: "center" }}>
-          <div style={eyebrowStyle}>{lang === "pt" ? "AO VIVO" : "LIVE"}</div>
-          <h3 style={{ fontSize: "clamp(20px,2.6vw,28px)", fontWeight: 900, letterSpacing: -0.5, margin: "6px 0 30px" }}>
-            {lang === "pt" ? "Tutores conectados agora, de todo o mundo" : "Tutors online right now, from all over the world"}
-          </h3>
-          <TutorGlobe />
         </div>
       </section>
 
