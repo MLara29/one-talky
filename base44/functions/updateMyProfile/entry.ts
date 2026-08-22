@@ -58,7 +58,12 @@ Deno.serve(async (req) => {
       }
       const profiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: user.id });
       if (profiles.length === 0) return Response.json({ error: "Profile not found" }, { status: 404 });
-      await base44.asServiceRole.entities.StudentProfile.update(profiles[0].id, safeUpdates);
+      try {
+        await base44.asServiceRole.entities.StudentProfile.update(profiles[0].id, safeUpdates);
+      } catch (updateErr) {
+        console.error('[updateMyProfile] student update failed:', updateErr.message);
+        return Response.json({ error: `Falha ao gravar: ${updateErr.message}` }, { status: 500 });
+      }
       return Response.json({ success: true });
 
     } else {
