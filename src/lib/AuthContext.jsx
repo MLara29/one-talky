@@ -174,7 +174,8 @@ export const AuthProvider = ({ children }) => {
       studentActiveRef.current = true;
 
       const beat = () => {
-        base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date().toISOString() } }).catch(() => {});
+        base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date().toISOString() } })
+          .catch((e) => console.error('[student heartbeat] failed:', e?.response?.data?.error || e.message));
       };
 
       beat();
