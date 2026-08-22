@@ -58,6 +58,11 @@
       "type": "string",
       "format": "date"
     },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last heartbeat timestamp \u2014 updated while student is logged in. Used by the admin dashboard to count students online now (same pattern as TutorProfile.last_seen)."
+    },
     "plan": {
       "type": "string",
       "enum": [

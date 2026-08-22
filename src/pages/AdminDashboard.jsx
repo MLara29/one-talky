@@ -62,7 +62,13 @@ export default function AdminDashboard() {
   const [plansThisMonth, setPlansThisMonth] = useState([]);
   const [revenueBreakdown, setRevenueBreakdown] = useState({ planRevenueThisMonth: 0, packRevenueThisMonth: 0, packTrendPct: null });
 
-  useEffect(() => { loadStats(); }, []);
+  useEffect(() => {
+    loadStats();
+    // Refresh a cada 30s para que "alunos online agora" reflita o momento
+    // atual (o heartbeat do aluno grava last_seen a cada 20s).
+    const interval = setInterval(loadStats, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const loadStats = async () => {
     try {
