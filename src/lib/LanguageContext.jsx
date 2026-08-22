@@ -4,7 +4,10 @@ import { detectLanguage } from "@/lib/i18n";
 const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
-  const [lang, setLang] = useState(() => localStorage.getItem("ui_lang") || "en");
+  // Padrão pra quem nunca escolheu antes (primeiro acesso): português, não
+  // inglês — a maioria dos alunos é brasileira. Quem já escolheu um idioma
+  // antes continua vendo a própria escolha, guardada no navegador.
+  const [lang, setLang] = useState(() => localStorage.getItem("ui_lang") || "pt_br");
 
   useEffect(() => {
     const handler = (e) => setLang(e.detail);
