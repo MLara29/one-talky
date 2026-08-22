@@ -94,10 +94,18 @@ export default function AdminSupport() {
     return displayName(m)?.toLowerCase().includes(q) || m.subject?.toLowerCase().includes(q);
   });
 
-  const activeMessages = filteredMessages.filter(m => m.status !== "closed");
-  const closedMessages = filteredMessages.filter(m => m.status === "closed");
+  // Separa por quem mandou o tíquete — cada papel tem sua própria aba,
+  // com Ativos/Histórico dentro de cada uma (o sender_role já vem gravado
+  // desde a criação da mensagem, não precisou de nada novo pra isso).
+  const studentMessages = filteredMessages.filter(m => m.sender_role === "student");
+  const tutorMessages = filteredMessages.filter(m => m.sender_role === "tutor");
 
-  const counts = { open: messages.filter(m => m.status === "open").length, total: messages.length };
+  const counts = {
+    open: messages.filter(m => m.status === "open").length,
+    total: messages.length,
+    studentOpen: messages.filter(m => m.sender_role === "student" && m.status === "open").length,
+    tutorOpen: messages.filter(m => m.sender_role === "tutor" && m.status === "open").length,
+  };
 
   const renderMessage = (msg) => (
     <div key={msg.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
