@@ -15,6 +15,10 @@ export default function TwoFactorModal({ email, onVerified }) {
   const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(60);
+  // Validade REAL do código (2 minutos) — contagem separada e com rótulo bem
+  // diferente do botão de reenviar, pra não repetir a confusão de antes
+  // (o "Reenviar em Xs" não é, e nunca foi, a validade do código).
+  const [expirySeconds, setExpirySeconds] = useState(120);
   const [role, setRole] = useState(null);
   const inputs = useRef([]);
 
@@ -26,9 +30,15 @@ export default function TwoFactorModal({ email, onVerified }) {
 
   useEffect(() => {
     inputs.current[0]?.focus();
-    const timer = setInterval(() => setCountdown(c => Math.max(0, c - 1)), 1000);
+    const timer = setInterval(() => {
+      setCountdown(c => Math.max(0, c - 1));
+      setExpirySeconds(s => Math.max(0, s - 1));
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const expiryLabel = `${Math.floor(expirySeconds / 60)}:${String(expirySeconds % 60).padStart(2, "0")}`;
+  const isExpired = expirySeconds <= 0;
 
   const handleChange = (i, val) => {
     if (!/^\d?$/.test(val)) return;
@@ -82,6 +92,7 @@ export default function TwoFactorModal({ email, onVerified }) {
     try {
       await base44.functions.invoke("sendOtp", {});
       setCountdown(60);
+      setExpirySeconds(120);
       setDigits(["", "", "", "", "", ""]);
       inputs.current[0]?.focus();
     } catch {
