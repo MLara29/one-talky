@@ -5,6 +5,7 @@ import { getCountryFlag, getLanguageLabel, REDIRECT_TO_PLANS_ERROR_CODES } from 
 import CountryFlagImg from "@/components/shared/CountryFlagImg";
 import { base44 } from "@/api/base44Client";
 import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -242,7 +243,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false, firstWeek
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
-                {showLessonNow ? "Schedule" : "Schedule a lesson"}
+                {showLessonNow ? t(lang, "scheduleShortBtn") : t(lang, "scheduleBtn")}
               </button>
             )}
           </div>
