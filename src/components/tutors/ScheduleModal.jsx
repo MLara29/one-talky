@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Calendar, Clock, ChevronLeft, ChevronRight, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
 const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -72,6 +74,7 @@ function utcToLocalTimeStr(utcDate) {
 }
 
 export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
+  const { lang } = useLang();
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -212,7 +215,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
               <Calendar className="w-4 h-4 text-white" />
             </div>
-            <h2 className="theme-heading font-display font-bold text-lg">Schedule a Lesson</h2>
+            <h2 className="theme-heading font-display font-bold text-lg">{t(lang, "scheduleModalTitle")}</h2>
           </div>
           <button onClick={onClose} className="theme-subtext w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors">
             <X className="w-4 h-4" />
