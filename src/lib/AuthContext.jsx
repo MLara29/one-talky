@@ -175,9 +175,11 @@ export const AuthProvider = ({ children }) => {
 
       const beat = () => {
         base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date().toISOString() } })
+          .then(() => console.log('[student heartbeat] ok'))
           .catch((e) => console.error('[student heartbeat] failed:', e?.response?.data?.error || e.message));
       };
 
+      console.log('[student heartbeat] starting for user', user?.id);
       beat();
       studentHeartbeatRef.current = setInterval(beat, 20 * 1000);
     }
