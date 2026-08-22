@@ -197,6 +197,36 @@ export default function AdminSupport() {
     </div>
   );
 
+  // Ativos/Histórico dentro de um subconjunto de mensagens já filtrado por
+  // papel — reaproveitado nas duas abas (Alunos e Tutores), pra não duplicar
+  // essa parte do código duas vezes.
+  const renderActiveHistoryTabs = (msgs, emptyLabel) => {
+    const active = msgs.filter(m => m.status !== "closed");
+    const closed = msgs.filter(m => m.status === "closed");
+    return (
+      <Tabs defaultValue="active">
+        <TabsList className="mb-4">
+          <TabsTrigger value="active">Ativos ({active.length})</TabsTrigger>
+          <TabsTrigger value="history">Histórico ({closed.length})</TabsTrigger>
+        </TabsList>
+        <TabsContent value="active">
+          {active.length === 0 ? (
+            <p className="text-center text-sm text-gray-500 py-16">Nenhuma mensagem ativa {emptyLabel}</p>
+          ) : (
+            <div className="space-y-3">{active.map(renderMessage)}</div>
+          )}
+        </TabsContent>
+        <TabsContent value="history">
+          {closed.length === 0 ? (
+            <p className="text-center text-sm text-gray-500 py-16">Nenhuma mensagem no histórico {emptyLabel}</p>
+          ) : (
+            <div className="space-y-3">{closed.map(renderMessage)}</div>
+          )}
+        </TabsContent>
+      </Tabs>
+    );
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -226,24 +256,16 @@ export default function AdminSupport() {
           <p className="text-gray-500 text-sm">Nenhuma mensagem de suporte</p>
         </div>
       ) : (
-        <Tabs defaultValue="active">
+        <Tabs defaultValue="student">
           <TabsList className="mb-4">
-            <TabsTrigger value="active">Ativos ({activeMessages.length})</TabsTrigger>
-            <TabsTrigger value="history">Histórico ({closedMessages.length})</TabsTrigger>
+            <TabsTrigger value="student">Alunos ({counts.studentOpen} aberto{counts.studentOpen === 1 ? "" : "s"})</TabsTrigger>
+            <TabsTrigger value="tutor">Tutores ({counts.tutorOpen} aberto{counts.tutorOpen === 1 ? "" : "s"})</TabsTrigger>
           </TabsList>
-          <TabsContent value="active">
-            {activeMessages.length === 0 ? (
-              <p className="text-center text-sm text-gray-500 py-16">Nenhuma mensagem ativa</p>
-            ) : (
-              <div className="space-y-3">{activeMessages.map(renderMessage)}</div>
-            )}
+          <TabsContent value="student">
+            {renderActiveHistoryTabs(studentMessages, "de aluno")}
           </TabsContent>
-          <TabsContent value="history">
-            {closedMessages.length === 0 ? (
-              <p className="text-center text-sm text-gray-500 py-16">Nenhuma mensagem no histórico</p>
-            ) : (
-              <div className="space-y-3">{closedMessages.map(renderMessage)}</div>
-            )}
+          <TabsContent value="tutor">
+            {renderActiveHistoryTabs(tutorMessages, "de tutor")}
           </TabsContent>
         </Tabs>
       )}
