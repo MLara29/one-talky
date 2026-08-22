@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
     // Generate a 6-digit OTP
     const code = String(Math.floor(100000 + Math.random() * 900000));
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
+    const expiresAt = new Date(Date.now() + 2 * 60 * 1000).toISOString(); // 2 minutes
 
     // Invalidate old unused OTPs issued for THIS session only — never touches
     // OTPs belonging to other tabs/devices logged in as the same user.
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
           <span style="font-size:40px;font-weight:700;letter-spacing:12px;color:#f26a1b;font-family:monospace">${code}</span>
         </div>
-        <p style="text-align:center;color:#9ca3af;font-size:12px;margin:0">This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+        <p style="text-align:center;color:#9ca3af;font-size:12px;margin:0">This code expires in <strong>2 minutes</strong>. Do not share it with anyone.</p>
       </div>
     ` : `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px;border:1px solid #e5e7eb">
@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
           <span style="font-size:40px;font-weight:700;letter-spacing:12px;color:#f26a1b;font-family:monospace">${code}</span>
         </div>
-        <p style="text-align:center;color:#9ca3af;font-size:12px;margin:0">Este código expira em <strong>10 minutos</strong>. Não compartilhe com ninguém.</p>
+        <p style="text-align:center;color:#9ca3af;font-size:12px;margin:0">Este código expira em <strong>2 minutos</strong>. Não compartilhe com ninguém.</p>
       </div>
     `;
 
