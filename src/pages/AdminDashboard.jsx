@@ -51,7 +51,7 @@ function StatCard({ label, value, sub, icon: Icon, color = "violet", trendPct })
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState({
-    tutorsActive: 0, students: 0, studentsOnline: 0, lessonsCompleted: 0, inProgress: 0,
+    tutorsActive: 0, tutorsOnline: 0, students: 0, studentsOnline: 0, lessonsCompleted: 0, inProgress: 0,
     newStudentsThisMonth: 0, revenueThisMonth: 0, revenueTrendPct: null,
     lessonsScheduledThisMonth: 0, pendingApprovals: 0,
   });
@@ -190,9 +190,13 @@ export default function AdminDashboard() {
       const studentsOnline = students.filter(
         s => s.last_seen && (now.getTime() - new Date(s.last_seen).getTime()) < ONLINE_THRESHOLD_MS
       ).length;
+      const tutorsOnline = tutors.filter(
+        t => t.last_seen && (now.getTime() - new Date(t.last_seen).getTime()) < ONLINE_THRESHOLD_MS
+      ).length;
 
       setKpis({
         tutorsActive: approvedTutors.length,
+        tutorsOnline,
         students: students.length,
         studentsOnline,
         lessonsCompleted: completedLessons.length,
@@ -244,6 +248,7 @@ export default function AdminDashboard() {
       {/* KPIs principais */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <StatCard label="Tutores ativos" value={kpis.tutorsActive} icon={GraduationCap} color="violet" />
+        <StatCard label="Tutores online agora" value={kpis.tutorsOnline} icon={Wifi} color="violet" />
         <StatCard label="Alunos" value={kpis.students} icon={Users} color="blue" sub={`+${kpis.newStudentsThisMonth} novos este mês`} />
         <StatCard label="Alunos online agora" value={kpis.studentsOnline} icon={Wifi} color="emerald" />
         <StatCard label="Aulas concluídas" value={kpis.lessonsCompleted} icon={BookOpen} color="emerald" />
