@@ -9,6 +9,8 @@ import CountryFlagImg from "@/components/shared/CountryFlagImg";
 import { useToast } from "@/components/ui/use-toast";
 import ScheduleModal from "@/components/tutors/ScheduleModal";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
 const FRIENDLY_WARNING_CODES = ["insufficient_credits_for_booking", "first_week_limit"];
 
@@ -27,6 +29,7 @@ export default function TutorProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { lang } = useLang();
   const [tutor, setTutor] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -260,7 +263,7 @@ export default function TutorProfilePage() {
                 : "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-500/20"
             }`}
           >
-            <Calendar className="w-4 h-4 mr-2" /> Schedule lesson
+            <Calendar className="w-4 h-4 mr-2" /> {t(lang, "scheduleBtn")}
           </Button>
         </div>
       </div>
