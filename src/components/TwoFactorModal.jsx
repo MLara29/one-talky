@@ -131,13 +131,19 @@ export default function TwoFactorModal({ email, onVerified }) {
           ))}
         </div>
 
+        <p className={`text-xs mb-4 ${isExpired ? "text-red-500 font-semibold" : "text-gray-400"}`}>
+          {isExpired
+            ? (isEnglish ? "Code expired — request a new one below." : "Código expirado — solicite um novo abaixo.")
+            : (isEnglish ? `Code valid for ${expiryLabel}` : `Código válido por mais ${expiryLabel}`)}
+        </p>
+
         {error && (
           <p className="text-sm text-red-500 mb-4">{error}</p>
         )}
 
         <Button
           onClick={handleVerify}
-          disabled={loading || digits.join("").length !== 6}
+          disabled={loading || isExpired || digits.join("").length !== 6}
           className="w-full h-12 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 rounded-xl mb-4"
         >
           {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isEnglish ? "Verifying..." : "Verificando..."}</> : (isEnglish ? "Verify" : "Confirmar acesso")}
