@@ -8,15 +8,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LANGUAGES, OBJECTIVES, LEVELS, INTERESTS } from "@/lib/constants";
 import { User, Save } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
-const LEVELS_PT = {
-  beginner: "Iniciante",
-  intermediate: "Intermediário",
-  advanced: "Avançado",
+const OBJ_KEY = { travel: "objTravel", work: "objWork", interview: "objInterview", relocation: "objRelocation", conversation: "objConversation", exams: "objExams" };
+const LEVEL_KEY = { beginner: "levelBeginner", intermediate: "levelIntermediate", advanced: "levelAdvanced" };
+const INTEREST_KEY = {
+  "Travel": "interestTravel", "Business": "interestBusiness", "Pop Culture": "interestPopCulture",
+  "Job Interviews": "interestJobInterviews", "Daily Life": "interestDailyLife", "Sports": "interestSports",
+  "Technology": "interestTechnology", "Food & Cuisine": "interestFoodCuisine", "Movies & TV Shows": "interestMoviesTvShows",
+  "Music": "interestMusic", "Politics": "interestPolitics", "Science": "interestScience",
+  "Art & Design": "interestArtDesign", "Health & Fitness": "interestHealthFitness", "Education": "interestEducation",
 };
 
 export default function StudentPersonalInfo() {
   const { user } = useAuth();
+  const { lang } = useLang();
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
