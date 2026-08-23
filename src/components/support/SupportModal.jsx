@@ -4,9 +4,15 @@ import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, MessageSquare, Send, CheckCircle } from "lucide-react";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
 export default function SupportModal({ onClose }) {
   const { user } = useAuth();
+  const { lang } = useLang();
+  // Tutor sempre em inglês (regra já estabelecida) — só traduz de verdade
+  // quando quem está usando é aluno.
+  const T = (key, en) => (user?.role === "student" ? t(lang, key) : en);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
