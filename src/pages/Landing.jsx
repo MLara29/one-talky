@@ -1627,8 +1627,13 @@ export default function Landing() {
   const eyebrowStyle = { fontSize: 13, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#C4520B" };
   const h2Style = { marginTop: 10, fontSize: "clamp(28px,4vw,40px)", fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" };
 
-  const isBR = !regionData || regionData.region === "br";
-  const regionConfig = isBR ? null : getRegionalConfig(regionData.region);
+  // O idioma escolhido manualmente tem prioridade sobre o IP real pra decidir
+  // a região de preço — assim, trocar pra japonês já mostra preço em iene,
+  // mesmo que o visitante esteja fisicamente em outro país. Idiomas sem
+  // região fixa (inglês) continuam usando só a detecção por IP.
+  const effectiveRegion = LANG_TO_PRICE_REGION[lang] || regionData?.region || "br";
+  const isBR = effectiveRegion === "br";
+  const regionConfig = isBR ? null : getRegionalConfig(effectiveRegion);
   const planIds = ["basic", "standard", "premium"];
 
   // Preço do hero ("a partir de X por semana") — Basic semanal na moeda local.
