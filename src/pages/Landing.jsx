@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const ACCENT = "#F26A1B";
+const LANG_FULL_LABELS = { pt: "Português", en: "English" };
 
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
@@ -244,6 +245,7 @@ export default function Landing() {
   const [openFaq, setOpenFaq] = useState(0);
   const [spots, setSpots] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [regionData, setRegionData] = useState(() => getCachedRegion());
   const founderSpotsLeft = 137;
   const c = CONTENT[lang];
