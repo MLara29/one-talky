@@ -388,11 +388,11 @@ export default function Plans() {
             {(!profile?.plan || profile.plan === "free") && (
               <div className="mb-6 flex flex-col items-center gap-3 rounded-2xl p-6 text-center" style={{ background: "#FFF7F1", border: "1.5px solid rgba(242,106,27,0.3)" }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: "#FDECE0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🔒</div>
-                <p className="font-semibold" style={{ color: "#17181C" }}>Disponível apenas para assinantes</p>
-                <p className="text-sm" style={{ color: "#5A5B66" }}>Assine qualquer plano mensal para desbloquear a compra de minutos avulsos.</p>
+                <p className="font-semibold" style={{ color: "#17181C" }}>{t(lang, "subscribersOnlyTitle")}</p>
+                <p className="text-sm" style={{ color: "#5A5B66" }}>{t(lang, "subscribersOnlyDesc")}</p>
               </div>
             )}
-            <p className="text-center text-sm mb-6" style={{ color: "#5A5B66" }}>Compre minutos sem mensalidade. Os créditos não expiram.</p>
+            <p className="text-center text-sm mb-6" style={{ color: "#5A5B66" }}>{t(lang, "prepaidIntro")}</p>
             <div className="space-y-3">
               {PREPAID_PACKS.map(pack => (
                 <div
@@ -408,10 +408,10 @@ export default function Plans() {
                       <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-display font-bold" style={{ color: "#17181C" }}>{pack.label}</p>
+                      <p className="font-display font-bold" style={{ color: "#17181C" }}>{packLabel(lang, pack.id)}</p>
                       <p className="text-xs" style={{ color: "#8A8B94" }}>
                         {fmtBRL(pack.price_brl / pack.minutes * 30)}/30min
-                        {pack.badge && <span className="ml-2 font-semibold" style={{ color: ACCENT }}>{pack.badge}</span>}
+                        {pack.badge && <span className="ml-2 font-semibold" style={{ color: ACCENT }}>{packBadgeText(lang, pack.badge)}</span>}
                       </p>
                     </div>
                   </div>
@@ -427,14 +427,14 @@ export default function Plans() {
                         opacity: (checkoutItem || !profile?.plan || profile.plan === "free") ? 0.4 : 1, fontFamily: "inherit",
                       }}
                     >
-                      Comprar
+                      {t(lang, "buyBtn")}
                     </button>
                   </div>
                 </div>
               ))}
             </div>
             <p className="text-center text-xs mt-6" style={{ color: "#A29A8C" }}>
-              Pagamento seguro via {paymentMethod === "stripe" ? "Stripe" : "Mercado Pago"} · Cartão de crédito · Créditos não expiram
+              {t(lang, "securePaymentFooter").replace("{provider}", paymentMethod === "stripe" ? "Stripe" : "Mercado Pago")}
             </p>
           </div>
         </TabsContent>
