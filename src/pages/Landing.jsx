@@ -1339,18 +1339,16 @@ export default function Landing() {
             {c.noCommitmentTitle}
           </h2>
           <p style={{ fontSize: 16, color: "#5A5B66", maxWidth: 560, margin: "0 auto 26px", lineHeight: 1.6 }}>
-            {lang === "pt"
-              ? "O cadastro é 100% grátis, sem cartão de crédito. Se você recebeu um cupom, é só usar ele no cadastro e ganhar uma aula de conversação de 15 minutos com um tutor de verdade — sem pagar nada."
-              : "Sign-up is 100% free, no credit card required. If you got a coupon, just use it when you register to get a free 15-minute conversation lesson with a real tutor — no payment needed."}
+            {c.noCommitmentBody}
           </p>
           <button
             onClick={() => navigate("/register")}
             style={{ padding: "15px 30px", borderRadius: 999, background: ACCENT, color: "#fff", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 14px 30px -10px rgba(242,106,27,.55)", fontFamily: "inherit" }}
           >
-            {lang === "pt" ? "Clique aqui e faça seu registro grátis →" : "Click here to register for free →"}
+            {c.noCommitmentCta}
           </button>
           <p style={{ marginTop: 14, fontSize: 13, color: "#9B9CA6" }}>
-            {lang === "pt" ? "Sem cartão · Sem assinatura · Cancele quando quiser" : "No card · No subscription · Cancel anytime"}
+            {c.noCommitmentFooter}
           </p>
         </div>
       </div>
@@ -1656,7 +1654,7 @@ export default function Landing() {
             <Link to="/privacidade" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footPrivacy}</Link>
             <Link to="/termos" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footTerms}</Link>
             <Link to="/faq" style={{ color: "#B7B3AB", textDecoration: "none" }}>FAQ</Link>
-            <Link to="/reembolso" style={{ color: "#B7B3AB", textDecoration: "none" }}>{lang === "pt" ? "Reembolso" : "Refund Policy"}</Link>
+            <Link to="/reembolso" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.refundPolicyLabel}</Link>
             <a href="#" style={{ color: "#B7B3AB", textDecoration: "none" }}>{c.footSupport}</a>
             <Link to="/login" style={{ color: ACCENT, textDecoration: "none", fontWeight: 700 }}>{c.navLogin}</Link>
           </div>
