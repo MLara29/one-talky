@@ -406,7 +406,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
                 cursor: "pointer", boxShadow: "0 8px 20px rgba(249,115,22,0.3)",
               }}
             >
-              <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Adicionar minutos
+              <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> {t(lang, "addMinutesBtn")}
             </button>
             <Link to="/plans">
               <button style={{
@@ -416,7 +416,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
                 borderRadius: 999, fontFamily: "inherit", fontSize: 14, fontWeight: 700, cursor: "pointer",
               }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="#f97316"><path d="M13 2L3 14h7v8l10-12h-7z"/></svg>
-                Ver planos
+                {t(lang, "viewPlansBtn")}
               </button>
             </Link>
           </div>
