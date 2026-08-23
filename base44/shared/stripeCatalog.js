@@ -17,9 +17,9 @@
 // mode: "subscription" → recurring monthly plan (plan:*)
 // mode: "payment"     → one-time prepaid pack (pack:*)
 export const STRIPE_CATALOG = {
-  "plan:basic":    { price_id: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", mode: "subscription", product_id: "prod_V6A6uyCQxsiiX1", prices: { brl: "price_1U5xmRLrbgaxg9EV6Yyv8oCk" } },
-  "plan:standard": { price_id: "price_1U5xmSLrbgaxg9EVSb3ExLSc", mode: "subscription", product_id: "prod_V6A6EqpSDVLc2p", prices: { brl: "price_1U5xmSLrbgaxg9EVSb3ExLSc" } },
-  "plan:premium":  { price_id: "price_1U5xmSLrbgaxg9EV0GpkQCKv", mode: "subscription", product_id: "prod_V6A65X2k2sRNoq", prices: { brl: "price_1U5xmSLrbgaxg9EV0GpkQCKv" } },
+  "plan:basic":    { price_id: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", mode: "subscription", product_id: "prod_V6A6uyCQxsiiX1", prices: { brl: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", eur: "price_1U7dTQLrbgaxg9EVzh1wRxqm", jpy: "price_1U7dTRLrbgaxg9EVFL1D7LjO", krw: "price_1U7dTRLrbgaxg9EVKGyoQ3H4", usd: "price_1U7dTRLrbgaxg9EVgX6Drynd" } },
+  "plan:standard": { price_id: "price_1U5xmSLrbgaxg9EVSb3ExLSc", mode: "subscription", product_id: "prod_V6A6EqpSDVLc2p", prices: { brl: "price_1U5xmSLrbgaxg9EVSb3ExLSc", eur: "price_1U7dTRLrbgaxg9EVbR8ewDS7", jpy: "price_1U7dTRLrbgaxg9EVSgVrDy4i", krw: "price_1U7dTSLrbgaxg9EVX1nyVoa8", usd: "price_1U7dTSLrbgaxg9EVfn3zqVlI" } },
+  "plan:premium":  { price_id: "price_1U5xmSLrbgaxg9EV0GpkQCKv", mode: "subscription", product_id: "prod_V6A65X2k2sRNoq", prices: { brl: "price_1U5xmSLrbgaxg9EV0GpkQCKv", eur: "price_1U7dTSLrbgaxg9EVaJtv9TnK", jpy: "price_1U7dTSLrbgaxg9EV6r8il6rz", krw: "price_1U7dTSLrbgaxg9EVaKFYnTmV", usd: "price_1U7dTTLrbgaxg9EVyQxJVlLt" } },
   "pack:pp_30":   { price_id: "price_1U5xmSLrbgaxg9EV3pwYcNNu", mode: "payment", product_id: "prod_V6A6AFfvDlruK9" },
   "pack:pp_60":   { price_id: "price_1U5xmTLrbgaxg9EVVKxtcvSL", mode: "payment", product_id: "prod_V6A6W96pVHh4kA" },
   "pack:pp_120":  { price_id: "price_1U5xmTLrbgaxg9EV4U1TF2xR", mode: "payment", product_id: "prod_V6A6ZdjG7OQrlT" },
