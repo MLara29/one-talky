@@ -242,7 +242,7 @@ export default function Plans() {
         )}
         {paymentMethod === "stripe" && (
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(99,91,255,0.10)", color: "#635BFF" }}>
-            Recomendado
+            {t(lang, "recommendedBadge")}
           </span>
         )}
       </div>
@@ -254,14 +254,14 @@ export default function Plans() {
             className="px-6 data-[state=active]:text-white"
             style={{ fontWeight: 600 }}
           >
-            Planos mensais
+            {t(lang, "monthlyPlansTab")}
           </TabsTrigger>
           <TabsTrigger
             value="prepaid"
             className="px-6 data-[state=active]:text-white"
             style={{ fontWeight: 600 }}
           >
-            Pré-pago
+            {t(lang, "prepaidTab")}
           </TabsTrigger>
         </TabsList>
 
