@@ -115,7 +115,7 @@ const TOPIC_TRANSLATIONS = {
   },
 };
 
-function translateTopic(topic, lang) {
+export function translateTopic(topic, lang) {
   if (lang === "en") return topic;
   return TOPIC_TRANSLATIONS[lang]?.[topic] || topic;
 }
