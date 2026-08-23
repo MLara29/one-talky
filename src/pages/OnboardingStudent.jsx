@@ -22,8 +22,8 @@ const INTEREST_KEY = {
   "Music": "interestMusic", "Politics": "interestPolitics", "Science": "interestScience",
   "Art & Design": "interestArtDesign", "Health & Fitness": "interestHealthFitness", "Education": "interestEducation",
 };
-const LANG_OPTIONS = ["en", "pt_br", "es", "fr", "de", "it"];
-const LANG_LABELS = { en: "EN", pt_br: "PT", es: "ES", fr: "FR", de: "DE", it: "IT" };
+const LANG_OPTIONS = ["en", "pt_br", "es", "fr", "de", "it", "ja", "ko"];
+const LANG_LABELS = { en: "EN", pt_br: "PT", es: "ES", fr: "FR", de: "DE", it: "IT", ja: "JA", ko: "KO" };
 
 export default function OnboardingStudent() {
   const { toast } = useToast();
