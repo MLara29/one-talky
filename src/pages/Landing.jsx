@@ -1582,16 +1582,32 @@ export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [regionData, setRegionData] = useState(() => getCachedRegion());
+  const manualLangChoiceRef = useRef(false);
   const founderSpotsLeft = 137;
   const c = CONTENT[lang];
   const navigate = useNavigate();
 
+  // Troca de idioma feita pela própria pessoa (dropdown/menu mobile) — marca
+  // que já houve escolha manual, pra detecção automática nunca sobrescrever
+  // depois disso.
+  const selectLang = (l) => {
+    manualLangChoiceRef.current = true;
+    setLang(l);
+  };
+
   // Detecta a região do visitante via geolocalização por IP (não por idioma do
-  // navegador) pra exibir o preço + moeda certos de cada plano antes do cadastro.
-  // Brasil/desconhecido → BRL (sem mudança em relação ao comportamento atual).
+  // navegador) pra exibir o preço + moeda certos de cada plano antes do cadastro,
+  // E pra pré-selecionar o idioma inicial da página (só na primeira carga —
+  // nunca sobrescreve se a pessoa já trocou de idioma manualmente).
   useEffect(() => {
     if (!regionData) {
-      detectAndCacheRegion().then(setRegionData);
+      detectAndCacheRegion().then((data) => {
+        setRegionData(data);
+        if (!manualLangChoiceRef.current && data?.countryCode) {
+          const detectedLang = COUNTRY_TO_LANG[String(data.countryCode).toUpperCase()];
+          if (detectedLang) setLang(detectedLang);
+        }
+      });
     }
   }, []);
 
