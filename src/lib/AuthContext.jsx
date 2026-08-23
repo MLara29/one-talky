@@ -191,6 +191,32 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user?.id, user?.role]);
 
+  // Affiliate heartbeat — mesmo padrão do tutor e do aluno, usado pro admin
+  // ver quais afiliados estão online agora.
+  const affiliateHeartbeatRef = useRef(null);
+  const affiliateActiveRef = useRef(false);
+
+  useEffect(() => {
+    const isAffiliate = user?.role === 'affiliate';
+
+    if (isAffiliate && !affiliateActiveRef.current) {
+      affiliateActiveRef.current = true;
+
+      const beat = () => {
+        base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date().toISOString() } }).catch(() => {});
+      };
+
+      beat();
+      affiliateHeartbeatRef.current = setInterval(beat, 20 * 1000);
+    }
+
+    if (!isAffiliate && affiliateActiveRef.current) {
+      affiliateActiveRef.current = false;
+      clearInterval(affiliateHeartbeatRef.current);
+      base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
+    }
+  }, [user?.id, user?.role]);
+
   // Cleanup on unmount (tab close / full reload)
   useEffect(() => {
     return () => {
