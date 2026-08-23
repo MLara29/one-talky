@@ -239,7 +239,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
           {/* Timezone note */}
           {tzDiffers && (
             <div className="px-3 py-2 rounded-xl text-xs" style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.2)", color: "var(--app-text-secondary)" }}>
-              🌍 Times shown in <strong>your local timezone</strong> ({studentTz.replace("_", " ")})
+              {t(lang, "localTimezoneNote").replace("{tz}", studentTz.replace("_", " "))}
             </div>
           )}
 
@@ -295,7 +295,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
             </div>
             <p className="text-[11px] mt-3 flex items-center gap-1.5" style={{ color: "var(--app-text-muted)" }}>
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500" />
-              Days with available slots (booked slots are hidden)
+              {t(lang, "daysWithSlotsNote")}
             </p>
             </div>
 
@@ -306,11 +306,11 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
               <div className="flex items-center gap-2 mb-3">
                 <Clock className="w-4 h-4" style={{ color: "var(--app-text-muted)" }} />
                 <span className="theme-heading font-semibold text-sm">
-                  {selectedDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                  {selectedDate.toLocaleDateString(LOCALE_MAP[lang] || "en-US", { weekday: "long", month: "long", day: "numeric" })}
                 </span>
               </div>
               {slots.length === 0 ? (
-                <p className="theme-subtext text-sm text-center py-3" style={{ color: "var(--app-text-muted)" }}>No slots available</p>
+                <p className="theme-subtext text-sm text-center py-3" style={{ color: "var(--app-text-muted)" }}>{t(lang, "noSlotsAvailable")}</p>
               ) : (
                 <div className="grid grid-cols-4 gap-2">
                   {slots.map((s, i) => (
@@ -336,8 +336,8 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
           {!selectedDate && (
             <p className="text-center text-sm py-2" style={{ color: "var(--app-text-muted)" }}>
               {Object.keys(availability).length === 0
-                ? "This tutor hasn't set availability yet."
-                : "Select a highlighted day to see available times."}
+                ? t(lang, "tutorNoAvailability")
+                : t(lang, "selectHighlightedDay")}
             </p>
           )}
             </div>
