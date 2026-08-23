@@ -196,11 +196,11 @@ export default function Plans() {
       )}
 
       <div className="text-center mb-10">
-        <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold mb-2">Planos & Créditos</h1>
-        <p className="theme-subtext text-sm" style={{ color: "#5A5B66" }}>R$ 29,90 por 30 minutos · Sem fidelidade obrigatória</p>
+        <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold mb-2">{t(lang, "plansTitle")}</h1>
+        <p className="theme-subtext text-sm" style={{ color: "#5A5B66" }}>{t(lang, "plansSubtitle")}</p>
         {profile && (
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-sm font-semibold" style={{ background: "rgba(242,106,27,0.10)", border: "1px solid rgba(242,106,27,0.25)", color: ACCENT }}>
-            <Clock className="w-4 h-4" /> {Math.round((profile.plan_credits_minutes || 0) + (profile.prepaid_credits_minutes || 0))} minutos disponíveis
+            <Clock className="w-4 h-4" /> {Math.round((profile.plan_credits_minutes || 0) + (profile.prepaid_credits_minutes || 0))} {t(lang, "minutesAvailable")}
           </div>
         )}
       </div>
