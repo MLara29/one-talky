@@ -145,13 +145,13 @@ export default function TutorProfilePage() {
     </div>
   );
 
-  if (!tutor) return <div className="theme-subtext text-center py-24 text-gray-500">Tutor not found</div>;
+  if (!tutor) return <div className="theme-subtext text-center py-24 text-gray-500">{t(lang, "tutorNotFound")}</div>;
 
   // Tutor escondido pelo admin (status "hidden") não deve ser acessível por
   // link direto por um aluno novo — mesmo tratamento visual de "não
   // encontrado". Admin e o próprio tutor continuam acessando normalmente.
   if (tutor.status === "hidden" && user?.role === "student") {
-    return <div className="theme-subtext text-center py-24 text-gray-500">Tutor not found</div>;
+    return <div className="theme-subtext text-center py-24 text-gray-500">{t(lang, "tutorNotFound")}</div>;
   }
 
   const showLessonNow = isLive(tutor) && !inLesson && !isFirstWeekActive(studentProfile);
@@ -162,7 +162,7 @@ export default function TutorProfilePage() {
         onClick={() => navigate(-1)}
         className="theme-subtext flex items-center gap-1 text-sm text-gray-500 hover:text-orange-400 mb-6 transition-colors font-medium"
       >
-        <ChevronLeft className="w-4 h-4" /> Back
+        <ChevronLeft className="w-4 h-4" /> {t(lang, "backBtn")}
       </button>
 
       {/* Main card */}
