@@ -63,14 +63,14 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
       const script = document.createElement("script");
       script.src = "https://sdk.mercadopago.com/js/v2";
       script.onload = load;
-      script.onerror = () => { setErrorMsg("Falha ao carregar SDK do Mercado Pago."); setStep("error"); };
+      script.onerror = () => { setErrorMsg(t(lang, "mpSdkLoadError")); setStep("error"); };
       document.body.appendChild(script);
     };
     base44.functions.invoke("mpGetPublicKey", {}).then(res => {
       const key = res.data?.public_key;
-      if (!key) { setErrorMsg("Chave pública não configurada."); setStep("error"); return; }
+      if (!key) { setErrorMsg(t(lang, "mpPublicKeyMissing")); setStep("error"); return; }
       init(key);
-    }).catch(() => { setErrorMsg("Erro ao carregar configuração de pagamento."); setStep("error"); });
+    }).catch(() => { setErrorMsg(t(lang, "mpConfigError")); setStep("error"); });
   }, []);
 
   // Cleanup pix polling on unmount
