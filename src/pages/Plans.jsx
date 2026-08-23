@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Clock, CreditCard } from "lucide-react";
 import { PlanShield } from "@/components/student/CreditsBanner";
@@ -15,12 +17,25 @@ import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCached
 
 const ACCENT = "#F26A1B";
 
+// Nome/descrição de cada plano e pacote vêm do dicionário de idiomas, não
+// dos dados fixos em constants.js — os dados fixos (id, minutos, preço)
+// continuam vindo de lá, só o texto exibido muda com o idioma escolhido.
+const planName = (lang, id) => t(lang, `planName${id.charAt(0).toUpperCase()}${id.slice(1)}`);
+const planDesc = (lang, id) => t(lang, `planDesc${id.charAt(0).toUpperCase()}${id.slice(1)}`);
+const packLabel = (lang, packId) => t(lang, `packLabel${packId.replace("pp_", "")}`);
+const packBadgeText = (lang, badge) => {
+  if (!badge) return null;
+  const pct = badge.match(/\d+/)?.[0];
+  return pct ? t(lang, `packBadge${pct}`) : badge;
+};
+
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 export default function Plans() {
   const { user } = useAuth();
+  const { lang } = useLang();
   const { toast } = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
