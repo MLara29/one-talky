@@ -389,6 +389,25 @@ export default function Landing() {
           {[["#como", c.navHow], ["#tutores", c.navTutors], ["#planos", c.navPlans], ["#garantia", c.navGuarantee]].map(([href, label]) => (
             <a key={href} href={href} onClick={() => setMobileMenuOpen(false)}>{label}</a>
           ))}
+          {/* Idioma também aqui — reforço, caso o dropdown do cabeçalho fique
+              apertado em telas muito estreitas. */}
+          <div style={{ display: "flex", gap: 8, padding: "4px 0" }}>
+            {["pt", "en"].map((l) => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                style={{
+                  flex: 1, padding: "9px 0", borderRadius: 10, fontWeight: 700, fontSize: 13,
+                  background: lang === l ? ACCENT : "#fff",
+                  color: lang === l ? "#fff" : "#3A3B45",
+                  border: "1px solid " + (lang === l ? ACCENT : "#E4DED6"),
+                  cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                {LANG_FULL_LABELS[l]}
+              </button>
+            ))}
+          </div>
           <a href="/login" onClick={() => setMobileMenuOpen(false)} style={{ background: "#fff", border: "1px solid #E4DED6" }}>{c.navLogin}</a>
         </div>
       </header>
