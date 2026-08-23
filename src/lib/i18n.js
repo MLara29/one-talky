@@ -239,6 +239,13 @@ export const TRANSLATIONS = {
     errorMsg: "Something went wrong. Please try again.",
     uiLanguage: "Interface language",
     noShowBadge: "No-show",
+    localTimezoneNote: "🌍 Times shown in your local timezone ({tz})",
+    daysWithSlotsNote: "Days with available slots (booked slots are hidden)",
+    noSlotsAvailable: "No slots available",
+    tutorNoAvailability: "This tutor hasn't set availability yet.",
+    selectHighlightedDay: "Select a highlighted day to see available times.",
+    bookingBtn: "Booking...",
+    confirmBookingBtn: "Confirm Booking",
   },
   pt_br: {
     // Notification bell
@@ -479,6 +486,13 @@ export const TRANSLATIONS = {
     errorMsg: "Algo deu errado. Tente novamente.",
     uiLanguage: "Idioma da interface",
     noShowBadge: "Não compareceu",
+    localTimezoneNote: "🌍 Horários exibidos no seu fuso horário local ({tz})",
+    daysWithSlotsNote: "Dias com horários disponíveis (horários já reservados ficam ocultos)",
+    noSlotsAvailable: "Nenhum horário disponível",
+    tutorNoAvailability: "Este tutor ainda não configurou a disponibilidade dele.",
+    selectHighlightedDay: "Selecione um dia destacado pra ver os horários disponíveis.",
+    bookingBtn: "Agendando...",
+    confirmBookingBtn: "Confirmar Agendamento",
   },
   pt_pt: {
     // Dashboard - Student
@@ -711,6 +725,13 @@ export const TRANSLATIONS = {
     errorMsg: "Algo correu mal. Tente novamente.",
     uiLanguage: "Idioma da interface",
     noShowBadge: "Não compareceu",
+    localTimezoneNote: "🌍 Horários apresentados no seu fuso horário local ({tz})",
+    daysWithSlotsNote: "Dias com horários disponíveis (horários já reservados ficam ocultos)",
+    noSlotsAvailable: "Nenhum horário disponível",
+    tutorNoAvailability: "Este tutor ainda não configurou a sua disponibilidade.",
+    selectHighlightedDay: "Selecione um dia destacado para ver os horários disponíveis.",
+    bookingBtn: "A agendar...",
+    confirmBookingBtn: "Confirmar Marcação",
   },
   es: {
     // Dashboard - Student
@@ -939,6 +960,13 @@ export const TRANSLATIONS = {
     errorMsg: "Algo salió mal. Por favor intenta de nuevo.",
     uiLanguage: "Idioma de interfaz",
     noShowBadge: "No se presentó",
+    localTimezoneNote: "🌍 Horarios mostrados en tu zona horaria local ({tz})",
+    daysWithSlotsNote: "Días con horarios disponibles (los horarios reservados están ocultos)",
+    noSlotsAvailable: "No hay horarios disponibles",
+    tutorNoAvailability: "Este tutor aún no ha configurado su disponibilidad.",
+    selectHighlightedDay: "Selecciona un día destacado para ver los horarios disponibles.",
+    bookingBtn: "Reservando...",
+    confirmBookingBtn: "Confirmar Reserva",
   },
   fr: {
     // Dashboard - Student
@@ -1167,6 +1195,13 @@ export const TRANSLATIONS = {
     errorMsg: "Quelque chose s'est mal passé. Veuillez réessayer.",
     uiLanguage: "Langue de l'interface",
     noShowBadge: "Non-présentation",
+    localTimezoneNote: "🌍 Horaires affichés dans votre fuseau horaire local ({tz})",
+    daysWithSlotsNote: "Jours avec créneaux disponibles (les créneaux réservés sont masqués)",
+    noSlotsAvailable: "Aucun créneau disponible",
+    tutorNoAvailability: "Ce tuteur n'a pas encore défini ses disponibilités.",
+    selectHighlightedDay: "Sélectionnez un jour en surbrillance pour voir les horaires disponibles.",
+    bookingBtn: "Réservation...",
+    confirmBookingBtn: "Confirmer la Réservation",
   },
   de: {
     // Dashboard - Student
@@ -1395,6 +1430,13 @@ export const TRANSLATIONS = {
     errorMsg: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     uiLanguage: "Oberflächensprache",
     noShowBadge: "Nicht erschienen",
+    localTimezoneNote: "🌍 Zeiten in Ihrer lokalen Zeitzone angezeigt ({tz})",
+    daysWithSlotsNote: "Tage mit verfügbaren Terminen (gebuchte Termine sind ausgeblendet)",
+    noSlotsAvailable: "Keine Termine verfügbar",
+    tutorNoAvailability: "Dieser Tutor hat noch keine Verfügbarkeit festgelegt.",
+    selectHighlightedDay: "Wählen Sie einen hervorgehobenen Tag, um verfügbare Zeiten zu sehen.",
+    bookingBtn: "Wird gebucht...",
+    confirmBookingBtn: "Buchung bestätigen",
   },
   it: {
     // Dashboard - Student
@@ -1623,6 +1665,13 @@ export const TRANSLATIONS = {
     errorMsg: "Qualcosa è andato storto. Riprova.",
     uiLanguage: "Lingua interfaccia",
     noShowBadge: "Assente",
+    localTimezoneNote: "🌍 Orari mostrati nel tuo fuso orario locale ({tz})",
+    daysWithSlotsNote: "Giorni con orari disponibili (gli orari prenotati sono nascosti)",
+    noSlotsAvailable: "Nessun orario disponibile",
+    tutorNoAvailability: "Questo tutor non ha ancora impostato la propria disponibilità.",
+    selectHighlightedDay: "Seleziona un giorno evidenziato per vedere gli orari disponibili.",
+    bookingBtn: "Prenotazione...",
+    confirmBookingBtn: "Conferma Prenotazione",
   },
   ja: {
     notifications: "通知",
@@ -1858,6 +1907,13 @@ export const TRANSLATIONS = {
     errorMsg: "問題が発生しました。もう一度お試しください。",
     uiLanguage: "表示言語",
     noShowBadge: "無断欠席",
+    localTimezoneNote: "🌍 表示時刻はお使いのタイムゾーンです（{tz}）",
+    daysWithSlotsNote: "空きがある日（予約済みの時間帯は表示されません）",
+    noSlotsAvailable: "利用可能な時間帯がありません",
+    tutorNoAvailability: "この講師はまだ空き状況を設定していません。",
+    selectHighlightedDay: "ハイライトされた日を選択すると利用可能な時間が表示されます。",
+    bookingBtn: "予約中...",
+    confirmBookingBtn: "予約を確定する",
   },
   ko: {
     notifications: "알림",
@@ -2093,6 +2149,13 @@ export const TRANSLATIONS = {
     errorMsg: "문제가 발생했습니다. 다시 시도해 주세요.",
     uiLanguage: "인터페이스 언어",
     noShowBadge: "노쇼",
+    localTimezoneNote: "🌍 표시된 시간은 사용자의 현지 시간대입니다 ({tz})",
+    daysWithSlotsNote: "예약 가능한 날짜 (이미 예약된 시간대는 표시되지 않습니다)",
+    noSlotsAvailable: "이용 가능한 시간대가 없습니다",
+    tutorNoAvailability: "이 튜터는 아직 이용 가능 시간을 설정하지 않았습니다.",
+    selectHighlightedDay: "강조 표시된 날짜를 선택하면 이용 가능한 시간이 표시됩니다.",
+    bookingBtn: "예약 중...",
+    confirmBookingBtn: "예약 확정",
   },
 };
 
