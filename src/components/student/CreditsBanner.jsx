@@ -130,22 +130,26 @@ export default function CreditsBanner({ profile, onUpdate }) {
 
   const TopupSection = () => (
     <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(249,115,22,0.1)" }}>
-      <p className="text-xs text-gray-500 mb-3 font-medium">Escolha um pacote pré-pago:</p>
+      <p className="text-xs text-gray-500 mb-3 font-medium">{t(lang, "choosePackageLabel")}</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-        {PREPAID_PACKS.map(pack => (
-          <button
-            key={pack.id}
-            onClick={() => buyPack(pack)}
-            disabled={!!checkoutItem}
-            className="flex flex-col items-center gap-1 p-3 rounded-xl bg-orange-50 border border-orange-100 hover:border-orange-400 hover:bg-orange-100 transition-all text-center"
-          >
-            <span className="font-bold text-gray-900 text-sm">{pack.label}</span>
-            {pack.badge && <span className="text-[10px] text-emerald-600 font-semibold">{pack.badge}</span>}
-            <span className="text-xs text-gray-500">{fmtBRL(pack.price_brl)}</span>
-          </button>
-        ))}
+        {PREPAID_PACKS.map(pack => {
+          const suffix = pack.id.replace("pp_", "");
+          const badgePct = pack.badge?.match(/\d+/)?.[0];
+          return (
+            <button
+              key={pack.id}
+              onClick={() => buyPack(pack)}
+              disabled={!!checkoutItem}
+              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-orange-50 border border-orange-100 hover:border-orange-400 hover:bg-orange-100 transition-all text-center"
+            >
+              <span className="font-bold text-gray-900 text-sm">{t(lang, `packLabel${suffix}`)}</span>
+              {pack.badge && <span className="text-[10px] text-emerald-600 font-semibold">{badgePct ? t(lang, `packBadge${badgePct}`) : pack.badge}</span>}
+              <span className="text-xs text-gray-500">{fmtBRL(pack.price_brl)}</span>
+            </button>
+          );
+        })}
       </div>
-      <p className="text-[10px] text-gray-400 mt-3 text-center">Créditos expiram em 60 dias · Pagamento via Stripe</p>
+      <p className="text-[10px] text-gray-400 mt-3 text-center">{t(lang, "creditsExpireFooter")}</p>
     </div>
   );
 
