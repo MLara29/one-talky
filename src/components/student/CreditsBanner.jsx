@@ -317,11 +317,11 @@ export default function CreditsBanner({ profile, onUpdate }) {
             <div className="w-full" style={{ maxWidth: 280 }}>
               <div className="flex items-center justify-between mb-1">
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>
-                  Plano {planObj?.name || "Free"} {planMaxMinutes} min
+                  {t(lang, "planBarLabel")} {planObj?.name ? t(lang, `planName${plan.charAt(0).toUpperCase()}${plan.slice(1)}`) : "Free"} {planMaxMinutes} min
                 </span>
                 {graceDate && (
                   <span style={{ fontSize: 11, fontWeight: 600, color: "#f59e0b" }}>
-                    Cancelado · até {graceDate}
+                    {t(lang, "cancelledUntil")} {graceDate}
                   </span>
                 )}
               </div>
@@ -355,11 +355,11 @@ export default function CreditsBanner({ profile, onUpdate }) {
               <div className="w-full" style={{ maxWidth: 280 }}>
                 <div className="flex items-center justify-between mb-1">
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>
-                    Pré-pago {Math.floor(prepaidMins)} min
+                    {t(lang, "prepaidBarLabel")} {Math.floor(prepaidMins)} min
                   </span>
                   {prepaidExpiresDate && (
                     <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>
-                      expira em {prepaidExpiresDate}
+                      {t(lang, "expiresOnLabel")} {prepaidExpiresDate}
                     </span>
                   )}
                 </div>
@@ -390,7 +390,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
               </div>
             )}
             <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap" }}>
-              {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>totais</span>
+              {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>{t(lang, "totalMinutesLabel")}</span>
             </span>
           </div>
 
