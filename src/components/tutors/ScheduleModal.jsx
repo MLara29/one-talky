@@ -5,9 +5,21 @@ import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 
 const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"];
+
+// Mapeia nosso código de idioma pra um locale de verdade — usado só pra
+// formatar nomes de mês/dia com o formatador nativo do navegador, em vez de
+// manter listas fixas traduzidas à mão em 9 idiomas.
+const LOCALE_MAP = { en: "en-US", pt_br: "pt-BR", pt_pt: "pt-PT", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT", ja: "ja-JP", ko: "ko-KR" };
+function getMonthName(lang, year, month) {
+  return new Intl.DateTimeFormat(LOCALE_MAP[lang] || "en-US", { month: "long" }).format(new Date(year, month, 1));
+}
+function getDayLabels(lang) {
+  const base = new Date(2024, 0, 7); // um domingo, como referência
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(base); d.setDate(base.getDate() + i);
+    return new Intl.DateTimeFormat(LOCALE_MAP[lang] || "en-US", { weekday: "short" }).format(d);
+  });
+}
 
 function buildCalendarDays(year, month) {
   const firstDay = new Date(year, month, 1).getDay();
