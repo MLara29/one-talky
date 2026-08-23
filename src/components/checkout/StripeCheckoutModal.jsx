@@ -81,7 +81,7 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
         >
           <div className="flex items-center gap-2">
             <Lock className="w-4 h-4" style={{ color: "#F26A1B" }} />
-            <span className="theme-heading font-semibold text-sm">Pagamento Seguro</span>
+            <span className="theme-heading font-semibold text-sm">{t(lang, "securePaymentTitle")}</span>
             <span className="theme-subtext text-xs" style={{ color: "var(--app-text-muted)" }}>· Stripe</span>
           </div>
           <button onClick={onClose} className="theme-subtext hover:opacity-70 transition-opacity">
@@ -100,12 +100,12 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
           </div>
           {item.bonus_minutes > 0 && (
             <div className="flex items-center gap-1.5 mt-1 text-xs font-semibold text-emerald-500">
-              <CreditCard className="w-3 h-3" /> +{item.bonus_minutes} min de bônus
+              <CreditCard className="w-3 h-3" /> +{item.bonus_minutes} {t(lang, "bonusMinutesLabel")}
             </div>
           )}
           {affiliateCoupon && (
             <div className="flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-emerald-500">
-              <CreditCard className="w-3 h-3" /> Cupom aplicado: <span className="font-mono">{affiliateCoupon}</span>
+              <CreditCard className="w-3 h-3" /> {t(lang, "couponAppliedLabel")} <span className="font-mono">{affiliateCoupon}</span>
             </div>
           )}
         </div>
