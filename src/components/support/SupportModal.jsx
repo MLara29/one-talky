@@ -62,21 +62,21 @@ export default function SupportModal({ onClose }) {
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Subject</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>{T("subjectLabel", "Subject")}</label>
               <Input
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
-                placeholder="e.g. Payment issue"
+                placeholder={T("subjectPlaceholder", "e.g. Payment issue")}
                 className="theme-input"
                 style={{ background: "var(--app-nav-hover-bg)", borderColor: "var(--app-border)", color: "var(--app-text-primary)" }}
               />
             </div>
             <div>
-              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Message</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>{T("messageLabel", "Message")}</label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
-                placeholder="Describe your issue or question..."
+                placeholder={T("messagePlaceholder", "Describe your issue or question...")}
                 rows={5}
                 className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 resize-none"
                 style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
@@ -88,7 +88,7 @@ export default function SupportModal({ onClose }) {
               className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20"
             >
               <Send className="w-4 h-4 mr-2" />
-              {sending ? "Sending..." : "Send message"}
+              {sending ? T("sendingBtn", "Sending...") : T("sendMessageBtn", "Send message")}
             </Button>
           </div>
         )}
