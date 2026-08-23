@@ -220,19 +220,19 @@ export default function TutorProfilePage() {
 
         {tutor.intro_video_url && (
           <div className="px-6 sm:px-8 py-6">
-            <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">Intro Video</h3>
+            <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">{t(lang, "introVideoLabel")}</h3>
             <video src={tutor.intro_video_url} controls className="w-full rounded-2xl bg-black" style={{ maxHeight: 360 }} />
           </div>
         )}
 
         <div className="px-6 sm:px-8 py-6">
-          <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">About</h3>
+          <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">{t(lang, "aboutLabel")}</h3>
           <p className="theme-subtext text-gray-400 text-sm leading-relaxed">{tutor.bio}</p>
         </div>
 
         {tutor.interests?.length > 0 && (
           <div className="px-6 sm:px-8 pb-6">
-            <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">Conversation Topics</h3>
+            <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">{t(lang, "conversationTopicsLabel")}</h3>
             <div className="flex flex-wrap gap-2">
               {tutor.interests.map(i => (
                 <span key={i} className="theme-btn-ghost text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">{i}</span>
@@ -252,7 +252,7 @@ export default function TutorProfilePage() {
               className="flex-1 h-12 rounded-2xl border-0 shadow-lg transition-all bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-emerald-500/20 hover:scale-105"
             >
               <Video className="w-4 h-4 mr-2" />
-              {booking ? "Starting..." : "Lesson now"}
+              {booking ? t(lang, "startingBtn") : t(lang, "lessonNowBtn")}
             </Button>
           )}
           <Button
@@ -279,15 +279,15 @@ export default function TutorProfilePage() {
 
       {/* Reviews */}
       <div className="theme-card mt-5 bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8">
-        <h3 className="theme-heading font-display font-bold text-white mb-5">Reviews ({reviews.length})</h3>
+        <h3 className="theme-heading font-display font-bold text-white mb-5">{t(lang, "reviewsTitle")} ({reviews.length})</h3>
         {reviews.length === 0 ? (
-          <p className="theme-subtext text-sm text-gray-600 text-center py-4">No reviews yet</p>
+          <p className="theme-subtext text-sm text-gray-600 text-center py-4">{t(lang, "noReviewsYet")}</p>
         ) : (
           <div className="space-y-4">
             {reviews.map(r => (
               <div key={r.id} className="pb-4 last:pb-0" style={{ borderBottom: "1px solid var(--app-border)" }}>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="theme-heading font-semibold text-sm text-white">{r.student_name || "Student"}</span>
+                  <span className="theme-heading font-semibold text-sm text-white">{r.student_name || t(lang, "studentFallbackName")}</span>
                   <div className="flex gap-0.5">
                     {Array.from({ length: r.rating }).map((_, i) => (
                       <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
