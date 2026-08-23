@@ -269,9 +269,9 @@ export default function Register() {
             </div>
             {password && !passwordStrength.isValid && (
               <p className="text-xs text-muted-foreground">
-                {!passwordStrength.hasMinLength && "Mínimo de 8 caracteres. "}
-                {!passwordStrength.hasLetter && "Inclua ao menos uma letra. "}
-                {!passwordStrength.hasNumber && "Inclua ao menos um número."}
+                {!passwordStrength.hasMinLength && t(lang, "minCharsHint")}
+                {!passwordStrength.hasLetter && t(lang, "includeLetterHint")}
+                {!passwordStrength.hasNumber && t(lang, "includeNumberHint")}
               </p>
             )}
           </div>
