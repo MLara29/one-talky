@@ -84,7 +84,7 @@ export default function OnboardingStudent() {
 
   const handleSubmit = async () => {
     if (!userId) {
-      toast({ title: "Erro de autenticação", description: "Recarregue a página e tente novamente.", variant: "destructive" });
+      toast({ title: t(lang, "authErrorTitle"), description: t(lang, "authErrorDesc"), variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -110,11 +110,11 @@ export default function OnboardingStudent() {
         plan: 'free',
         coupon_code: couponStatus === "valid" ? couponCode : null,
       }).catch(() => {});
-      toast({ title: "Bem-vindo à One Talky! 🎉", description: "Seu perfil foi criado com sucesso." });
+      toast({ title: t(lang, "welcomeToastTitle"), description: t(lang, "welcomeToastDesc") });
       window.location.href = "/";
     } catch (e) {
       console.error("[OnboardingStudent] submit error:", e);
-      toast({ title: "Erro ao criar perfil", description: "Não foi possível criar seu perfil. Tente novamente.", variant: "destructive" });
+      toast({ title: t(lang, "profileErrorTitle"), description: t(lang, "profileErrorDesc"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
