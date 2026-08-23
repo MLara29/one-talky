@@ -3,6 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X, CreditCard, Lock, CheckCircle, AlertCircle, Loader2, QrCode, Copy, Check, Tag } from "lucide-react";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -17,6 +19,7 @@ function formatExpiry(v) {
 }
 
 export default function CheckoutModal({ item, onClose, onSuccess, userEmail, affiliateCoupon }) {
+  const { lang } = useLang();
   const [tab, setTab] = useState("card"); // "card" | "pix" — pix temporarily disabled
   const [step, setStep] = useState("loading");
   const [errorMsg, setErrorMsg] = useState("");
