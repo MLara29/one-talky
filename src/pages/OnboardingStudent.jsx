@@ -176,11 +176,11 @@ export default function OnboardingStudent() {
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <Label className={labelCls}>Nome completo</Label>
+                <Label className={labelCls}>{t(lang, "fullNameLabel")}</Label>
                 <Input
                   value={form.full_name}
                   onChange={e => set("full_name", e.target.value)}
-                  placeholder="Seu nome completo"
+                  placeholder={t(lang, "fullNamePlaceholder")}
                   className={inputCls}
                 />
               </div>
@@ -189,7 +189,7 @@ export default function OnboardingStudent() {
                 disabled={!form.full_name.trim()}
                 className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 transition-all mt-2"
               >
-                Continuar <ChevronRight className="w-4 h-4 ml-1" />
+                {t(lang, "continueBtn")} <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           )}
