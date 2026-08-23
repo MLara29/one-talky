@@ -103,9 +103,9 @@ export default function Plans() {
 
   const handleSuccess = (status) => {
     if (status === "pending") {
-      toast({ title: "Pagamento pendente", description: "Assim que confirmado, seus créditos serão adicionados." });
+      toast({ title: t(lang, "pendingPaymentTitle"), description: t(lang, "pendingPaymentDesc") });
     } else {
-      toast({ title: "Pagamento aprovado! 🎉", description: "Seus créditos foram adicionados." });
+      toast({ title: t(lang, "approvedPaymentTitle"), description: t(lang, "approvedPaymentDesc") });
     }
     loadProfile();
   };
@@ -124,7 +124,7 @@ export default function Plans() {
       displayOriginal = displayPrice < regionalMonthly ? regionalMonthly : null;
     }
     setCheckoutItem({
-      title: `One Talky — Plano ${plan.name} (${plan.minutes} min/mês)`,
+      title: t(lang, "checkoutPlanTitle").replace("{name}", planName(lang, plan.id)).replace("{minutes}", plan.minutes),
       price: discountedPrice,
       original_price: discountedPrice < plan.price_monthly ? plan.price_monthly : null,
       bonus_minutes: couponDiscount?.bonus_minutes || 0,
