@@ -11,6 +11,7 @@ import CheckoutModal from "@/components/checkout/CheckoutModal";
 import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
+import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 
 const ACCENT = "#F26A1B";
 
@@ -27,6 +28,11 @@ export default function Plans() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("stripe");
+  const [regionData, setRegionData] = useState(() => getCachedRegion());
+
+  useEffect(() => {
+    if (!regionData) detectAndCacheRegion().then(setRegionData);
+  }, []);
 
   useEffect(() => { loadProfile(); }, [user]);
 
@@ -60,6 +66,26 @@ export default function Plans() {
     return Math.round(price * (1 - couponDiscount.discount_percent / 100) * 100) / 100;
   };
 
+  // Preço regional: Brasil/desconhecido → BRL (sem mudança). Internacional →
+  // moeda local (EUR/JPY/KRW/USD). Pacotes pré-pagos continuam sempre em BRL.
+  const isBR = !regionData || regionData.region === "br";
+  const regionConfig = isBR ? null : getRegionalConfig(regionData.region);
+
+  const planMonthlyDisplay = (plan) => {
+    if (isBR || !regionConfig) return fmtBRL(plan.price_monthly);
+    const regional = regionConfig.plans[plan.id];
+    if (regional === undefined) return fmtBRL(plan.price_monthly);
+    return formatRegionalPrice(regional, regionConfig.currency, regionConfig.locale);
+  };
+
+  const planWeeklyDisplay = (plan) => {
+    if (isBR || !regionConfig) return fmtBRL(plan.price_weekly);
+    const regional = regionConfig.plans[plan.id];
+    if (regional === undefined) return fmtBRL(plan.price_weekly);
+    const weekly = plan.id === "basic" ? regional / 2 : regional / 4;
+    return formatRegionalPrice(weekly, regionConfig.currency, regionConfig.locale);
+  };
+
   const handleSuccess = (status) => {
     if (status === "pending") {
       toast({ title: "Pagamento pendente", description: "Assim que confirmado, seus créditos serão adicionados." });
@@ -72,12 +98,25 @@ export default function Plans() {
   const selectPlan = (plan) => {
     if (!profile || plan.price_monthly === 0) return;
     const discountedPrice = applyDiscount(plan.price_monthly);
+    const currency = isBR || !regionConfig ? "BRL" : regionConfig.currency;
+    let displayPrice, displayOriginal;
+    if (isBR || !regionConfig) {
+      displayPrice = discountedPrice;
+      displayOriginal = discountedPrice < plan.price_monthly ? plan.price_monthly : null;
+    } else {
+      const regionalMonthly = regionConfig.plans[plan.id] || plan.price_monthly;
+      displayPrice = applyDiscount(regionalMonthly);
+      displayOriginal = displayPrice < regionalMonthly ? regionalMonthly : null;
+    }
     setCheckoutItem({
       title: `One Talky — Plano ${plan.name} (${plan.minutes} min/mês)`,
       price: discountedPrice,
       original_price: discountedPrice < plan.price_monthly ? plan.price_monthly : null,
       bonus_minutes: couponDiscount?.bonus_minutes || 0,
       external_reference: `plan:${plan.id}`,
+      currency,
+      display_price: displayPrice,
+      display_original: displayOriginal,
     });
   };
 
@@ -91,6 +130,10 @@ export default function Plans() {
       original_price: discountedPrice < pack.price_brl ? pack.price_brl : null,
       bonus_minutes: couponDiscount?.bonus_minutes || 0,
       external_reference: ref,
+      // Pacotes são sempre BRL (sem precificação internacional).
+      currency: "BRL",
+      display_price: discountedPrice,
+      display_original: discountedPrice < pack.price_brl ? pack.price_brl : null,
     });
   };
 
@@ -255,10 +298,10 @@ export default function Plans() {
                     <PlanShield plan={plan.id} size={44} />
                     <div>
                       <div className="flex items-baseline gap-1">
-                        <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>{fmtBRL(plan.price_monthly)}</span>
+                        <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>{planMonthlyDisplay(plan)}</span>
                         <span style={{ fontSize: 13, color: "#8A8B94", fontWeight: 700 }}>/mês</span>
                       </div>
-                      <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{fmtBRL(plan.price_weekly)}/semana</div>
+                      <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{planWeeklyDisplay(plan)}/semana</div>
                     </div>
                   </div>
 

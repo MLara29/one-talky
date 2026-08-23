@@ -7,12 +7,19 @@
 // change in Stripe. The function is idempotent (reuses existing products/prices
 // via metadata) so re-running won't create duplicates.
 //
+// INTERNATIONAL PRICING: each plan has a `prices` map with price_ids per
+// currency (brl/eur/jpy/krw/usd). The BRL price_id is also kept as the
+// top-level `price_id` for backward compatibility. Packs are BRL-only (no
+// `prices` map). `getStripePriceId(externalReference, currency)` resolves the
+// right price_id for a given currency, falling back to BRL if the regional one
+// isn't set yet (e.g. before stripeCreateCatalog has been run for intl prices).
+//
 // mode: "subscription" → recurring monthly plan (plan:*)
 // mode: "payment"     → one-time prepaid pack (pack:*)
 export const STRIPE_CATALOG = {
-  "plan:basic":    { price_id: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", mode: "subscription", product_id: "prod_V6A6uyCQxsiiX1" },
-  "plan:standard": { price_id: "price_1U5xmSLrbgaxg9EVSb3ExLSc", mode: "subscription", product_id: "prod_V6A6EqpSDVLc2p" },
-  "plan:premium":  { price_id: "price_1U5xmSLrbgaxg9EV0GpkQCKv", mode: "subscription", product_id: "prod_V6A65X2k2sRNoq" },
+  "plan:basic":    { price_id: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", mode: "subscription", product_id: "prod_V6A6uyCQxsiiX1", prices: { brl: "price_1U5xmRLrbgaxg9EV6Yyv8oCk" } },
+  "plan:standard": { price_id: "price_1U5xmSLrbgaxg9EVSb3ExLSc", mode: "subscription", product_id: "prod_V6A6EqpSDVLc2p", prices: { brl: "price_1U5xmSLrbgaxg9EVSb3ExLSc" } },
+  "plan:premium":  { price_id: "price_1U5xmSLrbgaxg9EV0GpkQCKv", mode: "subscription", product_id: "prod_V6A65X2k2sRNoq", prices: { brl: "price_1U5xmSLrbgaxg9EV0GpkQCKv" } },
   "pack:pp_30":   { price_id: "price_1U5xmSLrbgaxg9EV3pwYcNNu", mode: "payment", product_id: "prod_V6A6AFfvDlruK9" },
   "pack:pp_60":   { price_id: "price_1U5xmTLrbgaxg9EVVKxtcvSL", mode: "payment", product_id: "prod_V6A6W96pVHh4kA" },
   "pack:pp_120":  { price_id: "price_1U5xmTLrbgaxg9EV4U1TF2xR", mode: "payment", product_id: "prod_V6A6ZdjG7OQrlT" },
@@ -25,4 +32,18 @@ export function getStripeMode(externalReference) {
   const entry = STRIPE_CATALOG[externalReference];
   if (entry) return entry.mode;
   return externalReference.startsWith("plan:") ? "subscription" : "payment";
+}
+
+// Resolve the Stripe price_id for a given external_reference + currency.
+// Falls back to the BRL price_id if the regional price hasn't been created yet
+// (e.g. before stripeCreateCatalog has been run for international currencies).
+export function getStripePriceId(externalReference, currency) {
+  const entry = STRIPE_CATALOG[externalReference];
+  if (!entry) return null;
+  const c = String(currency || "").toLowerCase();
+  if (!c || c === "brl") return entry.price_id;
+  const regionalPriceId = entry.prices?.[c];
+  if (regionalPriceId) return regionalPriceId;
+  // Fallback to BRL if regional price not yet created.
+  return entry.price_id;
 }

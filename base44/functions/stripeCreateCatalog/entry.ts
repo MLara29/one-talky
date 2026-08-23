@@ -2,6 +2,7 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { secrets } from "base44:runtime";
 import { requireOtp } from "../../shared/requireOtp.js";
 import { CATALOG } from "../../shared/paymentCatalog.js";
+import { REGIONAL_PRICING, toStripeUnitAmount } from "../../shared/regionalPricing.js";
 
 // Admin-only — cria (uma única vez) os Products e Prices reais na Stripe,
 // espelhando o catálogo do paymentCatalog.js. É idempotente: se um product
@@ -85,32 +86,83 @@ export default async function (req: Request): Promise<Response> {
         productId = productData.id;
       }
 
-      // 3) Cria o price se não existir (ou reutiliza o existente).
-      if (existingPriceId) {
-        result[externalRef] = { product_id: productId, price_id: existingPriceId, mode };
-        continue;
+      // 3) Resolve o price BRL (reutiliza se já existir, cria se não).
+      let brlPriceId = existingPriceId;
+      if (!brlPriceId) {
+        const unitAmount = Math.round(item.price * 100);
+        let priceBody: string;
+        if (isPlan) {
+          priceBody = `currency=brl&product=${productId}&unit_amount=${unitAmount}&recurring[interval]=month&recurring[interval_count]=1`;
+        } else {
+          priceBody = `currency=brl&product=${productId}&unit_amount=${unitAmount}`;
+        }
+
+        const priceRes = await fetch("https://api.stripe.com/v1/prices", {
+          method: "POST",
+          headers: formHeaders,
+          body: priceBody,
+        });
+        const priceData = await priceRes.json();
+        if (!priceRes.ok) {
+          console.error(`[stripeCreateCatalog] price error for ${externalRef}:`, JSON.stringify(priceData));
+          return Response.json({ error: priceData.error?.message || `Falha ao criar price ${externalRef}` }, { status: 400 });
+        }
+        brlPriceId = priceData.id;
       }
 
-      const unitAmount = Math.round(item.price * 100);
-      let priceBody: string;
+      result[externalRef] = { product_id: productId, price_id: brlPriceId, mode };
+
+      // 4) Para PLANOS, cria preços adicionais nas moedas internacionais
+      //    (EUR/JPY/KRW/USD) no MESMO produto. Idempotente: reutiliza se já
+      //    existir um price ativo naquela moeda. Pacotes (pack:*) continuam
+      //    só em BRL.
+      //
+      //    ⚠️ JPY e KRW são zero-decimal: unit_amount = valor inteiro (não
+      //    multiplicado por 100). toStripeUnitAmount cuida disso.
       if (isPlan) {
-        priceBody = `currency=brl&product=${productId}&unit_amount=${unitAmount}&recurring[interval]=month&recurring[interval_count]=1`;
-      } else {
-        priceBody = `currency=brl&product=${productId}&unit_amount=${unitAmount}`;
-      }
+        const planId = externalRef.replace("plan:", "");
+        const prices: Record<string, string> = { brl: brlPriceId };
 
-      const priceRes = await fetch("https://api.stripe.com/v1/prices", {
-        method: "POST",
-        headers: formHeaders,
-        body: priceBody,
-      });
-      const priceData = await priceRes.json();
-      if (!priceRes.ok) {
-        console.error(`[stripeCreateCatalog] price error for ${externalRef}:`, JSON.stringify(priceData));
-        return Response.json({ error: priceData.error?.message || `Falha ao criar price ${externalRef}` }, { status: 400 });
-      }
+        for (const [regionKey, regionConfig] of Object.entries(REGIONAL_PRICING)) {
+          if (regionKey === "br") continue; // BRL já tratado acima
+          const currency = regionConfig.currency.toLowerCase();
+          const displayPrice = regionConfig.plans[planId];
+          if (displayPrice === undefined) continue;
 
-      result[externalRef] = { product_id: productId, price_id: priceData.id, mode };
+          // Busca price ativo existente nesta moeda neste produto.
+          let regionalPriceId = "";
+          const existingPricesRes = await fetch(
+            `https://api.stripe.com/v1/prices?product=${productId}&active=true&currency=${currency}&limit=1`,
+            { headers: { Authorization: auth } }
+          );
+          if (existingPricesRes.ok) {
+            const existingPricesData = await existingPricesRes.json();
+            if (existingPricesData.data && existingPricesData.data.length > 0) {
+              regionalPriceId = existingPricesData.data[0].id;
+            }
+          }
+
+          if (!regionalPriceId) {
+            const unitAmount = toStripeUnitAmount(displayPrice, currency);
+            const regionalPriceBody = `currency=${currency}&product=${productId}&unit_amount=${unitAmount}&recurring[interval]=month&recurring[interval_count]=1`;
+            const regionalPriceRes = await fetch("https://api.stripe.com/v1/prices", {
+              method: "POST",
+              headers: formHeaders,
+              body: regionalPriceBody,
+            });
+            const regionalPriceData = await regionalPriceRes.json();
+            if (!regionalPriceRes.ok) {
+              console.error(`[stripeCreateCatalog] price error for ${externalRef} (${currency}):`, JSON.stringify(regionalPriceData));
+              return Response.json({ error: regionalPriceData.error?.message || `Falha ao criar price ${externalRef} (${currency})` }, { status: 400 });
+            }
+            regionalPriceId = regionalPriceData.id;
+          }
+
+          prices[currency] = regionalPriceId;
+        }
+
+        result[externalRef].prices = prices;
+      }
     }
 
     return Response.json({

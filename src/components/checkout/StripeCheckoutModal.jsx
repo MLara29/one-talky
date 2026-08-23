@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { loadStripe } from "@stripe/stripe-js";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { X, Lock, Loader2, AlertCircle, CheckCircle, CreditCard } from "lucide-react";
+import { formatRegionalPrice } from "@/lib/regionPricing";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -19,6 +20,12 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
   const [clientSecret, setClientSecret] = useState("");
   const [publishableKey, setPublishableKey] = useState("");
 
+  // Preço regional: o item pode trazer preço + moeda regional (para alunos
+  // internacionais). Cai para fmtBRL se não houver currency (backward compat).
+  const displayPrice = item.display_price != null ? item.display_price : item.price;
+  const displayCurrency = item.currency || "BRL";
+  const displayOriginal = item.display_original != null ? item.display_original : item.original_price;
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -26,6 +33,7 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
         const res = await base44.functions.invoke("stripeCreateCheckout", {
           external_reference: item.external_reference,
           coupon_code: affiliateCoupon || undefined,
+          currency: item.currency || undefined,
         });
         if (cancelled) return;
         if (res.data?.error) throw new Error(res.data.error);
@@ -82,9 +90,9 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
         <div className="px-6 py-4 shrink-0" style={{ background: "var(--app-nav-hover-bg)", borderBottom: "1px solid var(--app-border)" }}>
           <p className="theme-subtext text-xs" style={{ color: "var(--app-text-secondary)" }}>{item.title}</p>
           <div className="flex items-baseline gap-2">
-            <p className="theme-heading font-display font-bold text-2xl">{fmtBRL(item.price)}</p>
-            {item.original_price && item.original_price > item.price && (
-              <span className="text-sm line-through" style={{ color: "var(--app-text-muted)" }}>{fmtBRL(item.original_price)}</span>
+            <p className="theme-heading font-display font-bold text-2xl">{formatRegionalPrice(displayPrice, displayCurrency)}</p>
+            {displayOriginal && displayOriginal > displayPrice && (
+              <span className="text-sm line-through" style={{ color: "var(--app-text-muted)" }}>{formatRegionalPrice(displayOriginal, displayCurrency)}</span>
             )}
           </div>
           {item.bonus_minutes > 0 && (

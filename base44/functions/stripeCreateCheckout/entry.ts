@@ -1,7 +1,8 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { secrets } from "base44:runtime";
-import { STRIPE_CATALOG, getStripeMode } from "../../shared/stripeCatalog.js";
+import { STRIPE_CATALOG, getStripeMode, getStripePriceId } from "../../shared/stripeCatalog.js";
 import { CATALOG } from "../../shared/paymentCatalog.js";
+import { detectRegionFromRequest } from "../../shared/regionDetect.js";
 import { validateAndApplyCoupon } from "../../shared/couponDiscount.js";
 
 // Student-facing — creates a Stripe Embedded Checkout Session.
@@ -20,13 +21,31 @@ export default async function (req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { external_reference, coupon_code } = await req.json();
+    const { external_reference, coupon_code, currency } = await req.json();
 
     // 1) Resolve the Stripe price + mode from the catalog.
     const stripeEntry = STRIPE_CATALOG[external_reference];
     if (!stripeEntry) {
       return Response.json({ error: "Produto não encontrado no catálogo Stripe" }, { status: 400 });
     }
+
+    // Resolve a moeda: prioriza o valor enviado pelo cliente, cai pra geolocalização
+    // por IP (server-side), e finalmente BRL. Isso seleciona o price_id certo da
+    // região do visitante (EUR/JPY/KRW/USD) ou BRL para Brasil/desconhecido.
+    let resolvedCurrency = String(currency || "").toLowerCase();
+    if (!resolvedCurrency) {
+      try {
+        const detected = await detectRegionFromRequest(req);
+        resolvedCurrency = detected.currency.toLowerCase();
+      } catch {
+        resolvedCurrency = "brl";
+      }
+    }
+    const priceId = getStripePriceId(external_reference, resolvedCurrency);
+    if (!priceId) {
+      return Response.json({ error: "Produto não encontrado no catálogo Stripe" }, { status: 400 });
+    }
+
     const item = CATALOG[external_reference];
     if (!item) {
       return Response.json({ error: "Referência de produto inválida" }, { status: 400 });
@@ -95,7 +114,7 @@ export default async function (req: Request): Promise<Response> {
     params.set("return_url", returnUrl);
     params.set("customer_email", user.email);
     params.set("line_items[0][quantity]", "1");
-    params.set("line_items[0][price]", stripeEntry.price_id);
+    params.set("line_items[0][price]", priceId);
 
     // Metadata — the webhook reads these to credit the student.
     params.set("metadata[user_id]", user.id);

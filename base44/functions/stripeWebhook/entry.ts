@@ -1,6 +1,7 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { secrets } from "base44:runtime";
 import { CATALOG } from "../../shared/paymentCatalog.js";
+import { isZeroDecimal } from "../../shared/regionalPricing.js";
 import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
 import { computeCreditUpdate, getPlanGraceExpiryDays } from "../../shared/studentCredits.js";
 import { getFinanceSettings } from "../../shared/financeSettings.js";
@@ -262,7 +263,9 @@ async function handleCheckoutCompleted(base44, session) {
   // estimated_fee is CALCULATED from configured Stripe rates, not the exact
   // fee returned by Stripe for this specific transaction.
   try {
-    const grossAmount = (session.amount_total || 0) / 100; // cents → currency
+    // Zero-decimal currencies (JPY/KRW): amount_total já está em major units,
+    // não em centavos — não dividir por 100.
+    const grossAmount = (session.amount_total || 0) / (isZeroDecimal(session.currency) ? 1 : 100);
     const settings = await getFinanceSettings(base44);
     const estimatedFee = (grossAmount * (settings.stripe_card_pct || 0) / 100) + (settings.stripe_card_fixed || 0);
     await base44.asServiceRole.entities.PaymentRecord.create({
@@ -372,7 +375,7 @@ async function handleInvoicePaid(base44, invoice) {
 
   // ── PaymentRecord (real revenue ledger — renewal) ────────────────────────
   try {
-    const grossAmount = (invoice.amount_paid || 0) / 100; // cents → currency
+    const grossAmount = (invoice.amount_paid || 0) / (isZeroDecimal(invoice.currency) ? 1 : 100); // zero-decimal currencies are in major units
     const settings = await getFinanceSettings(base44);
     const estimatedFee = (grossAmount * (settings.stripe_card_pct || 0) / 100) + (settings.stripe_card_fixed || 0);
     await base44.asServiceRole.entities.PaymentRecord.create({

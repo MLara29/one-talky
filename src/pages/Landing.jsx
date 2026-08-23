@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const ACCENT = "#F26A1B";
 
+import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
 
@@ -243,9 +244,19 @@ export default function Landing() {
   const [openFaq, setOpenFaq] = useState(0);
   const [spots, setSpots] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [regionData, setRegionData] = useState(() => getCachedRegion());
   const founderSpotsLeft = 137;
   const c = CONTENT[lang];
   const navigate = useNavigate();
+
+  // Detecta a região do visitante via geolocalização por IP (não por idioma do
+  // navegador) pra exibir o preço + moeda certos de cada plano antes do cadastro.
+  // Brasil/desconhecido → BRL (sem mudança em relação ao comportamento atual).
+  useEffect(() => {
+    if (!regionData) {
+      detectAndCacheRegion().then(setRegionData);
+    }
+  }, []);
 
   useEffect(() => {
     let cur = 0;
@@ -263,12 +274,36 @@ export default function Landing() {
   const eyebrowStyle = { fontSize: 13, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#C4520B" };
   const h2Style = { marginTop: 10, fontSize: "clamp(28px,4vw,40px)", fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" };
 
-  const plans = c.plans.map((p) => ({
-    ...p,
-    big: p.monthly,
-    bigUnit: c.perMonth,
-    sub: p.weekly + c.perWeek,
-  }));
+  const isBR = !regionData || regionData.region === "br";
+  const regionConfig = isBR ? null : getRegionalConfig(regionData.region);
+  const planIds = ["basic", "standard", "premium"];
+
+  // Preço do hero ("a partir de X por semana") — Basic semanal na moeda local.
+  const heroPriceDisplay = isBR || !regionConfig
+    ? c.heroPrice
+    : formatRegionalPrice(regionConfig.plans.basic / 2, regionConfig.currency, regionConfig.locale) + (lang === "pt" ? " por semana" : " per week");
+
+  const plans = c.plans.map((p, i) => {
+    if (isBR || !regionConfig) {
+      return {
+        ...p,
+        big: p.monthly,
+        bigUnit: c.perMonth,
+        sub: p.weekly + c.perWeek,
+      };
+    }
+    const planId = planIds[i];
+    const monthlyPrice = regionConfig.plans[planId];
+    const weeklyPrice = planId === "basic" ? monthlyPrice / 2 : monthlyPrice / 4;
+    const formattedMonthly = formatRegionalPrice(monthlyPrice, regionConfig.currency, regionConfig.locale);
+    const formattedWeekly = formatRegionalPrice(weeklyPrice, regionConfig.currency, regionConfig.locale);
+    return {
+      ...p,
+      big: formattedMonthly,
+      bigUnit: c.perMonth,
+      sub: formattedWeekly + c.perWeek,
+    };
+  });
 
   return (
     <div className="ot-lp" style={{ overflowX: "hidden", minHeight: "100vh" }}>
@@ -327,7 +362,7 @@ export default function Landing() {
             {c.headline[0]}<span style={{ color: ACCENT }}>{c.headline[1]}</span>
           </h1>
           <p style={{ marginTop: 22, fontSize: 18, color: "#54555F", maxWidth: 520 }}>
-            {c.heroSub1}<strong style={{ color: "#17181C" }}>{c.heroPrice}</strong>{c.heroSub2}
+            {c.heroSub1}<strong style={{ color: "#17181C" }}>{heroPriceDisplay}</strong>{c.heroSub2}
           </p>
           <div style={{ marginTop: 28, display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
             <button onClick={() => navigate("/register")} style={{ padding: "14px 24px", borderRadius: 999, background: ACCENT, color: "#fff", fontWeight: 700, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 10px 24px -8px rgba(242,106,27,.55)", fontFamily: "inherit" }}>
