@@ -7,15 +7,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { OBJECTIVES, LEVELS, INTERESTS } from "@/lib/constants";
 import { ChevronRight, ChevronLeft, Tag, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
-const LEVELS_PT = {
-  beginner: "Iniciante",
-  intermediate: "Intermediário",
-  advanced: "Avançado",
+// Chaves de tradução dos objetivos/níveis/interesses, indexadas pelo mesmo
+// "value" já usado nos dados (OBJECTIVES/LEVELS de constants.js, ou o próprio
+// texto do INTERESTS). Não mexe nos dados em si, só no texto exibido.
+const OBJ_KEY = { travel: "objTravel", work: "objWork", interview: "objInterview", relocation: "objRelocation", conversation: "objConversation", exams: "objExams" };
+const LEVEL_KEY = { beginner: "levelBeginner", intermediate: "levelIntermediate", advanced: "levelAdvanced" };
+const INTEREST_KEY = {
+  "Travel": "interestTravel", "Business": "interestBusiness", "Pop Culture": "interestPopCulture",
+  "Job Interviews": "interestJobInterviews", "Daily Life": "interestDailyLife", "Sports": "interestSports",
+  "Technology": "interestTechnology", "Food & Cuisine": "interestFoodCuisine", "Movies & TV Shows": "interestMoviesTvShows",
+  "Music": "interestMusic", "Politics": "interestPolitics", "Science": "interestScience",
+  "Art & Design": "interestArtDesign", "Health & Fitness": "interestHealthFitness", "Education": "interestEducation",
 };
+const LANG_OPTIONS = ["en", "pt_br", "es", "fr", "de", "it"];
+const LANG_LABELS = { en: "EN", pt_br: "PT", es: "ES", fr: "FR", de: "DE", it: "IT" };
 
 export default function OnboardingStudent() {
   const { toast } = useToast();
+  const { lang, changeLang } = useLang();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState(null);
