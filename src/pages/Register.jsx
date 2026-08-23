@@ -189,13 +189,13 @@ export default function Register() {
   return (
     <AuthLayout
       icon={UserPlus}
-      title="Create your account"
-      subtitle="Sign up to get started"
+      title={t(lang, "createAccountTitle")}
+      subtitle={t(lang, "signUpSubtitle")}
       footer={
         <>
-          Already have an account?{" "}
+          {t(lang, "alreadyHaveAccount")}{" "}
           <Link to="/login" className="text-primary font-medium hover:underline">
-            Log in
+            {t(lang, "logInLink")}
           </Link>
         </>
       }
@@ -206,7 +206,7 @@ export default function Register() {
         onClick={handleGoogle}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
+        {t(lang, "continueWithGoogle")}
       </Button>
 
       <div className="relative mb-6">
@@ -214,7 +214,7 @@ export default function Register() {
           <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
+          <span className="bg-card px-3 text-muted-foreground">{t(lang, "orDivider")}</span>
         </div>
       </div>
 
