@@ -8,6 +8,7 @@ import { getCountryFlag, getLanguageLabel, REDIRECT_TO_PLANS_ERROR_CODES } from 
 import CountryFlagImg from "@/components/shared/CountryFlagImg";
 import { useToast } from "@/components/ui/use-toast";
 import ScheduleModal from "@/components/tutors/ScheduleModal";
+import { translateTopic } from "@/components/tutors/TutorCard";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
@@ -235,7 +236,7 @@ export default function TutorProfilePage() {
             <h3 className="theme-heading font-display font-semibold text-white mb-3 text-sm uppercase tracking-wide opacity-60">{t(lang, "conversationTopicsLabel")}</h3>
             <div className="flex flex-wrap gap-2">
               {tutor.interests.map(i => (
-                <span key={i} className="theme-btn-ghost text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">{i}</span>
+                <span key={i} className="theme-btn-ghost text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">{translateTopic(i, lang)}</span>
               ))}
             </div>
           </div>
