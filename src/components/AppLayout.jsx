@@ -286,27 +286,47 @@ export default function AppLayout() {
           {/* Right: lang switcher (student only) + icons */}
           <div className="flex items-center gap-1">
             {role === "student" && (
-              <div
-                className="flex items-center border rounded-full overflow-hidden mr-1"
-                style={{ borderColor: "#e5e7eb", fontSize: 11 }}
-              >
-                {LANG_OPTIONS.map(l => (
-                  <button
-                    key={l}
-                    onClick={() => changeLang(l)}
-                    className="px-2.5 py-1 font-bold transition-colors"
-                    style={{
-                      background: lang === l ? "#F26A1B" : "transparent",
-                      color: lang === l ? "#fff" : "#888",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {LANG_LABELS[l]}
-                  </button>
-                ))}
+              <div style={{ position: "relative", marginRight: 4 }}>
+                <button
+                  onClick={() => setLangMenuOpen(v => !v)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 4,
+                    background: "#17181C", color: "#fff", border: "none", borderRadius: 999,
+                    padding: "6px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  {LANG_LABELS[lang]}
+                  <svg width="8" height="5" viewBox="0 0 10 6" fill="none" style={{ transform: langMenuOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }}>
+                    <path d="M1 1l4 4 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {langMenuOpen && (
+                  <>
+                    <div onClick={() => setLangMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                    <div style={{
+                      position: "absolute", top: "calc(100% + 6px)", right: 0,
+                      background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12,
+                      boxShadow: "0 12px 30px -10px rgba(23,24,28,.25)", overflow: "hidden",
+                      minWidth: 130, zIndex: 50,
+                    }}>
+                      {LANG_OPTIONS.map(l => (
+                        <button
+                          key={l}
+                          onClick={() => { changeLang(l); setLangMenuOpen(false); }}
+                          style={{
+                            display: "block", width: "100%", textAlign: "left",
+                            padding: "9px 14px", fontSize: 13, fontWeight: lang === l ? 800 : 600,
+                            color: lang === l ? "#F26A1B" : "#3A3B45",
+                            background: lang === l ? "#FFF7F1" : "transparent",
+                            border: "none", cursor: "pointer", fontFamily: "inherit",
+                          }}
+                        >
+                          {LANG_FULL_LABELS[l]}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
             <NotificationBell />
