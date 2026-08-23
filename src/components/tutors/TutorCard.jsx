@@ -147,7 +147,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false, firstWeek
       if (REDIRECT_TO_PLANS_ERROR_CODES.includes(errorCode)) {
         navigate("/plans");
       }
-      toast({ title: "Não foi possível iniciar a aula", description: message || "Tente novamente.", variant: "destructive" });
+      toast({ title: t(lang, "lessonStartFailedTitle"), description: message || t(lang, "tryAgainDesc"), variant: "destructive" });
     } finally {
       setBooking(false);
     }
@@ -191,23 +191,23 @@ export default function TutorCard({ tutor, forceEnglishTopics = false, firstWeek
             <div className="flex items-center gap-3 mt-1.5">
               <span className="flex items-center gap-1 text-sm text-amber-500 font-semibold">
                 <Star className="w-3.5 h-3.5 fill-amber-400" />
-                {tutor.total_reviews > 0 ? (tutor.average_rating || 0).toFixed(1) : "New"}
+                {tutor.total_reviews > 0 ? (tutor.average_rating || 0).toFixed(1) : t(lang, "newTutorLabel")}
               </span>
-              <span className="theme-subtext text-xs text-gray-600">{tutor.total_lessons || 0} lessons</span>
+              <span className="theme-subtext text-xs text-gray-600">{tutor.total_lessons || 0} {t(lang, "lessonsCountSuffix")}</span>
             </div>
           </div>
           <div className="text-right shrink-0">
             {inLesson ? (
               <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-red-500/15 border border-red-500/20 text-red-400">
-                ● In a lesson
+                ● {t(lang, "statusInLesson")}
               </span>
             ) : online ? (
               <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-500/15 border border-emerald-500/20 text-emerald-400">
-                ● Online
+                ● {t(lang, "statusOnline")}
               </span>
             ) : (
               <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-white/5 border border-white/10 text-gray-500">
-                Offline
+                {t(lang, "statusOffline")}
               </span>
             )}
           </div>
