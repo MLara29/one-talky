@@ -209,6 +209,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
     onConfirm(iso);
   };
 
+  const dayLabels = getDayLabels(lang);
   const calendarDays = buildCalendarDays(viewYear, viewMonth);
   const slots = selectedDate ? getSlotsForDate(selectedDate) : [];
   const canGoPrev = viewYear > today.getFullYear() || viewMonth > today.getMonth();
@@ -251,7 +252,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
                 style={{ background: "var(--app-nav-hover-bg)" }}>
                 <ChevronLeft className="w-4 h-4" style={{ color: "var(--app-text-secondary)" }} />
               </button>
-              <h3 className="theme-heading font-display font-bold text-base">{MONTH_NAMES[viewMonth]} {viewYear}</h3>
+              <h3 className="theme-heading font-display font-bold text-base">{getMonthName(lang, viewYear, viewMonth)} {viewYear}</h3>
               <button onClick={nextMonth}
                 className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
                 style={{ background: "var(--app-nav-hover-bg)" }}>
@@ -260,7 +261,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
             </div>
 
             <div className="grid grid-cols-7 mb-2">
-              {DAY_LABELS.map(d => (
+              {dayLabels.map(d => (
                 <div key={d} className="text-center text-[11px] font-semibold uppercase tracking-wide py-1"
                   style={{ color: "var(--app-text-muted)" }}>{d}</div>
               ))}
