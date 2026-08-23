@@ -83,8 +83,8 @@ export default function TutorProfilePage() {
       const message = err?.response?.data?.error || err?.message;
       const errorCode = err?.response?.data?.error_code;
       if (REDIRECT_TO_PLANS_ERROR_CODES.includes(errorCode)) navigate("/plans");
-      const { variant, title } = getBookingErrorDisplay(errorCode, "Não foi possível iniciar a aula");
-      toast({ title, description: message || "Tente novamente.", variant });
+      const { variant, title } = getBookingErrorDisplay(errorCode, t(lang, "lessonStartFailedTitle"), lang);
+      toast({ title, description: message || t(lang, "tryAgainDesc"), variant });
     } finally { setBooking(false); }
   };
 
@@ -110,7 +110,7 @@ export default function TutorProfilePage() {
       });
 
       if (bookRes.data?.error) {
-        const { variant, title } = getBookingErrorDisplay(bookRes.data?.error_code, "Agendamento bloqueado");
+        const { variant, title } = getBookingErrorDisplay(bookRes.data?.error_code, t(lang, "bookingBlockedTitle"), lang);
         toast({ title, description: bookRes.data.error, variant });
         if (REDIRECT_TO_PLANS_ERROR_CODES.includes(bookRes.data?.error_code)) {
           navigate("/plans");
@@ -132,9 +132,9 @@ export default function TutorProfilePage() {
         }).catch(() => {});
       }
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.message || "Could not schedule.";
+      const msg = err?.response?.data?.error || err?.message || t(lang, "couldNotScheduleDesc");
       const errorCode = err?.response?.data?.error_code;
-      const { variant, title } = getBookingErrorDisplay(errorCode, "Agendamento bloqueado");
+      const { variant, title } = getBookingErrorDisplay(errorCode, t(lang, "bookingBlockedTitle"), lang);
       toast({ title, description: msg, variant });
     } finally { setBooking(false); }
   };
