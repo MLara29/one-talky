@@ -228,6 +228,10 @@ export const AuthProvider = ({ children }) => {
         clearInterval(studentHeartbeatRef.current);
         base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
       }
+      if (affiliateActiveRef.current) {
+        clearInterval(affiliateHeartbeatRef.current);
+        base44.functions.invoke('updateMyProfile', { updates: { last_seen: new Date(0).toISOString() } }).catch(() => {});
+      }
     };
   }, []);
 
