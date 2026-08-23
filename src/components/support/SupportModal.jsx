@@ -39,8 +39,8 @@ export default function SupportModal({ onClose }) {
               <MessageSquare className="w-4 h-4 text-orange-400" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>Contact Support</h2>
-              <p className="text-xs" style={{ color: "var(--app-text-secondary)" }}>Our team will get back to you shortly</p>
+              <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>{T("contactSupportTitle", "Contact Support")}</h2>
+              <p className="text-xs" style={{ color: "var(--app-text-secondary)" }}>{T("supportReplySoonDesc", "Our team will get back to you shortly")}</p>
             </div>
           </div>
           <button onClick={onClose} className="transition-colors" style={{ color: "var(--app-text-muted)" }}>
@@ -53,10 +53,10 @@ export default function SupportModal({ onClose }) {
             <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-7 h-7 text-emerald-500" />
             </div>
-            <h3 className="font-display font-bold mb-2" style={{ color: "var(--app-text-primary)" }}>Message sent!</h3>
-            <p className="text-sm mb-6" style={{ color: "var(--app-text-secondary)" }}>We'll get back to you soon.</p>
+            <h3 className="font-display font-bold mb-2" style={{ color: "var(--app-text-primary)" }}>{T("messageSentTitle", "Message sent!")}</h3>
+            <p className="text-sm mb-6" style={{ color: "var(--app-text-secondary)" }}>{T("supportReplySoonBody", "We'll get back to you soon.")}</p>
             <Button onClick={onClose} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0">
-              Close
+              {T("closeBtn", "Close")}
             </Button>
           </div>
         ) : (
