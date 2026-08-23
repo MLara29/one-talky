@@ -262,6 +262,9 @@ export default function AdminUsers() {
           <TabsTrigger value="affiliates" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
             Afiliados ({affiliates.length})
           </TabsTrigger>
+          <TabsTrigger value="new_students" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-300 text-gray-500">
+            Novos Alunos
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="tutors">
