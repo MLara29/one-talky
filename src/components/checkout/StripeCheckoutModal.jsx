@@ -40,12 +40,12 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
         });
         if (cancelled) return;
         if (res.data?.error) throw new Error(res.data.error);
-        if (!res.data?.client_secret) throw new Error("Falha ao iniciar checkout");
+        if (!res.data?.client_secret) throw new Error(t(lang, "checkoutInitFailedError"));
         setClientSecret(res.data.client_secret);
         setPublishableKey(res.data.publishable_key);
       } catch (err) {
         console.error("[StripeCheckoutModal] init error:", err);
-        if (!cancelled) setError(err.message || "Erro ao carregar checkout");
+        if (!cancelled) setError(err.message || t(lang, "checkoutLoadError"));
       } finally {
         if (!cancelled) setLoading(false);
       }
