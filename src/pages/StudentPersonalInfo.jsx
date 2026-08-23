@@ -80,10 +80,10 @@ export default function StudentPersonalInfo() {
       });
       if (response.data?.error) throw new Error(response.data.error);
       await base44.auth.updateMe({ full_name: form.full_name });
-      toast({ title: "Perfil atualizado! ✅" });
+      toast({ title: t(lang, "profileUpdatedToast") });
       loadProfile();
     } catch (e) {
-      toast({ title: "Erro", description: e?.message || "Não foi possível salvar.", variant: "destructive" });
+      toast({ title: t(lang, "genericErrorTitle"), description: e?.message || t(lang, "saveFailedDesc"), variant: "destructive" });
     } finally { setSaving(false); }
   };
 
@@ -106,18 +106,18 @@ export default function StudentPersonalInfo() {
           <User className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h1 className="theme-heading font-display text-xl font-bold">Informações Pessoais</h1>
-          <p className="theme-subtext text-sm text-gray-500">Atualize seu perfil e preferências de aprendizado</p>
+          <h1 className="theme-heading font-display text-xl font-bold">{t(lang, "personalInfoTitle")}</h1>
+          <p className="theme-subtext text-sm text-gray-500">{t(lang, "personalInfoSubtitle")}</p>
         </div>
       </div>
 
       <div className="theme-card bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5">
         <div>
-          <Label className={labelCls}>Nome completo</Label>
+          <Label className={labelCls}>{t(lang, "fullNameLabel")}</Label>
           <Input
             value={form.full_name}
             onChange={e => set("full_name", e.target.value)}
-            placeholder="Seu nome"
+            placeholder={t(lang, "fullNamePlaceholder")}
             className={inputCls}
           />
         </div>
