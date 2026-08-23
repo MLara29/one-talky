@@ -388,6 +388,40 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Aviso claro: cadastro é grátis, não exige assinar nenhum plano —
+          seção pensada pra quem chega via campanha/cupom e pode achar que
+          precisa pagar algo só pra se registrar. */}
+      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 24px 36px" }}>
+        <div style={{
+          background: "linear-gradient(135deg, #FFF7F1 0%, #FDECE0 100%)",
+          border: `1.5px solid #F8D9BE`,
+          borderRadius: 24,
+          padding: "34px 28px",
+          textAlign: "center",
+        }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: ACCENT, fontWeight: 800, fontSize: 12.5, padding: "6px 14px", borderRadius: 999, marginBottom: 14, letterSpacing: 0.3 }}>
+            🎁 {lang === "pt" ? "SEM COMPROMISSO" : "NO COMMITMENT"}
+          </div>
+          <h2 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, letterSpacing: -0.5, margin: "0 0 12px", color: "#17181C" }}>
+            {lang === "pt" ? "Não precisa assinar nada pra começar" : "You don't need to subscribe to anything to start"}
+          </h2>
+          <p style={{ fontSize: 16, color: "#5A5B66", maxWidth: 560, margin: "0 auto 26px", lineHeight: 1.6 }}>
+            {lang === "pt"
+              ? "O cadastro é 100% grátis, sem cartão de crédito. Se você recebeu um cupom, é só usar ele no cadastro e ganhar uma aula de conversação de 15 minutos com um tutor de verdade — sem pagar nada."
+              : "Sign-up is 100% free, no credit card required. If you got a coupon, just use it when you register to get a free 15-minute conversation lesson with a real tutor — no payment needed."}
+          </p>
+          <button
+            onClick={() => navigate("/register")}
+            style={{ padding: "15px 30px", borderRadius: 999, background: ACCENT, color: "#fff", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 14px 30px -10px rgba(242,106,27,.55)", fontFamily: "inherit" }}
+          >
+            {lang === "pt" ? "Clique aqui e faça seu registro grátis →" : "Click here to register for free →"}
+          </button>
+          <p style={{ marginTop: 14, fontSize: 13, color: "#9B9C A6" }}>
+            {lang === "pt" ? "Sem cartão · Sem assinatura · Cancele quando quiser" : "No card · No subscription · Cancel anytime"}
+          </p>
+        </div>
+      </div>
+
       {/* Fact chips */}
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 24px 36px" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
