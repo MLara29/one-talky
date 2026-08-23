@@ -1603,8 +1603,11 @@ export default function Landing() {
       detectAndCacheRegion().then((data) => {
         setRegionData(data);
         if (!manualLangChoiceRef.current && data?.countryCode) {
-          const detectedLang = COUNTRY_TO_LANG[String(data.countryCode).toUpperCase()];
-          if (detectedLang) setLang(detectedLang);
+          // País mapeado → idioma dele. País desconhecido pra nós (sem
+          // tradução própria) → inglês, nunca português (só o Brasil abre
+          // em português).
+          const code = String(data.countryCode).toUpperCase();
+          setLang(COUNTRY_TO_LANG[code] || "en");
         }
       });
     }
