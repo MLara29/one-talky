@@ -416,7 +416,7 @@ export default function Landing() {
           >
             {lang === "pt" ? "Clique aqui e faça seu registro grátis →" : "Click here to register for free →"}
           </button>
-          <p style={{ marginTop: 14, fontSize: 13, color: "#9B9C A6" }}>
+          <p style={{ marginTop: 14, fontSize: 13, color: "#9B9CA6" }}>
             {lang === "pt" ? "Sem cartão · Sem assinatura · Cancele quando quiser" : "No card · No subscription · Cancel anytime"}
           </p>
         </div>
