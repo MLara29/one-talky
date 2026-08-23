@@ -264,47 +264,47 @@ export default function OnboardingStudent() {
               {/* Cupom */}
               <div>
                 <Label className={`${labelCls} flex items-center gap-1.5 mb-1.5`}>
-                  <Tag className="w-3.5 h-3.5" /> Cupom promocional <span className="text-gray-400 font-normal">(opcional)</span>
+                  <Tag className="w-3.5 h-3.5" /> {t(lang, "promoCouponLabel")} <span className="text-gray-400 font-normal">{t(lang, "optionalLabel")}</span>
                 </Label>
                 <div className="flex gap-2">
                   <Input
                     value={couponCode}
                     onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponStatus(null); setCouponData(null); }}
-                    placeholder="Ex: BEMVINDO10"
+                    placeholder={t(lang, "couponPlaceholder")}
                     className={`${inputCls} font-mono uppercase`}
                   />
                   <Button type="button" onClick={checkCoupon} disabled={!couponCode.trim() || checkingCoupon}
                     variant="outline" className="shrink-0 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white px-4">
-                    {checkingCoupon ? "..." : "Aplicar"}
+                    {checkingCoupon ? "..." : t(lang, "applyBtn")}
                   </Button>
                 </div>
                 {couponStatus === "valid" && couponData && (
                   <p className="flex items-center gap-1.5 text-emerald-600 text-xs mt-1.5">
-                    <CheckCircle className="w-3.5 h-3.5" /> Cupom válido! Você ganha {couponData.credits_minutes} minutos grátis 🎉
+                    <CheckCircle className="w-3.5 h-3.5" /> {t(lang, "couponValidMsg").replace("{minutes}", couponData.credits_minutes)}
                   </p>
                 )}
                 {couponStatus === "invalid" && (
                   <p className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
-                    <XCircle className="w-3.5 h-3.5" /> Cupom inválido ou expirado.
+                    <XCircle className="w-3.5 h-3.5" /> {t(lang, "couponInvalidMsg")}
                   </p>
                 )}
                 {couponStatus === "already_used" && (
                   <p className="flex items-center gap-1.5 text-red-500 text-xs mt-1.5">
-                    <XCircle className="w-3.5 h-3.5" /> Este cupom já foi utilizado pela sua conta.
+                    <XCircle className="w-3.5 h-3.5" /> {t(lang, "couponAlreadyUsedMsg")}
                   </p>
                 )}
               </div>
 
               <div className="flex gap-3 mt-2">
                 <Button variant="outline" onClick={() => setStep(2)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
+                  <ChevronLeft className="w-4 h-4 mr-1" /> {t(lang, "backBtn")}
                 </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={saving}
                   className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 transition-all"
                 >
-                  {saving ? "Salvando..." : "Começar a praticar! 🚀"}
+                  {saving ? t(lang, "savingBtn") : t(lang, "startPracticingBtn")}
                 </Button>
               </div>
             </div>
