@@ -30,6 +30,8 @@ const STUDENT_NAV = (lang) => {
     fr:    ["Trouver des tuteurs", "Mes Leçons", "Progrès", "Plans", "Mon Profil", "Support"],
     de:    ["Tutoren finden", "Meine Lektionen", "Fortschritt", "Pläne", "Mein Profil", "Support"],
     it:    ["Trova tutors", "Le Mie Lezioni", "Progresso", "Piani", "Il Mio Profilo", "Supporto"],
+    ja:    ["講師を探す", "マイレッスン", "進捗", "プラン", "プロフィール", "サポート"],
+    ko:    ["튜터 찾기", "내 수업", "진행 상황", "요금제", "내 프로필", "지원"],
   };
   const l = labels[lang] || labels["en"];
   return [

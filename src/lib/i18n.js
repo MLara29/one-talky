@@ -2108,6 +2108,8 @@ export function detectLanguage() {
   if (locale.startsWith("fr")) return "fr";
   if (locale.startsWith("de")) return "de";
   if (locale.startsWith("it")) return "it";
+  if (locale.startsWith("ja")) return "ja";
+  if (locale.startsWith("ko")) return "ko";
   return "en";
 }
 
