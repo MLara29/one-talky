@@ -320,7 +320,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
                 className={`flex-1 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${tab === "card" ? "text-violet-400 border-b-2 border-violet-500" : "theme-subtext"}`}
                 style={{ color: tab === "card" ? undefined : "var(--app-text-secondary)" }}
               >
-                <CreditCard className="w-4 h-4" /> Cartão de crédito
+                <CreditCard className="w-4 h-4" /> {t(lang, "creditCardTab")}
               </button>
               {/* PIX DISABLED — remove the comment below to re-enable */}
               {/* <button
@@ -336,7 +336,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
             {tab === "card" && (
               <form onSubmit={handleCardSubmit} className="px-6 py-5 space-y-4">
                 <div>
-                  <Label className="theme-subtext text-xs mb-1 block">Número do cartão</Label>
+                  <Label className="theme-subtext text-xs mb-1 block">{t(lang, "cardNumberLabel")}</Label>
                   <div className="relative">
                     <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                     <input type="text" inputMode="numeric" placeholder="0000 0000 0000 0000" required maxLength={19}
@@ -345,7 +345,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="theme-subtext text-xs mb-1 block">Validade</Label>
+                    <Label className="theme-subtext text-xs mb-1 block">{t(lang, "expiryLabel")}</Label>
                     <input type="text" inputMode="numeric" placeholder="MM/AA" required maxLength={5}
                       value={form.expiry} onChange={setField("expiry")} className={inputCls} />
                   </div>
@@ -356,21 +356,21 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
                   </div>
                 </div>
                 <div>
-                  <Label className="theme-subtext text-xs mb-1 block">Nome no cartão</Label>
+                  <Label className="theme-subtext text-xs mb-1 block">{t(lang, "cardholderNameLabel")}</Label>
                   <input type="text" placeholder="NOME SOBRENOME" required value={form.cardholderName}
                     onChange={e => setForm(f => ({ ...f, cardholderName: e.target.value.toUpperCase() }))} className={inputCls} />
                 </div>
                 <div>
-                  <Label className="theme-subtext text-xs mb-1 block">CPF do titular</Label>
+                  <Label className="theme-subtext text-xs mb-1 block">{t(lang, "cpfLabel")}</Label>
                   <input type="text" inputMode="numeric" placeholder="000.000.000-00" required maxLength={14}
                     value={form.cpf} onChange={setField("cpf")} className={inputCls} />
                 </div>
 
                 <Button type="submit" className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 h-11 text-base font-semibold shadow-lg shadow-violet-500/20 hover:scale-[1.02] transition-all">
-                  Pagar {fmtBRL(item.price)}
+                  {t(lang, "payBtnPrefix")} {fmtBRL(item.price)}
                 </Button>
                 <p className="text-center text-xs text-gray-600 flex items-center justify-center gap-1">
-                  <Lock className="w-3 h-3" /> Pagamento criptografado pelo Mercado Pago
+                  <Lock className="w-3 h-3" /> {t(lang, "encryptedPaymentNote")}
                 </p>
               </form>
             )}
