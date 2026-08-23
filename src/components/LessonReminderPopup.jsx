@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
 import { X, Clock } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 const REMINDER_WINDOW_MS = 5 * 60 * 1000;   // 5 minutes before
 const CHECK_INTERVAL_MS  = 30 * 1000;         // check every 30s
@@ -21,6 +22,8 @@ const STUDENT_MSG = {
   fr:    (name) => `Rappel : votre leçon avec le tuteur "${name}" commence dans 5 minutes.`,
   de:    (name) => `Erinnerung: Deine Lektion mit Tutor "${name}" beginnt in 5 Minuten.`,
   it:    (name) => `Promemoria: la tua lezione con il tutor "${name}" inizia tra 5 minuti.`,
+  ja:    (name) => `リマインダー：講師「${name}」とのレッスンが5分後に始まります。`,
+  ko:    (name) => `알림: 튜터 "${name}"와의 수업이 5분 후에 시작됩니다.`,
 };
 
 // Aviso puramente informativo — sem link/botão pra entrar na aula, pra
@@ -84,7 +87,7 @@ export default function LessonReminderPopup() {
           <Clock className="w-5 h-5 text-orange-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-orange-700 mb-1">⏰ Lesson Reminder</p>
+          <p className="text-sm font-bold text-orange-700 mb-1">{user?.role === "student" ? t(lang, "lessonReminderTitle") : "⏰ Lesson Reminder"}</p>
           <p className="text-sm text-gray-700 leading-snug">{reminder.message}</p>
         </div>
         <button
