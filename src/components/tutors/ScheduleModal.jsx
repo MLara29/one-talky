@@ -347,11 +347,11 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
         <div className="flex gap-3 px-6 py-4 shrink-0" style={{ borderTop: "1px solid var(--app-border)" }}>
           <Button variant="outline" onClick={onClose} className="flex-1 rounded-2xl"
             style={{ borderColor: "var(--app-border)", color: "var(--app-text-secondary)", background: "transparent" }}>
-            Cancel
+            {t(lang, "cancelBtn")}
           </Button>
           <Button onClick={handleConfirm} disabled={!selectedDate || !selectedSlot || booking}
             className="flex-1 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 disabled:opacity-40 hover:scale-105 transition-all">
-            {booking ? "Booking..." : <><Check className="w-4 h-4 mr-1.5" /> Confirm Booking</>}
+            {booking ? t(lang, "bookingBtn") : <><Check className="w-4 h-4 mr-1.5" /> {t(lang, "confirmBookingBtn")}</>}
           </Button>
         </div>
       </div>
