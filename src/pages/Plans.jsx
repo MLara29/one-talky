@@ -314,9 +314,9 @@ export default function Plans() {
                     <div>
                       <div className="flex items-baseline gap-1">
                         <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>{planMonthlyDisplay(plan)}</span>
-                        <span style={{ fontSize: 13, color: "#8A8B94", fontWeight: 700 }}>/mês</span>
+                        <span style={{ fontSize: 13, color: "#8A8B94", fontWeight: 700 }}>{t(lang, "perMonth")}</span>
                       </div>
-                      <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{planWeeklyDisplay(plan)}/semana</div>
+                      <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{planWeeklyDisplay(plan)}{t(lang, "perWeek")}</div>
                     </div>
                   </div>
 
@@ -324,16 +324,16 @@ export default function Plans() {
 
                   <ul className="flex flex-col gap-2 flex-1" style={{ listStyle: "none", padding: 0, margin: 0 }}>
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
-                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{plan.minutes} minutos/mês
+                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{plan.minutes} {t(lang, "minutesPerMonthSuffix")}
                     </li>
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
-                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{plan.description}
+                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{planDesc(lang, plan.id)}
                     </li>
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
-                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>Todos os tutores nativos
+                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{t(lang, "allNativeTutors")}
                     </li>
                     <li className="flex gap-2 items-start" style={{ fontSize: 13.5, color: "#4B4C57", lineHeight: 1.4 }}>
-                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>Acesso ao pré-pago
+                      <span style={{ color: ACCENT, fontWeight: 800, flexShrink: 0 }}>✓</span>{t(lang, "prepaidAccess")}
                     </li>
                   </ul>
 
