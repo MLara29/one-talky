@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const ACCENT = "#F26A1B";
-const LANG_FULL_LABELS = { pt: "Português", en: "English" };
+const LANG_FULL_LABELS = { pt: "Português", en: "English", es: "Español", fr: "Français", de: "Deutsch", it: "Italiano" };
+const LANG_ORDER = ["pt", "en", "es", "fr", "de", "it"];
 
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
@@ -1193,7 +1194,7 @@ export default function Landing() {
                     boxShadow: "0 16px 34px -10px rgba(23,24,28,.28)", overflow: "hidden",
                     minWidth: 150, zIndex: 50,
                   }}>
-                    {["pt", "en"].map((l) => (
+                    {LANG_ORDER.map((l) => (
                       <button
                         key={l}
                         onClick={() => { setLang(l); setLangMenuOpen(false); }}
@@ -1228,7 +1229,7 @@ export default function Landing() {
           {/* Idioma também aqui — reforço, caso o dropdown do cabeçalho fique
               apertado em telas muito estreitas. */}
           <div style={{ display: "flex", gap: 8, padding: "4px 0" }}>
-            {["pt", "en"].map((l) => (
+            {LANG_ORDER.map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
