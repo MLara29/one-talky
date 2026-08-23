@@ -58,23 +58,23 @@ export default function Register() {
     e.preventDefault();
     setError("");
     if (!passwordStrength.isValid) {
-      setError("Sua senha precisa ter pelo menos 8 caracteres, incluindo letras e números.");
+      setError(t(lang, "passwordRequirementError"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("As senhas não coincidem.");
+      setError(t(lang, "passwordMismatchError"));
       return;
     }
     if (!birthDate || calculateAge(birthDate) < 18) {
-      setError("Você precisa ter 18 anos ou mais para usar a One Talky.");
+      setError(t(lang, "minAgeError"));
       return;
     }
     if (!ageConfirmed) {
-      setError("Você precisa confirmar que tem 18 anos ou mais.");
+      setError(t(lang, "confirmAgeError"));
       return;
     }
     if (!termsAccepted) {
-      setError("Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.");
+      setError(t(lang, "acceptTermsError"));
       return;
     }
     setLoading(true);
@@ -83,7 +83,7 @@ export default function Register() {
       // Store terms acceptance — will be saved after OTP verification via updateMe
       setShowOtp(true);
     } catch (err) {
-      setError(err.message || "Registration failed");
+      setError(err.message || t(lang, "registrationFailedError"));
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export default function Register() {
       }
       window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
     } catch (err) {
-      setError(err.message || "Invalid verification code");
+      setError(err.message || t(lang, "invalidCodeError"));
     } finally {
       setLoading(false);
     }
@@ -119,11 +119,11 @@ export default function Register() {
     try {
       await base44.auth.resendOtp(email);
       toast({
-        title: "Code sent",
-        description: "Check your email for the new code.",
+        title: t(lang, "codeSentTitle"),
+        description: t(lang, "codeSentDesc"),
       });
     } catch (err) {
-      setError(err.message || "Failed to resend code");
+      setError(err.message || t(lang, "resendFailedError"));
     }
   };
 
