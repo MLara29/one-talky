@@ -63,6 +63,16 @@ const CANCEL_MSGS = {
     blockedShort: "La finestra di cancellazione è scaduta. Poiché questa lezione è stata prenotata con meno di 24h di preavviso, avevi 1 ora dopo la prenotazione per cancellare.",
     warnShort: (h) => `Questa lezione è stata prenotata con meno di 24h di preavviso. Puoi ancora cancellare (${h}h rimanenti), ma solo entro 1 ora dalla prenotazione.`,
   },
+  ja: {
+    blockedNormal: "キャンセル可能な期間が過ぎています。レッスンの少なくとも24時間前までにキャンセルする必要があります。分数が差し引かれます。",
+    blockedShort: "キャンセル可能な期間が過ぎています。このレッスンは24時間未満の予約だったため、予約後1時間以内のキャンセルのみ可能でした。",
+    warnShort: (h) => `このレッスンは24時間未満の予約でした。まだキャンセル可能です（残り${h}時間）が、予約から1時間以内に限ります。`,
+  },
+  ko: {
+    blockedNormal: "취소 가능 기간이 지났습니다. 수업 최소 24시간 전까지 취소해야 합니다. 분이 차감됩니다.",
+    blockedShort: "취소 가능 기간이 지났습니다. 이 수업은 24시간 미만으로 예약되어, 예약 후 1시간 이내에만 취소할 수 있었습니다.",
+    warnShort: (h) => `이 수업은 24시간 미만으로 예약되었습니다. 아직 취소할 수 있지만(남은 시간 ${h}시간), 예약 후 1시간 이내에만 가능합니다.`,
+  },
 };
 
 export default function StudentCancelModal({ lesson, onClose, onCancel, loading, lang = "en" }) {
