@@ -12,6 +12,7 @@ export const REGIONAL_PRICING = {
     locale: "pt-BR",
     zero_decimal: false,
     plans: { basic: 59.80, standard: 119.60, premium: 227.24 },
+    packs: { pp_30: 29.90, pp_60: 56.81, pp_120: 107.64, pp_300: 254.15, pp_600: 478.40 },
   },
   eu: {
     label: "União Europeia",
@@ -20,6 +21,7 @@ export const REGIONAL_PRICING = {
     locale: "de-DE",
     zero_decimal: false,
     plans: { basic: 14.90, standard: 29.80, premium: 56.60 },
+    packs: { pp_30: 7.45, pp_60: 14.16, pp_120: 26.82, pp_300: 63.33, pp_600: 119.20 },
   },
   jp: {
     label: "Japão",
@@ -28,6 +30,7 @@ export const REGIONAL_PRICING = {
     locale: "ja-JP",
     zero_decimal: true,
     plans: { basic: 1990, standard: 3980, premium: 7560 },
+    packs: { pp_30: 995, pp_60: 1891, pp_120: 3582, pp_300: 8458, pp_600: 15920 },
   },
   kr: {
     label: "Coreia do Sul",
@@ -36,6 +39,7 @@ export const REGIONAL_PRICING = {
     locale: "ko-KR",
     zero_decimal: true,
     plans: { basic: 19900, standard: 39800, premium: 75600 },
+    packs: { pp_30: 9950, pp_60: 18905, pp_120: 35820, pp_300: 84575, pp_600: 159200 },
   },
   latam: {
     label: "América Latina",
@@ -44,6 +48,7 @@ export const REGIONAL_PRICING = {
     locale: "en-US",
     zero_decimal: false,
     plans: { basic: 11.90, standard: 23.80, premium: 45.20 },
+    packs: { pp_30: 5.95, pp_60: 11.31, pp_120: 21.42, pp_300: 50.58, pp_600: 95.20 },
   },
 };
 
@@ -73,6 +78,11 @@ export function getRegionalConfig(region) {
 export function getRegionalPlanPrice(planId, region) {
   const config = getRegionalConfig(region);
   return { price: config.plans[planId] ?? 0, currency: config.currency };
+}
+
+export function getRegionalPackPrice(packId, region) {
+  const config = getRegionalConfig(region);
+  return { price: config.packs?.[packId] ?? 0, currency: config.currency };
 }
 
 export const ZERO_DECIMAL_CURRENCIES = ["jpy", "krw"];

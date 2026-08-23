@@ -20,7 +20,7 @@ export const CATALOG = {
 // Regional pricing (international fixed prices per currency) — re-exported
 // from regionalPricing.js so paymentCatalog.js remains the single import point
 // for all payment-related config. See regionalPricing.js for the full table.
-export { REGIONAL_PRICING, getRegionalConfig, getRegionalPlanPrice } from "./regionalPricing.js";
+export { REGIONAL_PRICING, getRegionalConfig, getRegionalPlanPrice, getRegionalPackPrice } from "./regionalPricing.js";
 
 // Derived price-only map, used for affiliate commission calculations.
 export const PRICE_CATALOG = Object.fromEntries(

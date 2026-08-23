@@ -112,21 +112,22 @@ export default async function (req: Request): Promise<Response> {
 
       result[externalRef] = { product_id: productId, price_id: brlPriceId, mode };
 
-      // 4) Para PLANOS, cria preços adicionais nas moedas internacionais
-      //    (EUR/JPY/KRW/USD) no MESMO produto. Idempotente: reutiliza se já
-      //    existir um price ativo naquela moeda. Pacotes (pack:*) continuam
-      //    só em BRL.
+      // 4) Para PLANOS e PACOTES, cria preços adicionais nas moedas
+      //    internacionais (EUR/JPY/KRW/USD) no MESMO produto. Idempotente:
+      //    reutiliza se já existir um price ativo naquela moeda.
       //
       //    ⚠️ JPY e KRW são zero-decimal: unit_amount = valor inteiro (não
       //    multiplicado por 100). toStripeUnitAmount cuida disso.
-      if (isPlan) {
-        const planId = externalRef.replace("plan:", "");
+      //    Planos usam recurring[interval]=month; pacotes são one-time (sem recurring).
+      if (isPlan || externalRef.startsWith("pack:")) {
+        const itemId = externalRef.replace(isPlan ? "plan:" : "pack:", "");
+        const priceCategory = isPlan ? "plans" : "packs";
         const prices: Record<string, string> = { brl: brlPriceId };
 
         for (const [regionKey, regionConfig] of Object.entries(REGIONAL_PRICING)) {
           if (regionKey === "br") continue; // BRL já tratado acima
           const currency = regionConfig.currency.toLowerCase();
-          const displayPrice = regionConfig.plans[planId];
+          const displayPrice = (regionConfig as any)[priceCategory]?.[itemId];
           if (displayPrice === undefined) continue;
 
           // Busca price ativo existente nesta moeda neste produto.
@@ -144,7 +145,8 @@ export default async function (req: Request): Promise<Response> {
 
           if (!regionalPriceId) {
             const unitAmount = toStripeUnitAmount(displayPrice, currency);
-            const regionalPriceBody = `currency=${currency}&product=${productId}&unit_amount=${unitAmount}&recurring[interval]=month&recurring[interval_count]=1`;
+            const recurringParam = isPlan ? "&recurring[interval]=month&recurring[interval_count]=1" : "";
+            const regionalPriceBody = `currency=${currency}&product=${productId}&unit_amount=${unitAmount}${recurringParam}`;
             const regionalPriceRes = await fetch("https://api.stripe.com/v1/prices", {
               method: "POST",
               headers: formHeaders,

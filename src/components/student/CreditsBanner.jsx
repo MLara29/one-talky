@@ -1,4 +1,4 @@
-import React, { useState, useId } from "react";
+import React, { useState, useId, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
+import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -84,6 +85,21 @@ export default function CreditsBanner({ profile, onUpdate }) {
   const { lang } = useLang();
   const [showTopup, setShowTopup] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState(null);
+  const [regionData, setRegionData] = useState(() => getCachedRegion());
+
+  useEffect(() => {
+    if (!regionData) detectAndCacheRegion().then(setRegionData);
+  }, []);
+
+  const isBR = !regionData || regionData.region === "br";
+  const regionConfig = isBR ? null : getRegionalConfig(regionData.region);
+
+  const packDisplay = (pack) => {
+    if (isBR || !regionConfig) return fmtBRL(pack.price_brl);
+    const regional = regionConfig.packs?.[pack.id];
+    if (regional === undefined) return fmtBRL(pack.price_brl);
+    return formatRegionalPrice(regional, regionConfig.currency, regionConfig.locale);
+  };
 
   const planMins = profile?.plan_credits_minutes || 0;
   const prepaidMins = profile?.prepaid_credits_minutes || 0;
@@ -110,10 +126,20 @@ export default function CreditsBanner({ profile, onUpdate }) {
   const prepaidExpiresDate = prepaidExpiresAt ? new Date(prepaidExpiresAt).toLocaleDateString("pt-BR") : null;
 
   const buyPack = (pack) => {
+    const currency = isBR || !regionConfig ? "BRL" : regionConfig.currency;
+    let displayPrice;
+    if (isBR || !regionConfig) {
+      displayPrice = pack.price_brl;
+    } else {
+      displayPrice = regionConfig.packs?.[pack.id] || pack.price_brl;
+    }
     setCheckoutItem({
       title: `One Talky — ${t(lang, `packLabel${pack.id.replace("pp_", "")}`)}`,
       price: pack.price_brl,
       external_reference: `pack:${pack.id}`,
+      currency,
+      display_price: displayPrice,
+      display_original: null,
     });
   };
 
@@ -144,7 +170,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
             >
               <span className="font-bold text-gray-900 text-sm">{t(lang, `packLabel${suffix}`)}</span>
               {pack.badge && <span className="text-[10px] text-emerald-600 font-semibold">{badgePct ? t(lang, `packBadge${badgePct}`) : pack.badge}</span>}
-              <span className="text-xs text-gray-500">{fmtBRL(pack.price_brl)}</span>
+              <span className="text-xs text-gray-500">{packDisplay(pack)}</span>
             </button>
           );
         })}

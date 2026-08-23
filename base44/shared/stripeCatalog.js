@@ -7,12 +7,12 @@
 // change in Stripe. The function is idempotent (reuses existing products/prices
 // via metadata) so re-running won't create duplicates.
 //
-// INTERNATIONAL PRICING: each plan has a `prices` map with price_ids per
-// currency (brl/eur/jpy/krw/usd). The BRL price_id is also kept as the
-// top-level `price_id` for backward compatibility. Packs are BRL-only (no
-// `prices` map). `getStripePriceId(externalReference, currency)` resolves the
-// right price_id for a given currency, falling back to BRL if the regional one
-// isn't set yet (e.g. before stripeCreateCatalog has been run for intl prices).
+// INTERNATIONAL PRICING: each plan AND pack has a `prices` map with price_ids
+// per currency (brl/eur/jpy/krw/usd). The BRL price_id is also kept as the
+// top-level `price_id` for backward compatibility. `getStripePriceId(externalReference, currency)`
+// resolves the right price_id for a given currency, falling back to BRL if the
+// regional one isn't set yet. Pack `prices` maps start with only `brl` and get
+// the other currencies filled in after the admin runs stripeCreateCatalog.
 //
 // mode: "subscription" → recurring monthly plan (plan:*)
 // mode: "payment"     → one-time prepaid pack (pack:*)
@@ -20,11 +20,11 @@ export const STRIPE_CATALOG = {
   "plan:basic":    { price_id: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", mode: "subscription", product_id: "prod_V6A6uyCQxsiiX1", prices: { brl: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", eur: "price_1U7dTQLrbgaxg9EVzh1wRxqm", jpy: "price_1U7dTRLrbgaxg9EVFL1D7LjO", krw: "price_1U7dTRLrbgaxg9EVKGyoQ3H4", usd: "price_1U7dTRLrbgaxg9EVgX6Drynd" } },
   "plan:standard": { price_id: "price_1U5xmSLrbgaxg9EVSb3ExLSc", mode: "subscription", product_id: "prod_V6A6EqpSDVLc2p", prices: { brl: "price_1U5xmSLrbgaxg9EVSb3ExLSc", eur: "price_1U7dTRLrbgaxg9EVbR8ewDS7", jpy: "price_1U7dTRLrbgaxg9EVSgVrDy4i", krw: "price_1U7dTSLrbgaxg9EVX1nyVoa8", usd: "price_1U7dTSLrbgaxg9EVfn3zqVlI" } },
   "plan:premium":  { price_id: "price_1U5xmSLrbgaxg9EV0GpkQCKv", mode: "subscription", product_id: "prod_V6A65X2k2sRNoq", prices: { brl: "price_1U5xmSLrbgaxg9EV0GpkQCKv", eur: "price_1U7dTSLrbgaxg9EVaJtv9TnK", jpy: "price_1U7dTSLrbgaxg9EV6r8il6rz", krw: "price_1U7dTSLrbgaxg9EVaKFYnTmV", usd: "price_1U7dTTLrbgaxg9EVyQxJVlLt" } },
-  "pack:pp_30":   { price_id: "price_1U5xmSLrbgaxg9EV3pwYcNNu", mode: "payment", product_id: "prod_V6A6AFfvDlruK9" },
-  "pack:pp_60":   { price_id: "price_1U5xmTLrbgaxg9EVVKxtcvSL", mode: "payment", product_id: "prod_V6A6W96pVHh4kA" },
-  "pack:pp_120":  { price_id: "price_1U5xmTLrbgaxg9EV4U1TF2xR", mode: "payment", product_id: "prod_V6A6ZdjG7OQrlT" },
-  "pack:pp_300":  { price_id: "price_1U5xmTLrbgaxg9EVhi3iN6Dp", mode: "payment", product_id: "prod_V6A6Sw8FtADJuK" },
-  "pack:pp_600":  { price_id: "price_1U5xmULrbgaxg9EVJgeP8Piu", mode: "payment", product_id: "prod_V6A6DguxHWcmNW" },
+  "pack:pp_30":   { price_id: "price_1U5xmSLrbgaxg9EV3pwYcNNu", mode: "payment", product_id: "prod_V6A6AFfvDlruK9", prices: { brl: "price_1U5xmSLrbgaxg9EV3pwYcNNu" } },
+  "pack:pp_60":   { price_id: "price_1U5xmTLrbgaxg9EVVKxtcvSL", mode: "payment", product_id: "prod_V6A6W96pVHh4kA", prices: { brl: "price_1U5xmTLrbgaxg9EVVKxtcvSL" } },
+  "pack:pp_120":  { price_id: "price_1U5xmTLrbgaxg9EV4U1TF2xR", mode: "payment", product_id: "prod_V6A6ZdjG7OQrlT", prices: { brl: "price_1U5xmTLrbgaxg9EV4U1TF2xR" } },
+  "pack:pp_300":  { price_id: "price_1U5xmTLrbgaxg9EVhi3iN6Dp", mode: "payment", product_id: "prod_V6A6Sw8FtADJuK", prices: { brl: "price_1U5xmTLrbgaxg9EVhi3iN6Dp" } },
+  "pack:pp_600":  { price_id: "price_1U5xmULrbgaxg9EVJgeP8Piu", mode: "payment", product_id: "prod_V6A6DguxHWcmNW", prices: { brl: "price_1U5xmULrbgaxg9EVJgeP8Piu" } },
 };
 
 // Resolve the checkout mode from the external_reference prefix.

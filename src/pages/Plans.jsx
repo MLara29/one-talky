@@ -82,7 +82,7 @@ export default function Plans() {
   };
 
   // Preço regional: Brasil/desconhecido → BRL (sem mudança). Internacional →
-  // moeda local (EUR/JPY/KRW/USD). Pacotes pré-pagos continuam sempre em BRL.
+  // moeda local (EUR/JPY/KRW/USD). Aplica-se a planos mensais e pacotes avulsos.
   const isBR = !regionData || regionData.region === "br";
   const regionConfig = isBR ? null : getRegionalConfig(regionData.region);
 
@@ -99,6 +99,20 @@ export default function Plans() {
     if (regional === undefined) return fmtBRL(plan.price_weekly);
     const weekly = plan.id === "basic" ? regional / 2 : regional / 4;
     return formatRegionalPrice(weekly, regionConfig.currency, regionConfig.locale);
+  };
+
+  const packDisplay = (pack) => {
+    if (isBR || !regionConfig) return fmtBRL(pack.price_brl);
+    const regional = regionConfig.packs?.[pack.id];
+    if (regional === undefined) return fmtBRL(pack.price_brl);
+    return formatRegionalPrice(regional, regionConfig.currency, regionConfig.locale);
+  };
+
+  const packPer30minDisplay = (pack) => {
+    if (isBR || !regionConfig) return fmtBRL(pack.price_brl / pack.minutes * 30);
+    const regional = regionConfig.packs?.[pack.id];
+    if (regional === undefined) return fmtBRL(pack.price_brl / pack.minutes * 30);
+    return formatRegionalPrice(regional / pack.minutes * 30, regionConfig.currency, regionConfig.locale);
   };
 
   const handleSuccess = (status) => {
@@ -139,16 +153,25 @@ export default function Plans() {
     if (!profile) return;
     const ref = pack.id === "teste" ? "pack:teste" : `pack:${pack.id}`;
     const discountedPrice = applyDiscount(pack.price_brl);
+    const currency = isBR || !regionConfig ? "BRL" : regionConfig.currency;
+    let displayPrice, displayOriginal;
+    if (isBR || !regionConfig) {
+      displayPrice = discountedPrice;
+      displayOriginal = discountedPrice < pack.price_brl ? pack.price_brl : null;
+    } else {
+      const regionalPrice = regionConfig.packs?.[pack.id] || pack.price_brl;
+      displayPrice = applyDiscount(regionalPrice);
+      displayOriginal = displayPrice < regionalPrice ? regionalPrice : null;
+    }
     setCheckoutItem({
       title: `One Talky — ${pack.label}`,
       price: discountedPrice,
       original_price: discountedPrice < pack.price_brl ? pack.price_brl : null,
       bonus_minutes: couponDiscount?.bonus_minutes || 0,
       external_reference: ref,
-      // Pacotes são sempre BRL (sem precificação internacional).
-      currency: "BRL",
-      display_price: discountedPrice,
-      display_original: discountedPrice < pack.price_brl ? pack.price_brl : null,
+      currency,
+      display_price: displayPrice,
+      display_original: displayOriginal,
     });
   };
 
@@ -410,13 +433,13 @@ export default function Plans() {
                     <div>
                       <p className="font-display font-bold" style={{ color: "#17181C" }}>{packLabel(lang, pack.id)}</p>
                       <p className="text-xs" style={{ color: "#8A8B94" }}>
-                        {fmtBRL(pack.price_brl / pack.minutes * 30)}/30min
+                        {packPer30minDisplay(pack)}/30min
                         {pack.badge && <span className="ml-2 font-semibold" style={{ color: ACCENT }}>{packBadgeText(lang, pack.badge)}</span>}
                       </p>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-display font-bold text-lg" style={{ color: "#17181C" }}>{fmtBRL(pack.price_brl)}</p>
+                    <p className="font-display font-bold text-lg" style={{ color: "#17181C" }}>{packDisplay(pack)}</p>
                     <button
                       onClick={() => buyPack(pack)}
                       disabled={!!checkoutItem || !profile?.plan || profile.plan === "free"}
