@@ -256,7 +256,7 @@ export default function StudentDashboard() {
       {/* Welcome header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: "var(--font-display)" }}>
-          Welcome, {profile?.full_name?.split(" ")[0] || user?.full_name?.split(" ")[0] || "there"}
+          {t(lang, "welcomeBack")}, {profile?.full_name?.split(" ")[0] || user?.full_name?.split(" ")[0] || "there"}
         </h1>
         <div className="flex items-center gap-2">
           <button
