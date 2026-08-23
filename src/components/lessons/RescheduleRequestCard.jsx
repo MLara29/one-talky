@@ -161,14 +161,14 @@ export default function RescheduleRequestCard({ lesson, request, onResolved }) {
             variant="outline"
             className="flex-1 rounded-xl border-red-500/20 text-red-400 hover:text-red-300 hover:border-red-500/40 bg-transparent"
           >
-            <X className="w-4 h-4 mr-1" /> Recusar
+            <X className="w-4 h-4 mr-1" /> {T("declineBtn", "Decline")}
           </Button>
           <Button
             onClick={handleAccept}
             disabled={actionLoading}
             className="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white border-0"
           >
-            <Check className="w-4 h-4 mr-1" /> Aceitar
+            <Check className="w-4 h-4 mr-1" /> {T("acceptBtn", "Accept")}
           </Button>
         </div>
       )}
