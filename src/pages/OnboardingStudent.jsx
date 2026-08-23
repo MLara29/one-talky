@@ -198,39 +198,39 @@ export default function OnboardingStudent() {
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <Label className={labelCls}>Nível atual</Label>
+                <Label className={labelCls}>{t(lang, "currentLevelLabel")}</Label>
                 <Select value={form.level} onValueChange={v => set("level", v)}>
                   <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder="Selecione seu nível" />
+                    <SelectValue placeholder={t(lang, "selectLevelPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
                     {LEVELS.map(l => (
-                      <SelectItem key={l.value} value={l.value} className={selectItemCls}>{LEVELS_PT[l.value]}</SelectItem>
+                      <SelectItem key={l.value} value={l.value} className={selectItemCls}>{t(lang, LEVEL_KEY[l.value])}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className={labelCls}>Objetivo principal</Label>
+                <Label className={labelCls}>{t(lang, "mainObjectiveLabel")}</Label>
                 <Select value={form.objective} onValueChange={v => set("objective", v)}>
                   <SelectTrigger className={selectTriggerCls}>
-                    <SelectValue placeholder="Selecione seu objetivo" />
+                    <SelectValue placeholder={t(lang, "selectObjectivePlaceholder")} />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
-                    {OBJECTIVES.map(o => <SelectItem key={o.value} value={o.value} className={selectItemCls}>{o.label}</SelectItem>)}
+                    {OBJECTIVES.map(o => <SelectItem key={o.value} value={o.value} className={selectItemCls}>{t(lang, OBJ_KEY[o.value])}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex gap-3 mt-2">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white">
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
+                  <ChevronLeft className="w-4 h-4 mr-1" /> {t(lang, "backBtn")}
                 </Button>
                 <Button
                   onClick={() => setStep(3)}
                   disabled={!form.level || !form.objective}
                   className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 transition-all"
                 >
-                  Continuar <ChevronRight className="w-4 h-4 ml-1" />
+                  {t(lang, "continueBtn")} <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             </div>
