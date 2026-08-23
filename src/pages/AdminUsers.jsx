@@ -202,6 +202,7 @@ export default function AdminUsers() {
   const [searchStudent, setSearchStudent] = useState("");
   const [planFilter, setPlanFilter] = useState("all");
   const [searchAffiliate, setSearchAffiliate] = useState("");
+  const [newStudentsSince, setNewStudentsSince] = useState(""); // "" = mostra todos
 
   const filteredTutors = tutors.filter(t => {
     const q = searchTutor.toLowerCase();
