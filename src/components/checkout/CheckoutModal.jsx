@@ -263,20 +263,20 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
             {pixStatus === "approved" ? (
               <>
                 <CheckCircle className="w-12 h-12 text-emerald-400" />
-                <p className="theme-heading font-semibold text-lg">Pix confirmado! 🎉</p>
-                <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Seus créditos foram adicionados</p>
+                <p className="theme-heading font-semibold text-lg">{t(lang, "pixConfirmedTitle")}</p>
+                <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>{t(lang, "approvedPaymentDesc")}</p>
               </>
             ) : pixStatus === "cancelled" ? (
               <>
                 <AlertCircle className="w-10 h-10 text-red-400" />
-                <p className="theme-heading font-semibold">Pix expirado ou cancelado</p>
-                <Button onClick={() => setStep("form")} className="bg-violet-600 hover:bg-violet-700 text-white border-0 w-full">Tentar novamente</Button>
+                <p className="theme-heading font-semibold">{t(lang, "pixExpiredTitle")}</p>
+                <Button onClick={() => setStep("form")} className="bg-violet-600 hover:bg-violet-700 text-white border-0 w-full">{t(lang, "tryAgainBtn")}</Button>
               </>
             ) : (
               <>
-                <p className="theme-heading font-semibold text-center">Escaneie o QR Code para pagar</p>
+                <p className="theme-heading font-semibold text-center">{t(lang, "scanQrTitle")}</p>
                 <p className="theme-subtext text-xs text-center" style={{ color: "var(--app-text-secondary)" }}>
-                  Abra o app do seu banco → Pix → Ler QR Code
+                  {t(lang, "scanQrSub")}
                 </p>
                 {pixData.qr_code_base64 && (
                   <img
@@ -286,7 +286,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
                   />
                 )}
                 <div className="w-full">
-                  <p className="theme-subtext text-xs mb-1" style={{ color: "var(--app-text-secondary)" }}>Ou copie o código Pix:</p>
+                  <p className="theme-subtext text-xs mb-1" style={{ color: "var(--app-text-secondary)" }}>{t(lang, "copyPixCodeLabel")}</p>
                   <div className="flex gap-2">
                     <input
                       readOnly
@@ -303,7 +303,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
                 </div>
                 <div className="flex items-center gap-2 text-xs text-amber-400">
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  Aguardando confirmação do pagamento…
+                  {t(lang, "waitingPixConfirmation")}
                 </div>
               </>
             )}
