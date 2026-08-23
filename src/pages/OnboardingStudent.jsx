@@ -241,8 +241,8 @@ export default function OnboardingStudent() {
             <div className="space-y-5">
               {/* Tópicos de conversa */}
               <div>
-                <Label className={`${labelCls} block mb-1`}>Tópicos favoritos de conversa</Label>
-                <p className="text-xs text-gray-500 mb-3">Escolha os temas que você mais gosta de conversar (pode selecionar vários)</p>
+                <Label className={`${labelCls} block mb-1`}>{t(lang, "favoriteTopicsLabel")}</Label>
+                <p className="text-xs text-gray-500 mb-3">{t(lang, "favoriteTopicsSub")}</p>
                 <div className="flex flex-wrap gap-2">
                   {INTERESTS.map(topic => (
                     <button
@@ -255,7 +255,7 @@ export default function OnboardingStudent() {
                           : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-600"
                       }`}
                     >
-                      {topic}
+                      {t(lang, INTEREST_KEY[topic]) || topic}
                     </button>
                   ))}
                 </div>
