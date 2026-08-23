@@ -235,12 +235,12 @@ export default function TutorCard({ tutor, forceEnglishTopics = false, firstWeek
         {/* Status line */}
         {inLesson && (
           <div className="mt-3 text-xs font-semibold text-red-400 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Busy — in a lesson
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> {t(lang, "busyInLesson")}
           </div>
         )}
         {!inLesson && live && (
           <div className="mt-3 text-xs font-semibold text-emerald-500 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Available now
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> {t(lang, "availableNow")}
           </div>
         )}
 
@@ -254,7 +254,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false, firstWeek
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/20 hover:opacity-90 transition-all disabled:opacity-60"
               >
                 <Video className="w-3.5 h-3.5" />
-                {booking ? "Starting..." : "Lesson now"}
+                {booking ? t(lang, "startingBtn") : t(lang, "lessonNowBtn")}
               </button>
             )}
             {canSchedule && (
