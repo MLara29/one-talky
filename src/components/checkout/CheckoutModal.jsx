@@ -88,7 +88,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
       const [expMonth, expYear] = form.expiry.split("/");
       const pmRes = await mp.getPaymentMethods({ bin: rawCard.slice(0, 6) });
       const paymentMethodId = pmRes?.results?.[0]?.id;
-      if (!paymentMethodId) throw new Error("Bandeira do cartão não reconhecida.");
+      if (!paymentMethodId) throw new Error(t(lang, "cardBrandNotRecognized"));
       const tokenRes = await mp.createCardToken({
         cardNumber: rawCard,
         cardholderName: form.cardholderName,
@@ -98,8 +98,8 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         identificationType: "CPF",
         identificationNumber: form.cpf.replace(/\D/g, ""),
       });
-      if (tokenRes?.cause?.length > 0) throw new Error(tokenRes.cause[0].description || "Dados do cartão inválidos");
-      if (!tokenRes?.id) throw new Error("Falha ao gerar token do cartão");
+      if (tokenRes?.cause?.length > 0) throw new Error(tokenRes.cause[0].description || t(lang, "invalidCardData"));
+      if (!tokenRes?.id) throw new Error(t(lang, "cardTokenError"));
       const res = await base44.functions.invoke("mpProcessPayment", {
         token: tokenRes.id,
         payment_method_id: paymentMethodId,
@@ -115,11 +115,11 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         setStep("success");
         setTimeout(() => { onSuccess?.("pending"); onClose?.(); }, 2500);
       } else {
-        throw new Error(res.data?.status_detail || res.data?.error || "Pagamento recusado");
+        throw new Error(res.data?.status_detail || res.data?.error || t(lang, "paymentRejected"));
       }
     } catch (err) {
       console.error("[CheckoutModal] card payment error:", err);
-      setErrorMsg("Não foi possível processar o pagamento. Verifique os dados do cartão e tente novamente.");
+      setErrorMsg(t(lang, "cardPaymentGenericError"));
       setStep("error");
     }
   };
