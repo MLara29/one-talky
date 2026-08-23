@@ -1120,7 +1120,7 @@ export default function Landing() {
   // Preço do hero ("a partir de X por semana") — Basic semanal na moeda local.
   const heroPriceDisplay = isBR || !regionConfig
     ? c.heroPrice
-    : formatRegionalPrice(regionConfig.plans.basic / 2, regionConfig.currency, regionConfig.locale) + (lang === "pt" ? " por semana" : " per week");
+    : formatRegionalPrice(regionConfig.plans.basic / 2, regionConfig.currency, regionConfig.locale) + c.weeklySuffix;
 
   const plans = c.plans.map((p, i) => {
     if (isBR || !regionConfig) {
@@ -1333,10 +1333,10 @@ export default function Landing() {
           textAlign: "center",
         }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: ACCENT, fontWeight: 800, fontSize: 12.5, padding: "6px 14px", borderRadius: 999, marginBottom: 14, letterSpacing: 0.3 }}>
-            🎁 {lang === "pt" ? "SEM COMPROMISSO" : "NO COMMITMENT"}
+            🎁 {c.noCommitmentBadge}
           </div>
           <h2 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, letterSpacing: -0.5, margin: "0 0 12px", color: "#17181C" }}>
-            {lang === "pt" ? "Não precisa assinar nada pra começar" : "You don't need to subscribe to anything to start"}
+            {c.noCommitmentTitle}
           </h2>
           <p style={{ fontSize: 16, color: "#5A5B66", maxWidth: 560, margin: "0 auto 26px", lineHeight: 1.6 }}>
             {lang === "pt"
