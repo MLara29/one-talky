@@ -1711,7 +1711,7 @@ export default function Landing() {
                     {LANG_ORDER.map((l) => (
                       <button
                         key={l}
-                        onClick={() => { setLang(l); setLangMenuOpen(false); }}
+                        onClick={() => { selectLang(l); setLangMenuOpen(false); }}
                         style={{
                           display: "block", width: "100%", textAlign: "left",
                           padding: "11px 16px", fontSize: 14, fontWeight: lang === l ? 800 : 600,
@@ -1746,7 +1746,7 @@ export default function Landing() {
             {LANG_ORDER.map((l) => (
               <button
                 key={l}
-                onClick={() => setLang(l)}
+                onClick={() => selectLang(l)}
                 style={{
                   flex: 1, padding: "9px 0", borderRadius: 10, fontWeight: 700, fontSize: 13,
                   background: lang === l ? ACCENT : "#fff",
