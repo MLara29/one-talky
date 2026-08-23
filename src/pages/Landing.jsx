@@ -189,6 +189,842 @@ const CONTENT = {
     footPrivacy: "Privacy Policy", footTerms: "Terms of Use", footSupport: "Support",
     footLgpd: "One Talky — 1-on-1 English conversation. Payment via Stripe. Your data is handled in accordance with Brazil's LGPD.",
   },
+  es: {
+    navHow: "Cómo funciona",
+    navTutors: "Tutores",
+    navPlans: "Planes",
+    navGuarantee: "Garantía",
+    navLogin: "Iniciar sesión",
+    navCta: "Regístrate",
+    heroBadge: "Conversación 1 a 1, en vivo",
+    headline: ["Entiendes inglés. Solo no puedes ", "hablarlo."],
+    heroSub1: "Clases de conversación 1 a 1, por video, con tutores de inglés de todo el mundo. 30 minutos por vez, en tu horario. Desde ",
+    heroPrice: "$11,90 por semana",
+    heroSub2: ".",
+    heroCta: "Empezar ahora",
+    heroSecondary: "Ver cómo funciona",
+    disarm: ["Cancela cuando quieras", "Garantía de 7 días", "Sin permanencia"],
+    capMain: "“It’s nice to meet you.”",
+    capSub: "Un placer conocerte.",
+    bubbleReply: "¡Hola!",
+    fStreakLabel: "Racha",
+    fStreakVal: "12 días",
+    fPronLabel: "Pronunciación",
+    fPronVal: "95",
+    fSaveLabel: "Palabra nueva",
+    fSaveWord: "context",
+    heroFactChips: ["Siempre 1 a 1", "30 minutos por vez", "Tutores de varios países", "Desde $11,90/sem"],
+    openLead: "Has visto series sin subtítulos. Has leído textos en inglés sin trabarte. Pero cuando alguien te mira y te pregunta algo en inglés, ",
+    openAccent: "la frase desaparece.",
+    openBody: "El problema nunca fue tu conocimiento. Fue la falta de práctica hablando con otra persona. Eso es justo lo que resuelve One Talky: conversación real, 1 a 1, con tutores de varios países. Entras, hablas.",
+    painEyebrow: "El dolor",
+    painTitle: "La conversación siempre se traba en el mismo punto.",
+    pains: ["Armas la frase entera en tu cabeza — y cuando ibas a hablar, el tema ya cambió.", "Entiendes todo lo que dice el otro, pero respondes en tres palabras para no equivocarte.", "Evitas reuniones, viajes o llamadas en inglés. Siempre hay un colega que 'habla mejor'.", "Ya pagaste un curso, terminaste el módulo — y sigues sin poder sostener una conversación.", "Conoces la gramática mejor que mucha gente fluida. Y eso te frustra.", "No le tienes miedo al inglés. Le tienes miedo a trabarte delante de otros."],
+    painClose: "No es falta de estudio. Es falta de kilometraje hablando.",
+    mechEyebrow: "La solución",
+    mechTitle: "One Talky es práctica de habla. Solo eso. Por eso funciona.",
+    mechSub: "Videollamada de 30 minutos con un tutor real, de otro país, de principio a fin.",
+    mechanism: [
+      {
+        n: "1",
+        title: "Uno a uno, siempre",
+        body: "Nada de clases de 12 personas donde hablas 4 minutos. La clase entera es tuya."
+      },
+      {
+        n: "2",
+        title: "Tutores ESL de varios países",
+        body: "Entrenados para enseñar a estudiantes — ajustan el ritmo, el vocabulario y la paciencia a tu nivel."
+      },
+      {
+        n: "3",
+        title: "Bloques de 30 min, en tu horario",
+        body: "Agendas cuando puedas. ¿Tienes 30 minutos libres ahora? Entra ahora."
+      },
+      {
+        n: "4",
+        title: "Modelo global, precio de gente normal",
+        body: "Tutores repartidos por el mundo: una clase particular cuesta una fracción de la escuela tradicional."
+      }
+    ],
+    honesty: ["Y vamos a ser honestos: ", "nadie se vuelve fluido en 15 días.", " La fluidez viene de la repetición. One Talky elimina todos los obstáculos entre tú y la práctica constante — precio, horario, vergüenza y agenda."],
+    benEyebrow: "Beneficios",
+    benTitle: "Lo que cambia cuando hablas cada semana",
+    benefits: [
+      {
+        title: "Dejas de traducir en tu cabeza",
+        body: "Hablando cada semana, el inglés deja de ser traducción y se vuelve reflejo."
+      },
+      {
+        title: "La vergüenza se va antes que el acento",
+        body: "Equivocarte frente a un tutor que te corrige con calma es el entrenamiento que ningún salón de clases ofrece."
+      },
+      {
+        title: "Tu agenda manda, no la nuestra",
+        body: "Si la semana se complicó, reagendas. Nadie te marca falta."
+      },
+      {
+        title: "Hablas con gente de varios países",
+        body: "Eso te prepara para el inglés real del mundo — no el inglés de un audio de examen."
+      },
+      {
+        title: "Cada minuto es tuyo",
+        body: "En Premium, tu hora de clase particular sale por menos de $1 por minuto de conversación."
+      },
+      {
+        title: "Llegas a la reunión sin sudar frío",
+        body: "Porque ya tuviste esa conversación docenas de veces antes."
+      },
+      {
+        title: "Sirve para toda la familia",
+        body: "Adulto, adolescente o niño — el tutor ajusta la clase a la edad y el nivel de cada uno."
+      },
+      {
+        title: "Empiezas hoy",
+        body: "Sin matrícula, sin material obligatorio, sin esperar a que abra el próximo grupo."
+      }
+    ],
+    tutEyebrow: "Conoce a tus tutores",
+    tutTitle: "Gente real, de varios países, entrenada para escucharte",
+    tutSub: "Especialistas en enseñar inglés a quienes no son nativos. Desde cero hasta avanzado — el tutor ajusta el ritmo al tuyo.",
+    sealTitle: "Pago seguro vía Stripe",
+    sealSub: "Tarjeta de crédito — no guardamos los datos de tu tarjeta.",
+    priceEyebrow: "Planes",
+    priceTitle: "Elige cuánto quieres hablar cada semana",
+    priceSub: "Todas las clases son individuales, por video, de 30 minutos de duración.",
+    anchor: ["Una clase particular de inglés cuesta en promedio ", "$25–$40", " por hora. En One Talky, una hora de conversación 1 a 1 empieza en ", "$11,90", "."],
+    anchorNote: "Pago seguro vía Stripe · Sin permanencia · Cancela cuando quieras.",
+    perWeek: "/semana",
+    perMonth: "/mes",
+    totalWord: "Total ",
+    plans: [
+      {
+        tag: "Básico",
+        name: "60 min / mes",
+        weekly: "$11,90",
+        monthly: "$23,80",
+        features: ["60 minutos de conversación al mes", "2 clases individuales de 30 min", "Agenda libre", "Tutores de todos los niveles"],
+        cta: "Empezar con Básico",
+        highlight: false,
+        badge: ""
+      },
+      {
+        tag: "Standard",
+        name: "120 min / mes",
+        weekly: "$11,90",
+        monthly: "$23,80",
+        features: ["120 minutos de conversación al mes", "4 clases de 30 min o 2 clases de 1 hora", "Una conversación por semana: el ritmo mínimo para crear el hábito", "Agenda libre"],
+        cta: "Suscribirme a Standard",
+        highlight: true,
+        badge: "El más elegido"
+      },
+      {
+        tag: "Premium",
+        name: "240 min / mes",
+        weekly: "$22,60",
+        monthly: "$45,20",
+        features: ["240 minutos de conversación al mes", "8 clases de 30 min o 4 clases de 1 hora", "Sale por $5,65 por clase", "Práctica 2× por semana: el camino más rápido para destrabarte"],
+        cta: "Suscribirme a Premium",
+        highlight: false,
+        badge: ""
+      }
+    ],
+    guarTitle: "7 días. Sin preguntas.",
+    guar: ["Suscríbete, toma tus clases, habla con los tutores. Si en 7 días sientes que One Talky no es para ti, mándanos un mensaje y te devolvemos ", "el 100% de tu dinero", ". Sin formularios, sin justificación."],
+    guarBody3: "Si necesitas sacar cuentas para decidir si vale la pena, es porque nosotros no hicimos nuestra parte de quitarte el riesgo.",
+    objEyebrow: "Antes de que preguntes",
+    objTitle: "Resolviendo las objeciones de frente",
+    objections: [
+      {
+        q: "No tengo tiempo para estudiar cada semana.",
+        a: "Nadie lo tiene. Por eso la clase dura 30 minutos, no 2 horas. ¿Se abrió un espacio en tu agenda? Lo reservas. ¿Mala semana? Reagendas."
+      },
+      {
+        q: "¿Y si no entiendo al profesor?",
+        a: "Nuestros tutores son especialistas en enseñar inglés a no nativos. Bajan el ritmo, repiten y escriben en el chat hasta que puedas seguirles."
+      },
+      {
+        q: "Un profesor particular es demasiado caro para mí.",
+        a: "Lo era. Nuestro modelo es global: tutores en todo el mundo, sin edificio, sin recepción. Una clase de 30 minutos empieza en $11,90."
+      },
+      {
+        q: "¿El pago en el sitio es seguro?",
+        a: "Todo pago se procesa directamente por Stripe, una de las plataformas de pago más grandes del mundo. No almacenamos los datos de tu tarjeta."
+      },
+      {
+        q: "¿Y si no funciona para mí?",
+        a: "Si te suscribes y no te gusta, tienes 7 días para pedir el 100% de tu dinero de vuelta. Sin formularios, sin justificación."
+      }
+    ],
+    urgBadge: "Lote fundador",
+    urgTitle: "Precio de fundador: los primeros 200.",
+    urg: ["One Talky está abriendo ahora. Los primeros 200 suscriptores fijan el precio de lanzamiento ", "para siempre", " — incluso cuando los planes suban."],
+    urgSpotsPre: "Quedan",
+    urgSpotsPost: "cupos de fundador",
+    urgCta: "Asegurar mi precio de fundador",
+    faqTitle: "Las preguntas que todos hacen",
+    faqs: [
+      {
+        q: "¿Cuánto tiempo necesito dedicar por semana?",
+        a: "30 minutos, una vez por semana, ya crea el hábito. Quien tiene prisa lo hace 3 o 4 veces."
+      },
+      {
+        q: "¿Sirve para principiantes de verdad?",
+        a: "Sí. Los tutores llevan la clase con quien sabe poco: ritmo más lento, vocabulario simple, apoyo en el chat."
+      },
+      {
+        q: "¿Y si ya soy avanzado?",
+        a: "También sirve — y es donde más ganas. El alumno avanzado normalmente no tiene con quién practicar."
+      },
+      {
+        q: "¿Las clases tienen horario fijo?",
+        a: "Agendas cuando quieras, dentro de la disponibilidad de los tutores. Sin horario fijo."
+      },
+      {
+        q: "¿Cómo funciona el pago?",
+        a: "Directo por Stripe: tarjeta de crédito. Suscripción mensual, sin permanencia."
+      },
+      {
+        q: "¿Necesito instalar algo?",
+        a: "No. La clase sucede en el navegador, desde el celular o la computadora. Solo necesitas internet y audífonos."
+      }
+    ],
+    finTitle: ["Dentro de seis meses, vas a estar ", "hablando", " — o todavía explicando por qué no hablas."],
+    finBody: "Nadie se destraba leyendo sobre inglés. Te destrabas hablando, equivocándote y hablando de nuevo — con alguien del otro lado teniendo paciencia contigo. Son 30 minutos. Empieza hoy.",
+    finMicro: "Sin permanencia · Pago seguro vía Stripe · Garantía de 7 días",
+    psBody: "— No te vamos a prometer fluidez en 15 días, porque eso no existe. Lo que sí prometemos: conversación real con gente real, en tu horario, desde $11,90 por semana.",
+    ppsBody: "— Después de suscribirte, tienes 7 días para pedir todo tu dinero de vuelta. La única forma de perder aquí es no intentarlo.",
+    footPrivacy: "Política de Privacidad",
+    footTerms: "Términos de Uso",
+    footSupport: "Soporte",
+    footLgpd: "One Talky — conversación en inglés 1 a 1. Pago vía Stripe. Tus datos se tratan conforme a la normativa de protección de datos aplicable."
+  },
+  fr: {
+    navHow: "Comment ça marche",
+    navTutors: "Tuteurs",
+    navPlans: "Forfaits",
+    navGuarantee: "Garantie",
+    navLogin: "Connexion",
+    navCta: "S'inscrire",
+    heroBadge: "Conversation 1 à 1, en direct",
+    headline: ["Vous comprenez l'anglais. Vous n'arrivez juste pas à ", "le parler."],
+    heroSub1: "Cours de conversation 1 à 1, par vidéo, avec des tuteurs d'anglais du monde entier. 30 minutes à la fois, selon votre emploi du temps. À partir de ",
+    heroPrice: "14,90€ par semaine",
+    heroSub2: ".",
+    heroCta: "Commencer maintenant",
+    heroSecondary: "Voir comment ça marche",
+    disarm: ["Annulez à tout moment", "Garantie de 7 jours", "Sans engagement"],
+    capMain: "“It’s nice to meet you.”",
+    capSub: "Ravi de vous rencontrer.",
+    bubbleReply: "Salut !",
+    fStreakLabel: "Série",
+    fStreakVal: "12 jours",
+    fPronLabel: "Prononciation",
+    fPronVal: "95",
+    fSaveLabel: "Nouveau mot",
+    fSaveWord: "context",
+    heroFactChips: ["Toujours en 1 à 1", "30 minutes à la fois", "Tuteurs de plusieurs pays", "Dès 14,90€/sem"],
+    openLead: "Vous avez regardé des séries sans sous-titres. Vous avez lu de l'anglais sans bloquer. Mais quand quelqu'un vous regarde et vous pose une question en anglais, ",
+    openAccent: "les mots s'envolent.",
+    openBody: "Le problème n'a jamais été vos connaissances. C'était le manque de pratique orale avec un autre être humain. C'est exactement ce que One Talky résout : une vraie conversation, en 1 à 1, avec des tuteurs de plusieurs pays. Vous vous connectez, vous parlez.",
+    painEyebrow: "Le problème",
+    painTitle: "La conversation bloque toujours au même endroit.",
+    pains: ["Vous construisez la phrase entière dans votre tête — et le temps de parler, le sujet a déjà changé.", "Vous comprenez tout ce que dit l'autre, mais vous répondez en trois mots pour ne pas vous tromper.", "Vous évitez les réunions, voyages ou appels en anglais. Il y a toujours un collègue qui « parle mieux ».", "Vous avez payé un cours, terminé le module — et vous n'arrivez toujours pas à engager une conversation.", "Vous connaissez la grammaire mieux que beaucoup de gens à l'aise. Et ça vous agace.", "Vous n'avez pas peur de l'anglais. Vous avez peur de bloquer devant les autres."],
+    painClose: "Ce n'est pas un manque d'étude. C'est un manque de kilométrage à l'oral.",
+    mechEyebrow: "La solution",
+    mechTitle: "One Talky, c'est de la pratique orale. Rien de plus. C'est pour ça que ça marche.",
+    mechSub: "Un appel vidéo de 30 minutes avec un vrai tuteur, d'un autre pays, du début à la fin.",
+    mechanism: [
+      {
+        n: "1",
+        title: "Toujours en tête-à-tête",
+        body: "Pas de classe de 12 personnes où vous parlez 4 minutes. Le cours entier est à vous."
+      },
+      {
+        n: "2",
+        title: "Tuteurs ESL de plusieurs pays",
+        body: "Formés pour enseigner aux apprenants — ils ajustent le rythme, le vocabulaire et la patience à votre niveau."
+      },
+      {
+        n: "3",
+        title: "Créneaux de 30 min, selon votre emploi du temps",
+        body: "Vous réservez quand ça vous arrange. 30 minutes de libre là, maintenant ? Connectez-vous."
+      },
+      {
+        n: "4",
+        title: "Modèle mondial, prix accessible",
+        body: "Des tuteurs répartis dans le monde entier : un cours particulier coûte une fraction d'une école traditionnelle."
+      }
+    ],
+    honesty: ["Et on va être honnêtes : ", "personne ne devient bilingue en 15 jours.", " La fluidité vient de la répétition. One Talky supprime tous les obstacles entre vous et une pratique régulière — le prix, l'horaire, la gêne et l'emploi du temps."],
+    benEyebrow: "Avantages",
+    benTitle: "Ce qui change quand vous parlez chaque semaine",
+    benefits: [
+      {
+        title: "Vous arrêtez de traduire dans votre tête",
+        body: "En parlant chaque semaine, l'anglais cesse d'être une traduction et devient un réflexe."
+      },
+      {
+        title: "La gêne disparaît avant l'accent",
+        body: "Se tromper devant un tuteur qui vous corrige avec calme, c'est l'entraînement qu'aucune salle de classe n'offre."
+      },
+      {
+        title: "C'est votre emploi du temps qui décide, pas le nôtre",
+        body: "Si votre semaine part en vrille, vous reprogrammez. Personne ne vous compte absent."
+      },
+      {
+        title: "Vous parlez avec des gens de plusieurs pays",
+        body: "Cela vous prépare au véritable anglais du monde — pas à celui d'un audio d'examen."
+      },
+      {
+        title: "Chaque minute est à vous",
+        body: "En Premium, votre heure de cours particulier revient à moins de 1€ la minute de conversation."
+      },
+      {
+        title: "Vous arrivez en réunion sans stresser",
+        body: "Parce que vous avez déjà eu cette conversation des dizaines de fois."
+      },
+      {
+        title: "Adapté à toute la famille",
+        body: "Adulte, adolescent ou enfant — le tuteur calibre le cours selon l'âge et le niveau de chacun."
+      },
+      {
+        title: "Vous commencez aujourd'hui",
+        body: "Pas d'inscription, pas de matériel obligatoire, pas de classe qui se remplit le semestre prochain."
+      }
+    ],
+    tutEyebrow: "Découvrez vos tuteurs",
+    tutTitle: "De vraies personnes, de plusieurs pays, formées pour vous écouter",
+    tutSub: "Spécialistes de l'enseignement de l'anglais aux non-natifs. Du débutant à l'avancé — le tuteur adapte le rythme au vôtre.",
+    sealTitle: "Paiement sécurisé via Stripe",
+    sealSub: "Carte de crédit — nous ne conservons pas les données de votre carte.",
+    priceEyebrow: "Forfaits",
+    priceTitle: "Choisissez combien vous voulez parler chaque semaine",
+    priceSub: "Chaque cours est individuel, par vidéo, d'une durée de 30 minutes.",
+    anchor: ["Un cours d'anglais particulier coûte en moyenne ", "25€–40€", " de l'heure. Chez One Talky, une heure de conversation 1 à 1 démarre à ", "14,90€", "."],
+    anchorNote: "Paiement sécurisé via Stripe · Sans engagement · Annulez à tout moment.",
+    perWeek: "/semaine",
+    perMonth: "/mois",
+    totalWord: "Total ",
+    plans: [
+      {
+        tag: "Basique",
+        name: "60 min / mois",
+        weekly: "14,90€",
+        monthly: "29,80€",
+        features: ["60 minutes de conversation par mois", "2 cours individuels de 30 min", "Réservation libre", "Tuteurs de tous niveaux"],
+        cta: "Commencer avec Basique",
+        highlight: false,
+        badge: ""
+      },
+      {
+        tag: "Standard",
+        name: "120 min / mois",
+        weekly: "14,90€",
+        monthly: "29,80€",
+        features: ["120 minutes de conversation par mois", "4 cours de 30 min ou 2 cours d'1 heure", "Une conversation par semaine : le rythme minimum pour créer l'habitude", "Réservation libre"],
+        cta: "S'abonner à Standard",
+        highlight: true,
+        badge: "Le plus choisi"
+      },
+      {
+        tag: "Premium",
+        name: "240 min / mois",
+        weekly: "28,30€",
+        monthly: "56,60€",
+        features: ["240 minutes de conversation par mois", "8 cours de 30 min ou 4 cours d'1 heure", "Soit 7,08€ par cours", "Pratique 2×/semaine : le chemin le plus rapide vers l'aisance"],
+        cta: "S'abonner à Premium",
+        highlight: false,
+        badge: ""
+      }
+    ],
+    guarTitle: "7 jours. Sans questions.",
+    guar: ["Abonnez-vous, suivez vos cours, parlez aux tuteurs. Si d'ici 7 jours vous pensez que One Talky n'est pas pour vous, envoyez-nous un message et on vous rembourse ", "100% de votre argent", ". Sans formulaire, sans justification."],
+    guarBody3: "Si vous devez faire des calculs pour décider si ça en vaut la peine, c'est qu'on n'a pas fait notre part du travail : enlever le risque de votre côté.",
+    objEyebrow: "Avant que vous ne demandiez",
+    objTitle: "Répondre aux objections directement",
+    objections: [
+      {
+        q: "Je n'ai pas le temps d'étudier chaque semaine.",
+        a: "Personne n'a le temps. C'est pour ça que le cours dure 30 minutes, pas 2 heures. Un créneau s'est libéré ? Vous réservez. Mauvaise semaine ? Vous reprogrammez."
+      },
+      {
+        q: "Et si je ne comprends pas le professeur ?",
+        a: "Nos tuteurs sont spécialisés dans l'enseignement de l'anglais aux non-natifs. Ils ralentissent, répètent et écrivent dans le chat jusqu'à ce que vous suiviez."
+      },
+      {
+        q: "Un professeur particulier est trop cher pour moi.",
+        a: "C'était le cas. Notre modèle est mondial : des tuteurs partout dans le monde, sans bâtiment, sans accueil. Un cours de 30 minutes démarre à 14,90€."
+      },
+      {
+        q: "Le paiement sur le site est-il sécurisé ?",
+        a: "Chaque paiement est traité directement par Stripe, l'une des plus grandes plateformes de paiement au monde. Nous ne stockons pas les données de votre carte."
+      },
+      {
+        q: "Et si ça ne marche pas pour moi ?",
+        a: "Si vous vous abonnez et que ça ne vous plaît pas, vous avez 7 jours pour demander un remboursement à 100%. Sans formulaire, sans justification."
+      }
+    ],
+    urgBadge: "Lot fondateur",
+    urgTitle: "Prix fondateur : les 200 premiers.",
+    urg: ["One Talky ouvre en ce moment. Les 200 premiers abonnés bloquent le prix de lancement ", "pour toujours", " — même quand les forfaits augmenteront."],
+    urgSpotsPre: "Il reste",
+    urgSpotsPost: "places fondateur",
+    urgCta: "Garantir mon prix fondateur",
+    faqTitle: "Les questions que tout le monde se pose",
+    faqs: [
+      {
+        q: "Combien de temps dois-je consacrer par semaine ?",
+        a: "30 minutes, une fois par semaine, ça crée déjà l'habitude. Ceux qui sont pressés le font 3 ou 4 fois."
+      },
+      {
+        q: "Est-ce fait pour les vrais débutants ?",
+        a: "Oui. Les tuteurs mènent le cours avec ceux qui savent peu : rythme plus lent, vocabulaire simple, soutien dans le chat."
+      },
+      {
+        q: "Et si je suis déjà avancé ?",
+        a: "Ça marche aussi — et c'est là que vous progressez le plus. Un élève avancé n'a généralement personne avec qui pratiquer."
+      },
+      {
+        q: "Les cours ont-ils un horaire fixe ?",
+        a: "Vous réservez quand vous voulez, selon la disponibilité des tuteurs. Pas de grille fixe."
+      },
+      {
+        q: "Comment fonctionne le paiement ?",
+        a: "Directement via Stripe : carte de crédit. Abonnement mensuel, sans engagement."
+      },
+      {
+        q: "Dois-je installer quelque chose ?",
+        a: "Non. Le cours se passe dans le navigateur, sur téléphone ou ordinateur. Il vous faut juste internet et un casque."
+      }
+    ],
+    finTitle: ["Dans six mois, vous serez en train de ", "parler", " — ou encore en train d'expliquer pourquoi vous ne le faites pas."],
+    finBody: "Personne ne progresse en lisant sur l'anglais. On progresse en parlant, en se trompant et en reparlant — avec quelqu'un en face qui est patient avec vous. Ce sont 30 minutes. Commencez aujourd'hui.",
+    finMicro: "Sans engagement · Paiement sécurisé via Stripe · Garantie de 7 jours",
+    psBody: "— On ne va pas vous promettre la fluidité en 15 jours, parce que ça n'existe pas. Ce qu'on promet : une vraie conversation avec de vraies personnes, selon votre horaire, à partir de 14,90€ par semaine.",
+    ppsBody: "— Après votre abonnement, vous avez 7 jours pour demander un remboursement complet. La seule façon de perdre ici, c'est de ne pas essayer.",
+    footPrivacy: "Politique de Confidentialité",
+    footTerms: "Conditions d'Utilisation",
+    footSupport: "Support",
+    footLgpd: "One Talky — conversation en anglais 1 à 1. Paiement via Stripe. Vos données sont traitées conformément à la réglementation applicable en matière de protection des données."
+  },
+  de: {
+    navHow: "So funktioniert's",
+    navTutors: "Tutoren",
+    navPlans: "Pläne",
+    navGuarantee: "Garantie",
+    navLogin: "Anmelden",
+    navCta: "Registrieren",
+    heroBadge: "Live 1-zu-1-Konversation",
+    headline: ["Sie verstehen Englisch. Sie können es nur nicht ", "sprechen."],
+    heroSub1: "1-zu-1-Konversationsunterricht per Video mit Englischtutoren aus aller Welt. 30 Minuten am Stück, zu Ihrer Zeit. Ab ",
+    heroPrice: "14,90€ pro Woche",
+    heroSub2: ".",
+    heroCta: "Jetzt starten",
+    heroSecondary: "So funktioniert's ansehen",
+    disarm: ["Jederzeit kündbar", "7 Tage Garantie", "Ohne Mindestlaufzeit"],
+    capMain: "“It’s nice to meet you.”",
+    capSub: "Schön, dich kennenzulernen.",
+    bubbleReply: "Hi!",
+    fStreakLabel: "Serie",
+    fStreakVal: "12 Tage",
+    fPronLabel: "Aussprache",
+    fPronVal: "95",
+    fSaveLabel: "Neues Wort",
+    fSaveWord: "context",
+    heroFactChips: ["Immer 1-zu-1", "30 Minuten am Stück", "Tutoren aus vielen Ländern", "Ab 14,90€/Woche"],
+    openLead: "Sie haben Serien ohne Untertitel gesehen. Sie haben englische Texte gelesen, ohne stecken zu bleiben. Aber wenn Sie jemand ansieht und etwas auf Englisch fragt, ",
+    openAccent: "verschwindet der Satz.",
+    openBody: "Das Problem war nie Ihr Wissen. Es war der fehlende Sprechübung mit einem anderen Menschen. Genau das löst One Talky: echte 1-zu-1-Konversation mit Tutoren aus vielen Ländern. Sie loggen sich ein, Sie sprechen.",
+    painEyebrow: "Das Problem",
+    painTitle: "Das Gespräch stockt immer an derselben Stelle.",
+    pains: ["Sie bauen den ganzen Satz im Kopf zusammen — und bis Sie sprechen wollten, hat sich das Thema schon geändert.", "Sie verstehen alles, was der andere sagt, antworten aber mit drei Wörtern, um keine Fehler zu machen.", "Sie vermeiden Meetings, Reisen oder Calls auf Englisch. Es gibt immer einen Kollegen, der 'besser spricht'.", "Sie haben für einen Kurs bezahlt, das Modul beendet — und können immer noch kein Gespräch beginnen.", "Sie kennen die Grammatik besser als viele fließend Sprechende. Und das frustriert Sie.", "Sie haben keine Angst vor Englisch. Sie haben Angst, vor anderen stecken zu bleiben."],
+    painClose: "Es ist kein Mangel an Lernen. Es ist ein Mangel an Sprechpraxis.",
+    mechEyebrow: "Die Lösung",
+    mechTitle: "One Talky ist Sprechpraxis. Nur das. Deshalb funktioniert es.",
+    mechSub: "Ein 30-minütiger Videoanruf mit einem echten Tutor aus einem anderen Land, von Anfang bis Ende.",
+    mechanism: [
+      {
+        n: "1",
+        title: "Immer eins zu eins",
+        body: "Keine Klasse mit 12 Leuten, wo Sie 4 Minuten sprechen. Die ganze Stunde gehört Ihnen."
+      },
+      {
+        n: "2",
+        title: "ESL-Tutoren aus vielen Ländern",
+        body: "Ausgebildet, um Lernende zu unterrichten — sie passen Tempo, Wortschatz und Geduld Ihrem Niveau an."
+      },
+      {
+        n: "3",
+        title: "30-Minuten-Blöcke, zu Ihrer Zeit",
+        body: "Sie buchen, wenn es passt. Gerade 30 freie Minuten? Steigen Sie jetzt ein."
+      },
+      {
+        n: "4",
+        title: "Globales Modell, fairer Preis",
+        body: "Tutoren auf der ganzen Welt verteilt: eine Privatstunde kostet einen Bruchteil einer traditionellen Schule."
+      }
+    ],
+    honesty: ["Und wir sind ehrlich: ", "niemand wird in 15 Tagen fließend.", " Sprachgewandtheit kommt durch Wiederholung. One Talky beseitigt jedes Hindernis zwischen Ihnen und regelmäßiger Praxis — Preis, Zeitplan, Scheu und Terminkalender."],
+    benEyebrow: "Vorteile",
+    benTitle: "Was sich ändert, wenn Sie jede Woche sprechen",
+    benefits: [
+      {
+        title: "Sie hören auf, im Kopf zu übersetzen",
+        body: "Wenn Sie jede Woche sprechen, hört Englisch auf, Übersetzung zu sein, und wird zum Reflex."
+      },
+      {
+        title: "Die Scheu verschwindet vor dem Akzent",
+        body: "Fehler vor einem Tutor zu machen, der Sie ruhig korrigiert, ist das Training, das kein Klassenzimmer bietet."
+      },
+      {
+        title: "Ihr Zeitplan bestimmt, nicht unserer",
+        body: "Wenn Ihre Woche durcheinandergerät, verschieben Sie einfach. Niemand markiert Sie als abwesend."
+      },
+      {
+        title: "Sie sprechen mit Menschen aus vielen Ländern",
+        body: "Das bereitet Sie auf das echte Englisch der Welt vor — nicht auf das Englisch einer Prüfungsaufnahme."
+      },
+      {
+        title: "Jede Minute gehört Ihnen",
+        body: "Bei Premium kostet Ihre Privatstunde weniger als 1€ pro Minute Konversation."
+      },
+      {
+        title: "Sie kommen entspannt ins Meeting",
+        body: "Weil Sie dieses Gespräch schon Dutzende Male geführt haben."
+      },
+      {
+        title: "Passt für die ganze Familie",
+        body: "Erwachsener, Teenager oder Kind — der Tutor passt die Stunde an Alter und Niveau jedes Einzelnen an."
+      },
+      {
+        title: "Sie starten heute",
+        body: "Keine Anmeldegebühr, kein Pflichtmaterial, keine Klasse, die im nächsten Semester voll ist."
+      }
+    ],
+    tutEyebrow: "Lernen Sie Ihre Tutoren kennen",
+    tutTitle: "Echte Menschen, aus vielen Ländern, geschult, Ihnen zuzuhören",
+    tutSub: "Spezialisten im Unterrichten von Englisch für Nicht-Muttersprachler. Von Null bis Fortgeschritten — der Tutor passt das Tempo Ihrem an.",
+    sealTitle: "Sichere Zahlung via Stripe",
+    sealSub: "Kreditkarte — wir speichern Ihre Kartendaten nicht.",
+    priceEyebrow: "Pläne",
+    priceTitle: "Wählen Sie, wie viel Sie jede Woche sprechen möchten",
+    priceSub: "Jede Stunde ist eins zu eins, per Video, 30 Minuten lang.",
+    anchor: ["Eine private Englischstunde kostet im Schnitt ", "25€–40€", " pro Stunde. Bei One Talky startet eine Stunde 1-zu-1-Konversation bei ", "14,90€", "."],
+    anchorNote: "Sichere Zahlung via Stripe · Ohne Mindestlaufzeit · Jederzeit kündbar.",
+    perWeek: "/Woche",
+    perMonth: "/Monat",
+    totalWord: "Gesamt ",
+    plans: [
+      {
+        tag: "Basic",
+        name: "60 Min / Monat",
+        weekly: "14,90€",
+        monthly: "29,80€",
+        features: ["60 Minuten Konversation pro Monat", "2 Einzelstunden à 30 Min", "Freie Terminwahl", "Tutoren für jedes Niveau"],
+        cta: "Mit Basic starten",
+        highlight: false,
+        badge: ""
+      },
+      {
+        tag: "Standard",
+        name: "120 Min / Monat",
+        weekly: "14,90€",
+        monthly: "29,80€",
+        features: ["120 Minuten Konversation pro Monat", "4 Stunden à 30 Min oder 2 Stunden à 1h", "Ein Gespräch pro Woche: das Minimum, um eine Gewohnheit aufzubauen", "Freie Terminwahl"],
+        cta: "Standard abonnieren",
+        highlight: true,
+        badge: "Meistgewählt"
+      },
+      {
+        tag: "Premium",
+        name: "240 Min / Monat",
+        weekly: "28,30€",
+        monthly: "56,60€",
+        features: ["240 Minuten Konversation pro Monat", "8 Stunden à 30 Min oder 4 Stunden à 1h", "Entspricht 7,08€ pro Stunde", "2× pro Woche üben: der schnellste Weg zur Sprachgewandtheit"],
+        cta: "Premium abonnieren",
+        highlight: false,
+        badge: ""
+      }
+    ],
+    guarTitle: "7 Tage. Ohne Fragen.",
+    guarBody3: "Wenn Sie rechnen müssen, um zu entscheiden, ob es sich lohnt, dann haben wir unseren Teil nicht erfüllt: das Risiko von Ihnen zu nehmen.",
+    guar: ["Abonnieren Sie, nehmen Sie Ihre Stunden, sprechen Sie mit den Tutoren. Wenn Sie innerhalb von 7 Tagen finden, dass One Talky nichts für Sie ist, schreiben Sie uns und wir erstatten ", "100% Ihres Geldes", ". Kein Formular, keine Begründung."],
+    objEyebrow: "Bevor Sie fragen",
+    objTitle: "Einwände direkt angehen",
+    objections: [
+      {
+        q: "Ich habe keine Zeit, jede Woche zu lernen.",
+        a: "Niemand hat das. Deshalb dauert die Stunde 30 Minuten, nicht 2 Stunden. Ein freier Slot im Kalender? Sie buchen. Schlechte Woche? Sie verschieben."
+      },
+      {
+        q: "Was, wenn ich den Lehrer nicht verstehe?",
+        a: "Unsere Tutoren sind Spezialisten im Unterrichten von Englisch für Nicht-Muttersprachler. Sie verlangsamen, wiederholen und schreiben im Chat, bis Sie folgen können."
+      },
+      {
+        q: "Ein Privatlehrer ist mir zu teuer.",
+        a: "War er. Unser Modell ist global: Tutoren weltweit, kein Gebäude, keine Rezeption. Eine 30-Minuten-Stunde startet bei 14,90€."
+      },
+      {
+        q: "Ist die Zahlung auf der Website sicher?",
+        a: "Jede Zahlung wird direkt von Stripe verarbeitet, einer der größten Zahlungsplattformen der Welt. Wir speichern Ihre Kartendaten nicht."
+      },
+      {
+        q: "Was, wenn es für mich nicht funktioniert?",
+        a: "Wenn Sie abonnieren und es Ihnen nicht gefällt, haben Sie 7 Tage Zeit, 100% Ihres Geldes zurückzufordern. Kein Formular, keine Begründung."
+      }
+    ],
+    urgBadge: "Gründer-Kontingent",
+    urgTitle: "Gründerpreis: die ersten 200.",
+    urg: ["One Talky öffnet gerade. Die ersten 200 Abonnenten sichern sich den Launch-Preis ", "für immer", " — auch wenn die Preise später steigen."],
+    urgSpotsPre: "Nur noch",
+    urgSpotsPost: "Gründerplätze übrig",
+    urgCta: "Meinen Gründerpreis sichern",
+    faqTitle: "Die Fragen, die alle stellen",
+    faqs: [
+      {
+        q: "Wie viel Zeit muss ich pro Woche einplanen?",
+        a: "30 Minuten, einmal pro Woche, schaffen schon eine Gewohnheit. Wer es eilig hat, macht es 3 oder 4 Mal."
+      },
+      {
+        q: "Funktioniert es für echte Anfänger?",
+        a: "Ja. Die Tutoren führen die Stunde mit Menschen, die wenig wissen: langsameres Tempo, einfacher Wortschatz, Unterstützung im Chat."
+      },
+      {
+        q: "Was, wenn ich schon fortgeschritten bin?",
+        a: "Funktioniert auch — und da profitieren Sie am meisten. Fortgeschrittene haben normalerweise niemanden zum Üben."
+      },
+      {
+        q: "Haben die Stunden feste Zeiten?",
+        a: "Sie buchen, wann Sie wollen, innerhalb der Verfügbarkeit der Tutoren. Kein fester Stundenplan."
+      },
+      {
+        q: "Wie funktioniert die Zahlung?",
+        a: "Direkt über Stripe: Kreditkarte. Monatsabo, ohne Mindestlaufzeit."
+      },
+      {
+        q: "Muss ich etwas installieren?",
+        a: "Nein. Die Stunde findet im Browser statt, auf dem Handy oder Computer. Sie brauchen nur Internet und Kopfhörer."
+      }
+    ],
+    finTitle: ["In sechs Monaten werden Sie ", "sprechen", " — oder immer noch erklären, warum nicht."],
+    finBody: "Niemand kommt durch das Lesen über Englisch weiter. Man kommt weiter, indem man spricht, Fehler macht und wieder spricht — mit jemandem am anderen Ende, der geduldig mit einem ist. Es sind 30 Minuten. Fangen Sie heute an.",
+    finMicro: "Ohne Mindestlaufzeit · Sichere Zahlung via Stripe · 7 Tage Garantie",
+    psBody: "— Wir werden Ihnen keine Sprachgewandtheit in 15 Tagen versprechen, denn das gibt es nicht. Was wir versprechen: echte Konversation mit echten Menschen, zu Ihrer Zeit, ab 14,90€ pro Woche.",
+    ppsBody: "— Nach dem Abonnieren haben Sie 7 Tage Zeit, Ihr ganzes Geld zurückzufordern. Der einzige Weg, hier zu verlieren, ist es nicht zu versuchen.",
+    footPrivacy: "Datenschutzrichtlinie",
+    footTerms: "Nutzungsbedingungen",
+    footSupport: "Support",
+    footLgpd: "One Talky — 1-zu-1-Englischkonversation. Zahlung via Stripe. Ihre Daten werden gemäß den geltenden Datenschutzbestimmungen verarbeitet."
+  },
+  it: {
+    navHow: "Come funziona",
+    navTutors: "Tutor",
+    navPlans: "Piani",
+    navGuarantee: "Garanzia",
+    navLogin: "Accedi",
+    navCta: "Registrati",
+    heroBadge: "Conversazione 1 a 1, dal vivo",
+    headline: ["Capisci l'inglese. Solo non riesci a ", "parlarlo."],
+    heroSub1: "Lezioni di conversazione 1 a 1, in video, con tutor d'inglese da tutto il mondo. 30 minuti alla volta, quando vuoi tu. A partire da ",
+    heroPrice: "14,90€ a settimana",
+    heroSub2: ".",
+    heroCta: "Inizia ora",
+    heroSecondary: "Guarda come funziona",
+    disarm: ["Annulla quando vuoi", "Garanzia di 7 giorni", "Senza vincoli"],
+    capMain: "“It’s nice to meet you.”",
+    capSub: "Piacere di conoscerti.",
+    bubbleReply: "Ciao!",
+    fStreakLabel: "Serie",
+    fStreakVal: "12 giorni",
+    fPronLabel: "Pronuncia",
+    fPronVal: "95",
+    fSaveLabel: "Nuova parola",
+    fSaveWord: "context",
+    heroFactChips: ["Sempre 1 a 1", "30 minuti alla volta", "Tutor da vari paesi", "Da 14,90€/sett"],
+    openLead: "Hai visto serie senza sottotitoli. Hai letto testi in inglese senza bloccarti. Ma quando qualcuno ti guarda e ti chiede qualcosa in inglese, ",
+    openAccent: "la frase svanisce.",
+    openBody: "Il problema non è mai stata la tua conoscenza. Era la mancanza di pratica orale con un'altra persona. È esattamente questo che risolve One Talky: conversazione reale, 1 a 1, con tutor da vari paesi. Ti colleghi, parli.",
+    painEyebrow: "Il problema",
+    painTitle: "La conversazione si blocca sempre nello stesso punto.",
+    pains: ["Costruisci l'intera frase nella testa — e quando stavi per parlare, l'argomento è già cambiato.", "Capisci tutto quello che dice l'altro, ma rispondi con tre parole per non sbagliare.", "Eviti riunioni, viaggi o chiamate in inglese. C'è sempre un collega che 'parla meglio'.", "Hai pagato un corso, finito il modulo — e ancora non riesci a iniziare una conversazione.", "Conosci la grammatica meglio di molte persone fluenti. E questo ti irrita.", "Non hai paura dell'inglese. Hai paura di bloccarti davanti agli altri."],
+    painClose: "Non è mancanza di studio. È mancanza di chilometraggio parlando.",
+    mechEyebrow: "La soluzione",
+    mechTitle: "One Talky è pratica orale. Solo questo. Per questo funziona.",
+    mechSub: "Una videochiamata di 30 minuti con un tutor vero, da un altro paese, dall'inizio alla fine.",
+    mechanism: [
+      {
+        n: "1",
+        title: "Uno a uno, sempre",
+        body: "Niente classi da 12 persone dove parli 4 minuti. La lezione intera è tua."
+      },
+      {
+        n: "2",
+        title: "Tutor ESL da vari paesi",
+        body: "Formati per insegnare a chi impara — adattano il ritmo, il vocabolario e la pazienza al tuo livello."
+      },
+      {
+        n: "3",
+        title: "Blocchi da 30 min, quando vuoi tu",
+        body: "Prenoti quando ti va bene. Hai 30 minuti liberi adesso? Entra subito."
+      },
+      {
+        n: "4",
+        title: "Modello globale, prezzo per tutti",
+        body: "Tutor sparsi in tutto il mondo: una lezione privata costa una frazione di una scuola tradizionale."
+      }
+    ],
+    honesty: ["E saremo onesti: ", "nessuno diventa fluente in 15 giorni.", " La fluidità viene dalla ripetizione. One Talky rimuove ogni ostacolo tra te e la pratica costante — prezzo, orario, imbarazzo e agenda."],
+    benEyebrow: "Vantaggi",
+    benTitle: "Cosa cambia quando parli ogni settimana",
+    benefits: [
+      {
+        title: "Smetti di tradurre nella testa",
+        body: "Parlando ogni settimana, l'inglese smette di essere traduzione e diventa riflesso."
+      },
+      {
+        title: "L'imbarazzo se ne va prima dell'accento",
+        body: "Sbagliare davanti a un tutor che ti corregge con calma è l'allenamento che nessuna aula offre."
+      },
+      {
+        title: "Comanda la tua agenda, non la nostra",
+        body: "Se la settimana si complica, riprogrammi. Nessuno ti segna assente."
+      },
+      {
+        title: "Parli con persone di vari paesi",
+        body: "Questo ti prepara all'inglese reale del mondo — non all'inglese di un audio d'esame."
+      },
+      {
+        title: "Ogni minuto è tuo",
+        body: "Con Premium, la tua ora di lezione privata costa meno di 1€ al minuto di conversazione."
+      },
+      {
+        title: "Arrivi alla riunione senza sudare freddo",
+        body: "Perché hai già avuto quella conversazione decine di volte prima."
+      },
+      {
+        title: "Va bene per tutta la famiglia",
+        body: "Adulto, adolescente o bambino — il tutor calibra la lezione all'età e al livello di ciascuno."
+      },
+      {
+        title: "Inizi oggi",
+        body: "Senza iscrizione, senza materiale obbligatorio, senza classe che si riempie il prossimo semestre."
+      }
+    ],
+    tutEyebrow: "Conosci i tuoi tutor",
+    tutTitle: "Persone vere, da vari paesi, formate per ascoltarti",
+    tutSub: "Specialisti nell'insegnare inglese a chi non è madrelingua. Da zero ad avanzato — il tutor adatta il ritmo al tuo.",
+    sealTitle: "Pagamento sicuro via Stripe",
+    sealSub: "Carta di credito — non conserviamo i dati della tua carta.",
+    priceEyebrow: "Piani",
+    priceTitle: "Scegli quanto vuoi parlare ogni settimana",
+    priceSub: "Ogni lezione è individuale, in video, della durata di 30 minuti.",
+    anchor: ["Una lezione privata d'inglese costa in media ", "25€–40€", " all'ora. Su One Talky, un'ora di conversazione 1 a 1 parte da ", "14,90€", "."],
+    anchorNote: "Pagamento sicuro via Stripe · Senza vincoli · Annulla quando vuoi.",
+    perWeek: "/settimana",
+    perMonth: "/mese",
+    totalWord: "Totale ",
+    plans: [
+      {
+        tag: "Base",
+        name: "60 min / mese",
+        weekly: "14,90€",
+        monthly: "29,80€",
+        features: ["60 minuti di conversazione al mese", "2 lezioni individuali da 30 min", "Prenotazione libera", "Tutor per ogni livello"],
+        cta: "Inizia con Base",
+        highlight: false,
+        badge: ""
+      },
+      {
+        tag: "Standard",
+        name: "120 min / mese",
+        weekly: "14,90€",
+        monthly: "29,80€",
+        features: ["120 minuti di conversazione al mese", "4 lezioni da 30 min o 2 lezioni da 1 ora", "Una conversazione a settimana: il ritmo minimo per creare l'abitudine", "Prenotazione libera"],
+        cta: "Abbonati a Standard",
+        highlight: true,
+        badge: "Il più scelto"
+      },
+      {
+        tag: "Premium",
+        name: "240 min / mese",
+        weekly: "28,30€",
+        monthly: "56,60€",
+        features: ["240 minuti di conversazione al mese", "8 lezioni da 30 min o 4 lezioni da 1 ora", "Corrisponde a 7,08€ a lezione", "Pratica 2×/settimana: la strada più veloce per sbloccarti"],
+        cta: "Abbonati a Premium",
+        highlight: false,
+        badge: ""
+      }
+    ],
+    guarTitle: "7 giorni. Senza domande.",
+    guar: ["Abbonati, fai le tue lezioni, parla con i tutor. Se entro 7 giorni pensi che One Talky non fa per te, mandaci un messaggio e ti rimborsiamo ", "il 100% dei tuoi soldi", ". Senza moduli, senza giustificazioni."],
+    guarBody3: "Se devi fare i conti per decidere se ne vale la pena, è perché non abbiamo fatto la nostra parte: toglierti il rischio.",
+    objEyebrow: "Prima che tu chieda",
+    objTitle: "Affrontiamo le obiezioni direttamente",
+    objections: [
+      {
+        q: "Non ho tempo per studiare ogni settimana.",
+        a: "Nessuno ce l'ha. Per questo la lezione dura 30 minuti, non 2 ore. Si è liberato uno slot in agenda? Prenoti. Settimana no? Riprogrammi."
+      },
+      {
+        q: "E se non capisco l'insegnante?",
+        a: "I nostri tutor sono specialisti nell'insegnare inglese a chi non è madrelingua. Rallentano, ripetono e scrivono in chat finché non riesci a seguire."
+      },
+      {
+        q: "Un insegnante privato è troppo caro per me.",
+        a: "Lo era. Il nostro modello è globale: tutor in tutto il mondo, senza sede, senza reception. Una lezione da 30 minuti parte da 14,90€."
+      },
+      {
+        q: "Il pagamento sul sito è sicuro?",
+        a: "Ogni pagamento è elaborato direttamente da Stripe, una delle piattaforme di pagamento più grandi al mondo. Non conserviamo i dati della tua carta."
+      },
+      {
+        q: "E se non funziona per me?",
+        a: "Se ti abboni e non ti piace, hai 7 giorni per chiedere il rimborso del 100%. Senza moduli, senza giustificazioni."
+      }
+    ],
+    urgBadge: "Lotto fondatori",
+    urgTitle: "Prezzo fondatori: i primi 200.",
+    urg: ["One Talky sta aprendo ora. I primi 200 abbonati bloccano il prezzo di lancio ", "per sempre", " — anche quando i piani aumenteranno."],
+    urgSpotsPre: "Restano",
+    urgSpotsPost: "posti fondatori",
+    urgCta: "Blocca il mio prezzo fondatore",
+    faqTitle: "Le domande che fanno tutti",
+    faqs: [
+      {
+        q: "Quanto tempo devo dedicare a settimana?",
+        a: "30 minuti, una volta a settimana, crea già l'abitudine. Chi ha fretta lo fa 3 o 4 volte."
+      },
+      {
+        q: "Funziona per chi è davvero principiante?",
+        a: "Sì. I tutor conducono la lezione con chi sa poco: ritmo più lento, vocabolario semplice, supporto in chat."
+      },
+      {
+        q: "E se sono già avanzato?",
+        a: "Funziona anche per te — ed è dove guadagni di più. Uno studente avanzato di solito non ha con chi esercitarsi."
+      },
+      {
+        q: "Le lezioni hanno un orario fisso?",
+        a: "Prenoti quando vuoi, secondo la disponibilità dei tutor. Nessun orario fisso."
+      },
+      {
+        q: "Come funziona il pagamento?",
+        a: "Direttamente tramite Stripe: carta di credito. Abbonamento mensile, senza vincoli."
+      },
+      {
+        q: "Devo installare qualcosa?",
+        a: "No. La lezione avviene nel browser, da cellulare o computer. Ti servono solo internet e cuffie."
+      }
+    ],
+    finTitle: ["Tra sei mesi, sarai a ", "parlare", " — o starai ancora spiegando perché non lo fai."],
+    finBody: "Nessuno si sblocca leggendo sull'inglese. Ci si sblocca parlando, sbagliando e parlando ancora — con qualcuno dall'altra parte che ha pazienza con te. Sono 30 minuti. Inizia oggi.",
+    finMicro: "Senza vincoli · Pagamento sicuro via Stripe · Garanzia di 7 giorni",
+    psBody: "— Non ti prometteremo la fluidità in 15 giorni, perché non esiste. Quello che promettiamo: conversazione reale con persone reali, quando vuoi tu, a partire da 14,90€ a settimana.",
+    ppsBody: "— Dopo l'abbonamento, hai 7 giorni per chiedere il rimborso completo. L'unico modo di perdere qui è non provarci.",
+    footPrivacy: "Informativa sulla Privacy",
+    footTerms: "Termini di Utilizzo",
+    footSupport: "Assistenza",
+    footLgpd: "One Talky — conversazione in inglese 1 a 1. Pagamento via Stripe. I tuoi dati sono trattati in conformità con le normative applicabili sulla protezione dei dati."
+  },
 };
 
 const TUTORS = [
