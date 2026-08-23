@@ -304,6 +304,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "Write a message...",
     declineBtn: "Decline",
     acceptBtn: "Accept",
+    lessonReminderTitle: "⏰ Lesson Reminder",
     genericTryAgain: "Please try again.",
   },
   pt_br: {
@@ -610,6 +611,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "Escreva uma mensagem...",
     declineBtn: "Recusar",
     acceptBtn: "Aceitar",
+    lessonReminderTitle: "⏰ Lembrete de Aula",
     genericTryAgain: "Tente novamente.",
   },
   pt_pt: {
@@ -908,6 +910,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "Escreva uma mensagem...",
     declineBtn: "Recusar",
     acceptBtn: "Aceitar",
+    lessonReminderTitle: "⏰ Lembrete de Aula",
     genericTryAgain: "Tente novamente.",
   },
   es: {
@@ -1202,6 +1205,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "Escribe un mensaje...",
     declineBtn: "Rechazar",
     acceptBtn: "Aceptar",
+    lessonReminderTitle: "⏰ Recordatorio de Clase",
     genericTryAgain: "Inténtalo de nuevo.",
   },
   fr: {
@@ -1496,6 +1500,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "Écrivez un message...",
     declineBtn: "Refuser",
     acceptBtn: "Accepter",
+    lessonReminderTitle: "⏰ Rappel de Cours",
     genericTryAgain: "Veuillez réessayer.",
   },
   de: {
@@ -1790,6 +1795,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "Nachricht schreiben...",
     declineBtn: "Ablehnen",
     acceptBtn: "Akzeptieren",
+    lessonReminderTitle: "⏰ Lektionserinnerung",
     genericTryAgain: "Bitte versuchen Sie es erneut.",
   },
   it: {
@@ -2084,6 +2090,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "Scrivi un messaggio...",
     declineBtn: "Rifiuta",
     acceptBtn: "Accetta",
+    lessonReminderTitle: "⏰ Promemoria Lezione",
     genericTryAgain: "Riprova.",
   },
   ja: {
@@ -2385,6 +2392,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "メッセージを入力...",
     declineBtn: "却下",
     acceptBtn: "承認",
+    lessonReminderTitle: "⏰ レッスンのリマインダー",
     genericTryAgain: "もう一度お試しください。",
   },
   ko: {
@@ -2686,6 +2694,7 @@ export const TRANSLATIONS = {
     writeMessagePlaceholder: "메시지를 입력하세요...",
     declineBtn: "거절",
     acceptBtn: "수락",
+    lessonReminderTitle: "⏰ 수업 알림",
     genericTryAgain: "다시 시도해 주세요.",
   },
 };
