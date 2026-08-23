@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const ACCENT = "#F26A1B";
-const LANG_FULL_LABELS = { pt: "Português", en: "English", es: "Español", fr: "Français", de: "Deutsch", it: "Italiano" };
-const LANG_ORDER = ["pt", "en", "es", "fr", "de", "it"];
+const LANG_FULL_LABELS = { pt: "Português", en: "English", es: "Español", fr: "Français", de: "Deutsch", it: "Italiano", ja: "日本語", ko: "한국어" };
+const LANG_ORDER = ["pt", "en", "es", "fr", "de", "it", "ja", "ko"];
 
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
