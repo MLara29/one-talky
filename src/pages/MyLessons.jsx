@@ -342,9 +342,7 @@ export default function MyLessons() {
                       style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}>
                       <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                       <span className="text-xs text-amber-500">
-                        {busyTutors[l.tutor_id]
-                          ? "Seu tutor está em outra aula. Aguarde — o botão de entrar aparece assim que ele estiver livre."
-                          : "Aguarde seu tutor entrar na plataforma. Você tem até 10 minutos após o horário marcado."}
+                        {busyTutors[l.tutor_id] ? T("waitingTutorBusy") : T("waitingTutorGrace")}
                       </span>
                     </div>
                   )}
@@ -448,7 +446,7 @@ export default function MyLessons() {
                           </span>
                         )}
                       </div>
-                      <p className="theme-subtext text-sm text-gray-500">{getLanguageLabel(l.language)} · {l.duration_minutes || 0} min{l.is_recorded && " · Recorded"}</p>
+                      <p className="theme-subtext text-sm text-gray-500">{getLanguageLabel(l.language)} · {l.duration_minutes || 0} min{l.is_recorded && ` · ${user?.role === "student" ? T("recordedLabel") : "Recorded"}`}</p>
                     </div>
                   </div>
                   <div className="theme-subtext flex items-center gap-1 text-xs text-gray-600">
