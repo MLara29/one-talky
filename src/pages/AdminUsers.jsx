@@ -34,7 +34,9 @@ export default function AdminUsers() {
     try {
       const [t, s, a, allUsers] = await Promise.all([
         base44.entities.TutorProfile.list("-created_date", 50),
-        base44.entities.StudentProfile.list("-created_date", 50),
+        // Limite maior aqui — a nova seção "Novos Alunos" precisa conseguir
+        // cobrir períodos mais longos sem cortar gente silenciosamente.
+        base44.entities.StudentProfile.list("-created_date", 1000),
         base44.entities.Affiliate.list("-created_date", 100),
         base44.entities.User.list("-created_date", 200),
       ]);
