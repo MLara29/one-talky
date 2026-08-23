@@ -97,14 +97,14 @@ export default function RescheduleRequestCard({ lesson, request, onResolved }) {
           {isStudent ? (
             <>
               <p className="font-semibold text-sm" style={{ color: "var(--app-text-primary)" }}>
-                Seu tutor propôs mudar a aula para:
+                {T("tutorProposedNewTime", "Your tutor proposed changing the lesson to:")}
               </p>
               <p className="font-bold text-sm mt-0.5" style={{ color: "#F26A1B" }}>{proposedDate}</p>
             </>
           ) : (
             <>
               <p className="font-semibold text-sm" style={{ color: "var(--app-text-primary)" }}>
-                Aguardando resposta do aluno sobre o novo horário proposto:
+                Waiting for the student's response about the new proposed time:
               </p>
               <p className="font-bold text-sm mt-0.5" style={{ color: "#F26A1B" }}>{proposedDate}</p>
             </>
@@ -122,7 +122,7 @@ export default function RescheduleRequestCard({ lesson, request, onResolved }) {
                   style={isMine
                     ? { background: "#F26A1B", color: "#fff" }
                     : { background: "rgba(255,255,255,0.08)", color: "var(--app-text-primary)" }}>
-                  <p className="text-[10px] opacity-60 mb-0.5">{m.sender_role === 'tutor' ? 'Tutor' : 'Aluno'}</p>
+                  <p className="text-[10px] opacity-60 mb-0.5">{m.sender_role === 'tutor' ? T("tutorLabel", "Tutor") : T("studentLabel", "Student")}</p>
                   <p className="break-words">{m.message}</p>
                 </div>
               </div>
@@ -135,7 +135,7 @@ export default function RescheduleRequestCard({ lesson, request, onResolved }) {
         <Textarea
           value={message}
           onChange={e => setMessage(e.target.value)}
-          placeholder={isStudent ? "Escreva uma mensagem..." : "Write a message..."}
+          placeholder={T("writeMessagePlaceholder", "Write a message...")}
           className="resize-none h-16 text-sm"
           style={{
             background: "rgba(255,255,255,0.05)",
