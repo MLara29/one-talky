@@ -6,7 +6,7 @@ import { PREPAID_PACKS, PLANS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "react-router-dom";
-import CheckoutModal from "@/components/checkout/CheckoutModal";
+import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -420,9 +420,8 @@ export default function CreditsBanner({ profile, onUpdate }) {
       </div>
 
       {checkoutItem && (
-        <CheckoutModal
+        <StripeCheckoutModal
           item={checkoutItem}
-          userEmail={user?.email}
           onClose={() => setCheckoutItem(null)}
           onSuccess={handleCheckoutSuccess}
           affiliateCoupon={profile?.coupon_code}
