@@ -14,12 +14,12 @@ import { t } from "@/lib/i18n";
 
 const FRIENDLY_WARNING_CODES = ["insufficient_credits_for_booking", "first_week_limit"];
 
-function getBookingErrorDisplay(errorCode, fallbackTitle) {
+function getBookingErrorDisplay(errorCode, fallbackTitle, lang) {
   const isFriendly = FRIENDLY_WARNING_CODES.includes(errorCode);
   const title = errorCode === "first_week_limit"
-    ? "Sua próxima aula já tem uma data 😊"
+    ? t(lang, "nextLessonAlreadyScheduled")
     : errorCode === "insufficient_credits_for_booking"
-    ? "Você já usou todo o seu saldo"
+    ? t(lang, "allCreditsUsed")
     : fallbackTitle;
   return { variant: isFriendly ? "warning" : "destructive", title };
 }
