@@ -11,8 +11,11 @@ import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
 export default function Register() {
+  const { lang } = useLang();
   const [searchParams] = useSearchParams();
   const defaultRole = searchParams.get("role") === "tutor" ? "tutor" : "student";
   // Validado via safeReturnTo: rejeita javascript:, domínios externos e
