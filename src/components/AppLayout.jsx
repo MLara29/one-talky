@@ -72,8 +72,8 @@ const AFFILIATE_NAV = [
   { label: "Dashboard", path: "/affiliate", icon: Home },
 ];
 
-const LANG_OPTIONS = ["en", "pt_br"];
-const LANG_LABELS = { en: "EN", pt_br: "PT" };
+const LANG_OPTIONS = ["en", "pt_br", "es", "fr", "de", "it"];
+const LANG_LABELS = { en: "EN", pt_br: "PT", es: "ES", fr: "FR", de: "DE", it: "IT" };
 
 // Shared pill nav used by all roles
 function TopPillNav({ nav, location, supportCount }) {
