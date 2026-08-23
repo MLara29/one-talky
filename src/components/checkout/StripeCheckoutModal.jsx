@@ -4,6 +4,8 @@ import { loadStripe } from "@stripe/stripe-js";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { X, Lock, Loader2, AlertCircle, CheckCircle, CreditCard } from "lucide-react";
 import { formatRegionalPrice } from "@/lib/regionPricing";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -14,6 +16,7 @@ function fmtBRL(val) {
 // Calls stripeCreateCheckout once to get the client_secret + publishable_key,
 // then hands them to <EmbeddedCheckoutProvider>/<EmbeddedCheckout>.
 export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmail, affiliateCoupon }) {
+  const { lang } = useLang();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
