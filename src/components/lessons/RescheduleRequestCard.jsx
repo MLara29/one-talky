@@ -40,11 +40,11 @@ export default function RescheduleRequestCard({ lesson, request, onResolved }) {
         request_id: request.id, action: "accept",
       });
       if (res.data?.error) throw new Error(res.data.error);
-      toast({ title: "Horário aceito!", description: "A aula foi movida para o novo horário." });
+      toast({ title: T("rescheduleAcceptedToast", "Time accepted!"), description: T("rescheduleMovedDesc", "The lesson has been moved to the new time.") });
       onResolved();
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.message || "Tente novamente.";
-      toast({ title: "Erro ao aceitar", description: msg, variant: "destructive" });
+      const msg = err?.response?.data?.error || err?.message || T("genericTryAgain", "Please try again.");
+      toast({ title: T("rescheduleAcceptErrorTitle", "Error accepting"), description: msg, variant: "destructive" });
     } finally { setActionLoading(false); }
   };
 
@@ -55,11 +55,11 @@ export default function RescheduleRequestCard({ lesson, request, onResolved }) {
         request_id: request.id, action: "reject",
       });
       if (res.data?.error) throw new Error(res.data.error);
-      toast({ title: "Proposta recusada", description: "A aula permanece no horário original." });
+      toast({ title: T("rescheduleRejectedToast", "Proposal declined"), description: T("rescheduleKeptDesc", "The lesson stays at the original time.") });
       onResolved();
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.message || "Tente novamente.";
-      toast({ title: "Erro ao recusar", description: msg, variant: "destructive" });
+      const msg = err?.response?.data?.error || err?.message || T("genericTryAgain", "Please try again.");
+      toast({ title: T("rescheduleRejectErrorTitle", "Error declining"), description: msg, variant: "destructive" });
     } finally { setActionLoading(false); }
   };
 
@@ -74,16 +74,18 @@ export default function RescheduleRequestCard({ lesson, request, onResolved }) {
       setMessage("");
       loadThread();
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.message || "Tente novamente.";
-      toast({ title: "Erro ao enviar mensagem", description: msg, variant: "destructive" });
+      const msg = err?.response?.data?.error || err?.message || T("genericTryAgain", "Please try again.");
+      toast({ title: T("rescheduleSendErrorTitle", "Error sending message"), description: msg, variant: "destructive" });
     } finally { setActionLoading(false); }
   };
 
   if (loading) return null;
 
-  const proposedDate = new Date(request.proposed_scheduled_at).toLocaleString('pt-BR', {
-    dateStyle: 'full', timeStyle: 'short',
-  });
+  const LOCALE_MAP = { en: "en-US", pt_br: "pt-BR", pt_pt: "pt-PT", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT", ja: "ja-JP", ko: "ko-KR" };
+  const proposedDate = new Date(request.proposed_scheduled_at).toLocaleString(
+    isStudent ? (LOCALE_MAP[lang] || "en-US") : "en-US",
+    { dateStyle: 'full', timeStyle: 'short' }
+  );
 
   const messages = thread?.messages || [];
 
