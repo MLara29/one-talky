@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck, Search, Eye, EyeOff } from "lucide-react";
+import { Trash2, Ban, CheckCircle, Link2, Copy, UserCheck, Search, Eye, EyeOff, UserPlus, CalendarDays } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -596,6 +596,67 @@ export default function AdminUsers() {
               {filteredAffiliates.length === 0 && <p className="theme-subtext text-center text-sm text-gray-500 py-8">{searchAffiliate ? "Nenhum afiliado encontrado para essa busca" : "Nenhum afiliado ainda"}</p>}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="new_students">
+          {(() => {
+            const newStudents = [...students]
+              .filter(s => {
+                if (!newStudentsSince) return true;
+                if (!s.created_date) return false;
+                // Compara só a data (ignora hora) — a partir do dia
+                // selecionado, incluindo ele mesmo.
+                return new Date(s.created_date) >= new Date(newStudentsSince + "T00:00:00");
+              })
+              .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+            return (
+              <>
+                <div className="flex flex-wrap items-end gap-3 mb-5">
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1.5 flex items-center gap-1.5">
+                      <CalendarDays className="w-3.5 h-3.5" /> Mostrar alunos cadastrados a partir de
+                    </label>
+                    <Input
+                      type="date"
+                      value={newStudentsSince}
+                      onChange={e => setNewStudentsSince(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white w-48"
+                    />
+                  </div>
+                  {newStudentsSince && (
+                    <Button size="sm" variant="ghost" onClick={() => setNewStudentsSince("")} className="theme-subtext text-gray-500">
+                      Limpar filtro
+                    </Button>
+                  )}
+                  <span className="text-sm text-gray-500 ml-auto">
+                    {newStudents.length} aluno{newStudents.length === 1 ? "" : "s"}{newStudentsSince ? " nesse período" : " no total"}
+                  </span>
+                </div>
+
+                {newStudents.length === 0 ? (
+                  <p className="theme-subtext text-center text-sm text-gray-500 py-16 flex flex-col items-center gap-2">
+                    <UserPlus className="w-8 h-8 text-gray-700" />
+                    Nenhum aluno novo {newStudentsSince ? "nesse período" : "ainda"}
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {newStudents.map(s => (
+                      <div key={s.id} className="flex items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+                        <div className="min-w-0">
+                          <p className="text-white text-sm font-medium truncate">{s.full_name}</p>
+                          <p className="text-gray-500 text-xs">{userMap[s.user_id]?.email || "—"}</p>
+                        </div>
+                        <span className="text-xs text-gray-400 shrink-0">
+                          {s.created_date ? new Date(s.created_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </TabsContent>
       </Tabs>
     </div>
