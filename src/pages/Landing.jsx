@@ -5,6 +5,30 @@ const ACCENT = "#F26A1B";
 const LANG_FULL_LABELS = { pt: "Português", en: "English", es: "Español", fr: "Français", de: "Deutsch", it: "Italiano", ja: "日本語", ko: "한국어" };
 const LANG_ORDER = ["pt", "en", "es", "fr", "de", "it", "ja", "ko"];
 
+// Mapeia o país detectado por IP pro idioma inicial da página — só usado na
+// PRIMEIRA carga, antes de qualquer escolha manual da pessoa. Países fora
+// dessa lista caem em inglês (mais seguro que assumir português por padrão
+// pra quem não é do Brasil).
+const COUNTRY_TO_LANG = {
+  BR: "pt",
+  FR: "fr",
+  DE: "de", AT: "de", CH: "de",
+  IT: "it",
+  ES: "es",
+  JP: "ja",
+  KR: "ko",
+  AR: "es", MX: "es", CO: "es", CL: "es", PE: "es", UY: "es", PY: "es",
+  BO: "es", EC: "es", VE: "es", CR: "es", PA: "es", GT: "es", HN: "es",
+  SV: "es", NI: "es", DO: "es", CU: "es", PR: "es",
+};
+
+// Mapeia o idioma ESCOLHIDO manualmente pra uma região de preço — assim, se
+// a pessoa trocar pra japonês, o preço já muda pra iene mesmo que o IP real
+// dela não seja do Japão (ex: alguém testando o site de fora, ou querendo
+// ver o preço de outra região). Idiomas sem região fixa (inglês) continuam
+// usando a detecção por IP normalmente.
+const LANG_TO_PRICE_REGION = { pt: "br", es: "latam", fr: "eu", de: "eu", it: "eu", ja: "jp", ko: "kr" };
+
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
