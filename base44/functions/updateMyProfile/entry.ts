@@ -14,6 +14,9 @@ const STUDENT_ALLOWED_FIELDS = new Set([
   "conversation_topics", "objective", "level", "target_language", "last_seen",
 ]);
 
+// Fields that affiliates are allowed to update on their own profile
+const AFFILIATE_ALLOWED_FIELDS = new Set(["last_seen"]);
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -62,6 +65,26 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.StudentProfile.update(profiles[0].id, safeUpdates);
       } catch (updateErr) {
         console.error('[updateMyProfile] student update failed:', updateErr.message);
+        return Response.json({ error: `Falha ao gravar: ${updateErr.message}` }, { status: 500 });
+      }
+      return Response.json({ success: true });
+
+    } else if (role === "affiliate") {
+      const safeUpdates: Record<string, unknown> = {};
+      for (const key of Object.keys(updates)) {
+        if (AFFILIATE_ALLOWED_FIELDS.has(key)) {
+          safeUpdates[key] = updates[key];
+        }
+      }
+      if (Object.keys(safeUpdates).length === 0) {
+        return Response.json({ error: "No allowed fields to update" }, { status: 400 });
+      }
+      const profiles = await base44.asServiceRole.entities.Affiliate.filter({ user_id: user.id });
+      if (profiles.length === 0) return Response.json({ error: "Profile not found" }, { status: 404 });
+      try {
+        await base44.asServiceRole.entities.Affiliate.update(profiles[0].id, safeUpdates);
+      } catch (updateErr) {
+        console.error('[updateMyProfile] affiliate update failed:', updateErr.message);
         return Response.json({ error: `Falha ao gravar: ${updateErr.message}` }, { status: 500 });
       }
       return Response.json({ success: true });
