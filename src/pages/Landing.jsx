@@ -329,12 +329,52 @@ export default function Landing() {
           {/* Spacer on mobile */}
           <div style={{ flex: 1 }} />
 
-          {/* Lang toggle + CTAs */}
+          {/* Lang dropdown + CTAs */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <div style={{ display: "flex", border: "1px solid #E4DED6", borderRadius: 999, overflow: "hidden", fontSize: 12, fontWeight: 700 }}>
-              {["pt", "en"].map((l) => (
-                <button key={l} onClick={() => setLang(l)} style={{ padding: "5px 10px", border: "none", cursor: "pointer", background: lang === l ? ACCENT : "transparent", color: lang === l ? "#fff" : "#7A7B85", fontFamily: "inherit", fontWeight: 700 }}>{l.toUpperCase()}</button>
-              ))}
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setLangMenuOpen(v => !v)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: "#17181C", color: "#fff",
+                  border: "none", borderRadius: 999,
+                  padding: "8px 13px", fontSize: 13, fontWeight: 700,
+                  cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+                }}
+              >
+                {LANG_FULL_LABELS[lang]}
+                <svg width="9" height="6" viewBox="0 0 10 6" fill="none" style={{ transform: langMenuOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }}>
+                  <path d="M1 1l4 4 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {langMenuOpen && (
+                <>
+                  {/* Overlay invisível — fecha o menu ao clicar fora dele */}
+                  <div onClick={() => setLangMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 8px)", left: 0,
+                    background: "#fff", border: "1px solid #EEE7DD", borderRadius: 14,
+                    boxShadow: "0 16px 34px -10px rgba(23,24,28,.28)", overflow: "hidden",
+                    minWidth: 150, zIndex: 50,
+                  }}>
+                    {["pt", "en"].map((l) => (
+                      <button
+                        key={l}
+                        onClick={() => { setLang(l); setLangMenuOpen(false); }}
+                        style={{
+                          display: "block", width: "100%", textAlign: "left",
+                          padding: "11px 16px", fontSize: 14, fontWeight: lang === l ? 800 : 600,
+                          color: lang === l ? ACCENT : "#3A3B45",
+                          background: lang === l ? "#FFF7F1" : "transparent",
+                          border: "none", cursor: "pointer", fontFamily: "inherit",
+                        }}
+                      >
+                        {LANG_FULL_LABELS[l]}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
             <button className="ot-nav-login" onClick={() => navigate("/login")} style={{ padding: "8px 14px", borderRadius: 999, background: "transparent", border: "1.5px solid #E4DED6", color: "#3A3B45", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{c.navLogin}</button>
             <button onClick={() => navigate("/register")} style={{ padding: "9px 14px", borderRadius: 999, background: ACCENT, color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>{c.navCta}</button>
