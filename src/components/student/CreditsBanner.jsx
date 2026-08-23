@@ -111,14 +111,14 @@ export default function CreditsBanner({ profile, onUpdate }) {
 
   const buyPack = (pack) => {
     setCheckoutItem({
-      title: `One Talky — ${pack.label}`,
+      title: `One Talky — ${t(lang, `packLabel${pack.id.replace("pp_", "")}`)}`,
       price: pack.price_brl,
       external_reference: `pack:${pack.id}`,
     });
   };
 
   const handleCheckoutSuccess = async () => {
-    toast({ title: "Pagamento aprovado! 🎉", description: "Seus créditos foram adicionados." });
+    toast({ title: t(lang, "approvedPaymentTitle"), description: t(lang, "approvedPaymentDesc") });
     setShowTopup(false);
     try {
       const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
