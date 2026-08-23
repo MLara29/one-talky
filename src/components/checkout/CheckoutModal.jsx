@@ -223,7 +223,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         {step === "loading" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
-            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Carregando...</p>
+            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>{t(lang, "loadingText")}</p>
           </div>
         )}
 
@@ -231,8 +231,8 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         {step === "processing" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <Loader2 className="w-10 h-10 text-violet-400 animate-spin" />
-            <p className="theme-heading font-semibold">Processando...</p>
-            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Aguarde alguns segundos</p>
+            <p className="theme-heading font-semibold">{t(lang, "processingTitle")}</p>
+            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>{t(lang, "processingSub")}</p>
           </div>
         )}
 
@@ -240,8 +240,8 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         {step === "success" && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <CheckCircle className="w-12 h-12 text-emerald-400" />
-            <p className="theme-heading font-semibold text-lg">Pagamento aprovado! 🎉</p>
-            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Seus créditos foram adicionados</p>
+            <p className="theme-heading font-semibold text-lg">{t(lang, "approvedPaymentTitle")}</p>
+            <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>{t(lang, "approvedPaymentDesc")}</p>
           </div>
         )}
 
@@ -249,10 +249,10 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         {step === "error" && (
           <div className="flex flex-col items-center py-10 px-6 gap-4">
             <AlertCircle className="w-10 h-10 text-red-400" />
-            <p className="theme-heading font-semibold">Pagamento não processado</p>
+            <p className="theme-heading font-semibold">{t(lang, "paymentNotProcessedTitle")}</p>
             <p className="text-red-400 text-sm text-center">{errorMsg}</p>
             <Button onClick={() => setStep("form")} className="bg-violet-600 hover:bg-violet-700 text-white border-0 w-full">
-              Tentar novamente
+              {t(lang, "tryAgainBtn")}
             </Button>
           </div>
         )}
