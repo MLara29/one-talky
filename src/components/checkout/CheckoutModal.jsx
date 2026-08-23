@@ -380,22 +380,22 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
               <form onSubmit={handlePixSubmit} className="px-6 py-5 space-y-4">
                 <div className="rounded-2xl p-4 text-center" style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)" }}>
                   <QrCode className="w-10 h-10 text-violet-400 mx-auto mb-2" />
-                  <p className="theme-heading font-semibold">Pague com Pix</p>
+                  <p className="theme-heading font-semibold">{t(lang, "payWithPixTitle")}</p>
                   <p className="theme-subtext text-xs mt-1" style={{ color: "var(--app-text-secondary)" }}>
-                    Aprovação instantânea · Sem taxas extras
+                    {t(lang, "instantApprovalNote")}
                   </p>
                 </div>
                 <div>
-                  <Label className="theme-subtext text-xs mb-1 block">CPF do pagador</Label>
+                  <Label className="theme-subtext text-xs mb-1 block">{t(lang, "payerCpfLabel")}</Label>
                   <input type="text" inputMode="numeric" placeholder="000.000.000-00" required maxLength={14}
                     value={pixCpf} onChange={e => { setErrorMsg(""); setField("pixCpf")(e); }} className={inputCls} />
                   {errorMsg && <p className="text-red-400 text-xs mt-1">{errorMsg}</p>}
                 </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0 h-11 text-base font-semibold shadow-lg hover:scale-[1.02] transition-all">
-                  Gerar QR Code · {fmtBRL(item.price)}
+                  {t(lang, "generateQrBtn")} · {fmtBRL(item.price)}
                 </Button>
                 <p className="text-center text-xs text-gray-600 flex items-center justify-center gap-1">
-                  <Lock className="w-3 h-3" /> Pix processado pelo Mercado Pago
+                  <Lock className="w-3 h-3" /> {t(lang, "pixProcessedNote")}
                 </p>
               </form>
             )}
