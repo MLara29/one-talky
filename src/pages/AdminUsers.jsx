@@ -645,7 +645,7 @@ export default function AdminUsers() {
                       <div key={s.id} className="flex items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
                         <div className="min-w-0">
                           <p className="text-white text-sm font-medium truncate">{s.full_name}</p>
-                          <p className="text-gray-500 text-xs">{userMap[s.user_id]?.email || "—"}</p>
+                          <p className="text-gray-500 text-xs">{users[s.user_id]?.email || "—"}</p>
                         </div>
                         <span className="text-xs text-gray-400 shrink-0">
                           {s.created_date ? new Date(s.created_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"}
