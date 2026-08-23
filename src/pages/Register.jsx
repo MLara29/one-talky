@@ -311,7 +311,7 @@ export default function Register() {
             className="mt-0.5"
           />
           <label htmlFor="age" className="text-sm text-muted-foreground leading-snug cursor-pointer">
-            Confirmo que tenho 18 anos ou mais.
+            {t(lang, "confirmAge18Label")}
           </label>
         </div>
         <div className="flex items-start gap-3 pt-1">
@@ -322,15 +322,15 @@ export default function Register() {
             className="mt-0.5"
           />
           <label htmlFor="terms" className="text-sm text-muted-foreground leading-snug cursor-pointer">
-            Li e concordo com os{" "}
+            {t(lang, "consentPrefix")}
             <Link to={role === "tutor" ? "/terms-of-use" : "/termos"} target="_blank" className="text-primary font-medium hover:underline">
-              Termos de Uso
-            </Link>{" "}
-            e com a{" "}
+              {t(lang, "termsOfUseLink")}
+            </Link>
+            {t(lang, "consentMiddle")}
             <Link to={role === "tutor" ? "/privacy-policy" : "/privacidade"} target="_blank" className="text-primary font-medium hover:underline">
-              Política de Privacidade
-            </Link>{" "}
-            da One Talky.
+              {t(lang, "privacyPolicyLink")}
+            </Link>
+            {t(lang, "consentSuffix")}
           </label>
         </div>
 
@@ -338,10 +338,10 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating account...
+              {t(lang, "creatingAccountBtn")}
             </>
           ) : (
-            "Create account"
+            t(lang, "createAccountBtn")
           )}
         </Button>
       </form>
