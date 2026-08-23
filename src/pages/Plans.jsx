@@ -351,8 +351,8 @@ export default function Plans() {
                   >
                     <CreditCard className="inline w-4 h-4 mr-2 mb-0.5" />
                     {isCancelledButActive
-                      ? `Acesso até ${new Date(profile.subscription_valid_until).toLocaleDateString('pt-BR')}`
-                      : isCurrent ? "✓ Plano atual" : "Assinar agora"}
+                      ? `${t(lang, "accessUntil")} ${new Date(profile.subscription_valid_until).toLocaleDateString(lang.replace("_", "-"))}`
+                      : isCurrent ? t(lang, "currentPlanBtn") : t(lang, "subscribeNowBtn")}
                   </button>
 
                   {isCurrent && plan.id !== "free" && !isCancelledButActive && (
@@ -360,7 +360,7 @@ export default function Plans() {
                       onClick={() => setShowCancelModal(true)}
                       style={{ textAlign: "center", padding: "8px 0", fontWeight: 600, fontSize: 13, background: "transparent", color: "#ef4444", border: "none", cursor: "pointer", fontFamily: "inherit" }}
                     >
-                      Cancelar assinatura
+                      {t(lang, "cancelSubBtn")}
                     </button>
                   )}
                   {isCancelledButActive && (
@@ -368,7 +368,7 @@ export default function Plans() {
                       onClick={() => selectPlan(plan)}
                       style={{ textAlign: "center", padding: "8px 0", fontWeight: 600, fontSize: 13, background: "transparent", color: ACCENT, border: "none", cursor: "pointer", fontFamily: "inherit" }}
                     >
-                      Reativar assinatura
+                      {t(lang, "reactivateSubBtn")}
                     </button>
                   )}
                 </div>
@@ -377,7 +377,7 @@ export default function Plans() {
           </div>
 
           <p className="text-center text-xs mt-6" style={{ color: "#A29A8C" }}>
-            Você pode cancelar a qualquer momento, sem multa. Ao cancelar, seu plano volta para Free, mas você mantém os minutos do plano por até 60 dias. Créditos pré-pagos não são afetados pelo cancelamento, mas sempre expiram 60 dias após a data da compra, independente do status da sua assinatura.
+            {t(lang, "plansFooterDisclaimer")}
           </p>
         </TabsContent>
 
