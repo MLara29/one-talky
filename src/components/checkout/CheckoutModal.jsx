@@ -188,7 +188,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
         <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-violet-600/20 to-indigo-600/10" style={{ borderBottom: "1px solid var(--app-border)" }}>
           <div className="flex items-center gap-2">
             <Lock className="w-4 h-4 text-violet-400" />
-            <span className="theme-heading font-semibold text-sm">Pagamento Seguro</span>
+            <span className="theme-heading font-semibold text-sm">{t(lang, "securePaymentTitle")}</span>
             <span className="theme-subtext text-xs" style={{ color: "var(--app-text-muted)" }}>· Mercado Pago</span>
           </div>
           <button onClick={onClose} className="theme-subtext hover:opacity-70 transition-opacity">
@@ -208,13 +208,13 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
           {item.bonus_minutes > 0 && (
             <div className="flex items-center gap-1.5 mt-1 text-xs font-semibold text-emerald-500">
               <Tag className="w-3 h-3" />
-              +{item.bonus_minutes} min de bônus
+              +{item.bonus_minutes} {t(lang, "bonusMinutesLabel")}
             </div>
           )}
           {affiliateCoupon && (
             <div className="flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-emerald-500">
               <Tag className="w-3 h-3" />
-              Cupom de afiliado aplicado: <span className="font-mono">{affiliateCoupon}</span>
+              {t(lang, "affiliateCouponApplied")} <span className="font-mono">{affiliateCoupon}</span>
             </div>
           )}
         </div>
