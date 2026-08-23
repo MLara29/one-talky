@@ -123,6 +123,7 @@ function TopPillNav({ nav, location, supportCount }) {
 export default function AppLayout() {
   const { user } = useAuth();
   const { lang, changeLang } = useLang();
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const role = user?.role || "student";
