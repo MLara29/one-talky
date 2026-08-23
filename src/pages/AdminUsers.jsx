@@ -302,7 +302,10 @@ export default function AdminUsers() {
                 <div key={t.id} className="p-4 hover:bg-white/3 transition-all">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <img src={t.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
+                      <div className="relative shrink-0">
+                        <img src={t.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover" alt="" />
+                        <OnlineDot online={isOnline(t.last_seen)} />
+                      </div>
                       <div className="min-w-0">
                         <p className="theme-heading font-medium text-sm text-white truncate">{t.full_name}</p>
                         <p className="theme-subtext text-xs text-gray-500 truncate">
@@ -483,7 +486,10 @@ export default function AdminUsers() {
                     onClick={() => setSelectedStudent(s)}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <img src={s.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover shrink-0" alt="" />
+                      <div className="relative shrink-0">
+                        <img src={s.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=7c3aed&color=fff&size=40`} className="w-10 h-10 rounded-xl object-cover" alt="" />
+                        <OnlineDot online={isOnline(s.last_seen)} />
+                      </div>
                       <div className="min-w-0">
                         <p className="font-medium text-sm text-white truncate">{s.full_name}</p>
                         <p className="text-xs text-gray-500 truncate">
@@ -575,8 +581,9 @@ export default function AdminUsers() {
                 return (
                   <div key={a.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/3 transition-all">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
+                      <div className="relative w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
                         <span className="text-orange-400 font-bold text-sm">{a.full_name?.[0] || "A"}</span>
+                        <OnlineDot online={isOnline(a.last_seen)} />
                       </div>
                       <div className="min-w-0">
                         <p className="theme-heading font-medium text-sm text-white truncate">{a.full_name}</p>
