@@ -67,7 +67,7 @@ export default function TutorProfilePage() {
     const credits = profiles[0]?.credits_minutes ?? 0;
     if (credits < 1) {
       navigate("/plans");
-      toast({ title: "Sem minutos disponíveis", description: "Adicione créditos para continuar.", variant: "destructive" });
+      toast({ title: t(lang, "noMinutesAvailableTitle"), description: t(lang, "addCreditsDesc"), variant: "destructive" });
       return false;
     }
     return true;
@@ -123,7 +123,7 @@ export default function TutorProfilePage() {
         setTutor(prev => ({ ...prev, booked_slots: bookRes.data.booked_slots }));
       }
       setShowSchedule(false);
-      toast({ title: "Lesson scheduled! 📅", description: "Check 'My Lessons' to see your booking." });
+      toast({ title: t(lang, "lessonScheduledToast"), description: t(lang, "checkMyLessonsDesc") });
       // Notify tutor via email (fire and forget) — pass the real lesson_id so the
       // backend can verify the lesson exists instead of trusting client fields.
       if (bookRes.data?.lesson?.id) {
