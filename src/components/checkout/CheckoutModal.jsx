@@ -129,7 +129,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
     e.preventDefault();
     const rawCpf = pixCpf.replace(/\D/g, "");
     if (rawCpf.length !== 11) {
-      setErrorMsg("CPF inválido. Digite os 11 dígitos.");
+      setErrorMsg(t(lang, "invalidCpf"));
       return;
     }
     setErrorMsg("");
@@ -165,7 +165,7 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
       }, 5000);
     } catch (err) {
       console.error("[CheckoutModal] pix payment error:", err);
-      setErrorMsg("Não foi possível gerar o Pix. Tente novamente.");
+      setErrorMsg(t(lang, "pixGenericError"));
       setStep("error");
     }
   };
