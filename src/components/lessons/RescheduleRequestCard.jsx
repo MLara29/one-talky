@@ -5,10 +5,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Clock, Send, Check, X } from "lucide-react";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 
 export default function RescheduleRequestCard({ lesson, request, onResolved }) {
   const { user } = useAuth();
+  const { lang } = useLang();
   const { toast } = useToast();
+  // Tutor sempre em inglês (regra já estabelecida) — só traduz de verdade
+  // quando quem está usando é aluno.
+  const T = (key, en) => (user?.role === "student" ? t(lang, key) : en);
   const [thread, setThread] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
