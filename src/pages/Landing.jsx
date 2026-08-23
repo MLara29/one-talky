@@ -27,7 +27,6 @@ const COUNTRY_TO_LANG = {
 // dela não seja do Japão (ex: alguém testando o site de fora, ou querendo
 // ver o preço de outra região). Idiomas sem região fixa (inglês) continuam
 // usando a detecção por IP normalmente.
-const LANG_TO_PRICE_REGION = { pt: "br", es: "latam", fr: "eu", de: "eu", it: "eu", ja: "jp", ko: "kr" };
 
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
@@ -1627,13 +1626,11 @@ export default function Landing() {
   const eyebrowStyle = { fontSize: 13, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#C4520B" };
   const h2Style = { marginTop: 10, fontSize: "clamp(28px,4vw,40px)", fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" };
 
-  // O idioma escolhido manualmente tem prioridade sobre o IP real pra decidir
-  // a região de preço — assim, trocar pra japonês já mostra preço em iene,
-  // mesmo que o visitante esteja fisicamente em outro país. Idiomas sem
-  // região fixa (inglês) continuam usando só a detecção por IP.
-  const effectiveRegion = LANG_TO_PRICE_REGION[lang] || regionData?.region || "br";
-  const isBR = effectiveRegion === "br";
-  const regionConfig = isBR ? null : getRegionalConfig(effectiveRegion);
+  // Preço sempre baseado na localização REAL detectada por IP — nunca no
+  // idioma escolhido manualmente. Trocar de idioma só muda o texto da
+  // página, nunca o preço/moeda exibidos (mesmo comportamento do Plans.jsx).
+  const isBR = !regionData || regionData.region === "br";
+  const regionConfig = isBR ? null : getRegionalConfig(regionData.region);
   const planIds = ["basic", "standard", "premium"];
 
   // Preço do hero ("a partir de X por semana") — Basic semanal na moeda local.
