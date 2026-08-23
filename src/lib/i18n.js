@@ -246,6 +246,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "Select a highlighted day to see available times.",
     bookingBtn: "Booking...",
     confirmBookingBtn: "Confirm Booking",
+    personalInfoTitle: "Personal Information",
+    personalInfoSubtitle: "Update your profile and learning preferences",
+    saveChangesBtn: "Save changes",
+    profileUpdatedToast: "Profile updated! ✅",
+    genericErrorTitle: "Error",
+    saveFailedDesc: "Could not save.",
   },
   pt_br: {
     // Notification bell
@@ -493,6 +499,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "Selecione um dia destacado pra ver os horários disponíveis.",
     bookingBtn: "Agendando...",
     confirmBookingBtn: "Confirmar Agendamento",
+    personalInfoTitle: "Informações Pessoais",
+    personalInfoSubtitle: "Atualize seu perfil e preferências de aprendizado",
+    saveChangesBtn: "Salvar alterações",
+    profileUpdatedToast: "Perfil atualizado! ✅",
+    genericErrorTitle: "Erro",
+    saveFailedDesc: "Não foi possível salvar.",
   },
   pt_pt: {
     // Dashboard - Student
@@ -732,6 +744,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "Selecione um dia destacado para ver os horários disponíveis.",
     bookingBtn: "A agendar...",
     confirmBookingBtn: "Confirmar Marcação",
+    personalInfoTitle: "Informações Pessoais",
+    personalInfoSubtitle: "Atualize o seu perfil e preferências de aprendizagem",
+    saveChangesBtn: "Guardar alterações",
+    profileUpdatedToast: "Perfil atualizado! ✅",
+    genericErrorTitle: "Erro",
+    saveFailedDesc: "Não foi possível guardar.",
   },
   es: {
     // Dashboard - Student
@@ -967,6 +985,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "Selecciona un día destacado para ver los horarios disponibles.",
     bookingBtn: "Reservando...",
     confirmBookingBtn: "Confirmar Reserva",
+    personalInfoTitle: "Información Personal",
+    personalInfoSubtitle: "Actualiza tu perfil y preferencias de aprendizaje",
+    saveChangesBtn: "Guardar cambios",
+    profileUpdatedToast: "¡Perfil actualizado! ✅",
+    genericErrorTitle: "Error",
+    saveFailedDesc: "No se pudo guardar.",
   },
   fr: {
     // Dashboard - Student
@@ -1202,6 +1226,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "Sélectionnez un jour en surbrillance pour voir les horaires disponibles.",
     bookingBtn: "Réservation...",
     confirmBookingBtn: "Confirmer la Réservation",
+    personalInfoTitle: "Informations Personnelles",
+    personalInfoSubtitle: "Mettez à jour votre profil et vos préférences d'apprentissage",
+    saveChangesBtn: "Enregistrer les modifications",
+    profileUpdatedToast: "Profil mis à jour ! ✅",
+    genericErrorTitle: "Erreur",
+    saveFailedDesc: "Impossible d'enregistrer.",
   },
   de: {
     // Dashboard - Student
@@ -1437,6 +1467,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "Wählen Sie einen hervorgehobenen Tag, um verfügbare Zeiten zu sehen.",
     bookingBtn: "Wird gebucht...",
     confirmBookingBtn: "Buchung bestätigen",
+    personalInfoTitle: "Persönliche Informationen",
+    personalInfoSubtitle: "Aktualisieren Sie Ihr Profil und Ihre Lernpräferenzen",
+    saveChangesBtn: "Änderungen speichern",
+    profileUpdatedToast: "Profil aktualisiert! ✅",
+    genericErrorTitle: "Fehler",
+    saveFailedDesc: "Konnte nicht gespeichert werden.",
   },
   it: {
     // Dashboard - Student
@@ -1672,6 +1708,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "Seleziona un giorno evidenziato per vedere gli orari disponibili.",
     bookingBtn: "Prenotazione...",
     confirmBookingBtn: "Conferma Prenotazione",
+    personalInfoTitle: "Informazioni Personali",
+    personalInfoSubtitle: "Aggiorna il tuo profilo e le preferenze di apprendimento",
+    saveChangesBtn: "Salva modifiche",
+    profileUpdatedToast: "Profilo aggiornato! ✅",
+    genericErrorTitle: "Errore",
+    saveFailedDesc: "Impossibile salvare.",
   },
   ja: {
     notifications: "通知",
@@ -1914,6 +1956,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "ハイライトされた日を選択すると利用可能な時間が表示されます。",
     bookingBtn: "予約中...",
     confirmBookingBtn: "予約を確定する",
+    personalInfoTitle: "個人情報",
+    personalInfoSubtitle: "プロフィールと学習の希望設定を更新します",
+    saveChangesBtn: "変更を保存",
+    profileUpdatedToast: "プロフィールが更新されました！✅",
+    genericErrorTitle: "エラー",
+    saveFailedDesc: "保存できませんでした。",
   },
   ko: {
     notifications: "알림",
@@ -2156,6 +2204,12 @@ export const TRANSLATIONS = {
     selectHighlightedDay: "강조 표시된 날짜를 선택하면 이용 가능한 시간이 표시됩니다.",
     bookingBtn: "예약 중...",
     confirmBookingBtn: "예약 확정",
+    personalInfoTitle: "개인 정보",
+    personalInfoSubtitle: "프로필 및 학습 선호도를 업데이트하세요",
+    saveChangesBtn: "변경사항 저장",
+    profileUpdatedToast: "프로필이 업데이트되었습니다! ✅",
+    genericErrorTitle: "오류",
+    saveFailedDesc: "저장할 수 없습니다.",
   },
 };
 
