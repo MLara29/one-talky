@@ -35,11 +35,13 @@ export const LanguageProvider = ({ children }) => {
     if (localStorage.getItem("ui_lang")) return;
     detectAndCacheRegion().then((data) => {
       if (localStorage.getItem("ui_lang")) return; // já escolheu manualmente nesse meio-tempo
-      const detected = data?.countryCode ? COUNTRY_TO_LANG[String(data.countryCode).toUpperCase()] : null;
-      if (detected) {
-        setLang(detected);
-        localStorage.setItem("ui_lang", detected);
-      }
+      const code = data?.countryCode ? String(data.countryCode).toUpperCase() : null;
+      if (!code) return; // detecção falhou — mantém o padrão inicial, não mexe
+      // País mapeado → idioma dele. País desconhecido pra nós (sem tradução
+      // própria) → inglês, nunca português (só o Brasil abre em português).
+      const detected = COUNTRY_TO_LANG[code] || "en";
+      setLang(detected);
+      localStorage.setItem("ui_lang", detected);
     }).catch(() => {});
   }, []);
 
