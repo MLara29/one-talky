@@ -195,7 +195,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
               }}
             >
               <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
-              <span>Minutos</span>
+              <span>{t(lang, "topupBtnShort")}</span>
             </button>
             <Link to="/plans">
               <button style={{
@@ -206,7 +206,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
                 whiteSpace: "nowrap",
               }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="#f97316"><path d="M13 2L3 14h7v8l10-12h-7z"/></svg>
-                <span>Planos</span>
+                <span>{t(lang, "viewPlansShort")}</span>
               </button>
             </Link>
           </div>
@@ -215,10 +215,10 @@ export default function CreditsBanner({ profile, onUpdate }) {
           {/* Plan credits bar */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280" }}>Plano</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280" }}>{t(lang, "planBarLabel")}</span>
               {graceDate && (
                 <span style={{ fontSize: 10, fontWeight: 600, color: "#f59e0b" }}>
-                  Cancelado · até {graceDate}
+                  {t(lang, "cancelledUntil")} {graceDate}
                 </span>
               )}
             </div>
@@ -247,10 +247,10 @@ export default function CreditsBanner({ profile, onUpdate }) {
           {prepaidMins > 0 && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280" }}>Pré-pago</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280" }}>{t(lang, "prepaidBarLabel")}</span>
                 {prepaidExpiresDate && (
                   <span style={{ fontSize: 10, fontWeight: 600, color: "#9ca3af" }}>
-                    expira em {prepaidExpiresDate}
+                    {t(lang, "expiresOnLabel")} {prepaidExpiresDate}
                   </span>
                 )}
               </div>
@@ -300,15 +300,14 @@ export default function CreditsBanner({ profile, onUpdate }) {
             <div>
               <div className="flex items-center gap-2">
                 <span style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap" }}>
-                  {planObj?.name || "Plano Free"}
+                  {planObj?.name ? t(lang, `planName${plan.charAt(0).toUpperCase()}${plan.slice(1)}`) : t(lang, "freePlanFallback")}
                 </span>
                 {isLow && (
                   <span style={{ fontSize: 12, fontWeight: 600, color: "#f97316", whiteSpace: "nowrap" }}>
-                    ⚠ Créditos baixos
+                    ⚠ {t(lang, "lowCreditsFull")}
                   </span>
                 )}
               </div>
-              <div style={{ fontSize: 13, color: "#6b7280", marginTop: 3 }}>R$ 2,20/min · 30 min = R$ 66</div>
             </div>
           </div>
 
