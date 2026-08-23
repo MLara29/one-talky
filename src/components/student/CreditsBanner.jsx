@@ -6,6 +6,8 @@ import { PREPAID_PACKS, PLANS } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "react-router-dom";
+import { useLang } from "@/lib/LanguageContext";
+import { t } from "@/lib/i18n";
 import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
 
 function fmtBRL(val) {
@@ -79,6 +81,7 @@ export function PlanShield({ plan, size = 42 }) {
 export default function CreditsBanner({ profile, onUpdate }) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { lang } = useLang();
   const [showTopup, setShowTopup] = useState(false);
   const [checkoutItem, setCheckoutItem] = useState(null);
 
