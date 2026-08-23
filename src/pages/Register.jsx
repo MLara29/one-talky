@@ -136,8 +136,8 @@ export default function Register() {
     return (
       <AuthLayout
         icon={Mail}
-        title="Verify your email"
-        subtitle={`We sent a code to ${email}`}
+        title={t(lang, "verifyEmailTitle")}
+        subtitle={`${t(lang, "codeSentSubtitle")} ${email}`}
       >
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
@@ -170,16 +170,16 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              {t(lang, "verifyingBtn")}
             </>
           ) : (
-            "Verify"
+            t(lang, "verifyBtn")
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
-          Didn't receive the code?{" "}
+          {t(lang, "didntReceiveCode")}{" "}
           <button onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
+            {t(lang, "resendLink")}
           </button>
         </p>
       </AuthLayout>
