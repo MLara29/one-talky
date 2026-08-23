@@ -89,6 +89,30 @@ const TOPIC_TRANSLATIONS = {
     "Environment": "Ambiente", "Gaming": "Videogiochi", "Literature": "Letteratura",
     "Finance": "Finanza", "Philosophy": "Filosofia", "Fashion": "Moda",
   },
+  ja: {
+    "Travel": "旅行", "Business": "ビジネス", "Pop Culture": "ポップカルチャー",
+    "Job Interviews": "就職面接", "Daily Life": "日常生活",
+    "Sports": "スポーツ", "Technology": "テクノロジー", "Food & Cuisine": "食文化・料理",
+    "Movies & TV Shows": "映画・ドラマ", "Music": "音楽", "Politics": "政治",
+    "Science": "科学", "Art & Design": "アート・デザイン", "Health & Fitness": "健康・フィットネス",
+    "Education": "教育",
+    "Food & Cooking": "食文化・料理", "Movies & TV": "映画・ドラマ",
+    "Art": "アート", "Health": "健康", "Culture": "文化", "History": "歴史",
+    "Environment": "環境", "Gaming": "ゲーム", "Literature": "文学",
+    "Finance": "金融", "Philosophy": "哲学", "Fashion": "ファッション",
+  },
+  ko: {
+    "Travel": "여행", "Business": "비즈니스", "Pop Culture": "대중문화",
+    "Job Interviews": "취업 면접", "Daily Life": "일상생활",
+    "Sports": "스포츠", "Technology": "기술", "Food & Cuisine": "음식과 요리",
+    "Movies & TV Shows": "영화와 드라마", "Music": "음악", "Politics": "정치",
+    "Science": "과학", "Art & Design": "예술과 디자인", "Health & Fitness": "건강과 피트니스",
+    "Education": "교육",
+    "Food & Cooking": "음식과 요리", "Movies & TV": "영화와 드라마",
+    "Art": "예술", "Health": "건강", "Culture": "문화", "History": "역사",
+    "Environment": "환경", "Gaming": "게임", "Literature": "문학",
+    "Finance": "금융", "Philosophy": "철학", "Fashion": "패션",
+  },
 };
 
 function translateTopic(topic, lang) {
