@@ -19,6 +19,22 @@ const PLAN_COLORS = {
   premium:  "bg-amber-500/10 border-amber-500/20 text-amber-400",
 };
 
+// Mesma janela (90s) já usada em todo o resto do sistema pra decidir "quem
+// está online agora" — vale pra tutor, aluno e afiliado igualmente.
+const ONLINE_THRESHOLD_MS = 90 * 1000;
+const isOnline = (lastSeen) => lastSeen && (Date.now() - new Date(lastSeen).getTime()) < ONLINE_THRESHOLD_MS;
+
+// Bolinha de status, sobreposta no canto do avatar — verde pulsante quando
+// online, cinza parado quando offline.
+function OnlineDot({ online }) {
+  return (
+    <span
+      title={online ? "Online agora" : "Offline"}
+      className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#0e0e16] ${online ? "bg-emerald-500 animate-pulse" : "bg-gray-600"}`}
+    />
+  );
+}
+
 export default function AdminUsers() {
   const [tutors, setTutors] = useState([]);
   const [students, setStudents] = useState([]);
