@@ -289,24 +289,24 @@ export default function Plans() {
                 >
                   {isHighlight && (
                     <span style={{ position: "absolute", top: -13, left: 22, background: ACCENT, color: "#fff", fontSize: 11.5, fontWeight: 800, padding: "5px 12px", borderRadius: 999 }}>
-                      ⚡ Popular
+                      {t(lang, "popularBadge")}
                     </span>
                   )}
                   {isCurrent && !isCancelledButActive && (
                     <span style={{ position: "absolute", top: -13, right: 16, background: "#22c55e", color: "#fff", fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999 }}>
-                      ✓ Atual
+                      {t(lang, "currentBadge")}
                     </span>
                   )}
                   {isCancelledButActive && (
                     <span style={{ position: "absolute", top: -13, right: 16, background: "#f59e0b", color: "#fff", fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999, whiteSpace: "nowrap" }}>
-                      Cancelado · até {new Date(profile.subscription_valid_until).toLocaleDateString('pt-BR')}
+                      {t(lang, "cancelledUntil")} {new Date(profile.subscription_valid_until).toLocaleDateString(lang.replace("_", "-"))}
                     </span>
                   )}
 
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "#A29A8C" }}>One Talky</div>
-                    <div style={{ fontSize: 17, fontWeight: 800, marginTop: 4, color: "#17181C" }}>{plan.name}</div>
-                    <div style={{ fontSize: 12.5, color: "#8A8B94", marginTop: 2 }}>{plan.description}</div>
+                    <div style={{ fontSize: 17, fontWeight: 800, marginTop: 4, color: "#17181C" }}>{planName(lang, plan.id)}</div>
+                    <div style={{ fontSize: 12.5, color: "#8A8B94", marginTop: 2 }}>{planDesc(lang, plan.id)}</div>
                   </div>
 
                   <div className="flex items-center gap-4">
