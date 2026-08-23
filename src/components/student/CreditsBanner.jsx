@@ -173,15 +173,14 @@ export default function CreditsBanner({ profile, onUpdate }) {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-1.5">
               <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>
-                {planObj?.name || "Plano Free"}
+                {planObj?.name ? t(lang, `planName${plan.charAt(0).toUpperCase()}${plan.slice(1)}`) : t(lang, "freePlanFallback")}
               </span>
               {isLow && (
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316", whiteSpace: "nowrap", background: "#fff7ed", padding: "2px 7px", borderRadius: 999, border: "1px solid #fed7aa" }}>
-                  ⚠ Baixo
+                  ⚠ {t(lang, "lowCreditsShort")}
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 11.5, color: "#9ca3af", marginTop: 1 }}>R$ 2,20/min</div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <button
