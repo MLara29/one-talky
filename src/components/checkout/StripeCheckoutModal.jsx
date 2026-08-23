@@ -115,14 +115,14 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
               <Loader2 className="w-8 h-8 animate-spin" style={{ color: "#F26A1B" }} />
-              <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Carregando checkout…</p>
+              <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>{t(lang, "loadingCheckoutText")}</p>
             </div>
           )}
 
           {error && !loading && (
             <div className="flex flex-col items-center py-10 px-6 gap-4">
               <AlertCircle className="w-10 h-10 text-red-400" />
-              <p className="theme-heading font-semibold">Não foi possível iniciar o pagamento</p>
+              <p className="theme-heading font-semibold">{t(lang, "paymentInitFailedTitle")}</p>
               <p className="text-red-400 text-sm text-center">{error}</p>
             </div>
           )}
@@ -130,8 +130,8 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
           {done && (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
               <CheckCircle className="w-12 h-12 text-emerald-400" />
-              <p className="theme-heading font-semibold text-lg">Pagamento aprovado! 🎉</p>
-              <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>Seus créditos foram adicionados</p>
+              <p className="theme-heading font-semibold text-lg">{t(lang, "approvedPaymentTitle")}</p>
+              <p className="theme-subtext text-sm" style={{ color: "var(--app-text-secondary)" }}>{t(lang, "approvedPaymentDesc")}</p>
             </div>
           )}
 
