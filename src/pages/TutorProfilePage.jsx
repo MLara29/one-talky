@@ -193,20 +193,20 @@ export default function TutorProfilePage() {
               </p>
               <div className="flex items-center gap-4 mt-3">
                 <span className="flex items-center gap-1 text-amber-500 font-bold">
-                  <Star className="w-4 h-4 fill-amber-400" /> {tutor.average_rating?.toFixed(1) || "New"}
+                  <Star className="w-4 h-4 fill-amber-400" /> {tutor.average_rating?.toFixed(1) || t(lang, "newTutorLabel")}
                 </span>
-                <span className="theme-subtext text-sm text-gray-500">{tutor.total_reviews || 0} reviews</span>
-                <span className="theme-subtext text-sm text-gray-500">{tutor.total_lessons || 0} lessons</span>
+                <span className="theme-subtext text-sm text-gray-500">{tutor.total_reviews || 0} {t(lang, "reviewsCountSuffix")}</span>
+                <span className="theme-subtext text-sm text-gray-500">{tutor.total_lessons || 0} {t(lang, "lessonsCountSuffix")}</span>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {tutor.native_languages?.map(l => (
                   <span key={l} className="text-xs px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/20 text-orange-300 font-medium">
-                    {getLanguageLabel(l)} (Native)
+                    {getLanguageLabel(l)} {t(lang, "nativeLabel")}
                   </span>
                 ))}
                 {inLesson && (
                   <span className="text-xs px-3 py-1 rounded-full bg-red-500/15 border border-red-500/20 text-red-400 font-semibold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> In a lesson
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> {t(lang, "statusInLesson")}
                   </span>
                 )}
               </div>
