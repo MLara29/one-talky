@@ -123,34 +123,34 @@ export default function StudentPersonalInfo() {
         </div>
 
         <div>
-          <Label className={labelCls}>Nível atual</Label>
+          <Label className={labelCls}>{t(lang, "currentLevelLabel")}</Label>
           <Select value={form.level} onValueChange={v => set("level", v)}>
             <SelectTrigger className={selectTriggerCls}>
-              <SelectValue placeholder="Selecione seu nível" />
+              <SelectValue placeholder={t(lang, "selectLevelPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {LEVELS.map(l => (
-                <SelectItem key={l.value} value={l.value}>{LEVELS_PT[l.value]}</SelectItem>
+                <SelectItem key={l.value} value={l.value}>{t(lang, LEVEL_KEY[l.value])}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <Label className={labelCls}>Objetivo principal</Label>
+          <Label className={labelCls}>{t(lang, "mainObjectiveLabel")}</Label>
           <Select value={form.objective} onValueChange={v => set("objective", v)}>
             <SelectTrigger className={selectTriggerCls}>
-              <SelectValue placeholder="Selecione seu objetivo" />
+              <SelectValue placeholder={t(lang, "selectObjectivePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              {OBJECTIVES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+              {OBJECTIVES.map(o => <SelectItem key={o.value} value={o.value}>{t(lang, OBJ_KEY[o.value])}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <Label className={labelCls}>Tópicos favoritos de conversa</Label>
-          <p className="text-xs text-gray-500 mb-3">Selecione os temas que você mais gosta</p>
+          <Label className={labelCls}>{t(lang, "favoriteTopicsLabel")}</Label>
+          <p className="text-xs text-gray-500 mb-3">{t(lang, "favoriteTopicsSub")}</p>
           <div className="flex flex-wrap gap-2">
             {INTERESTS.map(topic => (
               <button
@@ -163,7 +163,7 @@ export default function StudentPersonalInfo() {
                     : "bg-white/5 text-gray-400 border-white/10 hover:border-orange-400 hover:text-orange-400"
                 }`}
               >
-                {topic}
+                {t(lang, INTEREST_KEY[topic]) || topic}
               </button>
             ))}
           </div>
@@ -175,7 +175,7 @@ export default function StudentPersonalInfo() {
           className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90"
         >
           <Save className="w-4 h-4 mr-2" />
-          {saving ? "Salvando..." : "Salvar alterações"}
+          {saving ? t(lang, "savingBtn") : t(lang, "saveChangesBtn")}
         </Button>
       </div>
     </div>
