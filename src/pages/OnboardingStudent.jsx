@@ -129,6 +129,29 @@ export default function OnboardingStudent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
+        {/* Seletor de idioma — essa tela fica fora do layout principal, então
+            não herda o seletor que existe lá; sem isso, um usuário
+            internacional não teria como trocar o idioma logo no primeiro
+            contato com a plataforma. */}
+        <div className="flex justify-center mb-4">
+          <div className="flex items-center border rounded-full overflow-hidden" style={{ borderColor: "#e5e7eb", fontSize: 11 }}>
+            {LANG_OPTIONS.map(l => (
+              <button
+                key={l}
+                onClick={() => changeLang(l)}
+                className="px-2.5 py-1 font-bold transition-colors"
+                style={{
+                  background: lang === l ? "#F26A1B" : "transparent",
+                  color: lang === l ? "#fff" : "#888",
+                  border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: 700,
+                }}
+              >
+                {LANG_LABELS[l]}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -139,8 +162,8 @@ export default function OnboardingStudent() {
             />
           </div>
 
-          <h1 className="font-display text-2xl font-bold text-gray-900">Configure seu perfil</h1>
-          <p className="text-gray-500 text-sm mt-1">Passo {step} de 3</p>
+          <h1 className="font-display text-2xl font-bold text-gray-900">{t(lang, "setupProfileTitle")}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t(lang, "stepLabel").replace("{step}", step)}</p>
           <div className="flex justify-center gap-2 mt-4">
             {[1, 2, 3].map(s => (
               <div key={s} className={`h-1.5 w-14 rounded-full transition-colors ${s <= step ? "bg-orange-500" : "bg-gray-200"}`} />
