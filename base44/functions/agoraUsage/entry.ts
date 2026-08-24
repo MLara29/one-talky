@@ -72,15 +72,21 @@ Deno.serve(async (req) => {
     }
 
     const data = await agoraRes.json();
-    const usages = (data.usages || []).map((day) => ({
-      date: day.date,
-      audio_minutes: Math.round((day.durationAudioAll || 0) / 60),
-      video_hd_minutes: Math.round((day.durationVideoHd || 0) / 60),
-      video_1080p_minutes: Math.round((day.durationVideo1080P || 0) / 60),
-      video_2k_minutes: Math.round((day.durationVideo2K || 0) / 60),
-      video_4k_minutes: Math.round((day.durationVideo4K || 0) / 60),
-      video_hdp_minutes: Math.round((day.durationVideoHdp || 0) / 60),
-    }));
+    // Agora nests duration fields inside each day's `usage` sub-object:
+    // { date: "...", usage: { durationAudioAll, durationVideoHd, ... } }
+    const usages = (data.usages || []).map((day) => {
+      const u = day.usage || {};
+      const dateStr = typeof day.date === 'string' ? day.date.split('T')[0] : String(day.date);
+      return {
+        date: dateStr,
+        audio_minutes: Math.round((u.durationAudioAll || 0) / 60),
+        video_hd_minutes: Math.round((u.durationVideoHd || 0) / 60),
+        video_1080p_minutes: Math.round((u.durationVideo1080P || 0) / 60),
+        video_2k_minutes: Math.round((u.durationVideo2K || 0) / 60),
+        video_4k_minutes: Math.round((u.durationVideo4K || 0) / 60),
+        video_hdp_minutes: Math.round((u.durationVideoHdp || 0) / 60),
+      };
+    });
 
     const totalAudio = usages.reduce((s, d) => s + d.audio_minutes, 0);
     const totalVideo = usages.reduce((s, d) =>
