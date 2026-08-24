@@ -106,6 +106,12 @@ export default function Register() {
           birth_date: birthDate,
         });
       }
+      // Dispara a conversão pro Reddit Ads só aqui — no momento em que o
+      // cadastro está de verdade concluído (conta criada + e-mail
+      // verificado), não quando a pessoa só abre a tela de registro.
+      if (typeof window.rdt === "function") {
+        window.rdt("track", "SignUp");
+      }
       window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
     } catch (err) {
       setError(err.message || t(lang, "invalidCodeError"));
