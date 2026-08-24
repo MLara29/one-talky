@@ -6,14 +6,27 @@ const LanguageContext = createContext();
 
 // Mapeia o país detectado por IP pro idioma inicial do app — só usado quando
 // a pessoa NUNCA escolheu um idioma antes (sem nada salvo no navegador).
-// Fora dessa lista, mantém o padrão de português (maioria dos alunos hoje).
+// Países fora desta lista abrem em inglês. Só o Brasil abre em português (pt_br);
+// Portugal abre em pt_pt. Uma escolha manual posterior sempre tem prioridade.
 const COUNTRY_TO_LANG = {
-  BR: "pt_br",
-  FR: "fr", DE: "de", AT: "de", CH: "de", IT: "it", ES: "es",
-  JP: "ja", KR: "ko",
+  // Português
+  BR: "pt_br", PT: "pt_pt",
+  // Espanhol (Europa + América Latina)
+  ES: "es", AD: "es", GQ: "es",
   AR: "es", MX: "es", CO: "es", CL: "es", PE: "es", UY: "es", PY: "es",
   BO: "es", EC: "es", VE: "es", CR: "es", PA: "es", GT: "es", HN: "es",
   SV: "es", NI: "es", DO: "es", CU: "es", PR: "es",
+  // Francês (Europa + África francófona)
+  FR: "fr", BE: "fr", LU: "fr", MC: "fr",
+  SN: "fr", CI: "fr", ML: "fr", BF: "fr", NE: "fr", GN: "fr", BJ: "fr",
+  TG: "fr", CF: "fr", CG: "fr", CD: "fr", GA: "fr", TD: "fr", MG: "fr",
+  CM: "fr", DJ: "fr", KM: "fr", MR: "fr", HT: "fr",
+  // Alemão
+  DE: "de", AT: "de", CH: "de", LI: "de",
+  // Italiano
+  IT: "it", SM: "it", VA: "it",
+  // Japonês e Coreano
+  JP: "ja", KR: "ko",
 };
 
 export const LanguageProvider = ({ children }) => {
