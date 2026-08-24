@@ -2044,7 +2044,7 @@ export default function Landing() {
                   <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-.02em" }}>{p.big}</span>
                   <span style={{ fontSize: 14, color: "#8A8B94", fontWeight: 700 }}>{p.bigUnit}</span>
                 </div>
-                <div style={{ fontSize: 13, color: "#8A8B94", fontWeight: 600 }}>{p.sub}</div>
+                <div style={{ fontSize: 13, color: "#17181C", fontWeight: 600 }}>{p.sub}</div>
                 <div style={{ height: 1, background: "#EEE7DD" }} />
                 <ul style={{ display: "flex", flexDirection: "column", gap: 9, flex: 1, padding: 0, margin: 0, listStyle: "none" }}>
                   {p.features.map((f, j) => (
