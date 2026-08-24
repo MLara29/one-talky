@@ -88,7 +88,7 @@ const CONTENT = {
     anchorNote: "Pagamento seguro via Stripe · Sem fidelidade · Cancele quando quiser.",
     perWeek: "/semana", perMonth: "/mês", totalWord: "Total ",
     plans: [
-      { tag: "Básico", name: "60 min / mês", weekly: "R$29,90", monthly: "R$59,80", features: ["60 minutos de conversa por mês", "2 aulas individuais de 30 min", "Agendamento livre", "Tutores de todos os níveis"], cta: "Começar no Básico", highlight: false, badge: "" },
+      { tag: "Básico", name: "60 min / mês", weekly: "R$14,95", monthly: "R$59,80", features: ["60 minutos de conversa por mês", "2 aulas individuais de 30 min", "Agendamento livre", "Tutores de todos os níveis"], cta: "Começar no Básico", highlight: false, badge: "" },
       { tag: "Standard", name: "120 min / mês", weekly: "R$29,90", monthly: "R$119,60", features: ["120 minutos de conversa por mês", "4 aulas de 30 min ou 2 aulas de 1 hora", "Uma conversa por semana: o ritmo mínimo pra criar hábito", "Agendamento livre"], cta: "Assinar o Standard", highlight: true, badge: "Mais escolhido" },
       { tag: "Premium", name: "240 min / mês", weekly: "R$56,81", monthly: "R$227,24", features: ["240 minutos de conversa por mês", "8 aulas de 30 min ou 4 aulas de 1 hora", "Sai por R$28,40 por aula", "Prática 2× por semana: o caminho mais rápido pra destravar"], cta: "Assinar o Premium", highlight: false, badge: "" },
     ],
@@ -185,7 +185,7 @@ const CONTENT = {
     anchorNote: "Secure payment via Stripe · No lock-in · Cancel anytime.",
     perWeek: "/week", perMonth: "/month", totalWord: "Total ",
     plans: [
-      { tag: "Basic", name: "60 min / month", weekly: "R$29.90", monthly: "R$59.80", features: ["60 minutes of conversation per month", "2 one-on-one 30-min lessons", "Free scheduling", "Tutors of every level"], cta: "Start on Basic", highlight: false, badge: "" },
+      { tag: "Basic", name: "60 min / month", weekly: "R$14.95", monthly: "R$59.80", features: ["60 minutes of conversation per month", "2 one-on-one 30-min lessons", "Free scheduling", "Tutors of every level"], cta: "Start on Basic", highlight: false, badge: "" },
       { tag: "Standard", name: "120 min / month", weekly: "R$29.90", monthly: "R$119.60", features: ["120 minutes of conversation per month", "4 lessons of 30 min or 2 lessons of 1 hour", "One conversation a week: the minimum to build a habit", "Free scheduling"], cta: "Subscribe to Standard", highlight: true, badge: "Most chosen" },
       { tag: "Premium", name: "240 min / month", weekly: "R$56.81", monthly: "R$227.24", features: ["240 minutes of conversation per month", "8 lessons of 30 min or 4 lessons of 1 hour", "Works out to R$28.40 per lesson", "Twice a week practice: the fastest path to fluency"], cta: "Subscribe to Premium", highlight: false, badge: "" },
     ],
