@@ -111,6 +111,13 @@ export default function OnboardingStudent() {
         coupon_code: couponStatus === "valid" ? couponCode : null,
       }).catch(() => {});
       toast({ title: t(lang, "welcomeToastTitle"), description: t(lang, "welcomeToastDesc") });
+      // Dispara a conversão pro Reddit Ads aqui — cobre os dois jeitos de
+      // cadastro (e-mail+código OU Google), já que os dois passam por aqui
+      // pra criar o perfil, e dispara só uma vez, no momento em que o
+      // cadastro está de fato concluído (perfil criado com sucesso).
+      if (typeof window.rdt === "function") {
+        window.rdt("track", "SignUp");
+      }
       window.location.href = "/";
     } catch (e) {
       console.error("[OnboardingStudent] submit error:", e);
