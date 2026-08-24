@@ -338,7 +338,7 @@ const CONTENT = {
       {
         tag: "Básico",
         name: "60 min / mes",
-        weekly: "$11,90",
+        weekly: "$2,98",
         monthly: "$11,90",
         features: ["60 minutos de conversación al mes", "2 clases individuales de 30 min", "Agenda libre", "Tutores de todos los niveles"],
         cta: "Empezar con Básico",
@@ -554,7 +554,7 @@ const CONTENT = {
       {
         tag: "Basique",
         name: "60 min / mois",
-        weekly: "14,90€",
+        weekly: "3,73€",
         monthly: "14,90€",
         features: ["60 minutes de conversation par mois", "2 cours individuels de 30 min", "Réservation libre", "Tuteurs de tous niveaux"],
         cta: "Commencer avec Basique",
@@ -770,7 +770,7 @@ const CONTENT = {
       {
         tag: "Basic",
         name: "60 Min / Monat",
-        weekly: "14,90€",
+        weekly: "3,73€",
         monthly: "14,90€",
         features: ["60 Minuten Konversation pro Monat", "2 Einzelstunden à 30 Min", "Freie Terminwahl", "Tutoren für jedes Niveau"],
         cta: "Mit Basic starten",
@@ -986,7 +986,7 @@ const CONTENT = {
       {
         tag: "Base",
         name: "60 min / mese",
-        weekly: "14,90€",
+        weekly: "3,73€",
         monthly: "14,90€",
         features: ["60 minuti di conversazione al mese", "2 lezioni individuali da 30 min", "Prenotazione libera", "Tutor per ogni livello"],
         cta: "Inizia con Base",
@@ -1202,7 +1202,7 @@ const CONTENT = {
     {
       tag: "ベーシック",
       name: "60分／月",
-      weekly: "1,990円",
+      weekly: "498円",
       monthly: "1,990円",
       features: ["月60分の会話", "30分の個人レッスン2回", "自由な予約", "全レベルの講師に対応"],
       cta: "ベーシックで始める",
@@ -1418,7 +1418,7 @@ const CONTENT = {
     {
       tag: "베이직",
       name: "월 60분",
-      weekly: "19,900원",
+      weekly: "4,975원",
       monthly: "19,900원",
       features: ["월 60분의 대화", "30분 개인 레슨 2회", "자유로운 예약", "모든 레벨의 튜터 이용 가능"],
       cta: "베이직으로 시작",
