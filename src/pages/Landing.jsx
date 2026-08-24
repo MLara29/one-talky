@@ -29,6 +29,7 @@ const COUNTRY_TO_LANG = {
 // usando a detecção por IP normalmente.
 
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
+import { base44 } from "@/api/base44Client";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
 
@@ -1599,9 +1600,20 @@ export default function Landing() {
   // E pra pré-selecionar o idioma inicial da página (só na primeira carga —
   // nunca sobrescreve se a pessoa já trocou de idioma manualmente).
   useEffect(() => {
+    const trackVisit = (data) => {
+      base44.analytics.track({
+        eventName: "landing_page_visit",
+        properties: {
+          country_code: data?.countryCode ? String(data.countryCode).toUpperCase() : "unknown",
+          country: data?.country || "unknown",
+        },
+      });
+    };
+
     if (!regionData) {
       detectAndCacheRegion().then((data) => {
         setRegionData(data);
+        trackVisit(data);
         if (!manualLangChoiceRef.current && data?.countryCode) {
           // País mapeado → idioma dele. País desconhecido pra nós (sem
           // tradução própria) → inglês, nunca português (só o Brasil abre
@@ -1610,6 +1622,8 @@ export default function Landing() {
           setLang(COUNTRY_TO_LANG[code] || "en");
         }
       });
+    } else {
+      trackVisit(regionData);
     }
   }, []);
 
