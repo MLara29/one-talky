@@ -1639,7 +1639,7 @@ export default function Landing() {
   // Preço do hero ("a partir de X por semana") — Basic semanal na moeda local.
   const heroPriceDisplay = isBR || !regionConfig
     ? c.heroPrice
-    : formatRegionalPrice(regionConfig.plans.basic / 2, regionConfig.currency, regionConfig.locale) + c.weeklySuffix;
+    : formatRegionalPrice(regionConfig.plans.basic / 4, regionConfig.currency, regionConfig.locale) + c.weeklySuffix;
 
   // O valor SEMANAL fica em destaque (era o mensal antes) — é o mesmo
   // número usado lá no topo da página e nos anúncios, então a pessoa que
@@ -1656,7 +1656,7 @@ export default function Landing() {
     }
     const planId = planIds[i];
     const monthlyPrice = regionConfig.plans[planId];
-    const weeklyPrice = planId === "basic" ? monthlyPrice / 2 : monthlyPrice / 4;
+    const weeklyPrice = monthlyPrice / 4;
     const formattedMonthly = formatRegionalPrice(monthlyPrice, regionConfig.currency, regionConfig.locale);
     const formattedWeekly = formatRegionalPrice(weeklyPrice, regionConfig.currency, regionConfig.locale);
     return {
