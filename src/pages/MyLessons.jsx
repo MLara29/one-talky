@@ -199,10 +199,11 @@ export default function MyLessons() {
       );
       lessonsToCheck.forEach(async (l) => {
         try {
-          const [busyRes, tutorProfiles] = await Promise.all([
+          const [busyRes, tutorProfilesRes] = await Promise.all([
             base44.functions.invoke("checkTutorBusy", { tutor_id: l.tutor_id }),
-            base44.entities.TutorProfile.filter({ user_id: l.tutor_id }),
+            base44.functions.invoke("getPublicTutors", { filter: { user_id: l.tutor_id } }),
           ]);
+          const tutorProfiles = tutorProfilesRes.data || [];
           const busy = busyRes.data?.busy || false;
           const tp = tutorProfiles[0];
           const online = tp?.last_seen && (Date.now() - new Date(tp.last_seen).getTime()) < ONLINE_THRESHOLD_MS;

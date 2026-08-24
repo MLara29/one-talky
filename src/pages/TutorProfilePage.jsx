@@ -47,7 +47,7 @@ export default function TutorProfilePage() {
 
   const loadTutor = async () => {
     try {
-      const t = await base44.entities.TutorProfile.get(id);
+      const t = (await base44.functions.invoke('getPublicTutors', { id })).data;
       setTutor(t);
       const r = await base44.entities.Review.filter({ tutor_id: t.user_id, is_visible: true });
       setReviews(r);

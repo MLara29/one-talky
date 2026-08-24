@@ -11,6 +11,7 @@ import TutorCard from "@/components/tutors/TutorCard";
 import CreditsBanner from "@/components/student/CreditsBanner";
 import SupportModal from "@/components/support/SupportModal";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
+import { stripTutorFields } from "@/lib/tutorPublicFields";
 import { LESSON_JOIN_GRACE_PERIOD_MS, LESSON_JOIN_WINDOW_BEFORE_MS, getLessonTimeStatus } from "@/lib/constants";
 
 const UPCOMING_CARD_WINDOW_MS = 5 * 60 * 1000; // card aparece a partir de 5min antes
@@ -53,26 +54,30 @@ export default function StudentDashboard() {
   // Realtime: update tutor cards when availability or rating changes
   useEffect(() => {
     const unsubTutor = base44.entities.TutorProfile.subscribe((event) => {
+      // Strip sensitive fields (bank_info, total_earnings, etc.) from the
+      // realtime payload before storing in React state — defense-in-depth
+      // alongside the server-side getPublicTutors whitelist.
+      const data = stripTutorFields(event.data);
       if (event.type === 'update') {
         setTutors(prev =>
           prev
-            .map(t => t.id === event.data.id ? { ...t, ...event.data } : t)
+            .map(t => t.id === data.id ? { ...t, ...data } : t)
             // status "hidden" (ou qualquer não-aprovado) sai da lista assim
             // que o admin muda em tempo real, sem precisar recarregar a página.
             .filter(t => Boolean(t.photo_url) && t.status === "approved")
         );
       } else if (event.type === 'create') {
-        if (event.data.photo_url && event.data.status === "approved") {
-          setTutors(prev => [...prev, event.data]);
+        if (data.photo_url && data.status === "approved") {
+          setTutors(prev => [...prev, data]);
         }
       } else if (event.type === 'delete') {
-        setTutors(prev => prev.filter(t => t.id !== event.data.id));
+        setTutors(prev => prev.filter(t => t.id !== data.id));
       }
     });
     // When a new review is created, reload tutor list so ratings refresh
     const unsubReview = base44.entities.Review.subscribe((event) => {
       if (event.type === 'create' || event.type === 'update') {
-        base44.entities.TutorProfile.filter({ status: "approved" }).then(data => setTutors(data.filter(t => Boolean(t.photo_url)))).catch(() => {});
+        base44.functions.invoke('getPublicTutors', { filter: { status: "approved" } }).then(res => setTutors((res.data || []).filter(t => Boolean(t.photo_url)))).catch(() => {});
       }
     });
     return () => { unsubTutor(); unsubReview(); };
@@ -131,10 +136,11 @@ export default function StudentDashboard() {
     }
     const check = async () => {
       try {
-        const [busyRes, tutorProfiles] = await Promise.all([
+        const [busyRes, tutorProfilesRes] = await Promise.all([
           base44.functions.invoke("checkTutorBusy", { tutor_id: upcomingLesson.tutor_id }),
-          base44.entities.TutorProfile.filter({ user_id: upcomingLesson.tutor_id }),
+          base44.functions.invoke("getPublicTutors", { filter: { user_id: upcomingLesson.tutor_id } }),
         ]);
+        const tutorProfiles = tutorProfilesRes.data || [];
         const busy = busyRes.data?.busy || false;
         const tp = tutorProfiles[0];
         const online = tp?.last_seen && (Date.now() - new Date(tp.last_seen).getTime()) < ONLINE_THRESHOLD_MS;
@@ -156,10 +162,11 @@ export default function StudentDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [data, profiles] = await Promise.all([
-        base44.entities.TutorProfile.filter({ status: "approved" }),
+      const [tutorsRes, profiles] = await Promise.all([
+        base44.functions.invoke("getPublicTutors", { filter: { status: "approved" } }),
         base44.entities.StudentProfile.filter({ user_id: user?.id }),
       ]);
+      const data = tutorsRes.data || [];
       // TutorProfile.filter({status:"approved"}) já exclui sozinho qualquer
       // tutor com status "hidden" (escondido pelo admin) — não precisa de
       // filtro extra aqui.
