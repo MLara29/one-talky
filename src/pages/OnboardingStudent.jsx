@@ -116,17 +116,17 @@ export default function OnboardingStudent() {
       // pra criar o perfil, e dispara só uma vez, no momento em que o
       // cadastro está de fato concluído (perfil criado com sucesso).
       //
-      // IMPORTANTE: o redirecionamento não pode acontecer imediatamente
-      // depois do rdt() — trocar de página cancela a requisição de rede do
-      // evento antes dela terminar de sair, e o Reddit nunca recebe nada.
-      // Por isso a pequena espera abaixo, só o suficiente pro navegador
-      // terminar de enviar o evento primeiro.
+      // Dois caminhos, um reforçando o outro: o pixel do navegador (rdt)
+      // e uma chamada pro servidor (sendRedditConversion) — o servidor não
+      // depende do pixel carregar no navegador da pessoa nem é afetado por
+      // bloqueador de anúncio, então continua funcionando mesmo se o pixel
+      // client-side falhar por algum motivo (como a política de segurança
+      // do navegador bloqueando, que foi o caso hoje).
       if (typeof window.rdt === "function") {
         window.rdt("track", "SignUp");
-        setTimeout(() => { window.location.href = "/"; }, 300);
-      } else {
-        window.location.href = "/";
       }
+      base44.functions.invoke("sendRedditConversion", {}).catch(() => {});
+      setTimeout(() => { window.location.href = "/"; }, 300);
     } catch (e) {
       console.error("[OnboardingStudent] submit error:", e);
       toast({ title: t(lang, "profileErrorTitle"), description: t(lang, "profileErrorDesc"), variant: "destructive" });
