@@ -1641,13 +1641,17 @@ export default function Landing() {
     ? c.heroPrice
     : formatRegionalPrice(regionConfig.plans.basic / 2, regionConfig.currency, regionConfig.locale) + c.weeklySuffix;
 
+  // O valor SEMANAL fica em destaque (era o mensal antes) — é o mesmo
+  // número usado lá no topo da página e nos anúncios, então a pessoa que
+  // rolou a página até aqui reconhece o preço que já viu, em vez de dar de
+  // cara com um número maior e desconfiar que mudou.
   const plans = c.plans.map((p, i) => {
     if (isBR || !regionConfig) {
       return {
         ...p,
-        big: p.monthly,
-        bigUnit: c.perMonth,
-        sub: p.weekly + c.perWeek,
+        big: p.weekly,
+        bigUnit: c.perWeek,
+        sub: c.totalWord + p.monthly + c.perMonth,
       };
     }
     const planId = planIds[i];
@@ -1657,9 +1661,9 @@ export default function Landing() {
     const formattedWeekly = formatRegionalPrice(weeklyPrice, regionConfig.currency, regionConfig.locale);
     return {
       ...p,
-      big: formattedMonthly,
-      bigUnit: c.perMonth,
-      sub: formattedWeekly + c.perWeek,
+      big: formattedWeekly,
+      bigUnit: c.perWeek,
+      sub: c.totalWord + formattedMonthly + c.perMonth,
     };
   });
 
