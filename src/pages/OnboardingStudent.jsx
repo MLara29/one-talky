@@ -115,10 +115,18 @@ export default function OnboardingStudent() {
       // cadastro (e-mail+código OU Google), já que os dois passam por aqui
       // pra criar o perfil, e dispara só uma vez, no momento em que o
       // cadastro está de fato concluído (perfil criado com sucesso).
+      //
+      // IMPORTANTE: o redirecionamento não pode acontecer imediatamente
+      // depois do rdt() — trocar de página cancela a requisição de rede do
+      // evento antes dela terminar de sair, e o Reddit nunca recebe nada.
+      // Por isso a pequena espera abaixo, só o suficiente pro navegador
+      // terminar de enviar o evento primeiro.
       if (typeof window.rdt === "function") {
         window.rdt("track", "SignUp");
+        setTimeout(() => { window.location.href = "/"; }, 300);
+      } else {
+        window.location.href = "/";
       }
-      window.location.href = "/";
     } catch (e) {
       console.error("[OnboardingStudent] submit error:", e);
       toast({ title: t(lang, "profileErrorTitle"), description: t(lang, "profileErrorDesc"), variant: "destructive" });
