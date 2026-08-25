@@ -6,8 +6,24 @@ import { t } from "@/lib/i18n";
 const OBJ_KEY = { travel: "objTravel", work: "objWork", interview: "objInterview", relocation: "objRelocation", conversation: "objConversation", exams: "objExams" };
 const LEVEL_KEY = { beginner: "levelBeginner", intermediate: "levelIntermediate", advanced: "levelAdvanced" };
 
+// Local translations (i18n.js is at capacity and can't grow).
+const L = {
+  en: {
+    myDataTitle: "My Data",
+    myDataSubtitle: "Information the platform stores about you",
+    registrationDateLabel: "Registration date",
+    notDefined: "Not defined",
+  },
+  pt_br: {
+    myDataTitle: "Meus dados",
+    myDataSubtitle: "Informações que a plataforma guarda sobre você",
+    registrationDateLabel: "Data de cadastro",
+    notDefined: "Não definido",
+  },
+};
+
 function formatDate(dateStr, lang) {
-  if (!dateStr) return t(lang, "notDefined");
+  if (!dateStr) return null;
   try {
     return new Date(dateStr).toLocaleDateString(lang === "pt_br" ? "pt-BR" : "en-US", { day: "2-digit", month: "long", year: "numeric" });
   } catch { return dateStr; }
@@ -17,15 +33,16 @@ function formatDate(dateStr, lang) {
 // about this student, in one place. Pulls from both StudentProfile and User.
 export default function MyDataBlock({ profile, user }) {
   const { lang } = useLang();
+  const tr = (key) => (L[lang] && L[lang][key]) || L.en[key] || key;
 
-  const fullName = profile?.full_name || t(lang, "notDefined");
-  const email = user?.email || t(lang, "notDefined");
-  const level = profile?.level ? t(lang, LEVEL_KEY[profile.level]) : t(lang, "notDefined");
-  const objective = profile?.objective ? t(lang, OBJ_KEY[profile.objective]) : t(lang, "notDefined");
+  const fullName = profile?.full_name || tr("notDefined");
+  const email = user?.email || tr("notDefined");
+  const level = profile?.level ? t(lang, LEVEL_KEY[profile.level]) : tr("notDefined");
+  const objective = profile?.objective ? t(lang, OBJ_KEY[profile.objective]) : tr("notDefined");
   const topics = profile?.conversation_topics?.length > 0
     ? profile.conversation_topics.join(", ")
-    : t(lang, "notDefined");
-  const registrationDate = formatDate(user?.created_date || profile?.created_date, lang);
+    : tr("notDefined");
+  const registrationDate = formatDate(user?.created_date || profile?.created_date, lang) || tr("notDefined");
 
   const Row = ({ icon: Icon, label, value }) => (
     <div className="flex items-start gap-3 py-2.5 border-b border-white/5 last:border-0">
@@ -42,8 +59,8 @@ export default function MyDataBlock({ profile, user }) {
       <div className="flex items-center gap-2 mb-3">
         <User className="w-4 h-4 text-orange-500" />
         <div>
-          <h2 className="theme-heading font-display text-lg font-bold">{t(lang, "myDataTitle")}</h2>
-          <p className="theme-subtext text-xs">{t(lang, "myDataSubtitle")}</p>
+          <h2 className="theme-heading font-display text-lg font-bold">{tr("myDataTitle")}</h2>
+          <p className="theme-subtext text-xs">{tr("myDataSubtitle")}</p>
         </div>
       </div>
 
@@ -52,7 +69,7 @@ export default function MyDataBlock({ profile, user }) {
       <Row icon={GraduationCap} label={t(lang, "currentLevelLabel")} value={level} />
       <Row icon={Target} label={t(lang, "mainObjectiveLabel")} value={objective} />
       <Row icon={MessageSquare} label={t(lang, "favoriteTopicsLabel")} value={topics} />
-      <Row icon={Calendar} label={t(lang, "registrationDateLabel")} value={registrationDate} />
+      <Row icon={Calendar} label={tr("registrationDateLabel")} value={registrationDate} />
     </div>
   );
 }
