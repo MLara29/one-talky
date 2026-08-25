@@ -32,6 +32,7 @@ import TutorBankInfo from '@/pages/TutorBankInfo';
 import AdminApprovals from '@/pages/AdminApprovals';
 import AdminUsers from '@/pages/AdminUsers';
 import AdminCosts from '@/pages/AdminCosts';
+import AdminTutorPayouts from '@/pages/AdminTutorPayouts';
 import AdminSupport from '@/pages/AdminSupport';
 import AdminEarnings from '@/pages/AdminEarnings';
 import AdminCoupons from '@/pages/AdminCoupons';
@@ -117,6 +118,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/approvals" element={<AdminApprovals />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/costs" element={<AdminCosts />} />
+          <Route path="/admin/tutor-payouts" element={<AdminTutorPayouts />} />
           <Route path="/admin/support" element={<AdminSupport />} />
           <Route path="/admin/earnings" element={<AdminEarnings />} />
           <Route path="/admin/coupons" element={<AdminCoupons />} />
