@@ -59,6 +59,7 @@ const ADMIN_NAV = [
   { label: "Approvals", path: "/admin/approvals", icon: GraduationCap },
   { label: "Users", path: "/admin/users", icon: User },
   { label: "Costs", path: "/admin/costs", icon: TrendingUp },
+  { label: "Pagar Tutores", path: "/admin/tutor-payouts", icon: DollarSign },
   { label: "Payments", path: "/admin/earnings", icon: DollarSign },
   { label: "Support", path: "/admin/support", icon: MessageCircle },
   { label: "Coupons", path: "/admin/coupons", icon: Tag },
