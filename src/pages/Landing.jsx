@@ -516,10 +516,6 @@ const CONTENT = {
         body: "Cela vous prépare au véritable anglais du monde — pas à celui d'un audio d'examen."
       },
       {
-        title: "Chaque minute est à vous",
-        body: "En Premium, votre heure de cours particulier revient à moins de 1€ la minute de conversation."
-      },
-      {
         title: "Vous arrivez en réunion sans stresser",
         body: "Parce que vous avez déjà eu cette conversation des dizaines de fois."
       },
@@ -730,10 +726,6 @@ const CONTENT = {
       {
         title: "Sie sprechen mit Menschen aus vielen Ländern",
         body: "Das bereitet Sie auf das echte Englisch der Welt vor — nicht auf das Englisch einer Prüfungsaufnahme."
-      },
-      {
-        title: "Jede Minute gehört Ihnen",
-        body: "Bei Premium kostet Ihre Privatstunde weniger als 1€ pro Minute Konversation."
       },
       {
         title: "Sie kommen entspannt ins Meeting",
@@ -948,10 +940,6 @@ const CONTENT = {
         body: "Questo ti prepara all'inglese reale del mondo — non all'inglese di un audio d'esame."
       },
       {
-        title: "Ogni minuto è tuo",
-        body: "Con Premium, la tua ora di lezione privata costa meno di 1€ al minuto di conversazione."
-      },
-      {
         title: "Arrivi alla riunione senza sudare freddo",
         body: "Perché hai già avuto quella conversazione decine di volte prima."
       },
@@ -1164,10 +1152,6 @@ const CONTENT = {
       body: "それが試験用音声の英語ではなく、世界の本物の英語への備えになります。"
     },
     {
-      title: "1分1分があなたのもの",
-      body: "プレミアムなら、個人レッスン1時間あたり会話1分が1円未満になります。"
-    },
-    {
       title: "冷や汗をかかずに会議に臨める",
       body: "その会話をすでに何十回も経験しているからです。"
     },
@@ -1378,10 +1362,6 @@ const CONTENT = {
     {
       title: "여러 나라 사람들과 대화합니다",
       body: "그것이 시험 음성 속 영어가 아닌, 세상의 진짜 영어를 준비시켜 줍니다."
-    },
-    {
-      title: "1분 1분이 당신의 것입니다",
-      body: "프리미엄에서는 개인 레슨 1시간이 대화 1분당 1,000원도 안 되는 비용입니다."
     },
     {
       title: "식은땀 없이 회의에 들어갑니다",
