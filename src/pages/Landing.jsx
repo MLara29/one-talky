@@ -75,7 +75,6 @@ const CONTENT = {
       { title: "A vergonha some antes do sotaque", body: "Errar na frente de um tutor que te corrige com calma é o treino que nenhuma sala oferece." },
       { title: "Sua agenda manda, não a nossa", body: "Se a semana virou de cabeça pra baixo, você remarca. Ninguém te cobra presença." },
       { title: "Você conversa com gente de vários países", body: "Isso te prepara pro inglês real do mundo — não pro inglês de áudio de prova." },
-      { title: "Cada minuto é seu", body: "No Premium, sua hora de aula particular sai por menos de R$1 por minuto de conversa." },
       { title: "Chega na reunião sem suar frio", body: "Porque já teve aquela conversa dezenas de vezes antes." },
       { title: "Serve pra família inteira", body: "Adulto, adolescente ou criança — o tutor calibra a aula pra idade e o nível de cada um." },
       { title: "Você começa hoje", body: "Sem matrícula, sem material obrigatório, sem turma fechando no próximo semestre." },
@@ -172,7 +171,6 @@ const CONTENT = {
       { title: "The shyness goes before the accent", body: "Making mistakes in front of a tutor who corrects you calmly is training no classroom offers." },
       { title: "Your schedule runs the show, not ours", body: "If your week turned upside down, you reschedule. Nobody marks you absent." },
       { title: "You talk to people from many countries", body: "That prepares you for the real English of the world — not the English of a test audio." },
-      { title: "Every minute is yours", body: "On Premium, your hour of private lessons costs less than R$1 per minute of conversation." },
       { title: "You show up without breaking a sweat", body: "Because you've had that conversation dozens of times before." },
       { title: "It works for the whole family", body: "Adult, teen or child — the tutor calibrates the lesson to each person's age and level." },
       { title: "You start today", body: "No enrollment, no mandatory materials, no class filling up next semester." },
@@ -304,10 +302,6 @@ const CONTENT = {
       {
         title: "Hablas con gente de varios países",
         body: "Eso te prepara para el inglés real del mundo — no el inglés de un audio de examen."
-      },
-      {
-        title: "Cada minuto es tuyo",
-        body: "En Premium, tu hora de clase particular sale por menos de $1 por minuto de conversación."
       },
       {
         title: "Llegas a la reunión sin sudar frío",
