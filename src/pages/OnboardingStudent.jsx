@@ -9,6 +9,7 @@ import { ChevronRight, ChevronLeft, Tag, CheckCircle, XCircle } from "lucide-rea
 import { useToast } from "@/components/ui/use-toast";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
+import { COUNTRY_CODES, getCountryName } from "@/lib/countries";
 
 // Chaves de tradução dos objetivos/níveis/interesses, indexadas pelo mesmo
 // "value" já usado nos dados (OBJECTIVES/LEVELS de constants.js, ou o próprio
