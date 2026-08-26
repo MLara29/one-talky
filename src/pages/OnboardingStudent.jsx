@@ -94,7 +94,7 @@ export default function OnboardingStudent() {
       await base44.functions.invoke('createStudentProfile', {
         profile: {
           full_name: form.full_name,
-          nationality: "Brasil",
+          nationality: form.nationality,
           native_language: form.native_language,
           target_language: form.target_language,
           level: form.level,
@@ -201,9 +201,22 @@ export default function OnboardingStudent() {
                   className={inputCls}
                 />
               </div>
+              <div>
+                <Label className={labelCls}>{t(lang, "nationalityLabel")}</Label>
+                <Select value={form.nationality} onValueChange={v => set("nationality", v)}>
+                  <SelectTrigger className={selectTriggerCls}>
+                    <SelectValue placeholder={t(lang, "selectNationalityPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent className={selectContentCls}>
+                    {COUNTRY_CODES.map(code => (
+                      <SelectItem key={code} value={code} className={selectItemCls}>{getCountryName(code, lang)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button
                 onClick={() => setStep(2)}
-                disabled={!form.full_name.trim()}
+                disabled={!form.full_name.trim() || !form.nationality}
                 className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg shadow-orange-500/20 hover:opacity-90 transition-all mt-2"
               >
                 {t(lang, "continueBtn")} <ChevronRight className="w-4 h-4 ml-1" />
