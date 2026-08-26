@@ -276,8 +276,11 @@ export default function OnboardingStudent() {
                 </div>
               </div>
 
-              {/* Cupom */}
-              <div>
+              {/* Cupom — destacado de propósito: coupons de minutos grátis só
+                  podem ser aplicados aqui, nunca mais depois do cadastro. */}
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-4">
+                <p className="text-sm font-bold text-orange-700 mb-1">{t(lang, "couponReminderTitle")}</p>
+                <p className="text-xs text-orange-600 mb-3">{t(lang, "couponReminderDesc")}</p>
                 <Label className={`${labelCls} flex items-center gap-1.5 mb-1.5`}>
                   <Tag className="w-3.5 h-3.5" /> {t(lang, "promoCouponLabel")} <span className="text-gray-400 font-normal">{t(lang, "optionalLabel")}</span>
                 </Label>
