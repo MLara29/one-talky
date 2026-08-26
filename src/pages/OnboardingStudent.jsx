@@ -9,7 +9,7 @@ import { ChevronRight, ChevronLeft, Tag, CheckCircle, XCircle } from "lucide-rea
 import { useToast } from "@/components/ui/use-toast";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
-import { COUNTRY_CODES, getCountryName } from "@/lib/countries";
+import { sortedCountries, getCountryName, getFlagEmoji } from "@/lib/countries";
 
 // Chaves de tradução dos objetivos/níveis/interesses, indexadas pelo mesmo
 // "value" já usado nos dados (OBJECTIVES/LEVELS de constants.js, ou o próprio
@@ -208,8 +208,8 @@ export default function OnboardingStudent() {
                     <SelectValue placeholder={t(lang, "selectNationalityPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent className={selectContentCls}>
-                    {COUNTRY_CODES.map(code => (
-                      <SelectItem key={code} value={code} className={selectItemCls}>{getCountryName(code, lang)}</SelectItem>
+                    {sortedCountries(lang).map(code => (
+                      <SelectItem key={code} value={code} className={selectItemCls}>{getFlagEmoji(code)} {getCountryName(code, lang)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
