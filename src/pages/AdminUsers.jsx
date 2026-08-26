@@ -41,6 +41,7 @@ export default function AdminUsers() {
   const [affiliates, setAffiliates] = useState([]);
   const [users, setUsers] = useState({});
   const [tutorStats, setTutorStats] = useState({});
+  const [studentScheduledCounts, setStudentScheduledCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
