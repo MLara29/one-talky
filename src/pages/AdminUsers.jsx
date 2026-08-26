@@ -7,6 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import StudentDetailModal from "@/components/admin/StudentDetailModal";
+import { getCountryName } from "@/lib/countries";
+
+// Mostra a nacionalidade do jeito certo, seja ela um código de país novo
+// ("BR") ou um texto livre antigo ("Brasil", de antes dessa mudança) —
+// painel do admin sempre em português, então fixo lang="pt_br" aqui.
+function nationalityLabel(nationality) {
+  if (!nationality) return null;
+  if (/^[A-Z]{2}$/.test(nationality)) return getCountryName(nationality, "pt_br");
+  return nationality;
+}
 
 const sortByName = (arr) => [...arr].sort((a, b) =>
   (a.full_name || "").localeCompare(b.full_name || "", "pt-BR")
