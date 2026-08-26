@@ -349,6 +349,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "Coupon applied:",
     couponReminderTitle: "🎁 Got a promo coupon?",
     couponReminderDesc: "This is your only chance to use it — it won't be available after you finish signing up.",
+    nationalityLabel: "Nationality",
+    selectNationalityPlaceholder: "Select your country",
     genericTryAgain: "Please try again.",
   },
   pt_br: {
@@ -700,6 +702,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "Cupom aplicado:",
     couponReminderTitle: "🎁 Tem um cupom promocional?",
     couponReminderDesc: "Essa é a sua única chance de usar — depois do cadastro, não vai dar mais pra aplicar.",
+    nationalityLabel: "Nacionalidade",
+    selectNationalityPlaceholder: "Selecione seu país",
     genericTryAgain: "Tente novamente.",
   },
   pt_pt: {
@@ -1043,6 +1047,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "Cupão aplicado:",
     couponReminderTitle: "🎁 Tem um cupão promocional?",
     couponReminderDesc: "Esta é a sua única oportunidade de o usar — depois do registo, já não vai ser possível aplicar.",
+    nationalityLabel: "Nacionalidade",
+    selectNationalityPlaceholder: "Selecione o seu país",
     genericTryAgain: "Tente novamente.",
   },
   es: {
@@ -1382,6 +1388,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "Cupón aplicado:",
     couponReminderTitle: "🎁 ¿Tienes un cupón promocional?",
     couponReminderDesc: "Esta es tu única oportunidad de usarlo — después de registrarte, ya no podrás aplicarlo.",
+    nationalityLabel: "Nacionalidad",
+    selectNationalityPlaceholder: "Selecciona tu país",
     genericTryAgain: "Inténtalo de nuevo.",
   },
   fr: {
@@ -1721,6 +1729,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "Code promo appliqué :",
     couponReminderTitle: "🎁 Vous avez un code promo ?",
     couponReminderDesc: "C'est votre seule chance de l'utiliser — une fois l'inscription terminée, il ne sera plus possible de l'appliquer.",
+    nationalityLabel: "Nationalité",
+    selectNationalityPlaceholder: "Sélectionnez votre pays",
     genericTryAgain: "Veuillez réessayer.",
   },
   de: {
@@ -2060,6 +2070,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "Gutschein angewendet:",
     couponReminderTitle: "🎁 Haben Sie einen Aktionscode?",
     couponReminderDesc: "Dies ist Ihre einzige Chance, ihn einzulösen — nach der Anmeldung ist das nicht mehr möglich.",
+    nationalityLabel: "Nationalität",
+    selectNationalityPlaceholder: "Land auswählen",
     genericTryAgain: "Bitte versuchen Sie es erneut.",
   },
   it: {
@@ -2399,6 +2411,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "Coupon applicato:",
     couponReminderTitle: "🎁 Hai un codice promozionale?",
     couponReminderDesc: "Questa è la tua unica occasione per usarlo — dopo la registrazione non sarà più possibile applicarlo.",
+    nationalityLabel: "Nazionalità",
+    selectNationalityPlaceholder: "Seleziona il tuo paese",
     genericTryAgain: "Riprova.",
   },
   ja: {
@@ -2745,6 +2759,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "クーポン適用済み：",
     couponReminderTitle: "🎁 プロモーションコードをお持ちですか？",
     couponReminderDesc: "今が使える唯一のタイミングです — 登録が完了すると、後から適用することはできません。",
+    nationalityLabel: "国籍",
+    selectNationalityPlaceholder: "国を選択してください",
     genericTryAgain: "もう一度お試しください。",
   },
   ko: {
@@ -3091,6 +3107,8 @@ export const TRANSLATIONS = {
     couponAppliedLabel: "쿠폰 적용됨:",
     couponReminderTitle: "🎁 프로모션 쿠폰이 있으신가요?",
     couponReminderDesc: "지금이 사용할 수 있는 유일한 기회입니다 — 가입이 완료되면 나중에 적용할 수 없습니다.",
+    nationalityLabel: "국적",
+    selectNationalityPlaceholder: "국가를 선택하세요",
     genericTryAgain: "다시 시도해 주세요.",
   },
 };
