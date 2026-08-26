@@ -524,6 +524,21 @@ export default function AdminUsers() {
                               : ` · garantia expirou em ${guaranteeEndFormatted}`}
                           </p>
                         )}
+                        {/* Resumo em destaque — só desktop, não mexe em nada
+                            que já existia acima/abaixo dele. */}
+                        <div className="hidden sm:flex items-center gap-1.5 mt-1.5">
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                            📚 {s.total_lessons ?? 0} feitas
+                          </span>
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                            📅 {studentScheduledCounts[s.user_id] ?? 0} agendadas
+                          </span>
+                          {nationalityLabel(s.nationality) && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-violet-500/10 border border-violet-500/20 text-violet-400">
+                              🌍 {nationalityLabel(s.nationality)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
