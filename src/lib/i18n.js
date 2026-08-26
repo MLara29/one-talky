@@ -347,6 +347,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "Loading checkout…",
     paymentInitFailedTitle: "Could not start the payment",
     couponAppliedLabel: "Coupon applied:",
+    couponReminderTitle: "🎁 Got a promo coupon?",
+    couponReminderDesc: "This is your only chance to use it — it won't be available after you finish signing up.",
     genericTryAgain: "Please try again.",
   },
   pt_br: {
@@ -696,6 +698,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "Carregando checkout…",
     paymentInitFailedTitle: "Não foi possível iniciar o pagamento",
     couponAppliedLabel: "Cupom aplicado:",
+    couponReminderTitle: "🎁 Tem um cupom promocional?",
+    couponReminderDesc: "Essa é a sua única chance de usar — depois do cadastro, não vai dar mais pra aplicar.",
     genericTryAgain: "Tente novamente.",
   },
   pt_pt: {
@@ -1037,6 +1041,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "A carregar checkout…",
     paymentInitFailedTitle: "Não foi possível iniciar o pagamento",
     couponAppliedLabel: "Cupão aplicado:",
+    couponReminderTitle: "🎁 Tem um cupão promocional?",
+    couponReminderDesc: "Esta é a sua única oportunidade de o usar — depois do registo, já não vai ser possível aplicar.",
     genericTryAgain: "Tente novamente.",
   },
   es: {
@@ -1374,6 +1380,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "Cargando pago…",
     paymentInitFailedTitle: "No se pudo iniciar el pago",
     couponAppliedLabel: "Cupón aplicado:",
+    couponReminderTitle: "🎁 ¿Tienes un cupón promocional?",
+    couponReminderDesc: "Esta es tu única oportunidad de usarlo — después de registrarte, ya no podrás aplicarlo.",
     genericTryAgain: "Inténtalo de nuevo.",
   },
   fr: {
@@ -1711,6 +1719,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "Chargement du paiement…",
     paymentInitFailedTitle: "Impossible de démarrer le paiement",
     couponAppliedLabel: "Code promo appliqué :",
+    couponReminderTitle: "🎁 Vous avez un code promo ?",
+    couponReminderDesc: "C'est votre seule chance de l'utiliser — une fois l'inscription terminée, il ne sera plus possible de l'appliquer.",
     genericTryAgain: "Veuillez réessayer.",
   },
   de: {
@@ -2048,6 +2058,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "Zahlung wird geladen…",
     paymentInitFailedTitle: "Zahlung konnte nicht gestartet werden",
     couponAppliedLabel: "Gutschein angewendet:",
+    couponReminderTitle: "🎁 Haben Sie einen Aktionscode?",
+    couponReminderDesc: "Dies ist Ihre einzige Chance, ihn einzulösen — nach der Anmeldung ist das nicht mehr möglich.",
     genericTryAgain: "Bitte versuchen Sie es erneut.",
   },
   it: {
@@ -2385,6 +2397,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "Caricamento pagamento…",
     paymentInitFailedTitle: "Impossibile avviare il pagamento",
     couponAppliedLabel: "Coupon applicato:",
+    couponReminderTitle: "🎁 Hai un codice promozionale?",
+    couponReminderDesc: "Questa è la tua unica occasione per usarlo — dopo la registrazione non sarà più possibile applicarlo.",
     genericTryAgain: "Riprova.",
   },
   ja: {
@@ -2729,6 +2743,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "チェックアウトを読み込み中…",
     paymentInitFailedTitle: "お支払いを開始できませんでした",
     couponAppliedLabel: "クーポン適用済み：",
+    couponReminderTitle: "🎁 プロモーションコードをお持ちですか？",
+    couponReminderDesc: "今が使える唯一のタイミングです — 登録が完了すると、後から適用することはできません。",
     genericTryAgain: "もう一度お試しください。",
   },
   ko: {
@@ -3073,6 +3089,8 @@ export const TRANSLATIONS = {
     loadingCheckoutText: "결제 로딩 중…",
     paymentInitFailedTitle: "결제를 시작할 수 없습니다",
     couponAppliedLabel: "쿠폰 적용됨:",
+    couponReminderTitle: "🎁 프로모션 쿠폰이 있으신가요?",
+    couponReminderDesc: "지금이 사용할 수 있는 유일한 기회입니다 — 가입이 완료되면 나중에 적용할 수 없습니다.",
     genericTryAgain: "다시 시도해 주세요.",
   },
 };
