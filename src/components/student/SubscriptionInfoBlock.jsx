@@ -4,43 +4,10 @@ import { CreditCard } from "lucide-react";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
+import { tsb } from "@/lib/studentBlocksI18n";
 
 const PLAN_NAME_KEYS = { basic: "planNameBasic", standard: "planNameStandard", premium: "planNamePremium" };
 const STATUS_KEYS = { none: "subStatusNone", active: "subStatusActive", cancelled: "subStatusCancelled", expired: "subStatusExpired" };
-
-// Local translations (i18n.js is at capacity and can't grow).
-const L = {
-  en: {
-    subscriptionInfoTitle: "Plan & Subscription",
-    currentPlanLabel: "Current plan",
-    noActivePlan: "No active plan",
-    subscriptionStatusLabel: "Subscription status",
-    subscriptionStartLabel: "Start date",
-    validUntilLabel: "Valid until",
-    usageSummaryLabel: "Usage summary",
-    totalMinutesUsed: "minutes used",
-    totalLessonsCompleted: "lessons completed",
-    subStatusNone: "None",
-    subStatusActive: "Active",
-    subStatusCancelled: "Cancelled",
-    subStatusExpired: "Expired",
-  },
-  pt_br: {
-    subscriptionInfoTitle: "Plano e Assinatura",
-    currentPlanLabel: "Plano atual",
-    noActivePlan: "Nenhum plano ativo",
-    subscriptionStatusLabel: "Status da assinatura",
-    subscriptionStartLabel: "Data de início",
-    validUntilLabel: "Válido até",
-    usageSummaryLabel: "Resumo de uso",
-    totalMinutesUsed: "minutos usados",
-    totalLessonsCompleted: "aulas concluídas",
-    subStatusNone: "Nenhuma",
-    subStatusActive: "Ativa",
-    subStatusCancelled: "Cancelada",
-    subStatusExpired: "Expirada",
-  },
-};
 
 function formatDate(dateStr, lang) {
   if (!dateStr) return null;
@@ -55,7 +22,7 @@ function formatDate(dateStr, lang) {
 export default function SubscriptionInfoBlock({ profile, onProfileChanged }) {
   const { lang } = useLang();
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const tr = (key) => (L[lang] && L[lang][key]) || L.en[key] || key;
+  const tr = (key) => tsb(lang, key);
 
   const plan = profile?.plan;
   const isActive = profile?.subscription_status === "active";
