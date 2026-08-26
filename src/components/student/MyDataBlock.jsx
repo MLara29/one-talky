@@ -3,24 +3,10 @@ import { User, Mail, GraduationCap, Target, MessageSquare, Calendar } from "luci
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 
+import { tsb } from "@/lib/studentBlocksI18n";
+
 const OBJ_KEY = { travel: "objTravel", work: "objWork", interview: "objInterview", relocation: "objRelocation", conversation: "objConversation", exams: "objExams" };
 const LEVEL_KEY = { beginner: "levelBeginner", intermediate: "levelIntermediate", advanced: "levelAdvanced" };
-
-// Local translations (i18n.js is at capacity and can't grow).
-const L = {
-  en: {
-    myDataTitle: "My Data",
-    myDataSubtitle: "Information the platform stores about you",
-    registrationDateLabel: "Registration date",
-    notDefined: "Not defined",
-  },
-  pt_br: {
-    myDataTitle: "Meus dados",
-    myDataSubtitle: "Informações que a plataforma guarda sobre você",
-    registrationDateLabel: "Data de cadastro",
-    notDefined: "Não definido",
-  },
-};
 
 function formatDate(dateStr, lang) {
   if (!dateStr) return null;
@@ -33,7 +19,7 @@ function formatDate(dateStr, lang) {
 // about this student, in one place. Pulls from both StudentProfile and User.
 export default function MyDataBlock({ profile, user }) {
   const { lang } = useLang();
-  const tr = (key) => (L[lang] && L[lang][key]) || L.en[key] || key;
+  const tr = (key) => tsb(lang, key);
 
   const fullName = profile?.full_name || tr("notDefined");
   const email = user?.email || tr("notDefined");
