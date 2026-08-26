@@ -101,8 +101,18 @@ export default function AdminUsers() {
       });
 
       setTutorStats(stats);
+
+      // Reaproveita a mesma consulta de "scheduledLessons" pra contar quantas
+      // aulas futuras cada ALUNO tem agendadas — evita uma segunda ida ao banco.
+      const studentCounts = {};
+      scheduledLessons.forEach(l => {
+        if (!l.student_id || !l.scheduled_at) return;
+        if (new Date(l.scheduled_at) < now) return;
+        studentCounts[l.student_id] = (studentCounts[l.student_id] || 0) + 1;
+      });
+      setStudentScheduledCounts(studentCounts);
     } catch {
-      // Resumo é informativo — se falhar, a lista de tutores continua funcionando normal.
+      // Resumo é informativo — se falhar, a lista de tutores/alunos continua funcionando normal.
     }
   };
 
