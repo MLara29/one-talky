@@ -6,48 +6,7 @@ import { Trash2, AlertTriangle, X, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useLang } from "@/lib/LanguageContext";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
-
-// Local translations (i18n.js is at capacity and can't grow).
-const L = {
-  en: {
-    deleteAccountTitle: "Delete Account",
-    deleteAccountDesc: "Permanently delete your account and personal data.",
-    blockedTitle: "Cancel your subscription first",
-    blockedDesc: "You can't delete your account while you have an active subscription or are in a grace period. Cancel your subscription first, then come back here.",
-    cancelSubFirst: "Cancel subscription",
-    deleteBtn: "Delete my account",
-    confirmTitle: "Delete account?",
-    confirmBtn: "Yes, delete my account",
-    cancelBtn: "No, keep my account",
-    deletingBtn: "Deleting...",
-    successTitle: "Account deleted",
-    successDesc: "Your account has been deleted. You will be logged out.",
-    errorTitle: "Error",
-    errorBlocked: "You need to cancel your subscription first.",
-    warningBase: "Your personal data will be anonymized. Lesson and payment records will be kept without your name attached — they are the basis for tutors to prove hours worked and are legally required for tax purposes.",
-    warningLessons: "{count} scheduled lesson(s) will be automatically cancelled. Your tutor(s) will be notified.",
-    warningMinutes: "{minutes} available minute(s) will be lost. Valid until: {date}. No refund will be issued.",
-  },
-  pt_br: {
-    deleteAccountTitle: "Excluir Conta",
-    deleteAccountDesc: "Exclua permanentemente sua conta e dados pessoais.",
-    blockedTitle: "Cancele sua assinatura primeiro",
-    blockedDesc: "Você não pode excluir sua conta enquanto tem uma assinatura ativa ou está em período de carência. Cancele sua assinatura primeiro e depois volte para excluir sua conta.",
-    cancelSubFirst: "Cancelar assinatura",
-    deleteBtn: "Excluir minha conta",
-    confirmTitle: "Excluir conta?",
-    confirmBtn: "Sim, excluir minha conta",
-    cancelBtn: "Não, manter minha conta",
-    deletingBtn: "Excluindo...",
-    successTitle: "Conta excluída",
-    successDesc: "Sua conta foi excluída. Você será deslogado.",
-    errorTitle: "Erro",
-    errorBlocked: "Você precisa cancelar sua assinatura primeiro.",
-    warningBase: "Seus dados pessoais serão anonimizados. O histórico de aulas e os registros de pagamento serão mantidos sem o seu nome vinculado — são a base para os tutores comprovarem horas trabalhadas e são exigidos por lei para fins fiscais.",
-    warningLessons: "{count} aula(s) agendada(s) será(ão) cancelada(s) automaticamente. Seu(s) tutor(es) será(ão) notificado(s).",
-    warningMinutes: "{minutes} minuto(s) disponível(is) será(ão) perdido(s). Validade: {date}. Não haverá reembolso.",
-  },
-};
+import { tsb } from "@/lib/studentBlocksI18n";
 
 function formatDate(dateStr, lang) {
   if (!dateStr) return "";
@@ -66,7 +25,7 @@ export default function DeleteAccountBlock({ profile, onProfileChanged }) {
   const { user } = useAuth();
   const { lang } = useLang();
   const { toast } = useToast();
-  const tr = (key) => (L[lang] && L[lang][key]) || L.en[key] || key;
+  const tr = (key) => tsb(lang, key);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
