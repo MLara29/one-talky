@@ -34,6 +34,7 @@ export default function OnboardingStudent() {
   const [userEmail, setUserEmail] = useState("");
   const [form, setForm] = useState({
     full_name: "",
+    nationality: "",
     native_language: "portuguese_br",
     target_language: "english",
     level: "",
