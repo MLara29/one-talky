@@ -8,10 +8,11 @@ import { useLang } from "@/lib/LanguageContext";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
 import { tsb } from "@/lib/studentBlocksI18n";
 
+const LOCALE_MAP = { en: "en-US", pt_br: "pt-BR", pt_pt: "pt-PT", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT", ja: "ja-JP", ko: "ko-KR" };
 function formatDate(dateStr, lang) {
   if (!dateStr) return "";
   try {
-    return new Date(dateStr).toLocaleDateString(lang === "pt_br" ? "pt-BR" : "en-US", { day: "2-digit", month: "long", year: "numeric" });
+    return new Date(dateStr).toLocaleDateString(LOCALE_MAP[lang] || "en-US", { day: "2-digit", month: "long", year: "numeric" });
   } catch { return dateStr; }
 }
 
