@@ -10,7 +10,8 @@
       "type": "string",
       "enum": [
         "plan_cancelled",
-        "refund_issued"
+        "refund_issued",
+        "account_deleted"
       ]
     },
     "amount": {

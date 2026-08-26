@@ -12,6 +12,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import SubscriptionInfoBlock from "@/components/student/SubscriptionInfoBlock";
 import MyDataBlock from "@/components/student/MyDataBlock";
+import DeleteAccountBlock from "@/components/student/DeleteAccountBlock";
 
 const OBJ_KEY = { travel: "objTravel", work: "objWork", interview: "objInterview", relocation: "objRelocation", conversation: "objConversation", exams: "objExams" };
 const LEVEL_KEY = { beginner: "levelBeginner", intermediate: "levelIntermediate", advanced: "levelAdvanced" };
@@ -183,6 +184,7 @@ export default function StudentPersonalInfo() {
 
       <SubscriptionInfoBlock profile={profile} onProfileChanged={loadProfile} />
       <MyDataBlock profile={profile} user={user} />
+      <DeleteAccountBlock profile={profile} onProfileChanged={loadProfile} />
     </div>
   );
 }
