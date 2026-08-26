@@ -62,16 +62,21 @@ Deno.serve(async (req) => {
       // cadastrada dele — best effort, nunca bloqueia a resposta da API
       // por causa de falha no envio.
       try {
-        const lang = langForCountry(student.nationality);
-        const { subject, html } = buildFreeMinutesEmail({ studentName: student.full_name, minutes: mins, lang });
-        const transporter = getTransporter();
-        await sendMailAndLog(base44, transporter, {
-          from: SMTP_FROM(),
-          to: student.email,
-          subject,
-          html,
-          _sentBy: user.id,
-        }, 'free_minutes_granted');
+        // student.email não existe — o e-mail fica no User, associado por
+        // user_id, não no StudentProfile.
+        const studentUser = await base44.asServiceRole.entities.User.get(student.user_id);
+        if (studentUser?.email) {
+          const lang = langForCountry(student.nationality);
+          const { subject, html } = buildFreeMinutesEmail({ studentName: student.full_name, minutes: mins, lang });
+          const transporter = getTransporter();
+          await sendMailAndLog(base44, transporter, {
+            from: SMTP_FROM(),
+            to: studentUser.email,
+            subject,
+            html,
+            _sentBy: user.id,
+          }, 'free_minutes_granted');
+        }
       } catch (emailErr) {
         console.error('[adminManageStudent] Falha ao enviar e-mail de minutos grátis:', emailErr.message);
       }
