@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Trash2, AlertTriangle, X, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,7 +17,6 @@ const L = {
     cancelSubFirst: "Cancel subscription",
     deleteBtn: "Delete my account",
     confirmTitle: "Delete account?",
-    confirmBody: "Are you sure you want to delete your account? This action cannot be undone. Your personal data will be permanently removed, but lesson and payment records will be kept for audit purposes without your name.",
     confirmBtn: "Yes, delete my account",
     cancelBtn: "No, keep my account",
     deletingBtn: "Deleting...",
@@ -24,6 +24,9 @@ const L = {
     successDesc: "Your account has been deleted. You will be logged out.",
     errorTitle: "Error",
     errorBlocked: "You need to cancel your subscription first.",
+    warningBase: "Your personal data will be anonymized. Lesson and payment records will be kept without your name attached — they are the basis for tutors to prove hours worked and are legally required for tax purposes.",
+    warningLessons: "{count} scheduled lesson(s) will be automatically cancelled. Your tutor(s) will be notified.",
+    warningMinutes: "{minutes} available minute(s) will be lost. Valid until: {date}. No refund will be issued.",
   },
   pt_br: {
     deleteAccountTitle: "Excluir Conta",
@@ -33,7 +36,6 @@ const L = {
     cancelSubFirst: "Cancelar assinatura",
     deleteBtn: "Excluir minha conta",
     confirmTitle: "Excluir conta?",
-    confirmBody: "Tem certeza que quer excluir sua conta? Essa ação não pode ser desfeita. Seus dados pessoais serão removidos permanentemente, mas o histórico de aulas e pagamentos será mantido para fins de auditoria sem o seu nome.",
     confirmBtn: "Sim, excluir minha conta",
     cancelBtn: "Não, manter minha conta",
     deletingBtn: "Excluindo...",
@@ -41,27 +43,56 @@ const L = {
     successDesc: "Sua conta foi excluída. Você será deslogado.",
     errorTitle: "Erro",
     errorBlocked: "Você precisa cancelar sua assinatura primeiro.",
+    warningBase: "Seus dados pessoais serão anonimizados. O histórico de aulas e os registros de pagamento serão mantidos sem o seu nome vinculado — são a base para os tutores comprovarem horas trabalhadas e são exigidos por lei para fins fiscais.",
+    warningLessons: "{count} aula(s) agendada(s) será(ão) cancelada(s) automaticamente. Seu(s) tutor(es) será(ão) notificado(s).",
+    warningMinutes: "{minutes} minuto(s) disponível(is) será(ão) perdido(s). Validade: {date}. Não haverá reembolso.",
   },
 };
+
+function formatDate(dateStr, lang) {
+  if (!dateStr) return "";
+  try {
+    return new Date(dateStr).toLocaleDateString(lang === "pt_br" ? "pt-BR" : "en-US", { day: "2-digit", month: "long", year: "numeric" });
+  } catch { return dateStr; }
+}
 
 // Block 3 — Account deletion. Security gate is subscription status (not OTP):
 // if the student has an active subscription or is in a grace period, deletion
 // is blocked with a shortcut to the existing CancelPlanModal. Otherwise, a
-// simple confirm dialog triggers deleteMyAccount, which anonymizes personal
-// data and auto-logs-out the student.
+// confirm dialog with dynamic warnings triggers deleteMyAccount, which
+// anonymizes personal data, cancels future lessons via cancelLesson, and
+// auto-logs-out the student.
 export default function DeleteAccountBlock({ profile, onProfileChanged }) {
+  const { user } = useAuth();
   const { lang } = useLang();
   const { toast } = useToast();
   const tr = (key) => (L[lang] && L[lang][key]) || L.en[key] || key;
   const [showConfirm, setShowConfirm] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [futureLessonsCount, setFutureLessonsCount] = useState(0);
 
   const now = new Date();
   const isActive = profile?.subscription_status === "active";
   const validUntil = profile?.subscription_valid_until ? new Date(profile.subscription_valid_until) : null;
   const inGrace = validUntil && validUntil > now;
   const blocked = isActive || inGrace;
+
+  const prepaidMinutes = Math.round(profile?.prepaid_credits_minutes || 0);
+  const planMinutes = Math.round(profile?.plan_credits_minutes || 0);
+  const totalMinutes = prepaidMinutes + planMinutes;
+  const prepaidExpiresAt = profile?.prepaid_expires_at;
+
+  // Fetch future scheduled lessons count for the dynamic warning (b).
+  useEffect(() => {
+    if (!user?.id || blocked) return;
+    base44.entities.Lesson.filter({ student_id: user.id, status: "scheduled" })
+      .then(lessons => {
+        const future = lessons.filter(l => l.scheduled_at && new Date(l.scheduled_at) > new Date());
+        setFutureLessonsCount(future.length);
+      })
+      .catch(() => {});
+  }, [user?.id, blocked]);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -84,6 +115,19 @@ export default function DeleteAccountBlock({ profile, onProfileChanged }) {
     setShowCancelModal(false);
     if (onProfileChanged) onProfileChanged();
   };
+
+  // Build dynamic warning list — (a) always, (b) if future lessons, (c) if minutes.
+  const warnings = [tr("warningBase")];
+  if (futureLessonsCount > 0) {
+    warnings.push(tr("warningLessons").replace("{count}", futureLessonsCount));
+  }
+  if (totalMinutes > 0) {
+    warnings.push(
+      tr("warningMinutes")
+        .replace("{minutes}", totalMinutes)
+        .replace("{date}", formatDate(prepaidExpiresAt, lang))
+    );
+  }
 
   return (
     <>
@@ -125,7 +169,7 @@ export default function DeleteAccountBlock({ profile, onProfileChanged }) {
 
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-md p-6 shadow-2xl relative">
+          <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-md p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => !deleting && setShowConfirm(false)}
               className="absolute top-5 right-5 text-gray-400 hover:text-gray-700"
@@ -136,12 +180,17 @@ export default function DeleteAccountBlock({ profile, onProfileChanged }) {
             <div className="w-11 h-11 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center mb-4">
               <AlertTriangle className="w-5 h-5 text-red-500" />
             </div>
-            <h2 className="font-display font-bold text-lg mb-3" style={{ color: "#17181C" }}>
+            <h2 className="font-display font-bold text-lg mb-4" style={{ color: "#17181C" }}>
               {tr("confirmTitle")}
             </h2>
-            <p className="text-sm mb-6" style={{ color: "#5A5B66" }}>
-              {tr("confirmBody")}
-            </p>
+            <div className="space-y-3 mb-6">
+              {warnings.map((w, i) => (
+                <div key={i} className="flex items-start gap-2 text-sm" style={{ color: "#5A5B66" }}>
+                  <span className="text-red-400 mt-0.5 flex-shrink-0">•</span>
+                  <p>{w}</p>
+                </div>
+              ))}
+            </div>
             <div className="flex gap-3">
               <Button
                 variant="outline"

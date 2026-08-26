@@ -8,6 +8,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // BLOCKED if the student has an active subscription OR is still inside a
 // grace period (subscription_valid_until in the future) — they must cancel
 // first via cancelMyPlan.
+//
+// Future lessons are cancelled by REUSING cancelLesson (not a bulk update),
+// so each tutor receives the normal cancellation notification with the
+// student's real name. Only AFTER notifications are sent do we anonymize
+// the student_name field on all lesson records.
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -35,7 +40,32 @@ export default async function(req) {
 
     const ANON_NAME = 'Conta excluída';
 
-    // Anonymize StudentProfile — RLS prevents self-update, so service role.
+    // ── 1. Cancel future scheduled lessons via cancelLesson (reuses existing
+    // logic: releases tutor slot, releases first-week lock, notifies tutor
+    // with the student's real name). No penalty/late-cancellation check exists
+    // in cancelLesson, so there's nothing to skip.
+    const lessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: user.id });
+    const futureLessons = lessons.filter(l =>
+      l.status === 'scheduled' && l.scheduled_at && new Date(l.scheduled_at) > now
+    );
+    for (const lesson of futureLessons) {
+      try {
+        await base44.functions.invoke('cancelLesson', { lesson_id: lesson.id });
+      } catch (e) {
+        console.error(`[deleteMyAccount] Failed to cancel lesson ${lesson.id}:`, e.message);
+      }
+    }
+
+    // ── 2. Anonymize student_name across ALL lesson records (past + just-
+    // cancelled). Tutors were already notified with the real name by
+    // cancelLesson above; now we strip the name from the stored records.
+    if (lessons.length > 0) {
+      await base44.asServiceRole.entities.Lesson.bulkUpdate(
+        lessons.map(l => ({ id: l.id, student_name: ANON_NAME }))
+      );
+    }
+
+    // ── 3. Anonymize StudentProfile — RLS prevents self-update, so service role.
     await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
       full_name: ANON_NAME,
       photo_url: null,
@@ -48,26 +78,23 @@ export default async function(req) {
       is_blocked: true,
     });
 
-    // Anonymize student_name across all Lesson records; cancel any future
-    // scheduled lessons (student won't be able to attend with a blocked account).
-    const lessons = await base44.asServiceRole.entities.Lesson.filter({ student_id: user.id });
-    if (lessons.length > 0) {
-      const updates = lessons.map(l => {
-        const isFuture = l.status === 'scheduled' && l.scheduled_at && new Date(l.scheduled_at) > now;
-        return {
-          id: l.id,
-          student_name: ANON_NAME,
-          ...(isFuture ? { status: 'cancelled', notes: 'Conta excluída pelo aluno' } : {}),
-        };
-      });
-      await base44.asServiceRole.entities.Lesson.bulkUpdate(updates);
+    // ── 4. Anonymize the User email — makes it non-reusable (nobody can
+    // register with it again) and removes the real address. Uses .invalid
+    // TLD so the anonymized address is never emailable. Wrapped in try/catch
+    // because the User entity may reject email updates even via service role;
+    // if so, the StudentProfile anonymization above is the primary safeguard.
+    try {
+      const anonEmail = `deleted_${user.id.substring(0, 12)}@anon.onetalky.invalid`;
+      await base44.asServiceRole.entities.User.update(user.id, { email: anonEmail });
+    } catch (e) {
+      console.error('[deleteMyAccount] Could not anonymize User email:', e.message);
     }
 
-    // Audit log
+    // ── 5. Audit log
     await base44.asServiceRole.entities.StudentAccountEvent.create({
       student_id: user.id,
       type: 'account_deleted',
-      details: 'Student requested account deletion. Personal data anonymized.',
+      details: 'Student requested account deletion. Personal data anonymized, future lessons cancelled.',
       created_at: now.toISOString(),
     });
 
