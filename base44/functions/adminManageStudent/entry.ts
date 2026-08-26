@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { requireOtp } from '../../shared/requireOtp.js';
+import { getTransporter, SMTP_FROM, sendMailAndLog } from '../../shared/mailer.js';
+import { buildFreeMinutesEmail, langForCountry } from '../../shared/freeMinutesEmail.js';
 
 // Admin-only student profile moderation actions (block/unblock, delete, add credit minutes).
 Deno.serve(async (req) => {
@@ -55,6 +57,25 @@ Deno.serve(async (req) => {
         plan_credits_minutes: newPlanTotal,
         credits_minutes: newPlanTotal + newPrepaid,
       });
+
+      // Avisa o aluno por e-mail, no idioma derivado da nacionalidade
+      // cadastrada dele — best effort, nunca bloqueia a resposta da API
+      // por causa de falha no envio.
+      try {
+        const lang = langForCountry(student.nationality);
+        const { subject, html } = buildFreeMinutesEmail({ studentName: student.full_name, minutes: mins, lang });
+        const transporter = getTransporter();
+        await sendMailAndLog(base44, transporter, {
+          from: SMTP_FROM(),
+          to: student.email,
+          subject,
+          html,
+          _sentBy: user.id,
+        }, 'free_minutes_granted');
+      } catch (emailErr) {
+        console.error('[adminManageStudent] Falha ao enviar e-mail de minutos grátis:', emailErr.message);
+      }
+
       return Response.json({ success: true, credits_minutes: newPlanTotal + newPrepaid });
     }
   } catch (error) {
