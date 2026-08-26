@@ -7,15 +7,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import StudentDetailModal from "@/components/admin/StudentDetailModal";
-import { getCountryName } from "@/lib/countries";
+import { getCountryName, getFlagEmoji } from "@/lib/countries";
 
 // Mostra a nacionalidade do jeito certo, seja ela um código de país novo
 // ("BR") ou um texto livre antigo ("Brasil", de antes dessa mudança) —
-// painel do admin sempre em português, então fixo lang="pt_br" aqui.
-function nationalityLabel(nationality) {
+// painel do admin sempre em português, então fixo lang="pt_br" aqui. Só
+// mostra bandeira quando é um código de verdade (texto livre antigo não
+// tem como virar bandeira com confiança).
+function nationalityDisplay(nationality) {
   if (!nationality) return null;
-  if (/^[A-Z]{2}$/.test(nationality)) return getCountryName(nationality, "pt_br");
-  return nationality;
+  const isCode = /^[A-Z]{2}$/.test(nationality);
+  return {
+    flag: isCode ? getFlagEmoji(nationality) : "🌍",
+    name: isCode ? getCountryName(nationality, "pt_br") : nationality,
+  };
 }
 
 const sortByName = (arr) => [...arr].sort((a, b) =>
@@ -533,9 +538,9 @@ export default function AdminUsers() {
                           <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-500/10 border border-blue-500/20 text-blue-400">
                             📅 {studentScheduledCounts[s.user_id] ?? 0} agendadas
                           </span>
-                          {nationalityLabel(s.nationality) && (
+                          {nationalityDisplay(s.nationality) && (
                             <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-violet-500/10 border border-violet-500/20 text-violet-400">
-                              🌍 {nationalityLabel(s.nationality)}
+                              {nationalityDisplay(s.nationality).flag} {nationalityDisplay(s.nationality).name}
                             </span>
                           )}
                         </div>
