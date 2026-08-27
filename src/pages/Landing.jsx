@@ -36,7 +36,7 @@ import TrackingScripts from "@/components/TrackingScripts";
 const CONTENT = {
   pt: {
     navHow: "Como funciona", navTutors: "Tutores", navPlans: "Planos", navGuarantee: "Garantia",
-    navLogin: "Entrar", navCta: "Cadastre-se",
+    navLogin: "Entrar", navCta: "Crie sua conta",
     heroBadge: "Conversação 1 a 1, ao vivo",
     headline: ["Você entende inglês. Só não consegue ", "falar."],
     heroSub1: "Aulas de conversação 1 a 1, por vídeo, com tutores de inglês do mundo inteiro. 30 minutos por vez, no seu horário. A partir de ",
@@ -1535,8 +1535,8 @@ const CSS = `
 .ot-hamburger { display:none; cursor:pointer; background:none; border:1px solid #E4DED6; border-radius:8px; padding:7px 9px; color:#3A3B45; }
 @media(max-width:860px){ .ot-hamburger { display:flex!important; align-items:center; justify-content:center; } }
 
-/* Nav CTAs: hide login + register on mobile/tablet — they go in the hamburger menu */
-@media(max-width:860px){ .ot-nav-login, .ot-nav-cta { display:none!important; } }
+/* Nav: on mobile hide login + lang dropdown — login goes in hamburger, register stays visible */
+@media(max-width:860px){ .ot-nav-login, .ot-lang-dropdown { display:none!important; } }
 
 /* Hero: stack on mobile, show image below text */
 @media(max-width:860px){
@@ -1679,7 +1679,7 @@ export default function Landing() {
 
           {/* Lang dropdown + CTAs */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <div style={{ position: "relative" }}>
+            <div className="ot-lang-dropdown" style={{ position: "relative" }}>
               <button
                 onClick={() => setLangMenuOpen(v => !v)}
                 style={{
@@ -1737,8 +1737,25 @@ export default function Landing() {
           {[["#como", c.navHow], ["#tutores", c.navTutors], ["#planos", c.navPlans], ["#garantia", c.navGuarantee]].map(([href, label]) => (
             <a key={href} href={href} onClick={() => setMobileMenuOpen(false)}>{label}</a>
           ))}
+          {/* Language selection — moved here from the header on mobile */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, padding: "4px 0" }}>
+            {LANG_ORDER.map((l) => (
+              <button
+                key={l}
+                onClick={() => selectLang(l)}
+                style={{
+                  padding: "9px 2px", borderRadius: 10, fontWeight: 700, fontSize: 12,
+                  background: lang === l ? ACCENT : "#fff",
+                  color: lang === l ? "#fff" : "#3A3B45",
+                  border: "1px solid " + (lang === l ? ACCENT : "#E4DED6"),
+                  cursor: "pointer", fontFamily: "inherit", textAlign: "center",
+                }}
+              >
+                {LANG_FULL_LABELS[l]}
+              </button>
+            ))}
+          </div>
           <a href="/login" onClick={() => setMobileMenuOpen(false)} style={{ background: "#fff", border: "1px solid #E4DED6", textAlign: "center" }}>{c.navLogin}</a>
-          <a href="/register" onClick={() => setMobileMenuOpen(false)} style={{ background: ACCENT, color: "#fff", border: "none", fontWeight: 800, textAlign: "center" }}>{c.navCta}</a>
         </div>
       </header>
 
