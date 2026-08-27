@@ -1555,6 +1555,7 @@ export default function Landing() {
   const [spots, setSpots] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [mobileLangOpen, setMobileLangOpen] = useState(false);
   const [regionData, setRegionData] = useState(() => getCachedRegion());
   const manualLangChoiceRef = useRef(false);
   const founderSpotsLeft = 137;
@@ -1737,23 +1738,51 @@ export default function Landing() {
           {[["#como", c.navHow], ["#tutores", c.navTutors], ["#planos", c.navPlans], ["#garantia", c.navGuarantee]].map(([href, label]) => (
             <a key={href} href={href} onClick={() => setMobileMenuOpen(false)}>{label}</a>
           ))}
-          {/* Language selection — moved here from the header on mobile */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, padding: "4px 0" }}>
-            {LANG_ORDER.map((l) => (
-              <button
-                key={l}
-                onClick={() => selectLang(l)}
-                style={{
-                  padding: "9px 2px", borderRadius: 10, fontWeight: 700, fontSize: 12,
-                  background: lang === l ? ACCENT : "#fff",
-                  color: lang === l ? "#fff" : "#3A3B45",
-                  border: "1px solid " + (lang === l ? ACCENT : "#E4DED6"),
-                  cursor: "pointer", fontFamily: "inherit", textAlign: "center",
-                }}
-              >
-                {LANG_FULL_LABELS[l]}
-              </button>
-            ))}
+          {/* Language selection — single dropdown (Cambly-style) */}
+          <div style={{ position: "relative", padding: "4px 0" }}>
+            <button
+              onClick={() => setMobileLangOpen(v => !v)}
+              style={{
+                width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "10px 14px", borderRadius: 10,
+                background: "#fff", border: "1px solid #E4DED6",
+                color: "#3A3B45", fontWeight: 700, fontSize: 14,
+                cursor: "pointer", fontFamily: "inherit",
+              }}
+            >
+              {LANG_FULL_LABELS[lang]}
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ transform: mobileLangOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }}>
+                <path d="M1 1l4 4 4-4" stroke="#3A3B45" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            {mobileLangOpen && (
+              <>
+                <div onClick={() => setMobileLangOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                <div style={{
+                  position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
+                  background: "#333", borderRadius: 14, overflow: "hidden",
+                  zIndex: 50, maxHeight: "60vh", overflowY: "auto",
+                }}>
+                  {LANG_ORDER.map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => { selectLang(l); setMobileLangOpen(false); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        width: "100%", textAlign: "left",
+                        padding: "12px 16px", fontSize: 14, fontWeight: 600,
+                        color: "#fff",
+                        background: lang === l ? "#6688ff" : "transparent",
+                        border: "none", cursor: "pointer", fontFamily: "inherit",
+                      }}
+                    >
+                      {lang === l && <span style={{ color: "#fff", fontSize: 13 }}>✓</span>}
+                      {LANG_FULL_LABELS[l]}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           <a href="/login" onClick={() => setMobileMenuOpen(false)} style={{ background: "#fff", border: "1px solid #E4DED6", textAlign: "center" }}>{c.navLogin}</a>
         </div>
