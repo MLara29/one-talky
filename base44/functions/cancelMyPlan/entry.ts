@@ -114,10 +114,30 @@ Deno.serve(async (req) => {
 
       if (!res.ok) {
         const errData = await res.json();
-        // Se a Stripe disser que já está cancelada ou a assinatura não existe,
-        // tratar como sucesso — o resultado final desejado já foi alcançado.
+        // Se a Stripe disser que já está cancelada ou a assinatura não existe
+        // (comum em assinaturas criadas em modo teste, que não existem do
+        // lado da chave de produção), o resultado final desejado do lado da
+        // Stripe já foi alcançado — MAS o registro local ainda precisa ser
+        // atualizado, senão o aluno fica com status "active" pra sempre,
+        // mesmo a tela mostrando "cancelado" com sucesso.
         const msg = (errData.error?.message || "").toLowerCase();
         if (msg.includes("already") || msg.includes("no such subscription")) {
+          await cancelFutureScheduledLessons(base44, user.id);
+          if (isWithinGuarantee) {
+            await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+              plan: "free",
+              subscription_status: "cancelled",
+              subscription_valid_until: new Date().toISOString(),
+              plan_credits_minutes: 0,
+              plan_credits_grace_expires_at: null,
+              cancelled_within_guarantee: true,
+            });
+          } else {
+            await base44.asServiceRole.entities.StudentProfile.update(profile.id, {
+              subscription_status: "cancelled",
+            });
+          }
+          await logAccountEvent(base44, user.id, "plan_cancelled", 0, `Plano ${profile.plan} cancelado via Stripe (assinatura não encontrada do lado da Stripe — provável assinatura de teste)`);
           return Response.json({ success: true, provider: "stripe", already_cancelled: true });
         }
         console.error("[cancelMyPlan] Stripe cancel error:", JSON.stringify(errData));
