@@ -1535,8 +1535,8 @@ const CSS = `
 .ot-hamburger { display:none; cursor:pointer; background:none; border:1px solid #E4DED6; border-radius:8px; padding:7px 9px; color:#3A3B45; }
 @media(max-width:860px){ .ot-hamburger { display:flex!important; align-items:center; justify-content:center; } }
 
-/* Nav CTAs: hide login text on very small */
-@media(max-width:500px){ .ot-nav-login { display:none!important; } }
+/* Nav CTAs: hide login + register on mobile/tablet — they go in the hamburger menu */
+@media(max-width:860px){ .ot-nav-login, .ot-nav-cta { display:none!important; } }
 
 /* Hero: stack on mobile, show image below text */
 @media(max-width:860px){
@@ -1725,7 +1725,7 @@ export default function Landing() {
               )}
             </div>
             <button className="ot-nav-login" onClick={() => navigate("/login")} style={{ padding: "8px 14px", borderRadius: 999, background: "transparent", border: "1.5px solid #E4DED6", color: "#3A3B45", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{c.navLogin}</button>
-            <button onClick={() => navigate("/register")} style={{ padding: "9px 14px", borderRadius: 999, background: ACCENT, color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>{c.navCta}</button>
+            <button className="ot-nav-cta" onClick={() => navigate("/register")} style={{ padding: "9px 14px", borderRadius: 999, background: ACCENT, color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>{c.navCta}</button>
             {/* Hamburger */}
             <button className="ot-hamburger" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
               <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><rect width="18" height="2" rx="1" fill="#3A3B45"/><rect y="6" width="18" height="2" rx="1" fill="#3A3B45"/><rect y="12" width="18" height="2" rx="1" fill="#3A3B45"/></svg>
@@ -1737,26 +1737,8 @@ export default function Landing() {
           {[["#como", c.navHow], ["#tutores", c.navTutors], ["#planos", c.navPlans], ["#garantia", c.navGuarantee]].map(([href, label]) => (
             <a key={href} href={href} onClick={() => setMobileMenuOpen(false)}>{label}</a>
           ))}
-          {/* Idioma também aqui — reforço, caso o dropdown do cabeçalho fique
-              apertado em telas muito estreitas. */}
-          <div style={{ display: "flex", gap: 8, padding: "4px 0" }}>
-            {LANG_ORDER.map((l) => (
-              <button
-                key={l}
-                onClick={() => selectLang(l)}
-                style={{
-                  flex: 1, padding: "9px 0", borderRadius: 10, fontWeight: 700, fontSize: 13,
-                  background: lang === l ? ACCENT : "#fff",
-                  color: lang === l ? "#fff" : "#3A3B45",
-                  border: "1px solid " + (lang === l ? ACCENT : "#E4DED6"),
-                  cursor: "pointer", fontFamily: "inherit",
-                }}
-              >
-                {LANG_FULL_LABELS[l]}
-              </button>
-            ))}
-          </div>
-          <a href="/login" onClick={() => setMobileMenuOpen(false)} style={{ background: "#fff", border: "1px solid #E4DED6" }}>{c.navLogin}</a>
+          <a href="/login" onClick={() => setMobileMenuOpen(false)} style={{ background: "#fff", border: "1px solid #E4DED6", textAlign: "center" }}>{c.navLogin}</a>
+          <a href="/register" onClick={() => setMobileMenuOpen(false)} style={{ background: ACCENT, color: "#fff", border: "none", fontWeight: 800, textAlign: "center" }}>{c.navCta}</a>
         </div>
       </header>
 
