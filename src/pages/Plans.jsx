@@ -64,7 +64,12 @@ export default function Plans() {
   const intentHandledRef = useRef(false);
   useEffect(() => {
     if (!intentPlan || intentHandledRef.current) return;
-    if (!profile || (!regionData && !getCachedRegion())) return;
+    // IMPORTANTE: espera regionData (o ESTADO React) estar definido de
+    // verdade, não só o cache — selectPlan() usa isBR/regionConfig, que
+    // dependem desse estado. Disparar cedo demais (mesmo com cache
+    // disponível) causava um preço errado aparecer no topo do checkout
+    // (BRL) enquanto o back-end cobrava certo na moeda regional (USD/etc).
+    if (!profile || !regionData) return;
     const plan = PLANS.find(p => p.id === intentPlan);
     if (plan) {
       intentHandledRef.current = true;
