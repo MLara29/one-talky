@@ -52,9 +52,13 @@ export default async function (req: Request): Promise<Response> {
         const searchData = await searchRes.json();
         if (searchData.data && searchData.data.length > 0) {
           productId = searchData.data[0].id;
-          // Busca um price ativo neste product.
+          // Busca price ativo neste product — filtrando por moeda "brl"
+          // explicitamente. SEM esse filtro, a Stripe pode devolver QUALQUER
+          // moeda ativa (ex: o preço em dólar), que acabava sendo rotulado
+          // como se fosse o preço em real por engano — causando cobrança na
+          // moeda errada mesmo quando o site pedia BRL corretamente.
           const pricesRes = await fetch(
-            `https://api.stripe.com/v1/prices?product=${productId}&active=true&limit=1`,
+            `https://api.stripe.com/v1/prices?product=${productId}&active=true&currency=brl&limit=1`,
             { headers: { Authorization: auth } }
           );
           if (pricesRes.ok) {
