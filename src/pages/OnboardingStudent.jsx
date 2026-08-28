@@ -138,7 +138,9 @@ export default function OnboardingStudent() {
       }
       base44.functions.invoke("sendRedditConversion", {}).catch(() => {});
       base44.functions.invoke("sendMetaConversion", {}).catch(() => {});
-      setTimeout(() => { window.location.href = "/"; }, 300);
+      setTimeout(() => {
+        window.location.href = intendedPlan ? `/plans?intent=${intendedPlan}` : "/";
+      }, 300);
     } catch (e) {
       console.error("[OnboardingStudent] submit error:", e);
       toast({ title: t(lang, "profileErrorTitle"), description: t(lang, "profileErrorDesc"), variant: "destructive" });
