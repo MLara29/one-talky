@@ -14,12 +14,22 @@
 // regional one isn't set yet. Pack `prices` maps start with only `brl` and get
 // the other currencies filled in after the admin runs stripeCreateCatalog.
 //
+// 2026-08-28: stripeCreateCatalog tinha um bug — ao procurar "o preço BRL já
+// existente" de um produto, não filtrava por moeda, então podia pegar
+// QUALQUER preço ativo (ex: o de dólar) e rotular como se fosse o de real.
+// Isso fazia os 3 planos mensais (basic/standard/premium) cobrarem em dólar
+// mesmo quando o site pedia BRL corretamente. Corrigido no backend
+// (stripeCreateCatalog agora filtra currency=brl nessa busca) e os price_ids
+// abaixo foram resincronizados com a Stripe depois da correção — confirmado
+// batendo com o painel da Stripe (preço de R$59,80/119,60/227,24 criados dia
+// 18/ago, com assinatura ativa). Os pacotes avulsos nunca tiveram esse bug.
+//
 // mode: "subscription" → recurring monthly plan (plan:*)
 // mode: "payment"     → one-time prepaid pack (pack:*)
 export const STRIPE_CATALOG = {
-  "plan:basic":    { price_id: "price_1U7dTRLrbgaxg9EVgX6Drynd", mode: "subscription", product_id: "prod_V6A6uyCQxsiiX1", prices: { brl: "price_1U7dTRLrbgaxg9EVgX6Drynd", eur: "price_1U7dTQLrbgaxg9EVzh1wRxqm", jpy: "price_1U7dTRLrbgaxg9EVFL1D7LjO", krw: "price_1U7dTRLrbgaxg9EVKGyoQ3H4", usd: "price_1U7dTRLrbgaxg9EVgX6Drynd" } },
-  "plan:standard": { price_id: "price_1U7dTSLrbgaxg9EVfn3zqVlI", mode: "subscription", product_id: "prod_V6A6EqpSDVLc2p", prices: { brl: "price_1U7dTSLrbgaxg9EVfn3zqVlI", eur: "price_1U7dTRLrbgaxg9EVbR8ewDS7", jpy: "price_1U7dTRLrbgaxg9EVSgVrDy4i", krw: "price_1U7dTSLrbgaxg9EVX1nyVoa8", usd: "price_1U7dTSLrbgaxg9EVfn3zqVlI" } },
-  "plan:premium":  { price_id: "price_1U7dTTLrbgaxg9EVyQxJVlLt", mode: "subscription", product_id: "prod_V6A65X2k2sRNoq", prices: { brl: "price_1U7dTTLrbgaxg9EVyQxJVlLt", eur: "price_1U7dTSLrbgaxg9EVaJtv9TnK", jpy: "price_1U7dTSLrbgaxg9EV6r8il6rz", krw: "price_1U7dTSLrbgaxg9EVaKFYnTmV", usd: "price_1U7dTTLrbgaxg9EVyQxJVlLt" } },
+  "plan:basic":    { price_id: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", mode: "subscription", product_id: "prod_V6A6uyCQxsiiX1", prices: { brl: "price_1U5xmRLrbgaxg9EV6Yyv8oCk", eur: "price_1U7dTQLrbgaxg9EVzh1wRxqm", jpy: "price_1U7dTRLrbgaxg9EVFL1D7LjO", krw: "price_1U7dTRLrbgaxg9EVKGyoQ3H4", usd: "price_1U7dTRLrbgaxg9EVgX6Drynd" } },
+  "plan:standard": { price_id: "price_1U5xmSLrbgaxg9EVSb3ExLSc", mode: "subscription", product_id: "prod_V6A6EqpSDVLc2p", prices: { brl: "price_1U5xmSLrbgaxg9EVSb3ExLSc", eur: "price_1U7dTRLrbgaxg9EVbR8ewDS7", jpy: "price_1U7dTRLrbgaxg9EVSgVrDy4i", krw: "price_1U7dTSLrbgaxg9EVX1nyVoa8", usd: "price_1U7dTSLrbgaxg9EVfn3zqVlI" } },
+  "plan:premium":  { price_id: "price_1U5xmSLrbgaxg9EV0GpkQCKv", mode: "subscription", product_id: "prod_V6A65X2k2sRNoq", prices: { brl: "price_1U5xmSLrbgaxg9EV0GpkQCKv", eur: "price_1U7dTSLrbgaxg9EVaJtv9TnK", jpy: "price_1U7dTSLrbgaxg9EV6r8il6rz", krw: "price_1U7dTSLrbgaxg9EVaKFYnTmV", usd: "price_1U7dTTLrbgaxg9EVyQxJVlLt" } },
   "pack:pp_30":   { price_id: "price_1U5xmSLrbgaxg9EV3pwYcNNu", mode: "payment", product_id: "prod_V6A6AFfvDlruK9", prices: { brl: "price_1U5xmSLrbgaxg9EV3pwYcNNu", eur: "price_1U7h6HLrbgaxg9EVe0zHEcB4", jpy: "price_1U7h6HLrbgaxg9EVK3oU2fnC", krw: "price_1U7h6HLrbgaxg9EVcfSqxFw1", usd: "price_1U7h6HLrbgaxg9EVgOM5Z9LY" } },
   "pack:pp_60":   { price_id: "price_1U5xmTLrbgaxg9EVVKxtcvSL", mode: "payment", product_id: "prod_V6A6W96pVHh4kA", prices: { brl: "price_1U5xmTLrbgaxg9EVVKxtcvSL", eur: "price_1U7h6HLrbgaxg9EVyG5PqxW0", jpy: "price_1U7h6ILrbgaxg9EVJmUHljrD", krw: "price_1U7h6ILrbgaxg9EV2LWJgA5J", usd: "price_1U7h6ILrbgaxg9EV4bWfY2Ni" } },
   "pack:pp_120":  { price_id: "price_1U5xmTLrbgaxg9EV4U1TF2xR", mode: "payment", product_id: "prod_V6A6ZdjG7OQrlT", prices: { brl: "price_1U5xmTLrbgaxg9EV4U1TF2xR", eur: "price_1U7h6ILrbgaxg9EVoZQ7vZ4t", jpy: "price_1U7h6ILrbgaxg9EVLAUvWfoK", krw: "price_1U7h6JLrbgaxg9EVBZnwf9t5", usd: "price_1U7h6JLrbgaxg9EVoubX6IiZ" } },
