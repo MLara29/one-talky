@@ -52,6 +52,26 @@ export default function Plans() {
 
   useEffect(() => { loadProfile(); }, [user]);
 
+  // Se a pessoa veio de um botão de plano específico na Landing Page (via
+  // ?plan=X no cadastro, que atravessou onboarding até aqui como ?intent=X),
+  // já abre o checkout desse plano sozinho, assim que perfil e preço
+  // regional estiverem prontos — senão a pessoa cai na tela de planos sem
+  // nenhuma indicação de qual ela queria comprar. Só dispara uma vez.
+  const [searchParams] = useSearchParams();
+  const intentPlan = ["basic", "standard", "premium"].includes(searchParams.get("intent"))
+    ? searchParams.get("intent")
+    : null;
+  const intentHandledRef = useRef(false);
+  useEffect(() => {
+    if (!intentPlan || intentHandledRef.current) return;
+    if (!profile || (!regionData && !getCachedRegion())) return;
+    const plan = PLANS.find(p => p.id === intentPlan);
+    if (plan) {
+      intentHandledRef.current = true;
+      selectPlan(plan);
+    }
+  }, [intentPlan, profile, regionData]);
+
   const loadProfile = async () => {
     try {
       const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
