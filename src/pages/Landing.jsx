@@ -2069,7 +2069,7 @@ export default function Landing() {
                     </li>
                   ))}
                 </ul>
-                <button onClick={() => navigate("/register")} style={{ textAlign: "center", padding: 13, borderRadius: 999, fontWeight: 700, fontSize: 14.5, background: p.highlight ? ACCENT : "#fff", color: p.highlight ? "#fff" : "#3A3B45", border: `1.5px solid ${p.highlight ? ACCENT : "#E4DED6"}`, cursor: "pointer", fontFamily: "inherit" }}>
+                <button onClick={() => navigate(`/register?plan=${planIds[i]}`)} style={{ textAlign: "center", padding: 13, borderRadius: 999, fontWeight: 700, fontSize: 14.5, background: p.highlight ? ACCENT : "#fff", color: p.highlight ? "#fff" : "#3A3B45", border: `1.5px solid ${p.highlight ? ACCENT : "#E4DED6"}`, cursor: "pointer", fontFamily: "inherit" }}>
                   {p.cta}
                 </button>
               </div>
