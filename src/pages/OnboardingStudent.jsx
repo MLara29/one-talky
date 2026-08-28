@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,14 @@ const LANG_LABELS = { en: "EN", pt_br: "PT", es: "ES", fr: "FR", de: "DE", it: "
 export default function OnboardingStudent() {
   const { toast } = useToast();
   const { lang, changeLang } = useLang();
+  const [searchParams] = useSearchParams();
+  // Plano que a pessoa clicou na Landing Page, se veio de lá (ver Register.jsx
+  // e Landing.jsx) — usado no final do onboarding pra levar direto pra tela
+  // de Planos com esse plano em destaque, em vez de cair no dashboard sem
+  // nenhuma relação com o que a pessoa realmente queria comprar.
+  const intendedPlan = ["basic", "standard", "premium"].includes(searchParams.get("plan"))
+    ? searchParams.get("plan")
+    : null;
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState(null);
