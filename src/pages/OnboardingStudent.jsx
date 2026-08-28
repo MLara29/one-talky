@@ -128,6 +128,7 @@ export default function OnboardingStudent() {
         window.rdt("track", "SignUp");
       }
       base44.functions.invoke("sendRedditConversion", {}).catch(() => {});
+      base44.functions.invoke("sendMetaConversion", {}).catch(() => {});
       setTimeout(() => { window.location.href = "/"; }, 300);
     } catch (e) {
       console.error("[OnboardingStudent] submit error:", e);
