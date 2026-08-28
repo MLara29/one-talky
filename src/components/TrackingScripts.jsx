@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 // Substitua pelos IDs reais quando for ativar o rastreamento.
 // Enquanto os placeholders estiverem em "SEU_*", o componente é no-op
 // mesmo que o consentimento esteja dado — nenhum script é injetado.
-const META_PIXEL_ID = "1558500632424709";
+const META_PIXEL_ID = "SEU_PIXEL_ID"; // Meta Pixel agora carrega direto no index.html (dispara imediatamente, sem gate de consentimento)
 const GA_MEASUREMENT_ID = "SEU_ID";
 
 const STORAGE_KEY = "ot_cookie_consent";
