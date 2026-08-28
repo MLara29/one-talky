@@ -114,7 +114,7 @@ export default function Register() {
           birth_date: birthDate,
         });
       }
-      window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
+      window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : `/onboarding/student${planQuery}`);
     } catch (err) {
       setError(err.message || t(lang, "invalidCodeError"));
     } finally {
