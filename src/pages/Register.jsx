@@ -136,7 +136,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    const dest = nextUrl || (role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
+    const dest = nextUrl || (role === "tutor" ? "/onboarding/tutor" : `/onboarding/student${planQuery}`);
     base44.auth.loginWithProvider("google", dest);
   };
 
