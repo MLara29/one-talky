@@ -21,6 +21,14 @@ export default function Register() {
   // Validado via safeReturnTo: rejeita javascript:, domínios externos e
   // truques de path (//evil.com) — nunca usar o valor cru de "next" aqui.
   const nextUrl = searchParams.get("next") ? safeReturnTo("next") : null;
+  // Qual plano a pessoa clicou na Landing Page (se veio de lá) — precisa
+  // atravessar o cadastro inteiro (e-mail+código, ou Google) e chegar até
+  // o fim do onboarding, senão a intenção de compra se perde no meio do
+  // caminho e a pessoa termina o cadastro sem ser levada a comprar nada.
+  const planParam = ["basic", "standard", "premium"].includes(searchParams.get("plan"))
+    ? searchParams.get("plan")
+    : null;
+  const planQuery = planParam ? `?plan=${planParam}` : "";
   const [role] = useState(defaultRole); // role fixed by URL — no in-page switcher
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
