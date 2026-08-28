@@ -213,6 +213,13 @@ export default function Plans() {
     <div>
       {checkoutItem && paymentMethod === "stripe" && (
         <StripeCheckoutModal
+          // Chave amarrada a moeda + referência: se checkoutItem for
+          // recalculado com um valor diferente (ex: regionData terminando
+          // de carregar após o modal já ter montado), o React desmonta e
+          // remonta o componente do zero, em vez de só atualizar as props
+          // — assim a chamada pra Stripe (que só roda uma vez, ao montar)
+          // sempre usa o valor mais atual, nunca um que já ficou pra trás.
+          key={`${checkoutItem.external_reference}-${checkoutItem.currency}`}
           item={checkoutItem}
           onClose={() => setCheckoutItem(null)}
           onSuccess={handleSuccess}
