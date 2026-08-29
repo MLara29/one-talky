@@ -180,7 +180,7 @@ const CONTENT = {
     sealTitle: "Secure payment via Stripe", sealSub: "Credit card — we don't store your card details.",
     priceEyebrow: "Plans", priceTitle: "Choose how much you want to speak each week",
     priceSub: "Every lesson is one-on-one, by video, 30 minutes long.",
-    anchor: ["A private English lesson in Brazil costs on average ", "R$120–R$200", " per hour. At One Talky, an hour of 1-on-1 conversation starts at ", "R$59.80", "."],
+    anchor: ["A private English tutor with a traditional agency typically costs ", "several times more", " per hour. At One Talky, an hour of 1-on-1 conversation starts at just ", "R$59.80", "."],
     anchorNote: "Secure payment via Stripe · No lock-in · Cancel anytime.",
     perWeek: "/week", perMonth: "/month", totalWord: "Total ",
     plans: [
