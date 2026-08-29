@@ -10,6 +10,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
+import { formatMinutes } from "@/lib/formatMinutes";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -266,7 +267,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
                 transform: "translate(-50%,-50%)",
                 fontSize: 10, fontWeight: 800, color: "#f97316",
                 whiteSpace: "nowrap",
-              }}>{Math.floor(planMins)} min</span>
+              }}>{formatMinutes(planMins)} min</span>
             </div>
           </div>
           {/* Prepaid credits bar (only if > 0) */}
@@ -298,7 +299,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
                   transform: "translate(-50%,-50%)",
                   fontSize: 10, fontWeight: 800, color: "#6366f1",
                   whiteSpace: "nowrap",
-                }}>{Math.floor(prepaidMins)} min</span>
+                }}>{formatMinutes(prepaidMins)} min</span>
               </div>
             </div>
           )}
@@ -373,7 +374,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
                   position: "absolute", right: 10, top: "50%",
                   transform: "translateY(-50%)",
                   fontSize: 12, fontWeight: 800, color: "#f97316",
-                }}>{Math.floor(planMins)} min</span>
+                }}>{formatMinutes(planMins)} min</span>
               </div>
             </div>
             {/* Prepaid credits bar (only if > 0) */}
@@ -381,7 +382,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
               <div className="w-full" style={{ maxWidth: 280 }}>
                 <div className="flex items-center justify-between mb-1">
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>
-                    {t(lang, "prepaidBarLabel")} {Math.floor(prepaidMins)} min
+                    {t(lang, "prepaidBarLabel")} {formatMinutes(prepaidMins)} min
                   </span>
                   {prepaidExpiresDate && (
                     <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>
@@ -411,12 +412,12 @@ export default function CreditsBanner({ profile, onUpdate }) {
                     position: "absolute", right: 10, top: "50%",
                     transform: "translateY(-50%)",
                     fontSize: 12, fontWeight: 800, color: "#6366f1",
-                  }}>{Math.floor(prepaidMins)} min</span>
+                  }}>{formatMinutes(prepaidMins)} min</span>
                 </div>
               </div>
             )}
             <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap" }}>
-              {Math.floor(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>{t(lang, "totalMinutesLabel")}</span>
+              {formatMinutes(mins)} min <span style={{ fontWeight: 600, color: "#6b7280" }}>{t(lang, "totalMinutesLabel")}</span>
             </span>
           </div>
 

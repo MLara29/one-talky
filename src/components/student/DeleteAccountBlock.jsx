@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useLang } from "@/lib/LanguageContext";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
 import { tsb } from "@/lib/studentBlocksI18n";
+import { formatMinutes } from "@/lib/formatMinutes";
 
 const LOCALE_MAP = { en: "en-US", pt_br: "pt-BR", pt_pt: "pt-PT", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT", ja: "ja-JP", ko: "ko-KR" };
 function formatDate(dateStr, lang) {
@@ -38,8 +39,8 @@ export default function DeleteAccountBlock({ profile, onProfileChanged }) {
   const inGrace = validUntil && validUntil > now;
   const blocked = isActive || inGrace;
 
-  const prepaidMinutes = Math.round(profile?.prepaid_credits_minutes || 0);
-  const planMinutes = Math.round(profile?.plan_credits_minutes || 0);
+  const prepaidMinutes = profile?.prepaid_credits_minutes || 0;
+  const planMinutes = profile?.plan_credits_minutes || 0;
   const totalMinutes = prepaidMinutes + planMinutes;
   const prepaidExpiresAt = profile?.prepaid_expires_at;
 
@@ -84,7 +85,7 @@ export default function DeleteAccountBlock({ profile, onProfileChanged }) {
   if (totalMinutes > 0) {
     warnings.push(
       tr("warningMinutes")
-        .replace("{minutes}", totalMinutes)
+        .replace("{minutes}", formatMinutes(totalMinutes))
         .replace("{date}", formatDate(prepaidExpiresAt, lang))
     );
   }

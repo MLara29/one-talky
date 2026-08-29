@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Clock, BookOpen, Flame } from "lucide-react";
 import { getLanguageLabel, getLanguageFlag } from "@/lib/constants";
+import { formatMinutes } from "@/lib/formatMinutes";
 
 export default function Progress() {
   const { user } = useAuth();
@@ -28,7 +29,7 @@ export default function Progress() {
     { label: "Minutes practiced", value: profile?.total_minutes || 0, icon: Clock, gradient: "from-violet-500 to-indigo-500" },
     { label: "Total lessons", value: profile?.total_lessons || 0, icon: BookOpen, gradient: "from-blue-500 to-cyan-500" },
     { label: "Day streak", value: profile?.streak_days || 0, icon: Flame, gradient: "from-orange-500 to-red-500" },
-    { label: "Credits left", value: `${profile?.credits_minutes || 0} min`, icon: Clock, gradient: "from-emerald-500 to-teal-500" },
+    { label: "Credits left", value: `${formatMinutes(profile?.credits_minutes)} min`, icon: Clock, gradient: "from-emerald-500 to-teal-500" },
   ];
 
   return (

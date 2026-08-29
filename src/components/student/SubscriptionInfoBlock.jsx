@@ -5,6 +5,7 @@ import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
 import { tsb } from "@/lib/studentBlocksI18n";
+import { formatMinutes } from "@/lib/formatMinutes";
 
 const PLAN_NAME_KEYS = { basic: "planNameBasic", standard: "planNameStandard", premium: "planNamePremium" };
 const STATUS_KEYS = { none: "subStatusNone", active: "subStatusActive", cancelled: "subStatusCancelled", expired: "subStatusExpired" };
@@ -79,7 +80,7 @@ export default function SubscriptionInfoBlock({ profile, onProfileChanged }) {
         <p className="theme-subtext text-xs mb-3">{tr("usageSummaryLabel")}</p>
         <div className="flex gap-4">
           <div className="flex-1 bg-white/5 rounded-xl p-3 text-center">
-            <p className="theme-heading text-xl font-bold">{totalMinutes}</p>
+            <p className="theme-heading text-xl font-bold">{formatMinutes(totalMinutes)}</p>
             <p className="theme-subtext text-xs">{tr("totalMinutesUsed")}</p>
           </div>
           <div className="flex-1 bg-white/5 rounded-xl p-3 text-center">

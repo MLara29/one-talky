@@ -10,6 +10,14 @@
 const PREPAID_EXPIRY_DAYS = 30;
 const PLAN_GRACE_EXPIRY_DAYS = 30;
 
+// Round to 2 decimal places (centi-minutes). Used after every credit
+// addition/subtraction so floating-point artifacts (e.g. 159.42000000000002)
+// never accumulate in the database. The stored value is always a clean
+// multiple of 0.01 — effectively an integer number of centi-minutes.
+function round2(n) {
+  return Math.round((Number(n) || 0) * 100) / 100;
+}
+
 // Discount type → number of billing cycles the discount applies for.
 const DISCOUNT_CYCLES_BY_TYPE = {
   none: 0,
@@ -84,10 +92,10 @@ export async function computeCreditUpdate(base44, {
 
   // ── Route purchased minutes ──
   if (isPlan) {
-    updateData.plan_credits_minutes = (profile.plan_credits_minutes ?? 0) + item.minutes;
+    updateData.plan_credits_minutes = round2((profile.plan_credits_minutes ?? 0) + item.minutes);
     // plan_credits_grace_expires_at stays null while subscription is active.
   } else if (isPack) {
-    updateData.prepaid_credits_minutes = (profile.prepaid_credits_minutes ?? 0) + item.minutes;
+    updateData.prepaid_credits_minutes = round2((profile.prepaid_credits_minutes ?? 0) + item.minutes);
     // Reset prepaid expiry to now + 60 days, always (reinicia o prazo para todo o saldo).
     updateData.prepaid_expires_at = new Date(
       now.getTime() + PREPAID_EXPIRY_DAYS * 24 * 60 * 60 * 1000
@@ -180,7 +188,7 @@ export async function computeCreditUpdate(base44, {
         : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
       const currentPrepaidInUpdate = updateData.prepaid_credits_minutes ?? null;
-      const newPrepaidTotal = (currentPrepaidInUpdate ?? profile.prepaid_credits_minutes ?? 0) + bonusMinutes;
+      const newPrepaidTotal = round2((currentPrepaidInUpdate ?? profile.prepaid_credits_minutes ?? 0) + bonusMinutes);
       updateData.prepaid_credits_minutes = newPrepaidTotal;
 
       // Set prepaid_expires_at to the LATER of (current/new pack expiry, bonus
