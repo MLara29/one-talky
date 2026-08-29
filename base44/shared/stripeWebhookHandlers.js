@@ -133,6 +133,32 @@ async function handleCheckoutCompleted(base44, session, stripeEventId, opts) {
   const couponCode = metadata.coupon_code || "";
   const bonusMinutes = parseInt(metadata.bonus_minutes || "0", 10);
 
+  // ── Test checkout without catalog reference (e.g. stripeCreateTestSubscription) ──
+  // Skip credit fulfillment but still fire the Meta Purchase event so the
+  // isolated test webhook can be validated end-to-end in the Meta Test Events
+  // tool. userId comes from metadata.created_by (the admin who triggered the test).
+  if (metadata.test === "true" && !externalReference) {
+    const testUserId = metadata.created_by || userId || "";
+    if (!testUserId) {
+      console.warn(`${logPrefix} test checkout has no created_by/user_id — cannot send Purchase event`);
+      return;
+    }
+    console.log(`${logPrefix} test checkout without external_reference — skipping credits, sending Purchase event only`);
+    try {
+      const purchaseValue = (session.amount_total || 0) / (isZeroDecimal(session.currency) ? 1 : 100);
+      await sendPurchaseEvent(base44, {
+        userId: testUserId,
+        value: purchaseValue,
+        currency: session.currency || "BRL",
+        eventId: `${purchaseEventIdPrefix}${stripeEventId || session.id}`,
+        testEventCode,
+      });
+    } catch (e) {
+      console.warn(`${logPrefix} Meta Purchase event failed (test checkout):`, e.message);
+    }
+    return;
+  }
+
   if (!userId || !externalReference) {
     console.warn(`${logPrefix} checkout.session.completed missing metadata — skipping`);
     return;
@@ -306,6 +332,33 @@ async function handleInvoicePaid(base44, invoice, stripeEventId, opts) {
 
   const userId = metadata.user_id;
   const externalReference = metadata.external_reference;
+
+  // ── Test renewal without catalog reference (e.g. stripeCreateTestSubscription) ──
+  // Skip credit fulfillment but still fire the Meta Purchase event so the
+  // isolated test webhook renewal flow can be validated in the Meta Test Events
+  // tool. userId comes from metadata.created_by on the subscription.
+  if (metadata.test === "true" && !externalReference) {
+    const testUserId = metadata.created_by || userId || "";
+    if (!testUserId) {
+      console.warn(`${logPrefix} test invoice has no created_by/user_id — cannot send Purchase event`);
+      return;
+    }
+    console.log(`${logPrefix} test invoice without external_reference — skipping credits, sending Purchase event only`);
+    try {
+      const purchaseValue = (invoice.amount_paid || 0) / (isZeroDecimal(invoice.currency) ? 1 : 100);
+      await sendPurchaseEvent(base44, {
+        userId: testUserId,
+        value: purchaseValue,
+        currency: invoice.currency || "BRL",
+        eventId: `${purchaseEventIdPrefix}${stripeEventId || invoice.id}`,
+        testEventCode,
+      });
+    } catch (e) {
+      console.warn(`${logPrefix} Meta Purchase event failed (test invoice):`, e.message);
+    }
+    return;
+  }
+
   if (!userId || !externalReference) {
     console.warn(`${logPrefix} invoice.paid subscription missing metadata — skipping`);
     return;

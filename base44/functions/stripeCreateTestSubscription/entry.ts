@@ -89,6 +89,12 @@ export default async function (req: Request): Promise<Response> {
         "metadata[test]": "true",
         "metadata[created_by]": user.id,
         "metadata[clock_id]": clockData.id,
+        // Propagate test + created_by onto the subscription itself so that
+        // invoice.paid (renewal) events carry metadata.created_by — needed by
+        // handleInvoicePaid to fire the Meta Purchase event for test renewals.
+        "subscription_data[metadata][test]": "true",
+        "subscription_data[metadata][created_by]": user.id,
+        "subscription_data[metadata][clock_id]": clockData.id,
       }),
     });
     const data = await res.json();
