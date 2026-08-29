@@ -5,6 +5,7 @@ import { isZeroDecimal } from "../../shared/regionalPricing.js";
 import { recordAffiliateCommission } from "../../shared/affiliateCommission.js";
 import { computeCreditUpdate, getPlanGraceExpiryDays } from "../../shared/studentCredits.js";
 import { getFinanceSettings } from "../../shared/financeSettings.js";
+import { sendPurchaseEvent } from "../../shared/metaConversions.js";
 
 // Stripe webhook — receives ALL Stripe events.
 // 1. Logs every event to StripeTestEvent (audit trail, admin dashboard).
@@ -129,9 +130,9 @@ async function fulfillEvent(base44, event) {
   }
 
   if (eventType === "checkout.session.completed") {
-    await handleCheckoutCompleted(base44, obj);
+    await handleCheckoutCompleted(base44, obj, event.id || "");
   } else if (eventType === "invoice.paid") {
-    await handleInvoicePaid(base44, obj);
+    await handleInvoicePaid(base44, obj, event.id || "");
   } else if (eventType === "customer.subscription.deleted") {
     await handleSubscriptionDeleted(base44, obj);
   }
@@ -139,7 +140,7 @@ async function fulfillEvent(base44, event) {
 }
 
 // ── checkout.session.completed — first payment (one-time pack or subscription cycle 1) ─
-async function handleCheckoutCompleted(base44, session) {
+async function handleCheckoutCompleted(base44, session, stripeEventId = "") {
   const metadata = session.metadata || {};
   const userId = metadata.user_id;
   const externalReference = metadata.external_reference;
@@ -283,10 +284,25 @@ async function handleCheckoutCompleted(base44, session) {
   } catch (e) {
     console.warn("[stripeWebhook] PaymentRecord creation failed (checkout):", e.message);
   }
+
+  // ── Meta Conversions API — "Purchase" event (server-side) ──────────────
+  // Best-effort, idempotent via event_id (Stripe event id → Meta dedupes
+  // retries within 24h). Test payments (metadata.test) never reach here.
+  try {
+    const purchaseValue = (session.amount_total || 0) / (isZeroDecimal(session.currency) ? 1 : 100);
+    await sendPurchaseEvent(base44, {
+      userId,
+      value: purchaseValue,
+      currency: session.currency || "BRL",
+      eventId: `purchase_${stripeEventId || session.id}`,
+    });
+  } catch (e) {
+    console.warn("[stripeWebhook] Meta Purchase event failed (checkout):", e.message);
+  }
 }
 
 // ── invoice.paid — renewal (cycle 2+) ────────────────────────────────────────
-async function handleInvoicePaid(base44, invoice) {
+async function handleInvoicePaid(base44, invoice, stripeEventId = "") {
   // The first invoice (billing_reason=subscription_create) is already handled
   // by checkout.session.completed — skip it to avoid double-crediting.
   if (invoice.billing_reason === "subscription_create") {
@@ -392,6 +408,19 @@ async function handleInvoicePaid(base44, invoice) {
     });
   } catch (e) {
     console.warn("[stripeWebhook] PaymentRecord creation failed (invoice):", e.message);
+  }
+
+  // ── Meta Conversions API — "Purchase" event (server-side, renewal) ─────
+  try {
+    const purchaseValue = (invoice.amount_paid || 0) / (isZeroDecimal(invoice.currency) ? 1 : 100);
+    await sendPurchaseEvent(base44, {
+      userId,
+      value: purchaseValue,
+      currency: invoice.currency || "BRL",
+      eventId: `purchase_${stripeEventId || invoice.id}`,
+    });
+  } catch (e) {
+    console.warn("[stripeWebhook] Meta Purchase event failed (invoice):", e.message);
   }
 }
 
