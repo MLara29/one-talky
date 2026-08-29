@@ -2077,7 +2077,18 @@ export default function Landing() {
           </div>
           <div style={{ marginTop: 34, maxWidth: 760, marginInline: "auto", background: "#fff", border: "1px solid #EEE7DD", borderRadius: 18, padding: "24px 28px", textAlign: "center" }}>
             <p style={{ fontSize: 16, color: "#3E3F49", margin: 0 }}>
-              {c.anchor[0]}<span style={{ fontFamily: "ui-monospace,monospace", background: "#FDECE0", color: "#C4520B", padding: "1px 7px", borderRadius: 6, fontSize: 14 }}>{c.anchor[1]}</span>{c.anchor[2]}<strong style={{ color: "#17181C" }}>{c.anchor[3]}</strong>{c.anchor[4]}
+              {/* O bloco em inglês serve tanto pra países de língua inglesa
+                  quanto de reserva pra qualquer país sem tradução própria
+                  (ver COUNTRY_TO_LANG) — nunca sabemos de antemão qual
+                  moeda vai aparecer aqui, então o valor final precisa ser
+                  calculado pela região real, não fixo em real. Os outros 7
+                  idiomas já têm mética e referência próprias pro mercado
+                  deles, continuam estáticos. */}
+              {c.anchor[0]}<span style={{ fontFamily: "ui-monospace,monospace", background: "#FDECE0", color: "#C4520B", padding: "1px 7px", borderRadius: 6, fontSize: 14 }}>{c.anchor[1]}</span>{c.anchor[2]}<strong style={{ color: "#17181C" }}>
+                {lang === "en" && !isBR && regionConfig
+                  ? formatRegionalPrice(regionConfig.plans.basic, regionConfig.currency, regionConfig.locale)
+                  : c.anchor[3]}
+              </strong>{c.anchor[4]}
             </p>
             <p style={{ marginTop: 10, fontSize: 14, color: "#7A7B85", margin: "10px 0 0" }}>{c.anchorNote}</p>
           </div>
