@@ -24,8 +24,8 @@ export default async function (req: Request): Promise<Response> {
       return Response.json({ error: "Intervalo inválido (use day, week ou month)" }, { status: 400 });
     }
 
-    const secretKey = secrets.get("STRIPE_SECRET_KEY");
-    if (!secretKey) return Response.json({ error: "STRIPE_SECRET_KEY não configurado" }, { status: 500 });
+    const secretKey = secrets.get("STRIPE_TEST_SECRET_KEY");
+    if (!secretKey) return Response.json({ error: "STRIPE_TEST_SECRET_KEY não configurado" }, { status: 500 });
 
     // URL fixa do domínio de produção — req.url pode chegar como o dispatcher
     // interno do Base44, o que quebraria o redirect pós-pagamento.

@@ -16,8 +16,8 @@ export default async function (req: Request): Promise<Response> {
     const { subscription_id } = await req.json();
     if (!subscription_id) return Response.json({ error: "subscription_id é obrigatório" }, { status: 400 });
 
-    const secretKey = secrets.get("STRIPE_SECRET_KEY");
-    if (!secretKey) return Response.json({ error: "STRIPE_SECRET_KEY não configurado" }, { status: 500 });
+    const secretKey = secrets.get("STRIPE_TEST_SECRET_KEY");
+    if (!secretKey) return Response.json({ error: "STRIPE_TEST_SECRET_KEY não configurado" }, { status: 500 });
 
     const res = await fetch(`https://api.stripe.com/v1/subscriptions/${subscription_id}`, {
       method: "DELETE",

@@ -20,8 +20,8 @@ export default async function (req: Request): Promise<Response> {
     if (!clock_id) return Response.json({ error: "clock_id é obrigatório" }, { status: 400 });
     if (!days || Number(days) <= 0) return Response.json({ error: "days deve ser um número positivo" }, { status: 400 });
 
-    const secretKey = secrets.get("STRIPE_SECRET_KEY");
-    if (!secretKey) return Response.json({ error: "STRIPE_SECRET_KEY não configurado" }, { status: 500 });
+    const secretKey = secrets.get("STRIPE_TEST_SECRET_KEY");
+    if (!secretKey) return Response.json({ error: "STRIPE_TEST_SECRET_KEY não configurado" }, { status: 500 });
 
     const advanceTo = Math.floor(Date.now() / 1000) + Math.round(Number(days) * 24 * 60 * 60);
 
