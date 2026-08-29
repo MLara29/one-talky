@@ -78,8 +78,17 @@ export const COUNTRY_TO_REGION = {
 };
 
 export function getRegionForCountry(countryCode) {
+  // Sem código de país nenhum (detecção falhou por completo) — mantém "br"
+  // como sempre foi, já que a maioria histórica dos usuários é brasileira.
   if (!countryCode) return "br";
-  return COUNTRY_TO_REGION[String(countryCode).toUpperCase()] || "br";
+  const known = COUNTRY_TO_REGION[String(countryCode).toUpperCase()];
+  if (known) return known;
+  // País identificado com sucesso, mas fora do mapa (EUA, Canadá, Reino
+  // Unido, Austrália, etc.) — cai em "latam" (dólar) como padrão
+  // internacional neutro, NUNCA em "br". As campanhas de anúncio rodam
+  // globalmente, então assumir Brasil pra qualquer país desconhecido
+  // mostraria preço/idioma errado pra visitante de fora.
+  return "latam";
 }
 
 export function getRegionalConfig(region) {
