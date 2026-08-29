@@ -195,7 +195,7 @@ const CONTENT = {
     objections: [
       { q: "I don't have time to study every week.", a: "Nobody does. That's why the lesson is 30 minutes, not 2 hours. A window opened in your calendar? You book it. Bad week? You reschedule." },
       { q: "What if I don't understand the teacher?", a: "Our tutors are specialists in teaching English to non-natives. They slow down, repeat, write in the chat and adjust the vocabulary until you follow." },
-      { q: "A private teacher is too expensive for me.", a: "It was. Our model is global: tutors worldwide, no building, no front desk. A 30-minute lesson starts at R$29.90." },
+      { q: "A private teacher is too expensive for me.", a: "It was. Our model is global: tutors worldwide, no building, no front desk. A 30-minute lesson starts at a fraction of the traditional price." },
       { q: "Is payment on the site secure?", a: "Every payment is processed directly by Stripe, one of the world's largest payment platforms. We don't store your card details." },
       { q: "What if it doesn't work for me?", a: "If you subscribe and don't like it, you have 7 days to ask for 100% of your money back. No form, no justification." },
     ],
