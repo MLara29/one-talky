@@ -14,10 +14,8 @@ export default function TwoFactorModal({ email, onVerified }) {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
-  const [countdown, setCountdown] = useState(60);
-  // Validade REAL do código (2 minutos) — contagem separada e com rótulo bem
-  // diferente do botão de reenviar, pra não repetir a confusão de antes
-  // (o "Reenviar em Xs" não é, e nunca foi, a validade do código).
+  // Cronômetro único (2 minutos): controla tanto a validade do código quanto
+  // a disponibilidade do botão de reenviar — um só número na tela.
   const [expirySeconds, setExpirySeconds] = useState(120);
   const [role, setRole] = useState(null);
   const inputs = useRef([]);
@@ -31,7 +29,6 @@ export default function TwoFactorModal({ email, onVerified }) {
   useEffect(() => {
     inputs.current[0]?.focus();
     const timer = setInterval(() => {
-      setCountdown(c => Math.max(0, c - 1));
       setExpirySeconds(s => Math.max(0, s - 1));
     }, 1000);
     return () => clearInterval(timer);
@@ -86,12 +83,11 @@ export default function TwoFactorModal({ email, onVerified }) {
   };
 
   const handleResend = async () => {
-    if (countdown > 0) return;
+    if (!isExpired) return;
     setResending(true);
     setError("");
     try {
       await base44.functions.invoke("sendOtp", {});
-      setCountdown(60);
       setExpirySeconds(120);
       setDigits(["", "", "", "", "", ""]);
       inputs.current[0]?.focus();
@@ -151,11 +147,11 @@ export default function TwoFactorModal({ email, onVerified }) {
 
         <button
           onClick={handleResend}
-          disabled={countdown > 0 || resending}
+          disabled={!isExpired || resending}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-500 transition-colors mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${resending ? "animate-spin" : ""}`} />
-          {countdown > 0 ? (isEnglish ? `Resend in ${countdown}s` : `Reenviar em ${countdown}s`) : (isEnglish ? "Resend code" : "Reenviar código")}
+          {isExpired ? (isEnglish ? "Resend code" : "Reenviar código") : (isEnglish ? `Resend in ${expiryLabel}` : `Reenviar em ${expiryLabel}`)}
         </button>
 
         <button
