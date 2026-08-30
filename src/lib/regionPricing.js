@@ -165,6 +165,9 @@ export async function detectAndCacheRegion() {
 }
 
 export function getCachedRegion() {
+  // Mesma trava — ignora qualquer cache antigo que possa ter sobrado no
+  // navegador de alguém (de testes de antes da detecção ser pausada).
+  if (!REGION_DETECTION_ENABLED) return null;
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
