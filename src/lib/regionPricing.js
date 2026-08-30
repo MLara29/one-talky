@@ -140,6 +140,11 @@ const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 // in localStorage so we don't call the API on every page load. The cache
 // has a TTL so a returning visitor from a different location gets updated.
 export async function detectAndCacheRegion() {
+  // Detecção pausada de propósito — ver REGION_DETECTION_ENABLED no topo
+  // deste arquivo. Retorna sempre Brasil/BRL, sem nenhuma chamada de rede.
+  if (!REGION_DETECTION_ENABLED) {
+    return { region: "br", currency: "BRL", country: "Brasil", countryCode: "BR" };
+  }
   try {
     const res = await base44.functions.invoke("detectRegion", {});
     if (res.data?.region) {
