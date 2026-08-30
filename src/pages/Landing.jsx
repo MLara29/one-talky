@@ -1585,20 +1585,35 @@ export default function Landing() {
       });
     };
 
+    // Define o idioma inicial da página a partir da região detectada por IP,
+    // com fallback pro idioma do navegador quando o IP falha ou retorna um
+    // país sem tradução própria (ex: cf-ipcountry classificando brasileiro
+    // como EUA, ou provedores externos rate-limited). O navegador é o sinal
+    // mais direto do idioma que a pessoa quer ler. Nunca sobrescreve uma
+    // escolha manual feita enquanto a detecção ainda estava em andamento.
+    const applyDetectedLang = (data) => {
+      if (manualLangChoiceRef.current) return;
+      const ipLang = data?.countryCode
+        ? (COUNTRY_TO_LANG[String(data.countryCode).toUpperCase()] || "en")
+        : null;
+      let detected = ipLang;
+      if (!detected || detected === "en") {
+        const navLang = (navigator.language || "en").slice(0, 2).toLowerCase();
+        const BROWSER_TO_LANG = { pt: "pt", es: "es", fr: "fr", de: "de", it: "it", ja: "ja", ko: "ko" };
+        detected = BROWSER_TO_LANG[navLang] || "en";
+      }
+      setLang(detected);
+    };
+
     if (!regionData) {
       detectAndCacheRegion().then((data) => {
         setRegionData(data);
         trackVisit(data);
-        if (!manualLangChoiceRef.current && data?.countryCode) {
-          // País mapeado → idioma dele. País desconhecido pra nós (sem
-          // tradução própria) → inglês, nunca português (só o Brasil abre
-          // em português).
-          const code = String(data.countryCode).toUpperCase();
-          setLang(COUNTRY_TO_LANG[code] || "en");
-        }
+        applyDetectedLang(data);
       });
     } else {
       trackVisit(regionData);
+      applyDetectedLang(regionData);
     }
   }, []);
 
