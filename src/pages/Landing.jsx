@@ -32,6 +32,7 @@ import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCached
 import { base44 } from "@/api/base44Client";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import TrackingScripts from "@/components/TrackingScripts";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const CONTENT = {
   pt: {
@@ -2229,6 +2230,7 @@ export default function Landing() {
 
       <CookieConsentBanner />
       <TrackingScripts />
+      <WhatsAppFloat />
     </div>
   );
 }
