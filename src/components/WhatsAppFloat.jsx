@@ -5,7 +5,7 @@ import React from "react";
 //
 // Troque WHATSAPP_NUMBER pelo número real no formato internacional, só dígitos
 // (ex: 5511999998888 para Brasil → DDI 55 + DDD 11 + número).
-const WHATSAPP_NUMBER = "5511999998888";
+const WHATSAPP_NUMBER = "5515991409537";
 const DEFAULT_MESSAGE = "Olá! Vim pelo site da One Talky e gostaria de tirar uma dúvida.";
 
 export default function WhatsAppFloat() {
