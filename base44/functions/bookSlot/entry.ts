@@ -4,6 +4,7 @@ import { normalizeSlot } from '../../shared/slotUtils.js';
 import { requireOtp } from '../../shared/requireOtp.js';
 import { requireNotBlocked } from '../../shared/requireNotBlocked.js';
 import { acquireFirstWeekLock, rollbackFirstWeekLock, commitFirstWeekLock } from '../../shared/firstWeekLock.js';
+import { sendAdminBookingNotification } from '../../shared/adminBookingNotification.js';
 
 export default async function(req) {
   try {
@@ -180,6 +181,26 @@ export default async function(req) {
     // ── Commit the CAS lock with the real lesson ID ────────────────────────────
     if (casLockAcquired && lesson) {
       await commitFirstWeekLock(base44, studentId, casLockToken, lesson.id);
+    }
+
+    // ── Send admin booking notification email ──────────────────────────────────
+    // Fire-and-forget: a failed email must never break the booking flow.
+    if (lesson) {
+      try {
+        let studentDisplayName = student_name || '';
+        if (!studentDisplayName) {
+          const spForName = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: studentId }).catch(() => []);
+          studentDisplayName = spForName[0]?.full_name || user.email || '';
+        }
+        await sendAdminBookingNotification(base44, {
+          lesson,
+          tutorProfile,
+          studentName: studentDisplayName,
+          studentEmail: user.email,
+        });
+      } catch (e) {
+        console.warn('[bookSlot] admin booking notification failed:', e.message);
+      }
     }
 
     return Response.json({ success: true, booked_slots: updatedSlots, lesson });
