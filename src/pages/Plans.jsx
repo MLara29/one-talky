@@ -373,7 +373,7 @@ export default function Plans() {
                         <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-.02em", color: "#17181C" }}>{planMonthlyDisplay(plan)}</span>
                         <span style={{ fontSize: 13, color: "#8A8B94", fontWeight: 700 }}>{t(lang, "perMonth")}</span>
                       </div>
-                      <div style={{ fontSize: 12.5, color: "#8A8B94", fontWeight: 600 }}>{planWeeklyDisplay(plan)}{t(lang, "perWeek")}</div>
+                      <div style={{ fontSize: 15, color: "#17181C", fontWeight: 600 }}>{planWeeklyDisplay(plan)}{t(lang, "perWeek")}</div>
                     </div>
                   </div>
 
