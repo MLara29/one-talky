@@ -2085,6 +2085,13 @@ export default function Landing() {
                     </li>
                   ))}
                 </ul>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#7A7B85", fontWeight: 600 }}>
+                  {c.disarm.map((d, j) => (
+                    <span key={j} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <span style={{ color: ACCENT, fontWeight: 800 }}>✓</span>{d}
+                    </span>
+                  ))}
+                </div>
                 <button onClick={() => navigate(`/register?plan=${planIds[i]}`)} style={{ textAlign: "center", padding: 13, borderRadius: 999, fontWeight: 700, fontSize: 14.5, background: p.highlight ? ACCENT : "#fff", color: p.highlight ? "#fff" : "#3A3B45", border: `1.5px solid ${p.highlight ? ACCENT : "#E4DED6"}`, cursor: "pointer", fontFamily: "inherit" }}>
                   {p.cta}
                 </button>
