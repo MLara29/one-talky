@@ -707,6 +707,7 @@ export const TRANSLATIONS = {
     nationalityLabel: "Nacionalidade",
     guaranteeBadge: "7 dias de garantia ou seu dinheiro de volta",
     noLockInBadge: "Cancele quando quiser, sem multa e sem fidelidade",
+    selectNationalityPlaceholder: "Selecione seu país",
     genericTryAgain: "Tente novamente.",
   },
   pt_pt: {
@@ -1053,6 +1054,7 @@ export const TRANSLATIONS = {
     nationalityLabel: "Nacionalidade",
     guaranteeBadge: "7 dias de garantia ou o seu dinheiro de volta",
     noLockInBadge: "Cancele quando quiser, sem multas e sem fidelização",
+    selectNationalityPlaceholder: "Selecione o seu país",
     genericTryAgain: "Tente novamente.",
   },
   es: {
