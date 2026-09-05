@@ -1654,9 +1654,9 @@ export default function Landing() {
     if (isBR || !regionConfig) {
       return {
         ...p,
-        big: p.weekly,
-        bigUnit: c.perWeek,
-        sub: c.totalWord + p.monthly + c.perMonth,
+        big: p.monthly,
+        bigUnit: c.perMonth,
+        sub: p.weekly + c.perWeek,
       };
     }
     const planId = planIds[i];
@@ -1666,9 +1666,9 @@ export default function Landing() {
     const formattedWeekly = formatRegionalPrice(weeklyPrice, regionConfig.currency, regionConfig.locale);
     return {
       ...p,
-      big: formattedWeekly,
-      bigUnit: c.perWeek,
-      sub: c.totalWord + formattedMonthly + c.perMonth,
+      big: formattedMonthly,
+      bigUnit: c.perMonth,
+      sub: formattedWeekly + c.perWeek,
     };
   });
 
