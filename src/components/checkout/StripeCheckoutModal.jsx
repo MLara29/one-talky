@@ -108,6 +108,14 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
               <CreditCard className="w-3 h-3" /> {t(lang, "couponAppliedLabel")} <span className="font-mono">{affiliateCoupon}</span>
             </div>
           )}
+          <div className="flex flex-col gap-1 mt-3 pt-3" style={{ borderTop: "1px dashed var(--app-border)", fontSize: 12, color: "var(--app-text-secondary)", fontWeight: 600 }}>
+            <span className="flex items-center gap-1.5">
+              <span style={{ color: "#F26A1B", fontWeight: 800 }}>✓</span>{t(lang, "guaranteeBadge")}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span style={{ color: "#F26A1B", fontWeight: 800 }}>✓</span>{t(lang, "noLockInBadge")}
+            </span>
+          </div>
         </div>
 
         {/* Body — scrollable if Stripe form is tall */}
