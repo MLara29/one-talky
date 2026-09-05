@@ -394,6 +394,15 @@ export default function Plans() {
                     </li>
                   </ul>
 
+                  <div className="flex flex-col gap-1" style={{ fontSize: 12, color: "#7A7B85", fontWeight: 600 }}>
+                    <span className="flex items-center gap-1.5">
+                      <span style={{ color: ACCENT, fontWeight: 800 }}>✓</span>{t(lang, "guaranteeBadge")}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span style={{ color: ACCENT, fontWeight: 800 }}>✓</span>{t(lang, "noLockInBadge")}
+                    </span>
+                  </div>
+
                   <button
                     onClick={() => selectPlan(plan)}
                     disabled={isCurrent && !isCancelledButActive}
