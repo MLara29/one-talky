@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { PLANS } from "@/lib/constants";
+import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
+import { detectAndCacheRegion, getRegionalConfig, getCachedRegion } from "@/lib/regionPricing";
 import { useAuth } from "@/lib/AuthContext";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
