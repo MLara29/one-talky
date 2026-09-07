@@ -32,6 +32,15 @@ export default function StudentDashboard() {
   const [showSupport, setShowSupport] = useState(false);
   const [tick, setTick] = useState(0);
 
+  // Checkout automático quando a pessoa vem de um anúncio (link com
+  // ?intent=plano), logo após terminar o cadastro — ver OnboardingStudent.jsx.
+  // Se fechar sem comprar, fica no dashboard normalmente; só reabre se
+  // clicar em "assinar" de novo, manualmente, na página de Planos.
+  const [searchParams] = useSearchParams();
+  const [checkoutItem, setCheckoutItem] = useState(null);
+  const [regionData, setRegionData] = useState(() => getCachedRegion());
+  const intentHandledRef = useRef(false);
+
   // Aula agendada prestes a começar (aparece 5min antes) + prontidão do tutor dela
   const [upcomingLesson, setUpcomingLesson] = useState(null);
   const [upcomingTutorReady, setUpcomingTutorReady] = useState(false);
