@@ -49,6 +49,38 @@ export default function StudentDashboard() {
   const waitingMarkedRef = useRef(new Set());
 
   useEffect(() => { loadData(); }, [user]);
+
+  useEffect(() => {
+    if (!regionData) detectAndCacheRegion().then(setRegionData);
+  }, []);
+
+  // Mesmo padrão do Plans.jsx: só dispara depois que profile E regionData
+  // (o ESTADO, não só o cache) estiverem prontos, pra evitar mostrar um
+  // preço/moeda errado por causa de uma corrida de carregamento.
+  useEffect(() => {
+    const intentPlan = ["basic", "standard", "premium"].includes(searchParams.get("intent"))
+      ? searchParams.get("intent")
+      : null;
+    if (!intentPlan || intentHandledRef.current) return;
+    if (!profile || !regionData) return;
+    const plan = PLANS.find(p => p.id === intentPlan);
+    if (!plan) return;
+    intentHandledRef.current = true;
+    const isBR = regionData.region === "br";
+    const regionConfig = isBR ? null : getRegionalConfig(regionData.region);
+    const currency = isBR || !regionConfig ? "BRL" : regionConfig.currency;
+    const displayPrice = isBR || !regionConfig ? plan.price_monthly : (regionConfig.plans[plan.id] || plan.price_monthly);
+    setCheckoutItem({
+      title: t(lang, "checkoutPlanTitle").replace("{name}", plan.name || plan.id).replace("{minutes}", plan.minutes),
+      price: plan.price_monthly,
+      original_price: null,
+      bonus_minutes: 0,
+      external_reference: `plan:${plan.id}`,
+      currency,
+      display_price: displayPrice,
+      display_original: null,
+    });
+  }, [searchParams, profile, regionData, lang]);
   useEffect(() => { upcomingLessonRef.current = upcomingLesson; }, [upcomingLesson]);
 
   // Mantém os minutos do card de créditos sempre atualizados em tempo real —
