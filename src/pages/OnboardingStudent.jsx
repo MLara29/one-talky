@@ -139,7 +139,7 @@ export default function OnboardingStudent() {
       base44.functions.invoke("sendRedditConversion", {}).catch(() => {});
       base44.functions.invoke("sendMetaConversion", {}).catch(() => {});
       setTimeout(() => {
-        window.location.href = intendedPlan ? `/plans?intent=${intendedPlan}` : "/";
+        window.location.href = intendedPlan ? `/?intent=${intendedPlan}` : "/";
       }, 300);
     } catch (e) {
       console.error("[OnboardingStudent] submit error:", e);
