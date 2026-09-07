@@ -19,6 +19,7 @@ import { stripTutorFields } from "@/lib/tutorPublicFields";
 import { LESSON_JOIN_GRACE_PERIOD_MS, LESSON_JOIN_WINDOW_BEFORE_MS, getLessonTimeStatus } from "@/lib/constants";
 
 const UPCOMING_CARD_WINDOW_MS = 5 * 60 * 1000; // card aparece a partir de 5min antes
+const planName = (lang, id) => t(lang, `planName${id.charAt(0).toUpperCase()}${id.slice(1)}`);
 const ONLINE_THRESHOLD_MS = 90 * 1000;
 
 export default function StudentDashboard() {
