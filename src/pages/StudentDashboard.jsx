@@ -26,6 +26,7 @@ const ONLINE_THRESHOLD_MS = 90 * 1000;
 export default function StudentDashboard() {
   const { user } = useAuth();
   const { lang } = useLang();
+  const { toast } = useToast();
   const [tutors, setTutors] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
