@@ -260,6 +260,14 @@ export default function StudentDashboard() {
 
   return (
     <div>
+      {checkoutItem && (
+        <StripeCheckoutModal
+          key={`${checkoutItem.external_reference}-${checkoutItem.currency}`}
+          item={checkoutItem}
+          onClose={() => setCheckoutItem(null)}
+          onSuccess={() => setCheckoutItem(null)}
+        />
+      )}
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
 
       {/* Credits Banner */}
