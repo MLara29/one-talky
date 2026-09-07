@@ -72,7 +72,7 @@ export default function StudentDashboard() {
     const currency = isBR || !regionConfig ? "BRL" : regionConfig.currency;
     const displayPrice = isBR || !regionConfig ? plan.price_monthly : (regionConfig.plans[plan.id] || plan.price_monthly);
     setCheckoutItem({
-      title: t(lang, "checkoutPlanTitle").replace("{name}", plan.name || plan.id).replace("{minutes}", plan.minutes),
+      title: t(lang, "checkoutPlanTitle").replace("{name}", planName(lang, plan.id)).replace("{minutes}", plan.minutes),
       price: plan.price_monthly,
       original_price: null,
       bonus_minutes: 0,
