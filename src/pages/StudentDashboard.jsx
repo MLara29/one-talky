@@ -268,7 +268,15 @@ export default function StudentDashboard() {
           key={`${checkoutItem.external_reference}-${checkoutItem.currency}`}
           item={checkoutItem}
           onClose={() => setCheckoutItem(null)}
-          onSuccess={() => setCheckoutItem(null)}
+          onSuccess={(status) => {
+            setCheckoutItem(null);
+            if (status === "pending") {
+              toast({ title: t(lang, "pendingPaymentTitle"), description: t(lang, "pendingPaymentDesc") });
+            } else {
+              toast({ title: t(lang, "approvedPaymentTitle"), description: t(lang, "approvedPaymentDesc") });
+            }
+            loadData();
+          }}
         />
       )}
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
