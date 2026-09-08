@@ -28,6 +28,14 @@
     "language": {
       "type": "string"
     },
+    "author_role": {
+      "type": "string",
+      "enum": [
+        "student",
+        "tutor"
+      ],
+      "description": "Quem escreveu a avalia\u00e7\u00e3o: 'student' = aluno avaliando o tutor (p\u00fablica, aparece no perfil do tutor); 'tutor' = tutor avaliando o aluno (privada, vis\u00edvel apenas para o aluno avaliado e admin)."
+    },
     "is_visible": {
       "type": "boolean",
       "default": true
@@ -36,7 +44,8 @@
   "required": [
     "tutor_id",
     "student_id",
-    "rating"
+    "rating",
+    "author_role"
   ],
   "rls": {
     "create": {
@@ -56,14 +65,42 @@
     "read": {
       "$or": [
         {
-          "user_condition": {
-            "role": "student"
-          }
+          "$and": [
+            {
+              "data.author_role": {
+                "$ne": "tutor"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "student"
+              }
+            }
+          ]
         },
         {
-          "user_condition": {
-            "role": "tutor"
-          }
+          "$and": [
+            {
+              "data.author_role": {
+                "$ne": "tutor"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "tutor"
+              }
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "data.author_role": "tutor"
+            },
+            {
+              "data.student_id": "{{user.id}}"
+            }
+          ]
         },
         {
           "user_condition": {
