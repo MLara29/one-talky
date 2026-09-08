@@ -49,7 +49,7 @@ export default function TutorProfilePage() {
     try {
       const t = (await base44.functions.invoke('getPublicTutors', { id })).data;
       setTutor(t);
-      const r = await base44.entities.Review.filter({ tutor_id: t.user_id, is_visible: true });
+      const r = await base44.entities.Review.filter({ tutor_id: t.user_id, is_visible: true, author_role: "student" });
       setReviews(r);
       setInLesson(Boolean(t.in_lesson));
       if (user?.role === "student") {

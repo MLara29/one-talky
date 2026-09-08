@@ -14,7 +14,7 @@ export default function TutorReviews() {
     try {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
-        const r = await base44.entities.Review.filter({ tutor_id: user.id }, "-created_date");
+        const r = await base44.entities.Review.filter({ tutor_id: user.id, author_role: "student" }, "-created_date");
         setReviews(r);
       }
     } catch {} finally { setLoading(false); }

@@ -21,6 +21,7 @@ export default function ReviewModal({ lesson, userRole, onClose }) {
       await base44.entities.Review.create({
         lesson_id: lesson.id, tutor_id: lesson.tutor_id, student_id: lesson.student_id,
         student_name: lesson.student_name || user?.full_name, rating, comment, language: lesson.language,
+        author_role: userRole,
       });
 
       // Update tutor stats via backend function (bypasses student RLS on TutorProfile)
