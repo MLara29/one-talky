@@ -3,28 +3,43 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Check, X, Lock, Share2 } from "lucide-react";
+import { Pencil, Trash2, Check, X, Lock, Share2, Calendar } from "lucide-react";
 
 // Single note card with inline edit and delete. Only the tutor who owns the
 // note ever sees this component (RLS guarantees it server-side).
-export default function TutorNoteCard({ note, onUpdated, onDeleted }) {
+// `lessons` = completed lessons with this student, used to populate the
+// lesson-link selector during edit.
+export default function TutorNoteCard({ note, lessons = [], onUpdated, onDeleted }) {
   const { toast } = useToast();
   const [editing, setEditing] = useState(false);
   const [content, setContent] = useState(note.content);
   const [type, setType] = useState(note.type);
+  const [lessonId, setLessonId] = useState(note.lesson_id || "");
   const [saving, setSaving] = useState(false);
 
   const isShared = note.type === "shared";
   const edited = note.updated_date && note.updated_date !== note.created_date;
 
+  // The lesson this note is linked to (if any), for display in view mode.
+  const linkedLesson = note.lesson_id ? lessons.find(l => l.id === note.lesson_id) : null;
+
   const formatDate = (d) =>
     new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+  const formatLessonOption = (l) => {
+    const d = new Date(l.ended_at || l.scheduled_at);
+    return d.toLocaleString("en-US", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  };
 
   const handleSave = async () => {
     if (!content.trim()) return;
     setSaving(true);
     try {
-      await base44.entities.TutorNote.update(note.id, { content: content.trim(), type });
+      await base44.entities.TutorNote.update(note.id, {
+        content: content.trim(),
+        type,
+        lesson_id: lessonId || undefined,
+      });
       setEditing(false);
       onUpdated();
       toast({ title: "Note updated" });
@@ -54,6 +69,22 @@ export default function TutorNoteCard({ note, onUpdated, onDeleted }) {
           className="theme-input bg-white/5 border-white/10 text-white resize-none mb-3"
           autoFocus
         />
+        {/* Lesson selector — optional */}
+        <div className="mb-3">
+          <label className="theme-subtext block text-xs font-medium text-gray-400 mb-1.5">
+            Link to a lesson (optional)
+          </label>
+          <select
+            value={lessonId}
+            onChange={(e) => setLessonId(e.target.value)}
+            className="theme-input bg-white/5 border-white/10 text-white text-sm rounded-lg px-3 py-2 w-full max-w-sm cursor-pointer"
+          >
+            <option value="">General note (no specific lesson)</option>
+            {lessons.map(l => (
+              <option key={l.id} value={l.id}>{formatLessonOption(l)}</option>
+            ))}
+          </select>
+        </div>
         <div className="flex items-center justify-between gap-2">
           <div className="flex gap-2">
             <button
@@ -78,7 +109,7 @@ export default function TutorNoteCard({ note, onUpdated, onDeleted }) {
             </button>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="ghost" onClick={() => { setEditing(false); setContent(note.content); setType(note.type); }} disabled={saving}>
+            <Button size="sm" variant="ghost" onClick={() => { setEditing(false); setContent(note.content); setType(note.type); setLessonId(note.lesson_id || ""); }} disabled={saving}>
               <X className="w-4 h-4" />
             </Button>
             <Button size="sm" onClick={handleSave} disabled={saving || !content.trim()} className="bg-orange-500 hover:bg-orange-600 text-white border-0">
@@ -101,6 +132,11 @@ export default function TutorNoteCard({ note, onUpdated, onDeleted }) {
           ) : (
             <span className="flex items-center gap-1 text-xs font-medium text-orange-300 bg-orange-500/15 border border-orange-500/20 px-2 py-0.5 rounded-full">
               <Lock className="w-3 h-3" /> Private
+            </span>
+          )}
+          {linkedLesson && (
+            <span className="flex items-center gap-1 text-xs text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+              <Calendar className="w-3 h-3" /> {formatLessonOption(linkedLesson)}
             </span>
           )}
         </div>

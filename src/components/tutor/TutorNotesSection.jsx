@@ -14,21 +14,36 @@ export default function TutorNotesSection({ studentId }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [notes, setNotes] = useState([]);
+  const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newContent, setNewContent] = useState("");
   const [newType, setNewType] = useState("private");
+  const [newLessonId, setNewLessonId] = useState("");
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => { loadNotes(); }, [studentId]);
+  useEffect(() => { loadData(); }, [studentId, user]);
 
-  const loadNotes = async () => {
+  const loadData = async () => {
     try {
-      const result = await base44.entities.TutorNote.filter({ student_id: studentId });
-      setNotes(result.sort((a, b) => new Date(b.updated_date) - new Date(a.updated_date)));
+      const [noteResult, lessonResult] = await Promise.all([
+        base44.entities.TutorNote.filter({ student_id: studentId }),
+        // Completed lessons with this student for this tutor — used to link a
+        // note to a specific lesson. Sorted most-recent first.
+        base44.entities.Lesson.filter({ student_id: studentId, tutor_id: user.id, status: "completed" }),
+      ]);
+      setNotes(noteResult.sort((a, b) => new Date(b.updated_date) - new Date(a.updated_date)));
+      setLessons(lessonResult
+        .filter(l => l.scheduled_at || l.ended_at)
+        .sort((a, b) => new Date(b.ended_at || b.scheduled_at) - new Date(a.ended_at || a.scheduled_at)));
     } catch (e) {
       console.error("[TutorNotesSection] load error:", e);
     } finally { setLoading(false); }
+  };
+
+  const formatLessonOption = (l) => {
+    const d = new Date(l.ended_at || l.scheduled_at);
+    return d.toLocaleString("en-US", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
   };
 
   const handleCreate = async () => {
@@ -40,10 +55,13 @@ export default function TutorNotesSection({ studentId }) {
         student_id: studentId,
         type: newType,
         content: newContent.trim(),
+        lesson_id: newLessonId || undefined,
       });
       setNewContent("");
+      setNewLessonId("");
+      setNewType("private");
       setShowForm(false);
-      await loadNotes();
+      await loadData();
       toast({ title: "Note saved" });
     } catch {
       toast({ title: "Error saving note", variant: "destructive" });
@@ -76,6 +94,22 @@ export default function TutorNotesSection({ studentId }) {
             className="theme-input bg-white/5 border-white/10 text-white resize-none mb-3"
             autoFocus
           />
+          {/* Lesson selector — optional. Lists completed lessons with this student. */}
+          <div className="mb-3">
+            <label className="theme-subtext block text-xs font-medium text-gray-400 mb-1.5">
+              Link to a lesson (optional)
+            </label>
+            <select
+              value={newLessonId}
+              onChange={(e) => setNewLessonId(e.target.value)}
+              className="theme-input bg-white/5 border-white/10 text-white text-sm rounded-lg px-3 py-2 w-full max-w-sm cursor-pointer"
+            >
+              <option value="">General note (no specific lesson)</option>
+              {lessons.map(l => (
+                <option key={l.id} value={l.id}>{formatLessonOption(l)}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex gap-2">
               <button
@@ -100,7 +134,7 @@ export default function TutorNotesSection({ studentId }) {
               </button>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="ghost" onClick={() => { setShowForm(false); setNewContent(""); }} disabled={saving}>
+              <Button size="sm" variant="ghost" onClick={() => { setShowForm(false); setNewContent(""); setNewLessonId(""); }} disabled={saving}>
                 Cancel
               </Button>
               <Button size="sm" onClick={handleCreate} disabled={saving || !newContent.trim()} className="bg-orange-500 hover:bg-orange-600 text-white border-0">
@@ -128,7 +162,7 @@ export default function TutorNotesSection({ studentId }) {
                 <Lock className="w-3.5 h-3.5" /> Private notes ({privateNotes.length})
               </h3>
               <div className="space-y-3">
-                {privateNotes.map(n => <TutorNoteCard key={n.id} note={n} onUpdated={loadNotes} onDeleted={loadNotes} />)}
+                {privateNotes.map(n => <TutorNoteCard key={n.id} note={n} lessons={lessons} onUpdated={loadData} onDeleted={loadData} />)}
               </div>
             </div>
           )}
@@ -138,7 +172,7 @@ export default function TutorNotesSection({ studentId }) {
                 <Share2 className="w-3.5 h-3.5" /> Shared with student ({sharedNotes.length})
               </h3>
               <div className="space-y-3">
-                {sharedNotes.map(n => <TutorNoteCard key={n.id} note={n} onUpdated={loadNotes} onDeleted={loadNotes} />)}
+                {sharedNotes.map(n => <TutorNoteCard key={n.id} note={n} lessons={lessons} onUpdated={loadData} onDeleted={loadData} />)}
               </div>
             </div>
           )}
