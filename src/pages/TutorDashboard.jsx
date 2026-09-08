@@ -320,7 +320,9 @@ export default function TutorDashboard() {
                   <div key={l.id} className="p-4 rounded-2xl bg-white/5 border border-white/5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <p className="theme-heading font-semibold text-white">{l.student_name}</p>
+                        <Link to={`/tutor/student/${l.student_id}`} className="theme-heading font-semibold text-white hover:text-orange-400 transition-colors">
+                          {l.student_name}
+                        </Link>
                         <p className="theme-subtext text-sm text-gray-500 mt-0.5">
                           {l.language} · {l.status === "in_progress" ? t(lang, "liveNow") : new Date(l.scheduled_at).toLocaleString()}
                         </p>
@@ -430,7 +432,9 @@ export default function TutorDashboard() {
                 const sp = studentProfiles[l.student_id];
                 return (
                   <div key={l.id} className="p-3 rounded-2xl bg-white/5 border border-white/5">
-                    <p className="theme-heading font-semibold text-white text-sm">{l.student_name || "Student"}</p>
+                    <Link to={`/tutor/student/${l.student_id}`} className="theme-heading font-semibold text-white text-sm hover:text-orange-400 transition-colors">
+                      {l.student_name || "Student"}
+                    </Link>
                     <p className="theme-subtext text-xs text-gray-500 mt-0.5">
                       {l.language} · {new Date(l.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </p>

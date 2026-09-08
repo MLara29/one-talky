@@ -24,6 +24,7 @@ import MyLessons from '@/pages/MyLessons';
 import Progress from '@/pages/Progress';
 import Plans from '@/pages/Plans';
 import TutorProfilePage from '@/pages/TutorProfilePage';
+import TutorStudentProfile from '@/pages/TutorStudentProfile';
 import Classroom from '@/pages/Classroom';
 import TutorSchedule from '@/pages/TutorSchedule';
 import TutorEarnings from '@/pages/TutorEarnings';
@@ -111,6 +112,7 @@ const AuthenticatedApp = () => {
           <Route path="/progress" element={<Progress />} />
           <Route path="/plans" element={<Plans />} />
           <Route path="/tutor/:id" element={<TutorProfilePage />} />
+          <Route path="/tutor/student/:studentId" element={<TutorStudentProfile />} />
           <Route path="/schedule" element={<TutorSchedule />} />
           <Route path="/earnings" element={<TutorEarnings />} />
           <Route path="/reviews" element={<TutorReviews />} />

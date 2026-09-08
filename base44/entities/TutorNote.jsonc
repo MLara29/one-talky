@@ -1,0 +1,101 @@
+{
+  "name": "TutorNote",
+  "type": "object",
+  "properties": {
+    "tutor_id": {
+      "type": "string",
+      "description": "User id do tutor que escreveu a nota"
+    },
+    "student_id": {
+      "type": "string",
+      "description": "User id do aluno sobre quem a nota foi escrita"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "private",
+        "shared"
+      ],
+      "description": "private = s\u00f3 o tutor que escreveu v\u00ea; shared = tutor e o aluno veem"
+    },
+    "content": {
+      "type": "string",
+      "description": "Texto da anota\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "tutor_id",
+    "student_id",
+    "type",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "user_condition": {
+                "role": "tutor"
+              }
+            },
+            {
+              "data.tutor_id": "{{user.id}}"
+            }
+          ]
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.tutor_id": "{{user.id}}"
+        },
+        {
+          "$and": [
+            {
+              "data.type": "shared"
+            },
+            {
+              "data.student_id": "{{user.id}}"
+            }
+          ]
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.tutor_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.tutor_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

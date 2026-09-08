@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { Clock, BookOpen, Flame } from "lucide-react";
 import { getLanguageLabel, getLanguageFlag } from "@/lib/constants";
 import { formatMinutes } from "@/lib/formatMinutes";
+import LessonsAndNotesSection from "@/components/student/LessonsAndNotesSection";
 
 export default function Progress() {
   const { user } = useAuth();
@@ -60,6 +61,8 @@ export default function Progress() {
           </div>
         </div>
       )}
+
+      <LessonsAndNotesSection />
     </div>
   );
 }
