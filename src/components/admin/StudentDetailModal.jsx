@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, BookOpen, Ban, CheckCircle, Trash2, Plus, History, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, BookOpen, Ban, CheckCircle, Trash2, Plus, Minus, History, ChevronDown, ChevronUp } from "lucide-react";
 
 const PLAN_COLORS = {
   free:     "bg-gray-500/10 border-gray-500/20 text-gray-400",
@@ -69,11 +69,29 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
       toast({ title: "Informe uma quantidade válida de minutos.", variant: "destructive" });
       return;
     }
+    await applyMinutes(mins, "add");
+  };
+
+  const handleRemoveMinutes = async () => {
+    const mins = parseInt(minutesToAdd);
+    if (!mins || mins <= 0) {
+      toast({ title: "Informe uma quantidade válida de minutos.", variant: "destructive" });
+      return;
+    }
+    await applyMinutes(-Math.abs(mins), "remove");
+  };
+
+  const applyMinutes = async (mins, mode) => {
     setAddingMinutes(true);
     try {
       const response = await base44.functions.invoke("adminManageStudent", { student_id: student.id, action: "add_minutes", minutes: mins });
       if (response.data?.error) throw new Error(response.data.error);
-      toast({ title: `✅ ${mins} minutos adicionados para ${student.full_name}!` });
+      const abs = Math.abs(mins);
+      toast({
+        title: mode === "remove"
+          ? `✅ ${abs} minutos removidos de ${student.full_name}.`
+          : `✅ ${abs} minutos adicionados para ${student.full_name}!`,
+      });
       setMinutesToAdd("");
       onUpdated({ ...student, credits_minutes: response.data.credits_minutes });
     } catch (e) {
@@ -257,9 +275,9 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
           )}
         </div>
 
-        {/* Add minutes */}
+        {/* Add / Remove minutes */}
         <div className="space-y-2">
-          <Label className="text-gray-700 dark:text-gray-300 text-sm">Adicionar minutos</Label>
+          <Label className="text-gray-700 dark:text-gray-300 text-sm">Adicionar / Remover minutos</Label>
           <div className="flex gap-2">
             <Input
               type="number"
@@ -276,6 +294,15 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
             >
               <Plus className="w-4 h-4 mr-1" />
               {addingMinutes ? "..." : "Adicionar"}
+            </Button>
+            <Button
+              onClick={handleRemoveMinutes}
+              disabled={addingMinutes || !minutesToAdd}
+              variant="outline"
+              className="shrink-0 border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            >
+              <Minus className="w-4 h-4 mr-1" />
+              Remover
             </Button>
           </div>
         </div>

@@ -49,36 +49,39 @@ Deno.serve(async (req) => {
 
     if (action === 'add_minutes') {
       const mins = Number(minutes);
-      if (!mins || mins <= 0) return Response.json({ error: 'Invalid minutes value' }, { status: 400 });
+      if (!Number.isFinite(mins) || mins === 0) return Response.json({ error: 'Invalid minutes value' }, { status: 400 });
       // Admin-granted minutes go to plan_credits_minutes (no expiry while active).
-      const newPlanTotal = (student.plan_credits_minutes ?? 0) + mins;
+      // Negative values (removal) never make the balance negative — floor at 0
+      // and never touch prepaid_credits_minutes.
+      const newPlanTotal = Math.max(0, (student.plan_credits_minutes ?? 0) + mins);
       const newPrepaid = student.prepaid_credits_minutes ?? 0;
       await base44.asServiceRole.entities.StudentProfile.update(student_id, {
         plan_credits_minutes: newPlanTotal,
         credits_minutes: newPlanTotal + newPrepaid,
       });
 
-      // Avisa o aluno por e-mail, no idioma derivado da nacionalidade
-      // cadastrada dele — best effort, nunca bloqueia a resposta da API
-      // por causa de falha no envio.
-      try {
-        // student.email não existe — o e-mail fica no User, associado por
-        // user_id, não no StudentProfile.
-        const studentUser = await base44.asServiceRole.entities.User.get(student.user_id);
-        if (studentUser?.email) {
-          const lang = langForCountry(student.nationality);
-          const { subject, html } = buildFreeMinutesEmail({ studentName: student.full_name, minutes: mins, lang });
-          const transporter = getTransporter();
-          await sendMailAndLog(base44, transporter, {
-            from: SMTP_FROM(),
-            to: studentUser.email,
-            subject,
-            html,
-            _sentBy: user.id,
-          }, 'free_minutes_granted');
+      // Avisa o aluno por e-mail APENAS quando minutos forem positivos
+      // (adição). Remoção de minutos não dispara e-mail.
+      if (mins > 0) {
+        try {
+          // student.email não existe — o e-mail fica no User, associado por
+          // user_id, não no StudentProfile.
+          const studentUser = await base44.asServiceRole.entities.User.get(student.user_id);
+          if (studentUser?.email) {
+            const lang = langForCountry(student.nationality);
+            const { subject, html } = buildFreeMinutesEmail({ studentName: student.full_name, minutes: mins, lang });
+            const transporter = getTransporter();
+            await sendMailAndLog(base44, transporter, {
+              from: SMTP_FROM(),
+              to: studentUser.email,
+              subject,
+              html,
+              _sentBy: user.id,
+            }, 'free_minutes_granted');
+          }
+        } catch (emailErr) {
+          console.error('[adminManageStudent] Falha ao enviar e-mail de minutos grátis:', emailErr.message);
         }
-      } catch (emailErr) {
-        console.error('[adminManageStudent] Falha ao enviar e-mail de minutos grátis:', emailErr.message);
       }
 
       return Response.json({ success: true, credits_minutes: newPlanTotal + newPrepaid });
