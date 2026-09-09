@@ -27,7 +27,7 @@ export default function Progress() {
   );
 
   const stats = [
-    { label: "Minutes practiced", value: profile?.total_minutes || 0, icon: Clock, gradient: "from-violet-500 to-indigo-500" },
+    { label: "Minutes practiced", value: formatMinutes(profile?.total_minutes || 0), icon: Clock, gradient: "from-violet-500 to-indigo-500" },
     { label: "Total lessons", value: profile?.total_lessons || 0, icon: BookOpen, gradient: "from-blue-500 to-cyan-500" },
     { label: "Day streak", value: profile?.streak_days || 0, icon: Flame, gradient: "from-orange-500 to-red-500" },
     { label: "Credits left", value: `${formatMinutes(profile?.credits_minutes)} min`, icon: Clock, gradient: "from-emerald-500 to-teal-500" },
