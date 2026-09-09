@@ -98,7 +98,14 @@ Deno.serve(async (req) => {
           console.error('[adminManageStudent] Falha ao enviar e-mail de minutos grátis:', emailErr.message);
         }
 
-        return Response.json({ success: true, credits_minutes: newCreditsTotal });
+        return Response.json({
+          success: true,
+          credits_minutes: newCreditsTotal,
+          plan_credits_minutes: planCredits,
+          prepaid_credits_minutes: newPrepaid,
+          admin_gift_minutes: Math.round(newGiftTotal * 100) / 100,
+          admin_gift_expires_at: newGiftExpiry.toISOString(),
+        });
       }
 
       // ── REMOVE (mins < 0): still debits plan_credits_minutes (unchanged
@@ -111,7 +118,14 @@ Deno.serve(async (req) => {
         plan_credits_minutes: newPlanTotal,
         credits_minutes: newCreditsTotal,
       });
-      return Response.json({ success: true, credits_minutes: newCreditsTotal });
+      return Response.json({
+        success: true,
+        credits_minutes: newCreditsTotal,
+        plan_credits_minutes: newPlanTotal,
+        prepaid_credits_minutes: newPrepaid,
+        admin_gift_minutes: adminGift,
+        admin_gift_expires_at: student.admin_gift_expires_at ?? null,
+      });
     }
   } catch (error) {
     console.error('[adminManageStudent]', error.message);

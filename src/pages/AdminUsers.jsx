@@ -505,6 +505,20 @@ export default function AdminUsers() {
                 const guaranteeEndFormatted = guaranteeEndDate
                   ? guaranteeEndDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
                   : null;
+                // Expiry dates for admin gift and prepaid credits — only shown
+                // when the balance is > 0 AND the expiry is still in the future.
+                const adminGiftMins = s.admin_gift_minutes || 0;
+                const adminGiftExpiry = s.admin_gift_expires_at ? new Date(s.admin_gift_expires_at) : null;
+                const adminGiftExpiryFormatted = adminGiftExpiry
+                  ? adminGiftExpiry.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+                  : null;
+                const showGiftExpiry = adminGiftMins > 0 && adminGiftExpiry && adminGiftExpiry > new Date();
+                const prepaidMins = s.prepaid_credits_minutes || 0;
+                const prepaidExpiry = s.prepaid_expires_at ? new Date(s.prepaid_expires_at) : null;
+                const prepaidExpiryFormatted = prepaidExpiry
+                  ? prepaidExpiry.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+                  : null;
+                const showPrepaidExpiry = prepaidMins > 0 && prepaidExpiry && prepaidExpiry > new Date();
                 return (
                   <div
                     key={s.id}
@@ -547,10 +561,20 @@ export default function AdminUsers() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-gray-400 hidden sm:inline">{Math.round((s.plan_credits_minutes || 0) + (s.prepaid_credits_minutes || 0))} min</span>
+                      <span className="text-xs text-gray-400 hidden sm:inline">{Math.round((s.plan_credits_minutes || 0) + (s.prepaid_credits_minutes || 0) + (s.admin_gift_minutes || 0))} min</span>
                       {isInGuaranteePeriod && (
                         <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-orange-500/10 border-orange-500/20 text-orange-400">
                           🔒 Garantia 7 dias
+                        </span>
+                      )}
+                      {showGiftExpiry && (
+                        <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-emerald-500/10 border-emerald-500/20 text-emerald-400">
+                          🎁 Presente expira em {adminGiftExpiryFormatted}
+                        </span>
+                      )}
+                      {showPrepaidExpiry && (
+                        <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-blue-500/10 border-blue-500/20 text-blue-400">
+                          💳 Pré-pago expira em {prepaidExpiryFormatted}
                         </span>
                       )}
                       {isCancelled && (

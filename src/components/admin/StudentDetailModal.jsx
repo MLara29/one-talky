@@ -93,7 +93,14 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
           : `✅ ${abs} minutos adicionados para ${student.full_name}!`,
       });
       setMinutesToAdd("");
-      onUpdated({ ...student, credits_minutes: response.data.credits_minutes });
+      onUpdated({
+        ...student,
+        credits_minutes: response.data.credits_minutes,
+        plan_credits_minutes: response.data.plan_credits_minutes,
+        prepaid_credits_minutes: response.data.prepaid_credits_minutes,
+        admin_gift_minutes: response.data.admin_gift_minutes,
+        admin_gift_expires_at: response.data.admin_gift_expires_at,
+      });
     } catch (e) {
       toast({ title: "Erro", description: e?.message, variant: "destructive" });
     } finally { setAddingMinutes(false); }
