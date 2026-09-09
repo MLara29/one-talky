@@ -184,6 +184,16 @@
       "type": "boolean",
       "default": false,
       "description": "True quando o sistema sugere banimento ao admin \u2014 nunca aplicado automaticamente, apenas exibido como alerta."
+    },
+    "schedule_frozen": {
+      "type": "boolean",
+      "default": false,
+      "description": "True quando o tutor congelou sua agenda. Quando ativo, NENHUM hor\u00e1rio de agendamento futuro \u00e9 oferecido aos alunos, independentemente dos registros em TutorAvailabilityDate. Os registros em TutorAvailabilityDate N\u00c3O s\u00e3o alterados \u2014 ao reativar (definir false), a disponibilidade volta exatamente como estava. N\u00c3O afeta aulas j\u00e1 agendadas (Lesson existentes) nem o interruptor is_available_now (aulas instant\u00e2neas)."
+    },
+    "schedule_frozen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de quando a agenda foi congelada (apenas registro). Opcional \u2014 s\u00f3 preenchido quando schedule_frozen = true."
     }
   },
   "required": [

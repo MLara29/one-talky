@@ -6,6 +6,7 @@ const TUTOR_ALLOWED_FIELDS = new Set([
   "full_name", "display_name", "bio", "bank_info", "photo_url", "intro_video_url",
   "availability", "is_available_now", "last_seen", "timezone", "accent",
   "booked_slots", "interests", "other_languages", "min_booking_notice_hours", "payout_frequency",
+  "schedule_frozen", "schedule_frozen_at",
 ]);
 
 // Fields that students are allowed to update on their own profile

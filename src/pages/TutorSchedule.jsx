@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronLeft, ChevronRight, Clock, Info, FileText, Copy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Info, FileText, Copy, Snowflake, PlayCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimezoneSelector from "@/components/tutors/TimezoneSelector";
 
@@ -229,6 +229,27 @@ export default function TutorSchedule() {
     setProfile({ ...profile, is_available_now: !profile.is_available_now });
   };
 
+  const [togglingFreeze, setTogglingFreeze] = useState(false);
+  const toggleFreeze = async () => {
+    if (!profile) return;
+    setTogglingFreeze(true);
+    try {
+      const newFrozen = !profile.schedule_frozen;
+      const updates = { schedule_frozen: newFrozen };
+      if (newFrozen) updates.schedule_frozen_at = new Date().toISOString();
+      await base44.functions.invoke('updateMyProfile', { updates });
+      setProfile({ ...profile, ...updates });
+      toast({
+        title: newFrozen ? "Schedule frozen ❄️" : "Schedule reactivated ✅",
+        description: newFrozen
+          ? "You won't appear available for new bookings until you reactivate."
+          : "Your availability is back exactly as it was.",
+      });
+    } catch (err) {
+      toast({ title: "Error", description: err?.message || "Please try again.", variant: "destructive" });
+    } finally { setTogglingFreeze(false); }
+  };
+
   const [savingNotice, setSavingNotice] = useState(false);
   const changeMinNotice = async (value) => {
     if (!profile) return;
@@ -312,6 +333,54 @@ export default function TutorSchedule() {
           currentTz={tutorTz}
           onSaved={(tz) => setProfile(prev => ({ ...prev, timezone: tz }))}
         />
+      </div>
+
+      {/* Schedule frozen banner */}
+      {profile?.schedule_frozen && (
+        <div className="mb-5 px-4 py-4 rounded-2xl flex items-start gap-3"
+          style={{ background: "rgba(59,130,246,0.10)", border: "1px solid rgba(59,130,246,0.25)" }}>
+          <Snowflake className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="theme-heading font-semibold text-white text-sm">
+              Your schedule is frozen — you don't appear available for new bookings
+            </p>
+            <p className="theme-subtext text-xs text-gray-500 mt-1 leading-relaxed">
+              Your configured slots are preserved exactly as they are. Already-scheduled lessons are not affected,
+              and your <strong>"Available now"</strong> toggle for instant lessons keeps working independently.
+              To start receiving new bookings again, click <strong>"Reactivate schedule"</strong>.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Freeze / Reactivate button */}
+      <div className="mb-5">
+        <button
+          onClick={toggleFreeze}
+          disabled={togglingFreeze}
+          className={`w-full flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-50 ${
+            profile?.schedule_frozen
+              ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
+              : "bg-blue-500/15 border border-blue-500/30 text-blue-400 hover:bg-blue-500/25"
+          }`}
+        >
+          {profile?.schedule_frozen ? (
+            <>
+              <PlayCircle className="w-5 h-5" />
+              {togglingFreeze ? "Reactivating..." : "Reactivate schedule"}
+            </>
+          ) : (
+            <>
+              <Snowflake className="w-5 h-5" />
+              {togglingFreeze ? "Freezing..." : "Freeze schedule"}
+            </>
+          )}
+        </button>
+        {!profile?.schedule_frozen && (
+          <p className="theme-subtext text-xs text-gray-500 mt-2 text-center">
+            Freezing hides all your future slots from students without deleting them. You can reactivate anytime.
+          </p>
+        )}
       </div>
 
       {/* Minimum booking notice */}

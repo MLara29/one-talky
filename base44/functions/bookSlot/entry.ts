@@ -69,6 +69,16 @@ export default async function(req) {
       }
     }
 
+    // ── Tutor schedule frozen (manual freeze) ──────────────────────────────────
+    // When a tutor freezes their schedule, NO future scheduling slots are offered,
+    // regardless of TutorAvailabilityDate records. Instant lessons are NOT affected.
+    if (tutorProfileNotice?.schedule_frozen) {
+      return Response.json({
+        error: 'Este tutor congelou sua agenda temporariamente e não está aceitando novos agendamentos. Tente novamente mais tarde.',
+        error_code: 'tutor_schedule_frozen',
+      }, { status: 403 });
+    }
+
     // ── Tutor scheduling suspension (no-show penalty) ───────────────────────────
     // A tutor with scheduling_suspended_until in the future cannot have new scheduled
     // lessons booked, but instant lessons remain available.

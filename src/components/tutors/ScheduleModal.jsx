@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Calendar, Clock, ChevronLeft, ChevronRight, X, Check } from "lucide-react";
+import { Calendar, Clock, ChevronLeft, ChevronRight, X, Check, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
@@ -239,6 +239,44 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
   if (loadingAvailability) return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+    </div>
+  );
+
+  // Tutor froze their schedule — no future slots are offered, regardless of
+  // what's stored in TutorAvailabilityDate. Instant lessons are unaffected.
+  const scheduleFrozen = !!tutor?.schedule_frozen;
+
+  if (scheduleFrozen) return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="theme-card w-full max-w-md rounded-3xl shadow-2xl flex flex-col"
+        style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
+        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid var(--app-border)" }}>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+              <Snowflake className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="theme-heading font-display font-bold text-lg">{t(lang, "scheduleModalTitle")}</h2>
+          </div>
+          <button onClick={onClose} className="theme-subtext w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-4">
+            <Snowflake className="w-8 h-8 text-blue-400" />
+          </div>
+          <p className="theme-heading font-semibold text-white mb-2">Schedule temporarily frozen</p>
+          <p className="theme-subtext text-sm text-gray-500 leading-relaxed">
+            This tutor isn't accepting new bookings at the moment. Please try again later or choose another tutor.
+          </p>
+        </div>
+        <div className="flex gap-3 px-6 py-4 shrink-0" style={{ borderTop: "1px solid var(--app-border)" }}>
+          <Button variant="outline" onClick={onClose} className="flex-1 rounded-2xl"
+            style={{ borderColor: "var(--app-border)", color: "var(--app-text-secondary)", background: "transparent" }}>
+            {t(lang, "cancelBtn")}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 

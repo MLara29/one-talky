@@ -21,7 +21,7 @@ const SAFE_FIELDS = [
   'price_per_minute', 'availability', 'booked_slots',
   'is_available_now', 'in_lesson', 'last_seen',
   'accent', 'average_rating', 'total_reviews', 'total_lessons',
-  'status', 'min_booking_notice_hours',
+  'status', 'min_booking_notice_hours', 'schedule_frozen',
 ];
 
 function strip(t: any): any {
