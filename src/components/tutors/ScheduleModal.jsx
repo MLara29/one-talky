@@ -1,20 +1,16 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Calendar, Clock, ChevronLeft, ChevronRight, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
+import { base44 } from "@/api/base44Client";
 
-const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-// Mapeia nosso código de idioma pra um locale de verdade — usado só pra
-// formatar nomes de mês/dia com o formatador nativo do navegador, em vez de
-// manter listas fixas traduzidas à mão em 9 idiomas.
 const LOCALE_MAP = { en: "en-US", pt_br: "pt-BR", pt_pt: "pt-PT", es: "es-ES", fr: "fr-FR", de: "de-DE", it: "it-IT", ja: "ja-JP", ko: "ko-KR" };
 function getMonthName(lang, year, month) {
   return new Intl.DateTimeFormat(LOCALE_MAP[lang] || "en-US", { month: "long" }).format(new Date(year, month, 1));
 }
 function getDayLabels(lang) {
-  const base = new Date(2024, 0, 7); // um domingo, como referência
+  const base = new Date(2024, 0, 7);
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(base); d.setDate(base.getDate() + i);
     return new Intl.DateTimeFormat(LOCALE_MAP[lang] || "en-US", { weekday: "short" }).format(d);
@@ -31,31 +27,23 @@ function buildCalendarDays(year, month) {
 }
 
 /**
- * Convert a tutor's local slot (day + "HH:MM" string) to a UTC Date object.
+ * Convert a tutor-local date + slot to a UTC Date object.
+ * tutorDateStr: "YYYY-MM-DD" in the tutor's timezone
+ * slot: "HH:MM" string in the tutor's local time
  * tutorTz: IANA timezone string (e.g. "Africa/Johannesburg")
- * date: JS Date representing the calendar day (in student's local time — we only use y/m/d)
- * slot: "HH:MM" string in tutor's local time
  */
-function slotToUTC(date, slot, tutorTz) {
+function tutorDateSlotToUTC(tutorDateStr, slot, tutorTz) {
   const [h, m] = slot.split(":").map(Number);
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
+  const [year, month1, day] = tutorDateStr.split("-").map(Number);
+  const month = month1 - 1;
 
   if (!tutorTz) {
-    // Fallback: treat as UTC (old behaviour)
     return new Date(Date.UTC(year, month, day, h, m));
   }
 
-  // Build a string "YYYY-MM-DD HH:MM" in the tutor's tz, then find UTC equivalent
-  // We use Intl to detect what UTC offset the tutor's timezone has on that specific date+time
-  const isoString = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:00`;
+  const isoString = `${tutorDateStr}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:00`;
+  const utcGuess = new Date(isoString + "Z");
 
-  // Parse as if it's in tutor's timezone using Intl trick
-  // Create a date in UTC, then compute what time it would be in tutorTz, find the offset
-  const utcGuess = new Date(isoString + "Z"); // treat as UTC first
-
-  // Format the UTC guess back in tutorTz to find offset
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: tutorTz,
     year: "numeric", month: "2-digit", day: "2-digit",
@@ -70,17 +58,40 @@ function slotToUTC(date, slot, tutorTz) {
   const tzHour = getPart("hour") % 24;
   const tzMin = getPart("minute");
 
-  // Diff between what UTC reads in tutorTz vs what we wanted
   const tzDateMs = Date.UTC(tzYear, tzMonth, tzDay, tzHour, tzMin);
   const wantedMs = Date.UTC(year, month, day, h, m);
-  const offsetMs = tzDateMs - wantedMs; // positive = tz is ahead of UTC
+  const offsetMs = tzDateMs - wantedMs;
 
   return new Date(utcGuess.getTime() - offsetMs);
 }
 
 /**
- * Format a UTC Date to student's local time string "HH:MM"
+ * Convert a JS Date (student's browser-local) to "YYYY-MM-DD" in the tutor's timezone.
+ * Uses noon to avoid midnight timezone edge cases.
  */
+function dateToTutorDateStr(date, tutorTz) {
+  const noon = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+  if (!tutorTz) {
+    return `${noon.getFullYear()}-${String(noon.getMonth()+1).padStart(2,"0")}-${String(noon.getDate()).padStart(2,"0")}`;
+  }
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tutorTz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(noon);
+  const get = (type) => parts.find(p => p.type === type)?.value;
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
+/** Returns [dayBefore, sameDay, dayAfter] as "YYYY-MM-DD" strings */
+function getNeighborDates(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(y, m - 1, d, 12, 0, 0);
+  const before = new Date(date); before.setDate(before.getDate() - 1);
+  const after = new Date(date); after.setDate(after.getDate() + 1);
+  const fmt = (dt) => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  return [fmt(before), dateStr, fmt(after)];
+}
+
 function utcToLocalTimeStr(utcDate) {
   return utcDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
 }
@@ -91,14 +102,33 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null); // { tutorSlot: "HH:MM", utcDate: Date, displayLabel: "HH:MM" }
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [dateAvailabilityMap, setDateAvailabilityMap] = useState({});
+  const [loadingAvailability, setLoadingAvailability] = useState(true);
 
   const tutorTz = tutor.timezone || null;
-  const availability = tutor.availability || {};
   const bookedSlots = tutor.booked_slots || [];
   const minNoticeMs = (tutor.min_booking_notice_hours || 0) * 60 * 60 * 1000;
 
-  // Normalize booked ISO strings to UTC minute-precision keys
+  // Fetch per-date availability from TutorAvailabilityDate
+  useEffect(() => {
+    if (!tutor?.user_id) return;
+    (async () => {
+      try {
+        const records = await base44.entities.TutorAvailabilityDate.filter({ tutor_id: tutor.user_id }, "date", 500);
+        const map = {};
+        records.forEach(r => {
+          if (r.slots && r.slots.length > 0) map[r.date] = r.slots;
+        });
+        setDateAvailabilityMap(map);
+      } catch (e) {
+        console.error('[ScheduleModal] availability load error:', e);
+      } finally {
+        setLoadingAvailability(false);
+      }
+    })();
+  }, [tutor?.user_id]);
+
   const bookedSet = useMemo(() => new Set(
     bookedSlots.map(iso => {
       const d = new Date(iso);
@@ -112,39 +142,31 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
 
   /**
    * Get available slots for a calendar day (student's local date).
-   * 
-   * The tutor's availability is keyed by DAY NAME in the tutor's local timezone.
-   * So for each slot on that calendar date, we must figure out what day it is
-   * in the TUTOR's timezone to look up the right availability key.
-   * 
-   * Returns array of { tutorSlot, utcDate, displayLabel }
+   * Queries TutorAvailabilityDate for the tutor's date corresponding to the
+   * clicked student date (plus neighbor dates to handle timezone offsets).
+   * Booked-slot exclusion logic is unchanged from the original.
    */
   const getSlotsForDate = (date) => {
     if (!date) return [];
     const slots = [];
 
-    // Check tutor's availability for the tutor-local day corresponding to each possible slot time
-    // We iterate over all available tutor days/slots and find ones that map to this student calendar date
-    for (const [dayName, daySlots] of Object.entries(availability)) {
+    // Determine the tutor's date for this student date, plus neighbors
+    // to catch timezone edge cases (a tutor slot on their local date might
+    // map to a different student date due to tz offset).
+    const tutorDateStr = dateToTutorDateStr(date, tutorTz);
+    const candidateDates = getNeighborDates(tutorDateStr);
+
+    for (const tutorDate of candidateDates) {
+      const daySlots = dateAvailabilityMap[tutorDate] || [];
       for (const slot of daySlots) {
-        const utcDate = slotToUTC(date, slot, tutorTz);
+        const utcDate = tutorDateSlotToUTC(tutorDate, slot, tutorTz);
 
-        // Verify the student-local date still matches the calendar date clicked
-        const studentLocalDate = new Date(utcDate);
+        // Verify the student-local date matches the clicked calendar date
         const sameDay =
-          studentLocalDate.getFullYear() === date.getFullYear() &&
-          studentLocalDate.getMonth() === date.getMonth() &&
-          studentLocalDate.getDate() === date.getDate();
+          utcDate.getFullYear() === date.getFullYear() &&
+          utcDate.getMonth() === date.getMonth() &&
+          utcDate.getDate() === date.getDate();
         if (!sameDay) continue;
-
-        // Verify the tutor's day name matches what we have in availability
-        if (tutorTz) {
-          const tutorDayName = new Intl.DateTimeFormat("en-US", { timeZone: tutorTz, weekday: "long" }).format(utcDate);
-          if (tutorDayName !== dayName) continue;
-        } else {
-          // No tz: use UTC day
-          if (DAYS_OF_WEEK[utcDate.getUTCDay()] !== dayName) continue;
-        }
 
         // Check not already booked
         if (bookedSet.has(utcKey(utcDate))) continue;
@@ -158,14 +180,12 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
         slots.push({
           tutorSlot: slot,
           utcDate,
-          displayLabel: utcToLocalTimeStr(utcDate), // shown in student's local time
+          displayLabel: utcToLocalTimeStr(utcDate),
         });
       }
     }
 
-    // Sort by time
     slots.sort((a, b) => a.utcDate - b.utcDate);
-    // Remove duplicates by utcKey
     const seen = new Set();
     return slots.filter(s => {
       const k = utcKey(s.utcDate);
@@ -204,7 +224,6 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
   const handleConfirm = () => {
     if (!selectedDate || !selectedSlot) return;
     const utc = selectedSlot.utcDate;
-    // Send UTC ISO at minute precision — matches backend normalize()
     const iso = `${utc.getUTCFullYear()}-${String(utc.getUTCMonth()+1).padStart(2,"0")}-${String(utc.getUTCDate()).padStart(2,"0")}T${String(utc.getUTCHours()).padStart(2,"0")}:${String(utc.getUTCMinutes()).padStart(2,"0")}:00Z`;
     onConfirm(iso);
   };
@@ -214,9 +233,14 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
   const slots = selectedDate ? getSlotsForDate(selectedDate) : [];
   const canGoPrev = viewYear > today.getFullYear() || viewMonth > today.getMonth();
 
-  // Determine if tutor tz differs from student tz (to show a note)
   const studentTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const tzDiffers = tutorTz && tutorTz !== studentTz;
+
+  if (loadingAvailability) return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -335,7 +359,7 @@ export default function ScheduleModal({ tutor, onClose, onConfirm, booking }) {
 
           {!selectedDate && (
             <p className="text-center text-sm py-2" style={{ color: "var(--app-text-muted)" }}>
-              {Object.keys(availability).length === 0
+              {Object.keys(dateAvailabilityMap).length === 0
                 ? t(lang, "tutorNoAvailability")
                 : t(lang, "selectHighlightedDay")}
             </p>

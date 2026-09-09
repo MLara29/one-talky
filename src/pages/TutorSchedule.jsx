@@ -5,16 +5,14 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronLeft, ChevronRight, Clock, Info, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Info, FileText, Copy } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimezoneSelector from "@/components/tutors/TimezoneSelector";
 
-// Availability is stored as { "Monday": ["08:00","09:00",...], ... }
-// This is the format ScheduleModal reads to convert tutor-tz → student-tz
-const DAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-// 30-minute slots covering the full 24-hour day, so tutors in any
-// timezone can open availability during Brazil's peak hours, even when
-// those hours fall overnight in their own local time.
+// Per-date availability: each calendar day has its own independent set of
+// slots, stored in TutorAvailabilityDate (tutor_id + date). The old weekly
+// pattern (TutorProfile.availability) is no longer the source of truth —
+// it's kept only as an optional template for quick filling.
 const HOURS = [];
 for (let h = 0; h < 24; h++) {
   HOURS.push(`${String(h).padStart(2, "0")}:00`);
@@ -41,14 +39,26 @@ function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 function getFirstWeekday(year, month) {
-  return new Date(year, month, 1).getDay(); // 0=Sun
+  return new Date(year, month, 1).getDay();
 }
 
-// Given a JS Date, return the English weekday name in the tutor's OWN timezone
-// (because availability is keyed by the tutor's local weekday)
+/** Format a JS Date as "YYYY-MM-DD" in the tutor's saved timezone (uses noon to avoid edge cases). */
+function dateToTutorDateStr(date, tutorTz) {
+  const noon = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+  if (!tutorTz) {
+    return `${noon.getFullYear()}-${String(noon.getMonth()+1).padStart(2,"0")}-${String(noon.getDate()).padStart(2,"0")}`;
+  }
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tutorTz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(noon);
+  const get = (type) => parts.find(p => p.type === type)?.value;
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
+/** Get the weekday name for a date in the tutor's timezone (for display). */
 function getDayNameInTz(date, tz) {
-  if (!tz) return DAYS_EN[date.getDay()];
-  return new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long" }).format(date);
+  return new Intl.DateTimeFormat("en-US", { timeZone: tz || "UTC", weekday: "long" }).format(date);
 }
 
 // Convert the Brazil (Brasília, UTC-3) student activity window into the
@@ -64,10 +74,10 @@ function getBrazilWindowInTutorTz(tutorTz) {
     }).format(d);
   };
   return {
-    generalStart: fmt(9),   // 06:00 BRT = 09:00 UTC
-    generalEnd: fmt(2),     // 23:00 BRT = 02:00 UTC (next day)
-    peakStart: fmt(21),     // 18:00 BRT = 21:00 UTC
-    peakEnd: fmt(1),        // 22:00 BRT = 01:00 UTC (next day)
+    generalStart: fmt(9),
+    generalEnd: fmt(2),
+    peakStart: fmt(21),
+    peakEnd: fmt(1),
   };
 }
 
@@ -77,18 +87,20 @@ export default function TutorSchedule() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [copying, setCopying] = useState(false);
 
-  // { "Monday": ["06:00",...], "Tuesday": [...], ... }
-  const [availability, setAvailability] = useState({});
+  // Map of "YYYY-MM-DD" → ["HH:MM", ...] — per-date availability
+  const [dateAvailability, setDateAvailability] = useState({});
 
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [selectedDate, setSelectedDate] = useState(null); // JS Date
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => { loadProfile(); }, [user]);
 
   const loadProfile = async () => {
+    if (!user?.id) return;
     try {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
@@ -99,44 +111,116 @@ export default function TutorSchedule() {
           p.timezone = tz;
         }
         setProfile(p);
-        setAvailability(p.availability || {});
+
+        // Load per-date availability from TutorAvailabilityDate
+        const records = await base44.entities.TutorAvailabilityDate.filter({ tutor_id: user.id }, "date", 500);
+        const map = {};
+        records.forEach(r => {
+          map[r.date] = r.slots || [];
+        });
+        setDateAvailability(map);
       }
-    } catch {} finally { setLoading(false); }
+    } catch (e) {
+      console.error('[TutorSchedule] load error:', e);
+    } finally { setLoading(false); }
   };
 
-  // The tutor's timezone (saved on profile)
   const tutorTz = profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  // For a given JS Date, get the weekday name AS SEEN IN THE TUTOR'S TIMEZONE
-  const getDayKey = (date) => getDayNameInTz(date, tutorTz);
 
   const toggleHour = (hour) => {
     if (!selectedDate) return;
-    const dayKey = getDayKey(selectedDate);
-    setAvailability(prev => {
-      const slots = prev[dayKey] || [];
+    const dateStr = dateToTutorDateStr(selectedDate, tutorTz);
+    setDateAvailability(prev => {
+      const slots = prev[dateStr] || [];
       const updated = slots.includes(hour)
         ? slots.filter(h => h !== hour)
         : [...slots, hour].sort();
-      return { ...prev, [dayKey]: updated };
+      return { ...prev, [dateStr]: updated };
     });
   };
 
-  // How many hours configured for a given calendar date
+  // How many slots configured for a given calendar date
   const getHoursForDate = (date) => {
-    const dayKey = getDayKey(date);
-    return availability[dayKey] || [];
+    const dateStr = dateToTutorDateStr(date, tutorTz);
+    return dateAvailability[dateStr] || [];
   };
 
+  // Save ONLY the selected date's slots to TutorAvailabilityDate
   const saveSchedule = async () => {
-    if (!profile) return;
+    if (!profile || !selectedDate || !user?.id) return;
     setSaving(true);
     try {
-      await base44.functions.invoke('updateMyProfile', { updates: { availability } });
-      toast({ title: "Schedule saved! ✅", description: "Your availability has been updated successfully." });
+      const dateStr = dateToTutorDateStr(selectedDate, tutorTz);
+      const slots = dateAvailability[dateStr] || [];
+
+      const existing = await base44.entities.TutorAvailabilityDate.filter({
+        tutor_id: user.id,
+        date: dateStr,
+      });
+
+      if (existing.length > 0) {
+        await base44.entities.TutorAvailabilityDate.update(existing[0].id, { slots });
+      } else {
+        await base44.entities.TutorAvailabilityDate.create({
+          tutor_id: user.id,
+          date: dateStr,
+          slots,
+        });
+      }
+
+      toast({ title: "Schedule saved! ✅", description: `Availability for ${dateStr} has been updated.` });
     } catch (err) {
       toast({ title: "Error saving", description: err?.message || "Please try again.", variant: "destructive" });
     } finally { setSaving(false); }
+  };
+
+  // Explicit action: copy the selected date's slots to the next 4 occurrences
+  // of the same weekday. Each target date gets its own independent record.
+  const copyToNext4Weekdays = async () => {
+    if (!selectedDate || !user?.id) return;
+    const dateStr = dateToTutorDateStr(selectedDate, tutorTz);
+    const slots = dateAvailability[dateStr] || [];
+    if (slots.length === 0) return;
+
+    setCopying(true);
+    try {
+      const targets = [];
+      for (let i = 1; i <= 4; i++) {
+        const futureDate = new Date(selectedDate.getTime() + i * 7 * 24 * 60 * 60 * 1000);
+        const futureDateStr = dateToTutorDateStr(futureDate, tutorTz);
+        targets.push(futureDateStr);
+      }
+
+      for (const targetDateStr of targets) {
+        const existing = await base44.entities.TutorAvailabilityDate.filter({
+          tutor_id: user.id,
+          date: targetDateStr,
+        });
+        if (existing.length > 0) {
+          await base44.entities.TutorAvailabilityDate.update(existing[0].id, { slots: [...slots] });
+        } else {
+          await base44.entities.TutorAvailabilityDate.create({
+            tutor_id: user.id,
+            date: targetDateStr,
+            slots: [...slots],
+          });
+        }
+      }
+
+      // Update local state
+      setDateAvailability(prev => {
+        const next = { ...prev };
+        for (const targetDateStr of targets) {
+          next[targetDateStr] = [...slots];
+        }
+        return next;
+      });
+
+      const weekdayName = getDayNameInTz(selectedDate, tutorTz);
+      toast({ title: "Copied! ✅", description: `Slots copied to the next 4 ${weekdayName}s.` });
+    } catch (err) {
+      toast({ title: "Error copying", description: err?.message || "Please try again.", variant: "destructive" });
+    } finally { setCopying(false); }
   };
 
   const toggleAvailableNow = async () => {
@@ -168,8 +252,8 @@ export default function TutorSchedule() {
   const firstWeekday = getFirstWeekday(viewYear, viewMonth);
   const todayStr = today.toDateString();
 
-  const selectedDayKey = selectedDate ? getDayKey(selectedDate) : null;
-  const selectedSlots = selectedDayKey ? (availability[selectedDayKey] || []) : [];
+  const selectedDateStr = selectedDate ? dateToTutorDateStr(selectedDate, tutorTz) : null;
+  const selectedSlots = selectedDateStr ? (dateAvailability[selectedDateStr] || []) : [];
 
   const prevMonth = () => {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
@@ -184,8 +268,8 @@ export default function TutorSchedule() {
 
   const canGoPrev = viewYear > today.getFullYear() || viewMonth > today.getMonth();
 
-  // Total hours configured this month (unique days × hours, but since it's weekly, show total unique slots)
-  const totalSlots = Object.values(availability).reduce((sum, arr) => sum + (arr?.length || 0), 0);
+  // Total slots configured across all future dates
+  const totalSlots = Object.values(dateAvailability).reduce((sum, arr) => sum + (arr?.length || 0), 0);
 
   return (
     <div>
@@ -194,7 +278,7 @@ export default function TutorSchedule() {
         <div>
           <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold text-white">My Schedule</h1>
           <p className="theme-subtext text-gray-500 text-sm mt-1">
-            Set your weekly availability
+            Set your availability per day — each date is independent
           </p>
         </div>
         <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
@@ -218,10 +302,10 @@ export default function TutorSchedule() {
         <div className="flex items-start gap-2 flex-1">
           <Info className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
           <p className="text-xs text-violet-300">
-            Your slots are saved in your timezone. Students will see them automatically converted to their own timezone.
-            {totalSlots > 0 && <span className="ml-2 text-violet-400">· {totalSlots} slot{totalSlots > 1 ? "s" : ""} configured this week</span>}
+            Your slots are saved per individual date in your timezone. Each day has its own independent schedule — changing one date never affects others.
+            {totalSlots > 0 && <span className="ml-2 text-violet-400">· {totalSlots} slot{totalSlots > 1 ? "s" : ""} configured</span>}
             <br />
-            <span className="text-violet-400">Changing it does not reschedule already-booked lessons — it only affects future availability.</span>
+            <span className="text-violet-400">Changing availability does not reschedule already-booked lessons — it only affects future bookings.</span>
           </p>
         </div>
         <TimezoneSelector
@@ -361,7 +445,7 @@ export default function TutorSchedule() {
               </div>
               <p className="theme-heading font-semibold text-white">Select a day</p>
               <p className="theme-subtext text-sm text-gray-500 max-w-[220px]">
-                Click a day to set your available slots. Days of the same weekday share the same configuration.
+                Click a day to set your available slots. Each day has its own independent schedule.
               </p>
             </div>
           ) : (
@@ -371,13 +455,11 @@ export default function TutorSchedule() {
                   {selectedDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Availability for every <strong className="text-violet-400">{
-                    new Intl.DateTimeFormat("en-US", { timeZone: tutorTz, weekday: "long" }).format(selectedDate)
-                  }</strong> · {selectedSlots.length === 0 ? "No slots selected" : `${selectedSlots.length} 30-min slot${selectedSlots.length > 1 ? "s" : ""}`}
+                  {selectedDateStr} · {selectedSlots.length === 0 ? "No slots selected" : `${selectedSlots.length} 30-min slot${selectedSlots.length > 1 ? "s" : ""}`}
                 </p>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 max-h-[380px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-4 gap-2 max-h-[340px] overflow-y-auto pr-1">
                 {HOURS.map(hour => {
                   const active = selectedSlots.includes(hour);
                   return (
@@ -408,6 +490,20 @@ export default function TutorSchedule() {
                   </div>
                 </div>
               )}
+
+              {/* Copy to next 4 same-weekday — explicit, optional convenience */}
+              {selectedSlots.length > 0 && (
+                <button
+                  onClick={copyToNext4Weekdays}
+                  disabled={copying}
+                  className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white/5 border border-white/10 text-gray-400 hover:bg-violet-500/10 hover:border-violet-500/20 hover:text-violet-300 transition-all disabled:opacity-50"
+                >
+                  <Copy className="w-4 h-4" />
+                  {copying
+                    ? "Copying..."
+                    : `Copy to next 4 ${getDayNameInTz(selectedDate, tutorTz)}s`}
+                </button>
+              )}
             </>
           )}
         </div>
@@ -416,10 +512,10 @@ export default function TutorSchedule() {
       <div className="mt-5 flex justify-end">
         <Button
           onClick={saveSchedule}
-          disabled={saving}
-          className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all"
+          disabled={saving || !selectedDate}
+          className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/20 hover:scale-105 transition-all disabled:opacity-40"
         >
-          {saving ? "Saving..." : "Save schedule"}
+          {saving ? "Saving..." : "Save this day's schedule"}
         </Button>
       </div>
     </div>
