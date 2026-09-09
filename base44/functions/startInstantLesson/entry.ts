@@ -79,7 +79,7 @@ export default async function(req) {
     }
 
     // ── RULE 2: Real credit balance (server-side, never trust the client) ──────
-    const credits = (sp?.plan_credits_minutes || 0) + (sp?.prepaid_credits_minutes || 0);
+    const credits = (sp?.plan_credits_minutes || 0) + (sp?.prepaid_credits_minutes || 0) + (sp?.admin_gift_minutes || 0);
     if (credits < MIN_CREDIT_MINUTES) {
       return Response.json({
         error_code: 'insufficient_credits',

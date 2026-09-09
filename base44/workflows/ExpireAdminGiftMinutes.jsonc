@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "expire_admin_gift_credits",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "expire_admin_gift": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "expireAdminGiftCredits",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Expirar minutos de presente do admin",
+            "description": "Zera admin_gift_minutes de alunos cujo prazo de 30 dias acabou"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Daily at 3:30am \u2014 zeroes admin_gift_minutes for students whose 30-day admin gift expiry has passed.",
+  "name": "Expire Admin Gift Minutes",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "30 3 * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

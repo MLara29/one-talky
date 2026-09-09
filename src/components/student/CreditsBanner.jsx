@@ -16,6 +16,12 @@ function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+const ADMIN_GIFT_LABELS = {
+  en: "Gift minutes", pt_br: "Minutos presente", pt_pt: "Minutos presente",
+  es: "Minutos regalo", fr: "Minutes cadeau", de: "Geschenk-Minuten",
+  it: "Minuti regalo", ja: "ギフト分数", ko: "선물 분"
+};
+
 export function PlanShield({ plan, size = 42 }) {
   const uid = useId();
   if (plan === "premium") {
@@ -104,7 +110,8 @@ export default function CreditsBanner({ profile, onUpdate }) {
 
   const planMins = profile?.plan_credits_minutes || 0;
   const prepaidMins = profile?.prepaid_credits_minutes || 0;
-  const mins = planMins + prepaidMins;
+  const adminGiftMins = profile?.admin_gift_minutes || 0;
+  const mins = planMins + prepaidMins + adminGiftMins;
   const plan = profile?.plan || "free";
   const planObj = PLANS.find(p => p.id === plan);
   const isLow = mins < 30;
@@ -125,6 +132,10 @@ export default function CreditsBanner({ profile, onUpdate }) {
   // Prepaid expiry date.
   const prepaidExpiresAt = profile?.prepaid_expires_at;
   const prepaidExpiresDate = prepaidExpiresAt ? new Date(prepaidExpiresAt).toLocaleDateString("pt-BR") : null;
+
+  // Admin gift expiry date.
+  const adminGiftExpiresAt = profile?.admin_gift_expires_at;
+  const adminGiftExpiresDate = adminGiftExpiresAt ? new Date(adminGiftExpiresAt).toLocaleDateString("pt-BR") : null;
 
   const buyPack = (pack) => {
     const currency = isBR || !regionConfig ? "BRL" : regionConfig.currency;
@@ -303,6 +314,39 @@ export default function CreditsBanner({ profile, onUpdate }) {
               </div>
             </div>
           )}
+          {/* Admin gift credits bar (only if > 0) */}
+          {adminGiftMins > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280" }}>🎁 {ADMIN_GIFT_LABELS[lang] || ADMIN_GIFT_LABELS.en}</span>
+                {adminGiftExpiresDate && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#f59e0b" }}>
+                    {t(lang, "expiresOnLabel")} {adminGiftExpiresDate}
+                  </span>
+                )}
+              </div>
+              <div style={{
+                width: "100%", height: 18, borderRadius: 999,
+                border: "1px solid rgba(16,185,129,0.2)",
+                background: "#ecfdf5",
+                position: "relative", overflow: "hidden",
+              }}>
+                <div style={{
+                  position: "absolute", inset: "0 auto 0 0",
+                  width: `100%`,
+                  background: "repeating-linear-gradient(115deg, rgba(16,185,129,0.45) 0 6px, rgba(16,185,129,0.15) 6px 13px)",
+                  borderRadius: 999,
+                  transition: "width 0.5s ease",
+                }} />
+                <span style={{
+                  position: "absolute", left: "50%", top: "50%",
+                  transform: "translate(-50%,-50%)",
+                  fontSize: 10, fontWeight: 800, color: "#10b981",
+                  whiteSpace: "nowrap",
+                }}>{formatMinutes(adminGiftMins)} min</span>
+              </div>
+            </div>
+          )}
         </div>
         {showTopup && <TopupSection />}
       </div>
@@ -413,6 +457,40 @@ export default function CreditsBanner({ profile, onUpdate }) {
                     transform: "translateY(-50%)",
                     fontSize: 12, fontWeight: 800, color: "#6366f1",
                   }}>{formatMinutes(prepaidMins)} min</span>
+                </div>
+              </div>
+            )}
+            {/* Admin gift credits bar (only if > 0) */}
+            {adminGiftMins > 0 && (
+              <div className="w-full" style={{ maxWidth: 280 }}>
+                <div className="flex items-center justify-between mb-1">
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280" }}>
+                    🎁 {ADMIN_GIFT_LABELS[lang] || ADMIN_GIFT_LABELS.en} {formatMinutes(adminGiftMins)} min
+                  </span>
+                  {adminGiftExpiresDate && (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#f59e0b" }}>
+                      {t(lang, "expiresOnLabel")} {adminGiftExpiresDate}
+                    </span>
+                  )}
+                </div>
+                <div style={{
+                  width: "100%", height: 24, borderRadius: 999,
+                  border: "1px solid rgba(16,185,129,0.2)",
+                  background: "#ecfdf5",
+                  position: "relative", overflow: "hidden",
+                }}>
+                  <div style={{
+                    position: "absolute", inset: "0 auto 0 0",
+                    width: `100%`,
+                    background: "repeating-linear-gradient(115deg, rgba(16,185,129,0.45) 0 6px, rgba(16,185,129,0.15) 6px 13px)",
+                    borderRadius: 999,
+                    transition: "width 0.5s ease",
+                  }} />
+                  <span style={{
+                    position: "absolute", right: 10, top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: 12, fontWeight: 800, color: "#10b981",
+                  }}>{formatMinutes(adminGiftMins)} min</span>
                 </div>
               </div>
             )}

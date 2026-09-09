@@ -40,7 +40,7 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
 
   // ── RULE 1: No subscription at all — but allow if the student has standalone credits ──
   if (subStatus === "none" || subCycle === 0) {
-    const credits = (sp.plan_credits_minutes || 0) + (sp.prepaid_credits_minutes || 0);
+    const credits = (sp.plan_credits_minutes || 0) + (sp.prepaid_credits_minutes || 0) + (sp.admin_gift_minutes || 0);
     if (credits <= 0) {
       console.log(`[validateBookingEligibility] BLOCKED student=${studentId} reason=no_active_subscription status=${subStatus}`);
       return {
@@ -157,7 +157,7 @@ export async function validateBookingEligibility(base44, studentId, scheduledAt,
     status: { $in: ["scheduled", "in_progress"] },
   });
   const alreadyReservedMinutes = activeLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
-  const availableCredits = (sp.plan_credits_minutes || 0) + (sp.prepaid_credits_minutes || 0);
+  const availableCredits = (sp.plan_credits_minutes || 0) + (sp.prepaid_credits_minutes || 0) + (sp.admin_gift_minutes || 0);
   const newTotal = alreadyReservedMinutes + MIN_SCHEDULING_CREDIT_MINUTES;
 
   if (newTotal > availableCredits) {

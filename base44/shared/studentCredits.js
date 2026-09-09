@@ -209,7 +209,8 @@ export async function computeCreditUpdate(base44, {
   // ── Keep deprecated credits_minutes in sync as the sum during transition ──
   const finalPlan = updateData.plan_credits_minutes ?? (profile.plan_credits_minutes ?? 0);
   const finalPrepaid = updateData.prepaid_credits_minutes ?? (profile.prepaid_credits_minutes ?? 0);
-  updateData.credits_minutes = Math.round((finalPlan + finalPrepaid) * 100) / 100;
+  const finalAdminGift = profile.admin_gift_minutes ?? 0; // purchases never modify admin_gift
+  updateData.credits_minutes = Math.round((finalPlan + finalPrepaid + finalAdminGift) * 100) / 100;
 
   // Teto de referência (100%) da barra visual de minutos avulsos no dashboard
   // do aluno. Sempre que o saldo avulso aumenta (pacote novo ou bônus de
@@ -233,18 +234,24 @@ export async function computeCreditUpdate(base44, {
 // @returns {{ plan_credits_minutes: number, prepaid_credits_minutes: number }}
 export function debitStudentCredits(sp, durationMinutes) {
   let remaining = durationMinutes;
+  // Admin gift is consumed first (shortest expiry, incentive to use ASAP),
+  // then plan credits, then prepaid credits last.
+  const fromAdminGift = Math.min(sp.admin_gift_minutes || 0, remaining);
+  remaining -= fromAdminGift;
   const fromPlan = Math.min(sp.plan_credits_minutes || 0, remaining);
   remaining -= fromPlan;
   const fromPrepaid = Math.min(sp.prepaid_credits_minutes || 0, remaining);
   remaining -= fromPrepaid;
 
+  const newAdminGift = Math.max(0, Math.round(((sp.admin_gift_minutes || 0) - fromAdminGift) * 100) / 100);
   const newPlan = Math.max(0, Math.round(((sp.plan_credits_minutes || 0) - fromPlan) * 100) / 100);
   const newPrepaid = Math.max(0, Math.round(((sp.prepaid_credits_minutes || 0) - fromPrepaid) * 100) / 100);
 
   return {
+    admin_gift_minutes: newAdminGift,
     plan_credits_minutes: newPlan,
     prepaid_credits_minutes: newPrepaid,
     // Keep deprecated credits_minutes in sync during transition.
-    credits_minutes: Math.round((newPlan + newPrepaid) * 100) / 100,
+    credits_minutes: Math.round((newAdminGift + newPlan + newPrepaid) * 100) / 100,
   };
 }

@@ -50,22 +50,37 @@ Deno.serve(async (req) => {
     if (action === 'add_minutes') {
       const mins = Number(minutes);
       if (!Number.isFinite(mins) || mins === 0) return Response.json({ error: 'Invalid minutes value' }, { status: 400 });
-      // Admin-granted minutes go to plan_credits_minutes (no expiry while active).
-      // Negative values (removal) never make the balance negative — floor at 0
-      // and never touch prepaid_credits_minutes.
-      const newPlanTotal = Math.max(0, (student.plan_credits_minutes ?? 0) + mins);
-      const newPrepaid = student.prepaid_credits_minutes ?? 0;
-      await base44.asServiceRole.entities.StudentProfile.update(student_id, {
-        plan_credits_minutes: newPlanTotal,
-        credits_minutes: newPlanTotal + newPrepaid,
-      });
 
-      // Avisa o aluno por e-mail APENAS quando minutos forem positivos
-      // (adição). Remoção de minutos não dispara e-mail.
+      const now = new Date();
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      const newPrepaid = student.prepaid_credits_minutes ?? 0;
+
       if (mins > 0) {
+        // ── ADD: credit to admin_gift_minutes (30-day expiry, fully isolated
+        //    from prepaid_credits_minutes so purchased credits are never affected).
+        //    If the student already has a non-expired admin gift, add to the
+        //    existing balance and keep the LATER of (existing expiry, now+30d)
+        //    so we never shorten a previously-granted deadline.
+        const existingGift = student.admin_gift_minutes ?? 0;
+        const existingExpiry = student.admin_gift_expires_at ? new Date(student.admin_gift_expires_at) : null;
+        const newExpiryCandidate = new Date(now.getTime() + THIRTY_DAYS_MS);
+        const giftStillActive = existingExpiry && existingExpiry > now;
+        const newGiftTotal = giftStillActive ? existingGift + mins : mins;
+        const newGiftExpiry = giftStillActive
+          ? (existingExpiry > newExpiryCandidate ? existingExpiry : newExpiryCandidate)
+          : newExpiryCandidate;
+        const planCredits = student.plan_credits_minutes ?? 0;
+        const newCreditsTotal = Math.round((planCredits + newPrepaid + newGiftTotal) * 100) / 100;
+
+        await base44.asServiceRole.entities.StudentProfile.update(student_id, {
+          admin_gift_minutes: Math.round(newGiftTotal * 100) / 100,
+          admin_gift_granted_at: now.toISOString(),
+          admin_gift_expires_at: newGiftExpiry.toISOString(),
+          credits_minutes: newCreditsTotal,
+        });
+
+        // Send the initial "free minutes granted" email (fire-and-forget).
         try {
-          // student.email não existe — o e-mail fica no User, associado por
-          // user_id, não no StudentProfile.
           const studentUser = await base44.asServiceRole.entities.User.get(student.user_id);
           if (studentUser?.email) {
             const lang = langForCountry(student.nationality);
@@ -82,9 +97,21 @@ Deno.serve(async (req) => {
         } catch (emailErr) {
           console.error('[adminManageStudent] Falha ao enviar e-mail de minutos grátis:', emailErr.message);
         }
+
+        return Response.json({ success: true, credits_minutes: newCreditsTotal });
       }
 
-      return Response.json({ success: true, credits_minutes: newPlanTotal + newPrepaid });
+      // ── REMOVE (mins < 0): still debits plan_credits_minutes (unchanged
+      //    behavior). Never makes the balance negative — floor at 0.
+      //    Never touches prepaid or admin_gift.
+      const newPlanTotal = Math.max(0, (student.plan_credits_minutes ?? 0) + mins);
+      const adminGift = student.admin_gift_minutes ?? 0;
+      const newCreditsTotal = Math.round((newPlanTotal + newPrepaid + adminGift) * 100) / 100;
+      await base44.asServiceRole.entities.StudentProfile.update(student_id, {
+        plan_credits_minutes: newPlanTotal,
+        credits_minutes: newCreditsTotal,
+      });
+      return Response.json({ success: true, credits_minutes: newCreditsTotal });
     }
   } catch (error) {
     console.error('[adminManageStudent]', error.message);

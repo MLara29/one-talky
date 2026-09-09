@@ -146,7 +146,7 @@ export default function StudentDetailModal({ student, userEmail, open, onClose, 
         {/* Info cards */}
         <div className="grid grid-cols-3 gap-3 mt-2">
           <div className="bg-gray-100 dark:bg-white/5 rounded-xl p-3 text-center border border-gray-200 dark:border-white/8">
-            <div className="text-lg font-bold text-gray-900 dark:text-white">{Math.round((student.plan_credits_minutes || 0) + (student.prepaid_credits_minutes || 0))}</div>
+            <div className="text-lg font-bold text-gray-900 dark:text-white">{Math.round((student.plan_credits_minutes || 0) + (student.prepaid_credits_minutes || 0) + (student.admin_gift_minutes || 0))}</div>
             <div className="text-xs text-gray-500 flex items-center justify-center gap-1 mt-0.5">
               <Clock className="w-3 h-3" /> Minutos
             </div>

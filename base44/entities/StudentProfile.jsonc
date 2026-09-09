@@ -76,12 +76,12 @@
     "credits_minutes": {
       "type": "number",
       "default": 0,
-      "description": "DEPRECATED \u2014 mantido durante a transi\u00e7\u00e3o como soma de plan_credits_minutes + prepaid_credits_minutes. A fonte de verdade agora s\u00e3o os dois campos separados. N\u00e3o usar para l\u00f3gica de neg\u00f3cio."
+      "description": "DEPRECATED \u2014 mantido durante a transi\u00e7\u00e3o como soma de plan_credits_minutes + prepaid_credits_minutes + admin_gift_minutes. A fonte de verdade agora s\u00e3o os tr\u00eas campos separados. N\u00e3o usar para l\u00f3gica de neg\u00f3cio."
     },
     "plan_credits_minutes": {
       "type": "number",
       "default": 0,
-      "description": "Minutos concedidos pelo plano mensal. Nunca expiram enquanto a assinatura estiver ativa. Ap\u00f3s cancelamento, ganham prazo de 60 dias (plan_credits_grace_expires_at). Consumidos primeiro em aulas."
+      "description": "Minutos concedidos pelo plano mensal. Nunca expiram enquanto a assinatura estiver ativa. Ap\u00f3s cancelamento, ganham prazo de 60 dias (plan_credits_grace_expires_at). Consumidos depois de admin_gift_minutes em aulas."
     },
     "prepaid_credits_minutes": {
       "type": "number",
@@ -92,6 +92,26 @@
       "type": "string",
       "format": "date-time",
       "description": "Data de expira\u00e7\u00e3o de TODO o saldo pr\u00e9-pago (comprado + b\u00f4nus). Resetada para agora+60 dias a cada compra de pacote. Pode ser diferente quando h\u00e1 b\u00f4nus de cupom com prazo pr\u00f3prio."
+    },
+    "admin_gift_minutes": {
+      "type": "number",
+      "default": 0,
+      "description": "Minutos concedidos gratuitamente pelo admin via StudentDetailModal. Totalmente isolado de plan_credits_minutes e prepaid_credits_minutes \u2014 nunca afeta a expira\u00e7\u00e3o de cr\u00e9ditos pagos. Expira em 30 dias (admin_gift_expires_at). Consumido PRIMEIRO em aulas (antes de plan e prepaid), incentivando o uso r\u00e1pido do benef\u00edcio."
+    },
+    "admin_gift_granted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp da \u00faltima concess\u00e3o de minutos de presente pelo admin. Usado pelo lembrete semanal para determinar se o aluno j\u00e1 completou alguma aula desde que recebeu o benef\u00edcio."
+    },
+    "admin_gift_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de expira\u00e7\u00e3o dos minutos de presente do admin (granted_at + 30 dias). O cron ExpireAdminGiftMinutes zera admin_gift_minutes quando esta data passa. Se uma nova concess\u00e3o ocorrer enquanto o saldo anterior ainda n\u00e3o expirou, mant\u00e9m a data MAIS distante entre a existente e agora+30d \u2014 nunca encurta um prazo j\u00e1 concedido."
+    },
+    "admin_gift_reminder_last_sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp do \u00faltimo e-mail de lembrete semanal enviado sobre minutos de presente n\u00e3o usados. O cron SendFreeMinutesReminders s\u00f3 envia um novo lembrete se este campo for vazio ou tiver 7+ dias."
     },
     "plan_credits_grace_expires_at": {
       "type": "string",

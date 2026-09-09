@@ -17,10 +17,11 @@ Deno.serve(async (req) => {
 
       if (prepaidExpiresAt && new Date(prepaidExpiresAt) < now && prepaidCredits > 0) {
         const newPlan = sp.plan_credits_minutes || 0;
+        const adminGift = sp.admin_gift_minutes || 0;
         await base44.asServiceRole.entities.StudentProfile.update(sp.id, {
           prepaid_credits_minutes: 0,
           prepaid_expires_at: null,
-          credits_minutes: newPlan, // keep deprecated field in sync
+          credits_minutes: Math.round((newPlan + adminGift) * 100) / 100, // keep deprecated field in sync
         });
         expired++;
       }
