@@ -335,6 +335,49 @@ export default function TutorSchedule() {
         />
       </div>
 
+      {/* Minimum booking notice */}
+      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 mb-5">
+        <p className="theme-heading font-semibold text-white mb-1">Minimum booking notice</p>
+        <p className="theme-subtext text-xs text-gray-500 mb-4">Students will only be able to book lessons with you respecting this minimum notice period.</p>
+        <div className="flex flex-wrap gap-2">
+          {NOTICE_OPTIONS.map(opt => {
+            const active = (profile?.min_booking_notice_hours || 0) === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => changeMinNotice(opt.value)}
+                disabled={savingNotice}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 ${
+                  active
+                    ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                    : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Brazil demand hint — converted to tutor's timezone */}
+      {(() => {
+        const w = getBrazilWindowInTutorTz(profile?.timezone);
+        if (!w) return null;
+        return (
+          <div className="px-3 py-2.5 rounded-xl text-xs mb-4 flex items-start gap-2"
+            style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)", color: "var(--app-text-secondary)" }}>
+            <span>💡</span>
+            <span>
+              Most students are in Brazil. Based on your timezone, students are
+              typically online from <strong>{w.generalStart}–{w.generalEnd}</strong>,
+              with peak demand around <strong>{w.peakStart}–{w.peakEnd}</strong>.
+              Setting availability in this window may get you more bookings.
+            </span>
+          </div>
+        );
+      })()}
+
       {/* Schedule frozen banner */}
       {profile?.schedule_frozen && (
         <div className="mb-5 px-4 py-4 rounded-2xl flex items-start gap-3"
@@ -382,49 +425,6 @@ export default function TutorSchedule() {
           </p>
         )}
       </div>
-
-      {/* Minimum booking notice */}
-      <div className="theme-card bg-white/5 border border-white/10 rounded-3xl p-5 mb-5">
-        <p className="theme-heading font-semibold text-white mb-1">Minimum booking notice</p>
-        <p className="theme-subtext text-xs text-gray-500 mb-4">Students will only be able to book lessons with you respecting this minimum notice period.</p>
-        <div className="flex flex-wrap gap-2">
-          {NOTICE_OPTIONS.map(opt => {
-            const active = (profile?.min_booking_notice_hours || 0) === opt.value;
-            return (
-              <button
-                key={opt.value}
-                onClick={() => changeMinNotice(opt.value)}
-                disabled={savingNotice}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 ${
-                  active
-                    ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
-                    : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Brazil demand hint — converted to tutor's timezone */}
-      {(() => {
-        const w = getBrazilWindowInTutorTz(profile?.timezone);
-        if (!w) return null;
-        return (
-          <div className="px-3 py-2.5 rounded-xl text-xs mb-4 flex items-start gap-2"
-            style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)", color: "var(--app-text-secondary)" }}>
-            <span>💡</span>
-            <span>
-              Most students are in Brazil. Based on your timezone, students are
-              typically online from <strong>{w.generalStart}–{w.generalEnd}</strong>,
-              with peak demand around <strong>{w.peakStart}–{w.peakEnd}</strong>.
-              Setting availability in this window may get you more bookings.
-            </span>
-          </div>
-        );
-      })()}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calendar */}
