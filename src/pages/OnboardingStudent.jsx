@@ -63,6 +63,18 @@ export default function OnboardingStudent() {
     }).catch(() => {});
   }, []);
 
+  // Pré-preenche e valida automaticamente o cupom quando a URL trouxer
+  // ?coupon=ONETALK15 — o aluno continua vendo o campo e podendo editar/trocar
+  // manualmente, só que já vem preenchido e validado assim que a página carrega.
+  useEffect(() => {
+    const urlCoupon = searchParams.get("coupon");
+    if (urlCoupon) {
+      const upper = urlCoupon.trim().toUpperCase();
+      setCouponCode(upper);
+      checkCoupon(upper);
+    }
+  }, []);
+
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
   const toggleTopic = (topic) => {
@@ -72,8 +84,8 @@ export default function OnboardingStudent() {
     );
   };
 
-  const checkCoupon = async () => {
-    const code = couponCode.trim().toUpperCase();
+  const checkCoupon = async (codeOverride) => {
+    const code = (codeOverride ?? couponCode).trim().toUpperCase();
     if (!code) return;
     setCheckingCoupon(true);
     setCouponStatus(null);
