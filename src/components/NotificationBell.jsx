@@ -68,6 +68,7 @@ export default function NotificationBell() {
       } catch {}
     }
     if (n.link) navigate(n.link);
+    else if (n.type === "general") navigate("/my-messages?tab=admin");
     setOpen(false);
   };
 
@@ -151,6 +152,11 @@ export default function NotificationBell() {
                     <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--app-text-secondary)" }}>
                       {n.message}
                     </p>
+                    {n.type === "general" && n.message && n.message.length > 100 && (
+                      <span className="text-[11px] font-medium mt-1 inline-block" style={{ color: "#F26A1B" }}>
+                        {lang === "pt_br" ? "Ver mensagem completa" : "View full message"}
+                      </span>
+                    )}
                     <p className="text-[10px] mt-1" style={{ color: "var(--app-text-muted)" }}>
                       {formatTime(n.created_date)}
                     </p>

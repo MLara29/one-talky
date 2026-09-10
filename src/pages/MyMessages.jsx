@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { MessageSquare, Clock, ChevronDown, ChevronUp, CheckCircle, Send, Plus, X, Bell, Trash2 } from "lucide-react";
@@ -14,10 +15,11 @@ const STATUS_LABELS = { open: "Open", replied: "Replied", closed: "Closed" };
 
 export default function MyMessages() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [messages, setMessages] = useState([]);
   const [adminMessages, setAdminMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("support"); // "support" | "admin"
+  const [tab, setTab] = useState(searchParams.get("tab") === "admin" ? "admin" : "support"); // "support" | "admin"
   const [expanded, setExpanded] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [subject, setSubject] = useState("");
