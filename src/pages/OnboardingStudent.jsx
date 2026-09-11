@@ -331,7 +331,7 @@ export default function OnboardingStudent() {
                     placeholder={t(lang, "couponPlaceholder")}
                     className={`${inputCls} font-mono uppercase ${couponStatus === "valid" ? "border-emerald-400 focus:border-emerald-400" : couponStatus === "invalid" ? "border-red-400 focus:border-red-400" : ""}`}
                   />
-                  <Button type="button" onClick={checkCoupon} disabled={couponStatus === "valid" || !couponCode.trim() || checkingCoupon}
+                  <Button type="button" onClick={() => checkCoupon()} disabled={couponStatus === "valid" || !couponCode.trim() || checkingCoupon}
                     variant={couponStatus === "valid" ? "default" : "outline"}
                     className={`shrink-0 px-4 ${couponStatus === "valid" ? "bg-emerald-500 text-white border-0 hover:bg-emerald-500" : "border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"}`}>
                     {checkingCoupon ? "..." : couponStatus === "valid" ? <><CheckCircle className="w-4 h-4 mr-1" /> {APPLIED_LABEL[lang] || "Applied"}</> : t(lang, "applyBtn")}
