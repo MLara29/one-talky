@@ -305,12 +305,18 @@ export default function TutorEarnings() {
                         )}
                       </div>
                       <p className="theme-subtext text-xs text-gray-500">
-                        {l.duration_minutes || 0} min · {new Date(l.ended_at || l.created_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {l.duration_minutes || 0} min · {l.started_at
+                          ? `${new Date(l.started_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – ${new Date(l.ended_at || l.created_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                          : new Date(l.ended_at || l.created_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
                     <span className="text-sm font-bold text-emerald-500">+${(l.earned_amount ?? ((l.duration_minutes || 0) * rate)).toFixed(2)}</span>
                   </div>
                 ))}
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-white/8 border border-white/10">
+                  <span className="theme-heading text-sm font-semibold text-white">Total</span>
+                  <span className="text-sm font-bold text-white">{selectedDayData.lessonList.reduce((s, l) => s + (l.duration_minutes || 0), 0)} min</span>
+                </div>
               </div>
             ) : (
               <p className="text-sm text-gray-600 text-center py-2">No lessons on this day</p>
