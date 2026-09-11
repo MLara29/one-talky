@@ -112,6 +112,11 @@ export default function Plans() {
   // moeda local (EUR/JPY/KRW/USD). Aplica-se a planos mensais e pacotes avulsos.
   const isBR = !regionData || regionData.region === "br";
   const regionConfig = isBR ? null : getRegionalConfig(regionData.region);
+  // Mesma definição de "plano ativo" usada no CreditsBanner — sem assinatura
+  // ativa (plan === "free"), a aba de pacotes avulsos mostra só o aviso de
+  // "exclusivo para assinantes", sem renderizar a lista de pacotes nem o
+  // botão de compra. A validação de segurança real está no backend.
+  const hasActivePlan = profile?.plan && profile.plan !== "free";
 
   const planMonthlyDisplay = (plan) => {
     if (isBR || !regionConfig) return fmtBRL(plan.price_monthly);
@@ -458,6 +463,8 @@ export default function Plans() {
                 <p className="text-sm" style={{ color: "#5A5B66" }}>{t(lang, "subscribersOnlyDesc")}</p>
               </div>
             )}
+            {hasActivePlan && (
+            <>
             <p className="text-center text-sm mb-6" style={{ color: "#5A5B66" }}>{t(lang, "prepaidIntro")}</p>
             <div className="space-y-3">
               {PREPAID_PACKS.map(pack => (
@@ -485,12 +492,12 @@ export default function Plans() {
                     <p className="font-display font-bold text-lg" style={{ color: "#17181C" }}>{packDisplay(pack)}</p>
                     <button
                       onClick={() => buyPack(pack)}
-                      disabled={!!checkoutItem || !profile?.plan || profile.plan === "free"}
+                      disabled={!!checkoutItem}
                       style={{
                         marginTop: 4, padding: "7px 18px", borderRadius: 999, fontWeight: 700, fontSize: 13.5,
                         background: ACCENT, color: "#fff", border: "none",
-                        cursor: (checkoutItem || !profile?.plan || profile.plan === "free") ? "not-allowed" : "pointer",
-                        opacity: (checkoutItem || !profile?.plan || profile.plan === "free") ? 0.4 : 1, fontFamily: "inherit",
+                        cursor: checkoutItem ? "not-allowed" : "pointer",
+                        opacity: checkoutItem ? 0.4 : 1, fontFamily: "inherit",
                       }}
                     >
                       {t(lang, "buyBtn")}
@@ -502,6 +509,8 @@ export default function Plans() {
             <p className="text-center text-xs mt-6" style={{ color: "#A29A8C" }}>
               {t(lang, "securePaymentFooter").replace("{provider}", paymentMethod === "stripe" ? "Stripe" : "Mercado Pago")}
             </p>
+            </>
+            )}
           </div>
         </TabsContent>
       </Tabs>

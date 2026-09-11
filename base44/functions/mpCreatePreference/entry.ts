@@ -14,6 +14,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Referência de produto inválida" }, { status: 400 });
     }
 
+    // Pacotes avulsos (prepaid packs) são exclusivos de assinantes ativos —
+    // um aluno no plano Free não pode comprar minutos avulsos, mesmo que tenha
+    // saldo de presente ou pré-pago remanescente. Validação server-side.
+    if (external_reference.startsWith("pack:")) {
+      const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+      const studentProfile = profiles[0];
+      if (!studentProfile || !studentProfile.plan || studentProfile.plan === "free") {
+        return Response.json({ error: "Pacotes avulsos estão disponíveis apenas para assinantes ativos" }, { status: 403 });
+      }
+    }
+
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     if (!accessToken) return Response.json({ error: "MP token não configurado" }, { status: 500 });
 

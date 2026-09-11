@@ -52,6 +52,18 @@ export default async function (req: Request): Promise<Response> {
     }
     const mode = getStripeMode(external_reference);
 
+    // Pacotes avulsos (prepaid packs) são exclusivos de assinantes ativos —
+    // um aluno no plano Free não pode comprar minutos avulsos, mesmo que tenha
+    // saldo de presente ou pré-pago remanescente. Validação server-side para
+    // que a ocultação no frontend seja só UX, não camada de segurança.
+    if (external_reference.startsWith("pack:")) {
+      const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+      const studentProfile = profiles[0];
+      if (!studentProfile || !studentProfile.plan || studentProfile.plan === "free") {
+        return Response.json({ error: "Pacotes avulsos estão disponíveis apenas para assinantes ativos" }, { status: 403 });
+      }
+    }
+
     // 2) Validate coupon using the shared helper (same rules as Mercado Pago).
     const { finalPrice, coupon: appliedCoupon, bonusMinutes, error: couponError } =
       await validateAndApplyCoupon(base44, coupon_code, item.price);

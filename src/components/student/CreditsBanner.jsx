@@ -113,6 +113,12 @@ export default function CreditsBanner({ profile, onUpdate }) {
   const adminGiftMins = profile?.admin_gift_minutes || 0;
   const mins = planMins + prepaidMins + adminGiftMins;
   const plan = profile?.plan || "free";
+  // Pacotes avulsos (prepaid) são exclusivos de assinantes ativos — um aluno
+  // no plano Free não pode comprar minutos avulsos, mesmo que tenha saldo de
+  // presente ou pré-pago remanescente. O botão "Adicionar minutos" e o bloco
+  // de compra simplesmente não renderizam sem um plano ativo (mesma regra do
+  // Plans.jsx). A validação real de segurança vive no backend.
+  const hasActivePlan = plan !== "free";
   const planObj = PLANS.find(p => p.id === plan);
   const isLow = mins < 30;
   const pct = Math.min(100, Math.round((mins / 120) * 100));
@@ -221,6 +227,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            {hasActivePlan && (
             <button
               onClick={() => setShowTopup(!showTopup)}
               style={{
@@ -235,6 +242,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
               <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
               <span>{t(lang, "topupBtnShort")}</span>
             </button>
+            )}
             <Link to="/plans">
               <button style={{
                 display: "flex", alignItems: "center", gap: 5,
@@ -348,7 +356,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
             </div>
           )}
         </div>
-        {showTopup && <TopupSection />}
+        {hasActivePlan && showTopup && <TopupSection />}
       </div>
 
       {/* ══ Desktop (>= sm) — layout original ══ */}
@@ -501,6 +509,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
 
           {/* Right: buttons */}
           <div className="flex items-center gap-2 shrink-0">
+            {hasActivePlan && (
             <button
               onClick={() => setShowTopup(!showTopup)}
               style={{
@@ -513,6 +522,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
             >
               <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> {t(lang, "addMinutesBtn")}
             </button>
+            )}
             <Link to="/plans">
               <button style={{
                 display: "flex", alignItems: "center", gap: 8,
@@ -526,7 +536,7 @@ export default function CreditsBanner({ profile, onUpdate }) {
             </Link>
           </div>
         </div>
-        {showTopup && <TopupSection />}
+        {hasActivePlan && showTopup && <TopupSection />}
       </div>
 
       {checkoutItem && (
