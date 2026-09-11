@@ -26,6 +26,7 @@ const INTEREST_KEY = {
 };
 const LANG_OPTIONS = ["en", "pt_br", "es", "fr", "de", "it", "ja", "ko"];
 const LANG_LABELS = { en: "EN", pt_br: "PT", es: "ES", fr: "FR", de: "DE", it: "IT", ja: "JA", ko: "KO" };
+const APPLIED_LABEL = { en: "Applied", pt_br: "Aplicado", es: "Aplicado", fr: "Appliqué", de: "Angewendet", it: "Applicato", ja: "適用済み", ko: "적용됨" };
 
 export default function OnboardingStudent() {
   const { toast } = useToast();
@@ -328,11 +329,12 @@ export default function OnboardingStudent() {
                     value={couponCode}
                     onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponStatus(null); setCouponData(null); }}
                     placeholder={t(lang, "couponPlaceholder")}
-                    className={`${inputCls} font-mono uppercase`}
+                    className={`${inputCls} font-mono uppercase ${couponStatus === "valid" ? "border-emerald-400 focus:border-emerald-400" : couponStatus === "invalid" ? "border-red-400 focus:border-red-400" : ""}`}
                   />
-                  <Button type="button" onClick={checkCoupon} disabled={!couponCode.trim() || checkingCoupon}
-                    variant="outline" className="shrink-0 border-gray-300 text-gray-700 hover:bg-gray-50 bg-white px-4">
-                    {checkingCoupon ? "..." : t(lang, "applyBtn")}
+                  <Button type="button" onClick={checkCoupon} disabled={couponStatus === "valid" || !couponCode.trim() || checkingCoupon}
+                    variant={couponStatus === "valid" ? "default" : "outline"}
+                    className={`shrink-0 px-4 ${couponStatus === "valid" ? "bg-emerald-500 text-white border-0 hover:bg-emerald-500" : "border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"}`}>
+                    {checkingCoupon ? "..." : couponStatus === "valid" ? <><CheckCircle className="w-4 h-4 mr-1" /> {APPLIED_LABEL[lang] || "Applied"}</> : t(lang, "applyBtn")}
                   </Button>
                 </div>
                 {couponStatus === "valid" && couponData && (
