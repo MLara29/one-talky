@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { full_name, role, plan, coupon_code } = await req.json();
+    const { full_name, role, plan, level, coupon_code } = await req.json();
 
     const esc = (s: string) => String(s ?? "")
       .replace(/&/g, "&amp;")
@@ -26,7 +26,8 @@ Deno.serve(async (req) => {
 
     const roleLabel = role === "tutor" ? "Tutor" : "Aluno";
     const planLabel = plan && plan !== "free" ? esc(plan.charAt(0).toUpperCase() + plan.slice(1)) : null;
-    const couponLabel = coupon_code ? ` (cupom: <strong>${esc(coupon_code)}</strong>)` : "";
+    const levelMap: Record<string, string> = { beginner: "Básico", intermediate: "Intermediário", advanced: "Avançado" };
+    const levelLabel = level ? (levelMap[level] || esc(level)) : null;
 
     const html = `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#f9fafb;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
@@ -40,9 +41,11 @@ Deno.serve(async (req) => {
           <p style="margin:0 0 8px;font-size:15px;color:#111827;">
             <strong>Plano:</strong>
             ${planLabel
-              ? `<span style="color:#059669;font-weight:600;">${planLabel}</span>${couponLabel}`
+              ? `<span style="color:#059669;font-weight:600;">${planLabel}</span>`
               : `<span style="color:#6b7280;">Sem plano (free)</span>`}
           </p>
+          ${role === "student" && levelLabel ? `<p style="margin:0 0 8px;font-size:15px;color:#111827;"><strong>Nível:</strong> ${esc(levelLabel)}</p>` : ""}
+          <p style="margin:0 0 8px;font-size:15px;color:#111827;"><strong>Cupom:</strong> ${coupon_code ? `<strong>${esc(coupon_code)}</strong>` : `<span style="color:#6b7280;">Nenhum</span>`}</p>
           ${role === "tutor" ? `<p style="margin:16px 0 0;font-size:13px;color:#6b7280;">⚠️ Tutor aguardando aprovação na plataforma.</p>` : ""}
         </div>
       </div>

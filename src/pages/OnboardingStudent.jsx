@@ -132,6 +132,7 @@ export default function OnboardingStudent() {
         full_name: form.full_name,
         role: 'student',
         plan: 'free',
+        level: form.level,
         coupon_code: couponStatus === "valid" ? couponCode : null,
       }).catch(() => {});
       toast({ title: t(lang, "welcomeToastTitle"), description: t(lang, "welcomeToastDesc") });
