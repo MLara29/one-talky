@@ -6,6 +6,7 @@ import { X, Lock, Loader2, AlertCircle, CheckCircle, CreditCard } from "lucide-r
 import { formatRegionalPrice } from "@/lib/regionPricing";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
+import { ttqTrack } from "@/lib/tiktokPixel";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -29,6 +30,15 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
   const displayCurrency = item.currency || "BRL";
   const displayOriginal = item.display_original != null ? item.display_original : item.original_price;
 
+  // TikTok Pixel: InitiateCheckout — user opened the Stripe checkout modal.
+  useEffect(() => {
+    ttqTrack("InitiateCheckout", {
+      contents: [{ content_id: item.external_reference, content_type: "product", content_name: item.title }],
+      value: displayPrice,
+      currency: displayCurrency,
+    });
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -43,6 +53,18 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
         if (!res.data?.client_secret) throw new Error(t(lang, "checkoutInitFailedError"));
         setClientSecret(res.data.client_secret);
         setPublishableKey(res.data.publishable_key);
+        // TikTok Pixel: AddPaymentInfo + PlaceAnOrder — checkout session
+        // created, the Stripe form is ready for the user to enter card details.
+        ttqTrack("AddPaymentInfo", {
+          contents: [{ content_id: item.external_reference, content_type: "product", content_name: item.title }],
+          value: displayPrice,
+          currency: displayCurrency,
+        });
+        ttqTrack("PlaceAnOrder", {
+          contents: [{ content_id: item.external_reference, content_type: "product", content_name: item.title }],
+          value: displayPrice,
+          currency: displayCurrency,
+        });
       } catch (err) {
         console.error("[StripeCheckoutModal] init error:", err);
         if (!cancelled) setError(err.message || t(lang, "checkoutLoadError"));
@@ -62,6 +84,13 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
 
   const handleComplete = () => {
     setDone(true);
+    // TikTok Pixel: Purchase — Stripe confirmed the payment (client-side
+    // complement to the server-side Events API call fired by the webhook).
+    ttqTrack("Purchase", {
+      contents: [{ content_id: item.external_reference, content_type: "product", content_name: item.title }],
+      value: displayPrice,
+      currency: displayCurrency,
+    });
     setTimeout(() => { onSuccess?.(); onClose?.(); }, 2000);
   };
 

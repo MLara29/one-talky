@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { X, CreditCard, Lock, CheckCircle, AlertCircle, Loader2, QrCode, Copy, Check, Tag } from "lucide-react";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
+import { ttqTrack } from "@/lib/tiktokPixel";
 
 function fmtBRL(val) {
   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -75,6 +76,28 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
 
   // Cleanup pix polling on unmount
   useEffect(() => () => { if (pixPollRef.current) clearInterval(pixPollRef.current); }, []);
+
+  // TikTok Pixel: InitiateCheckout — user opened the Mercado Pago checkout modal.
+  useEffect(() => {
+    ttqTrack("InitiateCheckout", {
+      contents: [{ content_id: item.external_reference, content_type: "product", content_name: item.title }],
+      value: item.price,
+      currency: item.currency || "BRL",
+    });
+  }, []);
+
+  // TikTok Pixel: AddPaymentInfo + Purchase — fire when the payment form is
+  // ready and again when payment is confirmed (client-side complement to the
+  // server-side Events API call).
+  useEffect(() => {
+    const params = {
+      contents: [{ content_id: item.external_reference, content_type: "product", content_name: item.title }],
+      value: item.price,
+      currency: item.currency || "BRL",
+    };
+    if (step === "form") ttqTrack("AddPaymentInfo", params);
+    if (step === "success") ttqTrack("Purchase", params);
+  }, [step]);
 
   // Card submit
   const handleCardSubmit = async (e) => {

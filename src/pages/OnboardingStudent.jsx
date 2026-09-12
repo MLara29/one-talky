@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
 import { sortedCountries, getCountryName, getFlagEmoji } from "@/lib/countries";
+import { ttqTrack } from "@/lib/tiktokPixel";
 
 // Chaves de tradução dos objetivos/níveis/interesses, indexadas pelo mesmo
 // "value" já usado nos dados (OBJECTIVES/LEVELS de constants.js, ou o próprio
@@ -153,6 +154,12 @@ export default function OnboardingStudent() {
       base44.functions.invoke("sendRedditConversion", {}).catch(() => {});
       base44.functions.invoke("sendMetaConversion", {}).catch(() => {});
       base44.functions.invoke("sendTikTokConversion", { event: "CompleteRegistration" }).catch(() => {});
+      // Client-side TikTok pixel (complements the server-side Events API above).
+      ttqTrack("CompleteRegistration", {
+        contents: [{ content_id: "student_signup", content_type: "product", content_name: "Student Registration" }],
+        value: 0,
+        currency: "USD",
+      });
       setTimeout(() => {
         window.location.href = intendedPlan ? `/?intent=${intendedPlan}` : "/";
       }, 300);

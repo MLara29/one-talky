@@ -17,6 +17,7 @@ import CreditsBanner from "@/components/student/CreditsBanner";
 import SupportModal from "@/components/support/SupportModal";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 import { stripTutorFields } from "@/lib/tutorPublicFields";
+import { ttqTrack } from "@/lib/tiktokPixel";
 import { LESSON_JOIN_GRACE_PERIOD_MS, LESSON_JOIN_WINDOW_BEFORE_MS, getLessonTimeStatus } from "@/lib/constants";
 
 const UPCOMING_CARD_WINDOW_MS = 5 * 60 * 1000; // card aparece a partir de 5min antes
@@ -85,6 +86,21 @@ export default function StudentDashboard() {
     });
   }, [searchParams, profile, regionData, lang]);
   useEffect(() => { upcomingLessonRef.current = upcomingLesson; }, [upcomingLesson]);
+
+  // TikTok Pixel: Search — debounced so we fire once per query, not every
+  // keystroke. Only fires when the user actually types something (>= 2 chars).
+  useEffect(() => {
+    if (!search || search.trim().length < 2) return;
+    const t = setTimeout(() => {
+      ttqTrack("Search", {
+        contents: [{ content_id: "tutor_search", content_type: "product_group", content_name: "Tutors" }],
+        value: 0,
+        currency: "USD",
+        search_string: search.trim(),
+      });
+    }, 900);
+    return () => clearTimeout(t);
+  }, [search]);
 
   // Mantém os minutos do card de créditos sempre atualizados em tempo real —
   // sem isso, se o aluno gastar minutos numa aula (em outra tela) e voltar

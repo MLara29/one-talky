@@ -16,6 +16,7 @@ import CancelPlanModal from "@/components/student/CancelPlanModal";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 import { formatMinutes } from "@/lib/formatMinutes";
+import { ttqTrack } from "@/lib/tiktokPixel";
 
 const ACCENT = "#F26A1B";
 
@@ -52,6 +53,15 @@ export default function Plans() {
   }, []);
 
   useEffect(() => { loadProfile(); }, [user]);
+
+  // TikTok Pixel: ViewContent — user landed on the Plans/subscription catalog.
+  useEffect(() => {
+    ttqTrack("ViewContent", {
+      contents: [{ content_id: "plans", content_type: "product_group", content_name: "Subscription Plans" }],
+      value: 0,
+      currency: isBR || !regionConfig ? "BRL" : regionConfig.currency,
+    });
+  }, []);
 
   // Se a pessoa veio de um botão de plano específico na Landing Page (via
   // ?plan=X no cadastro, que atravessou onboarding até aqui como ?intent=X),
@@ -159,6 +169,11 @@ export default function Plans() {
   const selectPlan = (plan) => {
     if (!profile || plan.price_monthly === 0) return;
     const discountedPrice = applyDiscount(plan.price_monthly);
+    ttqTrack("AddToCart", {
+      contents: [{ content_id: `plan:${plan.id}`, content_type: "product", content_name: planName(lang, plan.id) }],
+      value: discountedPrice,
+      currency: isBR || !regionConfig ? "BRL" : regionConfig.currency,
+    });
     const currency = isBR || !regionConfig ? "BRL" : regionConfig.currency;
     let displayPrice, displayOriginal;
     if (isBR || !regionConfig) {
@@ -185,6 +200,11 @@ export default function Plans() {
     if (!profile) return;
     const ref = pack.id === "teste" ? "pack:teste" : `pack:${pack.id}`;
     const discountedPrice = applyDiscount(pack.price_brl);
+    ttqTrack("AddToCart", {
+      contents: [{ content_id: ref, content_type: "product", content_name: packLabel(lang, pack.id) }],
+      value: discountedPrice,
+      currency: isBR || !regionConfig ? "BRL" : regionConfig.currency,
+    });
     const currency = isBR || !regionConfig ? "BRL" : regionConfig.currency;
     let displayPrice, displayOriginal;
     if (isBR || !regionConfig) {

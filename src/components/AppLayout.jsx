@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import useInactivityLogout, { LAST_ACTIVITY_KEY } from "@/hooks/useInactivityLogout";
 import { appParams } from "@/lib/app-params";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
+import { ttqIdentify } from "@/lib/tiktokPixel";
 import NotificationBell from "@/components/NotificationBell";
 import SupportBadge, { useUnreadSupportCount } from "@/components/SupportBadge";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
@@ -150,6 +151,13 @@ export default function AppLayout() {
       setTutorProfile(profiles[0] || null);
     }).catch(() => {});
   }, [role, user?.id]);
+
+  // TikTok Pixel: identify the logged-in user with hashed PII so conversion
+  // events can be attributed. Fires once per session when user is available.
+  useEffect(() => {
+    if (!user?.id) return;
+    ttqIdentify({ email: user.email, userId: user.id });
+  }, [user?.id, user?.email]);
 
   // Tab/window close: fire a keepalive fetch to mark the tutor offline
   // before the page unloads. The AuthContext cleanup on unmount tries this
