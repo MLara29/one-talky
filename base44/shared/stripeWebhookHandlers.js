@@ -5,6 +5,7 @@ import { recordAffiliateCommission } from "./affiliateCommission.js";
 import { computeCreditUpdate, getPlanGraceExpiryDays } from "./studentCredits.js";
 import { getFinanceSettings } from "./financeSettings.js";
 import { sendPurchaseEvent } from "./metaConversions.js";
+import { sendTikTokEvent } from "./tiktokConversions.js";
 
 // ──────────────────────────────────────────────────────────────────────────
 // Shared Stripe webhook logic — used by BOTH the production webhook
@@ -292,6 +293,21 @@ async function handleCheckoutCompleted(base44, session, stripeEventId, opts) {
   } catch (e) {
     console.warn(`${logPrefix} Meta Purchase event failed (checkout):`, e.message);
   }
+
+  // ── TikTok Events API — "Purchase" event (server-side) ─────────────────
+  try {
+    const ttPurchaseValue = (session.amount_total || 0) / (isZeroDecimal(session.currency) ? 1 : 100);
+    await sendTikTokEvent(base44, {
+      eventName: "Purchase",
+      userId,
+      value: ttPurchaseValue,
+      currency: session.currency || "BRL",
+      eventId: `${purchaseEventIdPrefix}tt_${stripeEventId || session.id}`,
+      testEventCode,
+    });
+  } catch (e) {
+    console.warn(`${logPrefix} TikTok Purchase event failed (checkout):`, e.message);
+  }
 }
 
 // ── invoice.paid — renewal (cycle 2+) ────────────────────────────────────────
@@ -434,6 +450,21 @@ async function handleInvoicePaid(base44, invoice, stripeEventId, opts) {
     });
   } catch (e) {
     console.warn(`${logPrefix} Meta Purchase event failed (invoice):`, e.message);
+  }
+
+  // ── TikTok Events API — "Purchase" event (server-side) ─────────────────
+  try {
+    const ttPurchaseValue = (invoice.amount_paid || 0) / (isZeroDecimal(invoice.currency) ? 1 : 100);
+    await sendTikTokEvent(base44, {
+      eventName: "Purchase",
+      userId,
+      value: ttPurchaseValue,
+      currency: invoice.currency || "BRL",
+      eventId: `${purchaseEventIdPrefix}tt_${stripeEventId || invoice.id}`,
+      testEventCode,
+    });
+  } catch (e) {
+    console.warn(`${logPrefix} TikTok Purchase event failed (invoice):`, e.message);
   }
 }
 

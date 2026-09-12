@@ -152,6 +152,7 @@ export default function OnboardingStudent() {
       }
       base44.functions.invoke("sendRedditConversion", {}).catch(() => {});
       base44.functions.invoke("sendMetaConversion", {}).catch(() => {});
+      base44.functions.invoke("sendTikTokConversion", { event: "CompleteRegistration" }).catch(() => {});
       setTimeout(() => {
         window.location.href = intendedPlan ? `/?intent=${intendedPlan}` : "/";
       }, 300);

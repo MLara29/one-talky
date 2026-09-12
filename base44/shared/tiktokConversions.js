@@ -96,7 +96,10 @@ export async function sendTikTokEvent(base44, {
     };
   }
 
-  const payload = { pixel_code: pixelCode, events: [evt] };
+  // TikTok Events API v1.3 top-level fields:
+  //   event_source_id  — the Pixel Code (required)
+  //   event_source     — "web" for website events
+  const payload = { event_source_id: pixelCode, event_source: "web", data: [evt] };
   if (testCode) payload.test_event_code = testCode;
 
   try {
