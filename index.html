@@ -39,17 +39,8 @@
       ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
 
 
-      // Load the pixel with the test event code when configured (TIKTOK_TEST_EVENT_CODE
-      // secret), so events route to the Test Events tab during testing. In production
-      // (secret removed), loads in production mode. Events fired before load are queued.
-      fetch('/functions/getTikTokConfig').then(r => r.json()).then(cfg => {
-        var code = cfg && cfg.test_event_code ? cfg.test_event_code : (cfg && cfg.data && cfg.data.test_event_code ? cfg.data.test_event_code : null);
-        ttq.load('DAIPKH3C77UDHLL3UG8G', code ? { test_event_code: code } : {});
-        ttq.page();
-      }).catch(() => {
-        ttq.load('DAIPKH3C77UDHLL3UG8G');
-        ttq.page();
-      });
+      ttq.load('DAIPKH3C77UDHLL3UG8G');
+      ttq.page();
     }(window, document, 'ttq');
     </script>
     <!-- End TikTok Pixel Code -->

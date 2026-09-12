@@ -57,8 +57,8 @@ export async function sendTikTokEvent(base44, {
     return { ok: false, reason: "no_credentials" };
   }
 
-  // Test event code: explicit param takes priority, then secret. Empty = production.
-  const testCode = testEventCode ?? secrets.get("TIKTOK_TEST_EVENT_CODE") ?? "";
+  // Test event code: only via explicit param. Empty = production mode.
+  const testCode = testEventCode ?? "";
 
   // Look up the user's email server-side if not provided (webhook has no browser session).
   let emailHash = "";

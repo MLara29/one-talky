@@ -44,14 +44,8 @@ export default async function (req: Request): Promise<Response> {
       return Response.json({ error: "Forbidden — Purchase event is admin only" }, { status: 403 });
     }
 
-    // ── Test-first fallback ─────────────────────────────────────────────────
-    // Explicit body param wins. If absent, fall back to TIKTOK_TEST_EVENT_CODE
-    // secret so manual tests never hit production. Pass testEventCode: "" to
-    // explicitly force a production event (admin-only, intentional).
-    const resolvedTestCode =
-      testEventCode !== undefined
-        ? testEventCode
-        : (secrets.get("TIKTOK_TEST_EVENT_CODE") || "");
+    // testEventCode from body, if provided. Empty/undefined = production mode.
+    const resolvedTestCode = testEventCode || "";
 
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
