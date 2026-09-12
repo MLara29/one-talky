@@ -167,7 +167,7 @@ export default function TutorCard({ tutor, forceEnglishTopics = false, firstWeek
             <img
               src={tutor.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.display_name || tutor.full_name)}&background=F26A1B&color=fff&size=80`}
               alt={tutor.display_name || tutor.full_name}
-              className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/10 group-hover:ring-orange-500/30 transition-all"
+              className="w-16 h-16 rounded-full object-cover ring-2 ring-white/10 group-hover:ring-orange-500/30 transition-all"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.display_name || tutor.full_name)}&background=F26A1B&color=fff&size=80`;
