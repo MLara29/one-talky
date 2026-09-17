@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
 import StripeCheckoutModal from "@/components/checkout/StripeCheckoutModal";
 import CancelPlanModal from "@/components/student/CancelPlanModal";
+import WelcomeModal from "@/components/WelcomeModal";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 import { detectAndCacheRegion, getRegionalConfig, formatRegionalPrice, getCachedRegion } from "@/lib/regionPricing";
 import { formatMinutes } from "@/lib/formatMinutes";
@@ -44,6 +45,7 @@ export default function Plans() {
   const [loading, setLoading] = useState(true);
   const [checkoutItem, setCheckoutItem] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(null);
   const [urgencyActive, setUrgencyActive] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("stripe");
@@ -180,6 +182,7 @@ export default function Plans() {
     } else {
       toast({ title: t(lang, "approvedPaymentTitle"), description: t(lang, "approvedPaymentDesc") });
     }
+    if (profile && !profile.welcome_modal_shown) setShowWelcome(true);
     loadProfile();
   };
 
@@ -267,7 +270,10 @@ export default function Plans() {
           // sempre usa o valor mais atual, nunca um que já ficou pra trás.
           key={`${checkoutItem.external_reference}-${checkoutItem.currency}`}
           item={checkoutItem}
-          onClose={() => setCheckoutItem(null)}
+          onClose={() => {
+            setCheckoutItem(null);
+            if (profile && !profile.welcome_modal_shown) setShowWelcome(true);
+          }}
           onSuccess={handleSuccess}
           affiliateCoupon={affiliateCoupon}
         />
@@ -276,12 +282,24 @@ export default function Plans() {
         <CheckoutModal
           item={checkoutItem}
           userEmail={user?.email}
-          onClose={() => setCheckoutItem(null)}
+          onClose={() => {
+            setCheckoutItem(null);
+            if (profile && !profile.welcome_modal_shown) setShowWelcome(true);
+          }}
           onSuccess={handleSuccess}
           affiliateCoupon={affiliateCoupon}
         />
       )}
 
+      {showWelcome && profile && !profile.welcome_modal_shown && (
+        <WelcomeModal
+          profile={profile}
+          onClose={() => {
+            setShowWelcome(false);
+            setProfile(prev => prev ? { ...prev, welcome_modal_shown: true } : prev);
+          }}
+        />
+      )}
       {showCancelModal && (
         <CancelPlanModal
           profile={profile}

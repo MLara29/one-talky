@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import TutorCard from "@/components/tutors/TutorCard";
 import CreditsBanner from "@/components/student/CreditsBanner";
 import SupportModal from "@/components/support/SupportModal";
+import WelcomeModal from "@/components/WelcomeModal";
 import { isFirstWeekActive } from "@/lib/firstWeekWindow";
 import { stripTutorFields } from "@/lib/tutorPublicFields";
 import { ttqTrack } from "@/lib/tiktokPixel";
@@ -34,6 +35,7 @@ export default function StudentDashboard() {
   const [search, setSearch] = useState("");
   const [availableNow, setAvailableNow] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [tick, setTick] = useState(0);
 
   // Checkout automático quando a pessoa vem de um anúncio (link com
@@ -235,7 +237,14 @@ export default function StudentDashboard() {
       // tutor com status "hidden" (escondido pelo admin) — não precisa de
       // filtro extra aqui.
       setTutors(data.filter(t => Boolean(t.photo_url)));
-      if (profiles.length > 0) setProfile(profiles[0]);
+      if (profiles.length > 0) {
+        setProfile(profiles[0]);
+        if (!profiles[0].welcome_modal_shown) {
+          const intentPlan = ["basic", "standard", "premium"].includes(searchParams.get("intent"))
+            ? searchParams.get("intent") : null;
+          if (!intentPlan) setShowWelcome(true);
+        }
+      }
     } catch { setTutors([]); } finally { setLoading(false); }
   };
 
@@ -283,9 +292,13 @@ export default function StudentDashboard() {
         <StripeCheckoutModal
           key={`${checkoutItem.external_reference}-${checkoutItem.currency}`}
           item={checkoutItem}
-          onClose={() => setCheckoutItem(null)}
+          onClose={() => {
+            setCheckoutItem(null);
+            if (profile && !profile.welcome_modal_shown) setShowWelcome(true);
+          }}
           onSuccess={(status) => {
             setCheckoutItem(null);
+            if (profile && !profile.welcome_modal_shown) setShowWelcome(true);
             if (status === "pending") {
               toast({ title: t(lang, "pendingPaymentTitle"), description: t(lang, "pendingPaymentDesc") });
             } else {
@@ -296,6 +309,15 @@ export default function StudentDashboard() {
         />
       )}
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
+      {showWelcome && profile && !profile.welcome_modal_shown && (
+        <WelcomeModal
+          profile={profile}
+          onClose={() => {
+            setShowWelcome(false);
+            setProfile(prev => prev ? { ...prev, welcome_modal_shown: true } : prev);
+          }}
+        />
+      )}
 
       {/* Credits Banner */}
       {profile && <CreditsBanner profile={profile} onUpdate={setProfile} />}
