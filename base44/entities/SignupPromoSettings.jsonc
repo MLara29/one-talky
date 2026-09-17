@@ -1,0 +1,39 @@
+{
+  "name": "SignupPromoSettings",
+  "type": "object",
+  "properties": {
+    "auto_free_minutes_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Quando ativo, concede minutos gr\u00e1tis automaticamente a qualquer aluno novo que se cadastre sem cupom."
+    },
+    "auto_free_minutes_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Quantidade de minutos gr\u00e1tis concedidos automaticamente no cadastro sem cupom."
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -117,6 +117,39 @@ export default async function (req: Request): Promise<Response> {
       }
     }
 
+    // ── Urgency offer: 30% off first month if urgency_offer_expires_at is in
+    //    the future. Only for subscriptions, and only when no coupon discount
+    //    is already being applied (stripeCouponId is still empty). The popup
+    //    that sets urgency_offer_expires_at only shows for students without a
+    //    coupon discount (signup_coupon_has_discount === false), so this won't
+    //    conflict with a coupon discount — but we check anyway for safety.
+    if (mode === "subscription" && !stripeCouponId) {
+      const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+      const studentProfile = profiles[0];
+      if (studentProfile?.urgency_offer_expires_at) {
+        const expiresAt = new Date(studentProfile.urgency_offer_expires_at);
+        if (expiresAt > new Date()) {
+          const urgencyCouponId = "ot_urgency_30";
+          const urgencyCreateBody = `id=${encodeURIComponent(urgencyCouponId)}&percent_off=30&duration=once`;
+          const urgencyCreateRes = await fetch("https://api.stripe.com/v1/coupons", {
+            method: "POST",
+            headers: formHeaders,
+            body: urgencyCreateBody,
+          });
+          if (urgencyCreateRes.ok) {
+            stripeCouponId = urgencyCouponId;
+          } else {
+            const getRes = await fetch(`https://api.stripe.com/v1/coupons/${urgencyCouponId}`, { headers: { Authorization: auth } });
+            if (getRes.ok) {
+              stripeCouponId = urgencyCouponId;
+            } else {
+              console.error("[stripeCreateCheckout] urgency coupon create/retrieve failed");
+            }
+          }
+        }
+      }
+    }
+
     // 4) Build the Checkout Session with ui_mode: "embedded".
     const returnUrl = "https://onetalky.com/plans?stripe_status=success";
 

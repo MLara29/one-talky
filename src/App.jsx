@@ -44,6 +44,7 @@ import AdminAgoraUsage from '@/pages/AdminAgoraUsage';
 import AdminErrorLogs from '@/pages/AdminErrorLogs';
 import AdminStripeTest from '@/pages/AdminStripeTest';
 import AdminAssistant from '@/pages/AdminAssistant';
+import AdminSignupPromo from '@/pages/AdminSignupPromo';
 import AffiliateDashboard from '@/pages/AffiliateDashboard';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
@@ -132,6 +133,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/error-logs" element={<AdminErrorLogs />} />
           <Route path="/admin/stripe-test" element={<AdminStripeTest />} />
           <Route path="/admin/assistant" element={<AdminAssistant />} />
+          <Route path="/admin/signup-promo" element={<AdminSignupPromo />} />
           <Route path="/affiliate" element={<AffiliateDashboard />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my-messages" element={<MyMessages />} />

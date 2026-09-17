@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, AlertTriangle, Monitor, MonitorOff, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
+import UrgencyOfferModal from "@/components/classroom/UrgencyOfferModal";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import { LESSON_JOIN_GRACE_PERIOD_MS } from "@/lib/constants";
@@ -30,6 +31,9 @@ export default function Classroom() {
   const [msgInput, setMsgInput] = useState("");
   const [elapsed, setElapsed] = useState(0);
   const [showReview, setShowReview] = useState(false);
+  const [showUrgencyOffer, setShowUrgencyOffer] = useState(false);
+  const [urgencyExpiresAt, setUrgencyExpiresAt] = useState(null);
+  const [studentProfile, setStudentProfile] = useState(null);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState(null);
   const [remoteUserPresent, setRemoteUserPresent] = useState(false);
   // Enquanto o pedido de reconexão remota está sendo enviado (feedback só
@@ -320,6 +324,7 @@ export default function Classroom() {
         if (user?.role === "student") {
           const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
           if (profiles.length > 0) {
+            setStudentProfile(profiles[0]);
             studentCredits = profiles[0].credits_minutes ?? 0;
             setStudentLevel(profiles[0].level || null);
           }
@@ -789,6 +794,23 @@ export default function Classroom() {
     setShowReview(true);
   };
 
+  const handleReviewClose = async () => {
+    setShowReview(false);
+    if (user?.role === "student" && studentProfile?.plan === "free" && !studentProfile?.signup_coupon_has_discount) {
+      try {
+        const res = await base44.functions.invoke('setUrgencyOffer', {});
+        if (res.data?.urgency_offer_expires_at) {
+          setUrgencyExpiresAt(res.data.urgency_offer_expires_at);
+          setShowUrgencyOffer(true);
+          return;
+        }
+      } catch (e) {
+        console.error("[Classroom] setUrgencyOffer failed:", e);
+      }
+    }
+    navigate(user?.role === "student" ? "/" : "/my-lessons");
+  };
+
   const formatTime = (s) => {
     const totalSecs = Math.max(0, Math.round(s));
     return `${Math.floor(totalSecs / 60).toString().padStart(2, "0")}:${(totalSecs % 60).toString().padStart(2, "0")}`;
@@ -1167,10 +1189,14 @@ export default function Classroom() {
         <ReviewModal
           lesson={lesson}
           userRole={user?.role}
-          onClose={() => {
-            setShowReview(false);
-            navigate(user?.role === "student" ? "/" : "/my-lessons");
-          }}
+          onClose={handleReviewClose}
+        />
+      )}
+      {showUrgencyOffer && (
+        <UrgencyOfferModal
+          expiresAt={urgencyExpiresAt}
+          onSubscribe={() => { setShowUrgencyOffer(false); navigate("/plans"); }}
+          onClose={() => { setShowUrgencyOffer(false); navigate("/"); }}
         />
       )}
     </div>

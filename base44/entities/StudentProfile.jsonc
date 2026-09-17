@@ -122,6 +122,24 @@
       "type": "string",
       "description": "C\u00f3digo do cupom usado no onboarding"
     },
+    "signup_free_minutes_source": {
+      "type": "string",
+      "enum": [
+        "coupon",
+        "auto_promo"
+      ],
+      "description": "Indica a origem dos minutos gr\u00e1tis concedidos no cadastro: 'coupon' = vieram de um cupom v\u00e1lido; 'auto_promo' = vieram do interruptor autom\u00e1tico do admin (SignupPromoSettings). Null quando nenhum minuto gr\u00e1tis foi concedido."
+    },
+    "signup_coupon_has_discount": {
+      "type": "boolean",
+      "default": false,
+      "description": "True SOMENTE se um cupom foi usado no cadastro (couponRecord existe) E o discount_type desse cupom \u00e9 diferente de 'none' (ou seja, o cupom j\u00e1 concede desconto em compras, n\u00e3o s\u00f3 minutos). Usado pelo popup de urg\u00eancia p\u00f3s-aula para decidir se o aluno j\u00e1 tem desconto garantido por outra via."
+    },
+    "urgency_offer_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de expira\u00e7\u00e3o da oferta de urg\u00eancia p\u00f3s-aula (agora + 15 minutos). Setado quando um aluno eleg\u00edvel (plan=free, sem cupom com desconto) termina uma aula. O checkout verifica se este campo est\u00e1 no futuro para aplicar 30% de desconto no primeiro m\u00eas. Zerado ap\u00f3s assinatura criada com sucesso."
+    },
     "subscription_start_date": {
       "type": "string",
       "format": "date-time",

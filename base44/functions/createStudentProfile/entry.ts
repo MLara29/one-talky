@@ -84,6 +84,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── Admin auto-promo: if no coupon bonus was granted (no coupon, or coupon
+    //    invalid/expired, or coupon with only discount and no minutes), check
+    //    the global SignupPromoSettings. If enabled, grant the configured
+    //    amount as free minutes — same path as a coupon bonus (prepaid, 30-day
+    //    expiry). Source tracked separately for analytics.
+    let signupFreeMinutesSource = null;
+    if (freeCredits === 0) {
+      const promoSettingsList = await base44.asServiceRole.entities.SignupPromoSettings.list();
+      const promo = promoSettingsList[0];
+      if (promo?.auto_free_minutes_enabled && (promo.auto_free_minutes_amount || 0) > 0) {
+        freeCredits = promo.auto_free_minutes_amount;
+        signupFreeMinutesSource = "auto_promo";
+      }
+    } else {
+      signupFreeMinutesSource = "coupon";
+    }
+
     // Route coupon bonus minutes to prepaid_credits_minutes with the coupon's
     // specific expiry (based on discount_type). Create a CouponUsage record to
     // track the discount cycles + bonus expiry.
@@ -113,6 +130,8 @@ Deno.serve(async (req) => {
       prepaid_expires_at: prepaidExpiresAt,
       credits_minutes: freeCredits,
       plan: "free",
+      signup_free_minutes_source: signupFreeMinutesSource,
+      signup_coupon_has_discount: !!(couponRecord && (couponRecord.discount_type || "none") !== "none"),
       ...(couponRecord ? { coupon_code: couponRecord.code } : {}),
     });
 

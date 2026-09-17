@@ -205,6 +205,7 @@ async function handleCheckoutCompleted(base44, session, stripeEventId, opts) {
     updateData.subscription_cycle = 1;
     updateData.subscription_provider = "stripe";
     updateData.stripe_subscription_id = session.subscription || "";
+    updateData.urgency_offer_expires_at = null;
     let paymentIntentId = session.payment_intent;
     if (!paymentIntentId && session.customer) {
       try {
