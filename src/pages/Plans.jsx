@@ -45,6 +45,7 @@ export default function Plans() {
   const [checkoutItem, setCheckoutItem] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(null);
+  const [urgencyActive, setUrgencyActive] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("stripe");
   const [regionData, setRegionData] = useState(() => getCachedRegion());
 
@@ -93,6 +94,10 @@ export default function Plans() {
       const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
         setProfile(profiles[0]);
+        if (profiles[0].urgency_offer_expires_at) {
+          const expires = new Date(profiles[0].urgency_offer_expires_at);
+          if (expires > new Date()) setUrgencyActive(true);
+        }
         // Fetch coupon discount info for display (discount_percent is coupon-level,
         // so one probe call is enough to calculate the discounted price for any item).
         if (profiles[0].coupon_code) {
@@ -114,9 +119,21 @@ export default function Plans() {
   };
 
   const applyDiscount = (price) => {
-    if (!couponDiscount || couponDiscount.discount_percent <= 0) return price;
+    if (!couponDiscount || couponDiscount.discount_percent <= 0) {
+      if (urgencyActive) return Math.round(price * 0.70 * 100) / 100;
+      return price;
+    }
     return Math.round(price * (1 - couponDiscount.discount_percent / 100) * 100) / 100;
   };
+
+  // Clear urgency flag when the offer expires while the student is on this page.
+  useEffect(() => {
+    if (!urgencyActive || !profile?.urgency_offer_expires_at) return;
+    const ms = new Date(profile.urgency_offer_expires_at).getTime() - Date.now();
+    if (ms <= 0) { setUrgencyActive(false); return; }
+    const timer = setTimeout(() => setUrgencyActive(false), ms);
+    return () => clearTimeout(timer);
+  }, [urgencyActive, profile?.urgency_offer_expires_at]);
 
   // Preço regional: Brasil/desconhecido → BRL (sem mudança). Internacional →
   // moeda local (EUR/JPY/KRW/USD). Aplica-se a planos mensais e pacotes avulsos.
@@ -184,6 +201,8 @@ export default function Plans() {
       displayPrice = applyDiscount(regionalMonthly);
       displayOriginal = displayPrice < regionalMonthly ? regionalMonthly : null;
     }
+    const hasCouponDiscount = couponDiscount && couponDiscount.discount_percent > 0;
+    const isUrgencyDiscount = !hasCouponDiscount && urgencyActive && discountedPrice < plan.price_monthly;
     setCheckoutItem({
       title: t(lang, "checkoutPlanTitle").replace("{name}", planName(lang, plan.id)).replace("{minutes}", plan.minutes),
       price: discountedPrice,
@@ -193,6 +212,7 @@ export default function Plans() {
       currency,
       display_price: displayPrice,
       display_original: displayOriginal,
+      urgency_discount: isUrgencyDiscount,
     });
   };
 

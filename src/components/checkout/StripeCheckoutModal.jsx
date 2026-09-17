@@ -137,6 +137,14 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
               <CreditCard className="w-3 h-3" /> {t(lang, "couponAppliedLabel")} <span className="font-mono">{affiliateCoupon}</span>
             </div>
           )}
+          {item.urgency_discount && displayOriginal && (
+            <div className="mt-2 p-2 rounded-lg" style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.15)" }}>
+              <p className="text-xs font-bold" style={{ color: "#F26A1B" }}>⚡ 30% OFF — válido apenas no primeiro mês</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--app-text-secondary)" }}>
+                A partir do 2º mês: <span className="font-semibold">{formatRegionalPrice(displayOriginal, displayCurrency)}</span>/mês
+              </p>
+            </div>
+          )}
           <div className="flex flex-col gap-1 mt-3 pt-3" style={{ borderTop: "1px dashed var(--app-border)", fontSize: 12, color: "var(--app-text-secondary)", fontWeight: 600 }}>
             <span className="flex items-center gap-1.5">
               <span style={{ color: "#F26A1B", fontWeight: 800 }}>✓</span>{t(lang, "guaranteeBadge")}
