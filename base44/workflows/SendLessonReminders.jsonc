@@ -1,0 +1,45 @@
+{
+  "name": "Send Lesson Reminders",
+  "description": "Every 5 minutes, sends email reminders for scheduled lessons within the time window (tutor: 60 min before, student: 30 min before). Uses reminder_tutor_sent / reminder_student_sent flags on each Lesson to guarantee each reminder is sent at most once, even across repeated runs.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/5 * * * *",
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "send_lesson_reminders",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_reminders": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendLessonRemindersScheduled",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Enviar lembretes de aula",
+            "description": "Lembretes por e-mail para tutor (60min) e aluno (30min) antes da aula"
+          }
+        }
+      }
+    ]
+  }
+}

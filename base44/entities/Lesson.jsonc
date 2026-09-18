@@ -85,6 +85,16 @@
       "default": false,
       "description": "True when the charged duration was capped (lesson ran or stayed open unusually long) \u2014 needs manual review."
     },
+    "reminder_tutor_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "True ap\u00f3s o e-mail de lembrete ser enviado com sucesso para o tutor. Verificado pelo cron de lembretes para garantir que cada lembrete \u00e9 enviado no m\u00e1ximo uma vez por aula, mesmo em execu\u00e7\u00f5es repetidas."
+    },
+    "reminder_student_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "True ap\u00f3s o e-mail de lembrete ser enviado com sucesso para o aluno. Verificado pelo cron de lembretes para garantir que cada lembrete \u00e9 enviado no m\u00e1ximo uma vez por aula, mesmo em execu\u00e7\u00f5es repetidas."
+    },
     "notes": {
       "type": "string"
     }

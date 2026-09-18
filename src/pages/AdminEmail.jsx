@@ -163,6 +163,7 @@ export default function AdminEmail() {
   const [reminderResult, setReminderResult] = useState(null);
   const [tutorMinutes, setTutorMinutes] = useState(60);
   const [studentMinutes, setStudentMinutes] = useState(30);
+  const [forceRemind, setForceRemind] = useState(false);
   const [previewHtml, setPreviewHtml] = useState(null);
   const [previewTitle, setPreviewTitle] = useState("");
 
@@ -202,6 +203,7 @@ export default function AdminEmail() {
       const res = await base44.functions.invoke("sendLessonReminder", {
         tutor_minutes: tutorMinutes,
         student_minutes: studentMinutes,
+        force: forceRemind,
       });
       setReminderResult({ ok: true, data: res.data });
       toast({ title: `Lembretes enviados: ${res.data.sent}` });
@@ -350,6 +352,16 @@ export default function AdminEmail() {
         <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3 mb-4 text-xs text-violet-300">
           Tutores recebem o lembrete <strong>{TIME_OPTIONS.find(o => o.value === tutorMinutes)?.label}</strong> antes · Alunos recebem <strong>{TIME_OPTIONS.find(o => o.value === studentMinutes)?.label}</strong> antes
         </div>
+
+        <label className="flex items-center gap-2 mb-3 cursor-pointer text-xs text-gray-400 select-none">
+          <input
+            type="checkbox"
+            checked={forceRemind}
+            onChange={e => setForceRemind(e.target.checked)}
+            className="w-4 h-4 rounded border-white/20 bg-white/5 text-violet-600 focus:ring-violet-500"
+          />
+          Forçar reenvio (ignora checagem de lembretes já enviados)
+        </label>
 
         <div className="flex gap-2 mb-3">
           <Button onClick={handleSendReminders} disabled={reminding} variant="outline" className="flex-1 border-white/10 text-white hover:bg-white/10">
