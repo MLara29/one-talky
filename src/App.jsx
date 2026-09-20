@@ -12,6 +12,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 import Landing from '@/pages/Landing';
+import Oferta from '@/pages/Oferta';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -60,7 +61,7 @@ import Profile from '@/pages/Profile';
 import StudentPersonalInfo from '@/pages/StudentPersonalInfo';
 import AppLayout from '@/components/AppLayout';
 
-const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/landing', '/privacidade', '/privacy', '/termos', '/tutor-agreement', '/faq', '/reembolso', '/privacy-policy', '/terms-of-use'];
+const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/landing', '/oferta', '/privacidade', '/privacy', '/termos', '/tutor-agreement', '/faq', '/reembolso', '/privacy-policy', '/terms-of-use'];
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -87,6 +88,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/landing" element={<Landing />} />
+      <Route path="/oferta" element={<Oferta />} />
       <Route path="/privacidade" element={<PrivacyPolicy />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/termos" element={<TermsOfUse />} />

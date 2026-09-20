@@ -28,7 +28,18 @@ export default function Register() {
   const planParam = ["basic", "standard", "premium"].includes(searchParams.get("plan"))
     ? searchParams.get("plan")
     : null;
-  const planQuery = planParam ? `?plan=${planParam}` : "";
+  // Cupom que veio da página de oferta (/oferta?... → /register?coupon=SOCIAL30)
+  // — precisa atravessar o cadastro inteiro (e-mail+código OU Google) e chegar
+  // ao onboarding, onde o mecanismo de pré-preenchimento e auto-validação já
+  // existe. Sem isso, o cupom se perde no meio do fluxo de cadastro.
+  const couponParam = searchParams.get("coupon") ? searchParams.get("coupon").trim().toUpperCase() : null;
+  const onboardingQuery = (() => {
+    const params = new URLSearchParams();
+    if (planParam) params.set("plan", planParam);
+    if (couponParam) params.set("coupon", couponParam);
+    const qs = params.toString();
+    return qs ? `?${qs}` : "";
+  })();
   const [role] = useState(defaultRole); // role fixed by URL — no in-page switcher
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -114,7 +125,7 @@ export default function Register() {
           birth_date: birthDate,
         });
       }
-      window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : `/onboarding/student${planQuery}`);
+      window.location.href = nextUrl || (role === "tutor" ? "/onboarding/tutor" : `/onboarding/student${onboardingQuery}`);
     } catch (err) {
       setError(err.message || t(lang, "invalidCodeError"));
     } finally {
@@ -136,7 +147,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    const dest = nextUrl || (role === "tutor" ? "/onboarding/tutor" : `/onboarding/student${planQuery}`);
+    const dest = nextUrl || (role === "tutor" ? "/onboarding/tutor" : `/onboarding/student${onboardingQuery}`);
     base44.auth.loginWithProvider("google", dest);
   };
 
