@@ -42,6 +42,21 @@ Deno.serve(async (req) => {
       message,
     });
 
+    // Also create a SupportChatMessage for the Messenger-style admin chat
+    try {
+      await base44.asServiceRole.entities.SupportChatMessage.create({
+        user_id: user.id,
+        user_name: senderName,
+        user_role: role,
+        is_from_admin: false,
+        sender_name: senderName,
+        message,
+        is_read_by_admin: false,
+      });
+    } catch (e) {
+      console.error("[sendSupportMessage] chat message", e.message);
+    }
+
     // In-app notification for every admin
     try {
       const admins = await base44.asServiceRole.entities.User.filter({ role: "admin" });

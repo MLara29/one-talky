@@ -1,274 +1,357 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
+import { Send, Search, MessageSquare, Users, GraduationCap, Loader2, ArrowLeft, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { MessageSquare, Clock, CheckCircle, XCircle, Send, ChevronDown, ChevronUp, Search, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import SupportAIAssistant from "@/components/admin/SupportAIAssistant";
 
-const STATUS_STYLES = {
-  open: "bg-amber-500/10 border-amber-500/20 text-amber-400",
-  replied: "bg-blue-500/10 border-blue-500/20 text-blue-400",
-  closed: "bg-gray-500/10 border-gray-500/20 text-gray-400",
+const timeAgo = (dateStr) => {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMin = Math.floor((now - d) / 60000);
+  if (diffMin < 1) return "agora";
+  if (diffMin < 60) return `${diffMin}min`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}h`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD < 7) return `${diffD}d`;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 };
 
-const STATUS_LABELS = { open: "Aberto", replied: "Respondido", closed: "Encerrado" };
+const Avatar = ({ name, photoUrl, role }) => {
+  const initial = name?.charAt(0)?.toUpperCase() || "?";
+  if (photoUrl) {
+    return <img src={photoUrl} alt={name} className="w-10 h-10 rounded-full object-cover shrink-0" />;
+  }
+  const bg = role === "tutor" ? "bg-blue-500/15 text-blue-300 border-blue-500/20" : "bg-emerald-500/15 text-emerald-300 border-emerald-500/20";
+  return (
+    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 border ${bg}`}>
+      {initial}
+    </div>
+  );
+};
 
 export default function AdminSupport() {
   const { toast } = useToast();
   const [messages, setMessages] = useState([]);
-  const [profilesMap, setProfilesMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(null);
-  const [replyText, setReplyText] = useState({});
-  const [sending, setSending] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [roleFilter, setRoleFilter] = useState("tutor");
   const [search, setSearch] = useState("");
-
-  useEffect(() => { load(); }, []);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const [profilesMap, setProfilesMap] = useState({});
+  const [showAI, setShowAI] = useState(false);
+  const scrollRef = useRef(null);
 
   const load = async () => {
-    setLoading(true);
     try {
-      const [data, profilesMapLoaded] = await Promise.all([
-        base44.entities.SupportMessage.list("-created_date", 100),
-        loadProfilesMap(),
-      ]);
+      const data = await base44.entities.SupportChatMessage.list("-created_date", 500);
       setMessages(data);
-      setProfilesMap(profilesMapLoaded);
+      // Load profiles for avatars/names
+      const [tutors, students] = await Promise.all([
+        base44.entities.TutorProfile.list("-created_date", 500),
+        base44.entities.StudentProfile.list("-created_date", 500),
+      ]);
+      const map = {};
+      [...tutors, ...students].forEach(p => { map[p.user_id] = p; });
+      setProfilesMap(map);
+    } catch (e) {
+      console.error("[AdminSupport] load", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadProfilesMap = async () => {
-    const [tutors, students] = await Promise.all([
-      base44.entities.TutorProfile.list("-created_date", 500),
-      base44.entities.StudentProfile.list("-created_date", 500),
-    ]);
+  useEffect(() => { load(); }, []);
+
+  // Realtime: refresh when new messages arrive
+  useEffect(() => {
+    const unsub = base44.entities.SupportChatMessage.subscribe(() => { load(); });
+    return unsub;
+  }, []);
+
+  // Group messages by user_id into conversations
+  const conversations = useMemo(() => {
     const map = {};
-    [...tutors, ...students].forEach(p => { map[p.user_id] = p.full_name; });
-    return map;
-  };
+    const sorted = [...messages].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+    sorted.forEach(m => {
+      if (!map[m.user_id]) {
+        map[m.user_id] = {
+          user_id: m.user_id,
+          user_name: m.user_name || profilesMap[m.user_id]?.full_name || "Usuário",
+          user_role: m.user_role,
+          messages: [],
+          unreadCount: 0,
+          lastMessageAt: null,
+          lastMessage: null,
+        };
+      }
+      map[m.user_id].messages.push(m);
+      if (!m.is_from_admin && !m.is_read_by_admin) map[m.user_id].unreadCount++;
+      if (!map[m.user_id].lastMessageAt || new Date(m.created_date) > new Date(map[m.user_id].lastMessageAt)) {
+        map[m.user_id].lastMessageAt = m.created_date;
+        map[m.user_id].lastMessage = m;
+      }
+    });
+    return Object.values(map).sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+  }, [messages, profilesMap]);
 
-  const displayName = (msg) => profilesMap[msg.sender_id] || msg.sender_name;
-
-  const sendReply = async (msg) => {
-    const reply = replyText[msg.id]?.trim();
-    if (!reply) return;
-    setSending(msg.id);
-    try {
-      const response = await base44.functions.invoke("adminReplySupportTicket", { message_id: msg.id, action: "reply", reply });
-      if (response.data?.error) throw new Error(response.data.error);
-      toast({ title: "Resposta enviada!" });
-      setReplyText(prev => ({ ...prev, [msg.id]: "" }));
-      load();
-    } catch (e) {
-      toast({ title: "Erro", description: e?.message, variant: "destructive" });
-    } finally {
-      setSending(null);
-    }
-  };
-
-  const closeTicket = async (id) => {
-    const response = await base44.functions.invoke("adminReplySupportTicket", { message_id: id, action: "close" });
-    if (response.data?.error) {
-      toast({ title: "Erro", description: response.data.error, variant: "destructive" });
-      return;
-    }
-    load();
-  };
-
-  const deleteMessage = async (id) => {
-    if (!confirm("Excluir esta mensagem permanentemente?")) return;
-    const response = await base44.functions.invoke("adminReplySupportTicket", { message_id: id, action: "delete" });
-    if (response.data?.error) {
-      toast({ title: "Erro", description: response.data.error, variant: "destructive" });
-      return;
-    }
-    load();
-  };
-
-  const filteredMessages = messages.filter(m => {
-    const q = search.toLowerCase();
-    if (!q) return true;
-    return displayName(m)?.toLowerCase().includes(q) || m.subject?.toLowerCase().includes(q);
+  const filteredConversations = conversations.filter(c => {
+    if (c.user_role !== roleFilter) return false;
+    if (search) return c.user_name?.toLowerCase().includes(search.toLowerCase());
+    return true;
   });
 
-  // Separa por quem mandou o tíquete — cada papel tem sua própria aba,
-  // com Ativos/Histórico dentro de cada uma (o sender_role já vem gravado
-  // desde a criação da mensagem, não precisou de nada novo pra isso).
-  const studentMessages = filteredMessages.filter(m => m.sender_role === "student");
-  const tutorMessages = filteredMessages.filter(m => m.sender_role === "tutor");
-
-  const counts = {
-    open: messages.filter(m => m.status === "open").length,
-    total: messages.length,
-    studentOpen: messages.filter(m => m.sender_role === "student" && m.status === "open").length,
-    tutorOpen: messages.filter(m => m.sender_role === "tutor" && m.status === "open").length,
+  const selectedConversation = conversations.find(c => c.user_id === selectedUserId);
+  const unreadByRole = {
+    tutor: conversations.filter(c => c.user_role === "tutor").reduce((s, c) => s + c.unreadCount, 0),
+    student: conversations.filter(c => c.user_role === "student").reduce((s, c) => s + c.unreadCount, 0),
   };
 
-  const renderMessage = (msg) => (
-    <div key={msg.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-      <div className="w-full flex items-center justify-between gap-4 p-4">
-        <button
-          onClick={() => setExpanded(expanded === msg.id ? null : msg.id)}
-          className="flex-1 text-left flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity"
-        >
-          <div className="w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center shrink-0">
-            <MessageSquare className="w-4 h-4 text-orange-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-white font-semibold text-sm truncate">{msg.subject}</p>
-            <p className="text-gray-500 text-xs">{displayName(msg)} · <span className="capitalize">{msg.sender_role}</span></p>
-          </div>
-        </button>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_STYLES[msg.status]}`}>
-            {STATUS_LABELS[msg.status]}
-          </span>
-          {msg.status !== "closed" && (
-            <button
-              onClick={() => closeTicket(msg.id)}
-              title="Marcar como resolvido e mover para o histórico"
-              className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-emerald-500 transition-colors"
-            >
-              <CheckCircle className="w-4 h-4" />
-            </button>
-          )}
-          <button onClick={() => deleteMessage(msg.id)} title="Excluir mensagem" className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors">
-            <Trash2 className="w-4 h-4" />
-          </button>
-          <button onClick={() => setExpanded(expanded === msg.id ? null : msg.id)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-500 transition-colors">
-            {expanded === msg.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
+  const selectConversation = async (userId) => {
+    setSelectedUserId(userId);
+    setDraft("");
+    setShowAI(false);
+    const conv = conversations.find(c => c.user_id === userId);
+    if (conv && conv.unreadCount > 0) {
+      try {
+        await base44.functions.invoke("markChatReadByAdmin", { user_id: userId });
+        setMessages(prev => prev.map(m =>
+          m.user_id === userId && !m.is_from_admin ? { ...m, is_read_by_admin: true } : m
+        ));
+      } catch (e) { console.error(e); }
+    }
+  };
 
-      {expanded === msg.id && (
-        <div className="px-4 pb-4 border-t border-white/5 pt-4 space-y-4">
-          <div className="bg-white/3 rounded-xl p-3">
-            <p className="text-xs text-gray-500 mb-1 flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(msg.created_date).toLocaleString("pt-BR")}</p>
-            <p className="text-gray-300 text-sm whitespace-pre-wrap">{msg.message}</p>
-          </div>
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [selectedUserId, selectedConversation?.messages.length]);
 
-          {msg.admin_reply && (
-            <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3">
-              <p className="text-xs text-orange-400 mb-1 font-semibold">Sua resposta</p>
-              <p className="text-gray-300 text-sm whitespace-pre-wrap">{msg.admin_reply}</p>
-            </div>
-          )}
+  const sendMessage = async () => {
+    if (!draft.trim() || !selectedConversation) return;
+    setSending(true);
+    try {
+      const res = await base44.functions.invoke("adminSendChatMessage", {
+        user_id: selectedConversation.user_id,
+        user_name: selectedConversation.user_name,
+        user_role: selectedConversation.user_role,
+        message: draft.trim(),
+      });
+      if (res.data?.error === "otp_required") {
+        toast({ title: "Confirmação 2FA necessária", description: "Verifique seu código de autenticação para enviar mensagens.", variant: "destructive" });
+        return;
+      }
+      if (res.data?.error) throw new Error(res.data.error);
+      setDraft("");
+      load();
+    } catch (e) {
+      toast({ title: "Erro", description: e?.message || "Não foi possível enviar", variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
 
-          {msg.status !== "closed" && (
-            <div className="flex gap-2">
-              <textarea
-                value={replyText[msg.id] || ""}
-                onChange={e => setReplyText(prev => ({ ...prev, [msg.id]: e.target.value }))}
-                placeholder="Escreva uma resposta..."
-                rows={3}
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
-              />
-              <div className="flex flex-col gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => sendReply(msg)}
-                  disabled={sending === msg.id || !replyText[msg.id]?.trim()}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => closeTicket(msg.id)}
-                  className="border border-gray-500/20 text-gray-500 hover:text-gray-300"
-                  title="Encerrar chamado"
-                >
-                  <XCircle className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-          )}
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
-          {msg.status === "closed" && (
-            <p className="text-xs text-gray-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Chamado encerrado</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  const lastIncomingMessage = useMemo(() => {
+    if (!selectedConversation) return null;
+    for (let i = selectedConversation.messages.length - 1; i >= 0; i--) {
+      if (!selectedConversation.messages[i].is_from_admin) {
+        return selectedConversation.messages[i].message;
+      }
+    }
+    return null;
+  }, [selectedConversation]);
 
-  // Ativos/Histórico dentro de um subconjunto de mensagens já filtrado por
-  // papel — reaproveitado nas duas abas (Alunos e Tutores), pra não duplicar
-  // essa parte do código duas vezes.
-  const renderActiveHistoryTabs = (msgs, emptyLabel) => {
-    const active = msgs.filter(m => m.status !== "closed");
-    const closed = msgs.filter(m => m.status === "closed");
+  if (loading) {
     return (
-      <Tabs defaultValue="active">
-        <TabsList className="mb-4">
-          <TabsTrigger value="active">Ativos ({active.length})</TabsTrigger>
-          <TabsTrigger value="history">Histórico ({closed.length})</TabsTrigger>
-        </TabsList>
-        <TabsContent value="active">
-          {active.length === 0 ? (
-            <p className="text-center text-sm text-gray-500 py-16">Nenhuma mensagem ativa {emptyLabel}</p>
-          ) : (
-            <div className="space-y-3">{active.map(renderMessage)}</div>
-          )}
-        </TabsContent>
-        <TabsContent value="history">
-          {closed.length === 0 ? (
-            <p className="text-center text-sm text-gray-500 py-16">Nenhuma mensagem no histórico {emptyLabel}</p>
-          ) : (
-            <div className="space-y-3">{closed.map(renderMessage)}</div>
-          )}
-        </TabsContent>
-      </Tabs>
+      <div className="flex items-center justify-center py-24">
+        <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+      </div>
     );
-  };
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-[calc(100vh-7rem)] min-h-[500px]">
+      <div className="flex items-center justify-between mb-3 shrink-0">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">Suporte</h1>
-          <p className="text-gray-500 text-sm mt-1">{counts.open} aberto(s) · {counts.total} total</p>
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-white">Suporte</h1>
+          <p className="text-gray-500 text-xs mt-0.5">{unreadByRole.tutor + unreadByRole.student} não lida(s)</p>
         </div>
       </div>
 
-      <div className="relative mb-6 max-w-sm">
-        <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
-        <Input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Buscar por nome ou assunto..."
-          className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 pl-9"
-        />
-      </div>
+      <div className="flex-1 flex gap-3 min-h-0 border border-white/10 rounded-2xl overflow-hidden bg-white/[0.02]">
+        {/* LEFT COLUMN — conversation list */}
+        <div className={`w-full sm:w-80 border-r border-white/10 flex flex-col min-h-0 shrink-0 ${selectedUserId ? "hidden sm:flex" : "flex"}`}>
+          {/* Role tabs */}
+          <div className="flex gap-1 p-2 shrink-0 border-b border-white/5">
+            <button
+              onClick={() => setRoleFilter("tutor")}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                roleFilter === "tutor" ? "bg-blue-500/15 text-blue-300 border border-blue-500/20" : "text-gray-500 hover:bg-white/5 border border-transparent"
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5" /> Tutores
+              {unreadByRole.tutor > 0 && <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{unreadByRole.tutor}</span>}
+            </button>
+            <button
+              onClick={() => setRoleFilter("student")}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                roleFilter === "student" ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20" : "text-gray-500 hover:bg-white/5 border border-transparent"
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" /> Alunos
+              {unreadByRole.student > 0 && <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{unreadByRole.student}</span>}
+            </button>
+          </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+          {/* Search */}
+          <div className="relative p-2 shrink-0">
+            <Search className="w-3.5 h-3.5 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 pl-8 h-8 text-xs"
+            />
+          </div>
+
+          {/* Conversation list */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {filteredConversations.length === 0 ? (
+              <div className="text-center py-12 px-4">
+                <MessageSquare className="w-8 h-8 text-gray-700 mx-auto mb-2" />
+                <p className="text-gray-600 text-xs">Nenhuma conversa {roleFilter === "tutor" ? "de tutor" : "de aluno"}</p>
+              </div>
+            ) : (
+              filteredConversations.map(c => {
+                const profile = profilesMap[c.user_id];
+                const photoUrl = profile?.photo_url;
+                const isActive = c.user_id === selectedUserId;
+                return (
+                  <button
+                    key={c.user_id}
+                    onClick={() => selectConversation(c.user_id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors border-b border-white/5 ${
+                      isActive ? "bg-orange-500/10" : "hover:bg-white/5"
+                    }`}
+                  >
+                    <Avatar name={c.user_name} photoUrl={photoUrl} role={c.user_role} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={`text-sm font-semibold truncate ${c.unreadCount > 0 ? "text-white" : "text-gray-400"}`}>{c.user_name}</p>
+                        <span className="text-[10px] text-gray-600 shrink-0">{timeAgo(c.lastMessageAt)}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-0.5">
+                        <p className={`text-xs truncate ${c.unreadCount > 0 ? "text-gray-300" : "text-gray-600"}`}>
+                          {c.lastMessage?.is_from_admin ? "Você: " : ""}{c.lastMessage?.message}
+                        </p>
+                        {c.unreadCount > 0 && (
+                          <span className="w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                            {c.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
-      ) : messages.length === 0 ? (
-        <div className="text-center py-24 rounded-3xl border border-white/5 bg-white/3">
-          <MessageSquare className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-          <p className="text-gray-500 text-sm">Nenhuma mensagem de suporte</p>
+
+        {/* RIGHT PANEL — chat */}
+        <div className={`flex-1 flex flex-col min-h-0 ${selectedUserId ? "flex" : "hidden sm:flex"}`}>
+          {!selectedConversation ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <MessageSquare className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+                <p className="text-gray-600 text-sm">Selecione uma conversa para começar</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Chat header */}
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5 shrink-0">
+                <button onClick={() => setSelectedUserId(null)} className="sm:hidden p-1 rounded-lg hover:bg-white/10 text-gray-400">
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <Avatar name={selectedConversation.user_name} photoUrl={profilesMap[selectedConversation.user_id]?.photo_url} role={selectedConversation.user_role} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm truncate">{selectedConversation.user_name}</p>
+                  <p className={`text-xs ${selectedConversation.user_role === "tutor" ? "text-blue-400" : "text-emerald-400"}`}>
+                    {selectedConversation.user_role === "tutor" ? "Tutor" : "Aluno"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAI(s => !s)}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                    showAI ? "bg-violet-500/15 text-violet-300 border border-violet-500/20" : "bg-white/5 text-gray-400 hover:bg-white/10 border border-transparent"
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> IA
+                </button>
+              </div>
+
+              {/* Chat history */}
+              <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 px-4 py-4 space-y-2">
+                {selectedConversation.messages.map(m => (
+                  <div key={m.id} className={`flex ${m.is_from_admin ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 ${
+                      m.is_from_admin
+                        ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm"
+                        : "bg-white/8 border border-white/10 text-gray-200 rounded-bl-sm"
+                    }`}>
+                      <p className="text-sm whitespace-pre-wrap break-words">{m.message}</p>
+                      <p className={`text-[10px] mt-1 ${m.is_from_admin ? "text-orange-100/70" : "text-gray-500"}`}>
+                        {new Date(m.created_date).toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* AI Assistant */}
+              {showAI && (
+                <SupportAIAssistant
+                  lastIncomingMessage={lastIncomingMessage}
+                  draft={draft}
+                  setDraft={setDraft}
+                  userRole={selectedConversation.user_role}
+                />
+              )}
+
+              {/* Input */}
+              <div className="p-3 border-t border-white/5 shrink-0">
+                <div className="flex items-end gap-2">
+                  <textarea
+                    value={draft}
+                    onChange={e => setDraft(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Digite sua mensagem... (Enter para enviar, Shift+Enter para nova linha)"
+                    rows={1}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-orange-500/50 resize-none max-h-32"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={sending || !draft.trim()}
+                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center disabled:opacity-40 shrink-0 hover:opacity-90 transition-opacity"
+                  >
+                    {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
-      ) : (
-        <Tabs defaultValue="student">
-          <TabsList className="mb-4">
-            <TabsTrigger value="student">Alunos ({counts.studentOpen} aberto{counts.studentOpen === 1 ? "" : "s"})</TabsTrigger>
-            <TabsTrigger value="tutor">Tutores ({counts.tutorOpen} aberto{counts.tutorOpen === 1 ? "" : "s"})</TabsTrigger>
-          </TabsList>
-          <TabsContent value="student">
-            {renderActiveHistoryTabs(studentMessages, "de aluno")}
-          </TabsContent>
-          <TabsContent value="tutor">
-            {renderActiveHistoryTabs(tutorMessages, "de tutor")}
-          </TabsContent>
-        </Tabs>
-      )}
+      </div>
     </div>
   );
 }
