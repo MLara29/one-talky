@@ -2,16 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { MessageSquare, Clock, ChevronDown, ChevronUp, CheckCircle, Send, Plus, X, Bell, Trash2 } from "lucide-react";
+import { MessageSquare, Clock, CheckCircle, Send, Plus, X, Bell, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const STATUS_STYLES = {
-  open: "bg-amber-500/10 border-amber-500/20 text-amber-500",
-  replied: "bg-blue-500/10 border-blue-500/20 text-blue-500",
-  closed: "bg-gray-500/10 border-gray-500/20 text-gray-500",
-};
-const STATUS_LABELS = { open: "Open", replied: "Replied", closed: "Closed" };
+
 
 export default function MyMessages() {
   const { user } = useAuth();
@@ -20,9 +15,7 @@ export default function MyMessages() {
   const [adminMessages, setAdminMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(searchParams.get("tab") === "admin" ? "admin" : "support"); // "support" | "admin"
-  const [expanded, setExpanded] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -31,11 +24,11 @@ export default function MyMessages() {
 
   const load = async () => {
     try {
-      const [support, notifs] = await Promise.all([
-        base44.entities.SupportMessage.filter({ sender_id: user.id }, "-created_date", 50),
+      const [chat, notifs] = await Promise.all([
+        base44.entities.SupportChatMessage.filter({ user_id: user.id }, "-created_date", 100),
         base44.entities.Notification.filter({ user_id: user.id, link: "/my-messages" }, "-created_date", 50),
       ]);
-      setMessages(support);
+      setMessages(chat.slice().reverse());
       setAdminMessages(notifs);
     } catch {} finally { setLoading(false); }
   };
@@ -59,14 +52,16 @@ export default function MyMessages() {
   };
 
   const handleSend = async () => {
-    if (!subject.trim() || !message.trim()) return;
+    if (!message.trim()) return;
     setSending(true);
-    await base44.entities.SupportMessage.create({
-      sender_id: user.id,
+    await base44.entities.SupportChatMessage.create({
+      user_id: user.id,
+      user_name: user.full_name || user.email,
+      user_role: user.role === "tutor" ? "tutor" : "student",
+      is_from_admin: false,
       sender_name: user.full_name || user.email,
-      sender_role: user.role,
-      subject: subject.trim(),
       message: message.trim(),
+      is_read_by_admin: false,
     });
     // Notify admins about new support message
     try {
@@ -74,8 +69,8 @@ export default function MyMessages() {
       await base44.entities.Notification.bulkCreate(
         admins.map(a => ({
           user_id: a.id,
-          title: `💬 Nova mensagem de suporte: ${subject.trim()}`,
-          message: `${user.full_name || user.email} (${user.role}) enviou uma mensagem de suporte.`,
+          title: `💬 Nova mensagem de suporte`,
+          message: `${user.full_name || user.email} (${user.role === "tutor" ? "tutor" : "student"}) enviou uma mensagem de suporte.`,
           type: "general",
           is_read: false,
           link: "/admin/support",
@@ -84,7 +79,6 @@ export default function MyMessages() {
     } catch {}
     setSending(false);
     setSent(true);
-    setSubject("");
     setMessage("");
     load();
   };
@@ -127,11 +121,6 @@ export default function MyMessages() {
         >
           <MessageSquare className="w-4 h-4" />
           Support
-          {messages.filter(m => m.status === "replied").length > 0 && (
-            <span className="w-4 h-4 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center">
-              {messages.filter(m => m.status === "replied").length}
-            </span>
-          )}
         </button>
         <button
           onClick={() => setTab("admin")}
@@ -172,15 +161,6 @@ export default function MyMessages() {
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Subject</label>
-                <Input
-                  value={subject}
-                  onChange={e => setSubject(e.target.value)}
-                  placeholder="e.g. Payment issue"
-                  style={{ background: "var(--app-nav-hover-bg)", borderColor: "var(--app-border)", color: "var(--app-text-primary)" }}
-                />
-              </div>
-              <div>
                 <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Message</label>
                 <textarea
                   value={message}
@@ -193,7 +173,7 @@ export default function MyMessages() {
               </div>
               <Button
                 onClick={handleSend}
-                disabled={sending || !subject.trim() || !message.trim()}
+                disabled={sending || !message.trim()}
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0"
               >
                 <Send className="w-4 h-4 mr-2" />
@@ -272,79 +252,28 @@ export default function MyMessages() {
           <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
           <h3 className="theme-heading font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No messages yet</h3>
           <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>
-          You haven't sent any support messages yet.
+            You haven't sent any support messages yet.
           </p>
         </div>
       ) : tab === "support" ? (
-        <div className="space-y-3">
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
           {messages.map(msg => (
-            <div key={msg.id} className="rounded-2xl overflow-hidden" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
-              <button
-                onClick={() => setExpanded(expanded === msg.id ? null : msg.id)}
-                className="w-full text-left flex items-center justify-between gap-4 p-4 transition-colors"
-                style={{ color: "var(--app-text-primary)" }}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.2)" }}>
-                    <MessageSquare className="w-4 h-4 text-orange-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm truncate" style={{ color: "var(--app-text-primary)" }}>{msg.subject}</p>
-                    <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: "var(--app-text-secondary)" }}>
-                      <Clock className="w-3 h-3" />
-                      {new Date(msg.created_date).toLocaleString("pt-BR")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {msg.status === "replied" && (
-                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" title="Nova resposta" />
-                  )}
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_STYLES[msg.status]}`}>
-                    {STATUS_LABELS[msg.status]}
-                  </span>
-                  {expanded === msg.id
-                    ? <ChevronUp className="w-4 h-4" style={{ color: "var(--app-text-muted)" }} />
-                    : <ChevronDown className="w-4 h-4" style={{ color: "var(--app-text-muted)" }} />
+            <div key={msg.id} className={`flex ${msg.is_from_admin ? "justify-start" : "justify-end"}`}>
+              <div className="max-w-[80%]">
+                <div
+                  className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
+                  style={
+                    msg.is_from_admin
+                      ? { background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }
+                      : { background: "#F26A1B", color: "#fff" }
                   }
+                >
+                  {msg.message}
                 </div>
-              </button>
-
-              {expanded === msg.id && (
-                <div className="px-4 pb-4 pt-4 space-y-3" style={{ borderTop: "1px solid var(--app-border)" }}>
-                  {/* Original message */}
-                  <div className="rounded-xl p-3" style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)" }}>
-                    <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--app-text-secondary)" }}>Your message</p>
-                    <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{msg.message}</p>
-                  </div>
-
-                  {/* Admin reply */}
-                  {msg.admin_reply ? (
-                    <div className="rounded-xl p-3" style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)" }}>
-                      <p className="text-xs font-semibold text-orange-400 mb-1.5">Support Reply</p>
-                      <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{msg.admin_reply}</p>
-                      {msg.replied_at && (
-                        <p className="text-[10px] mt-2" style={{ color: "var(--app-text-secondary)" }}>
-                          {new Date(msg.replied_at).toLocaleString("pt-BR")}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl p-3 text-center" style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)" }}>
-                      <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>
-                        {msg.status === "closed" ? "Ticket closed without reply." : "Waiting for a reply from the support team..."}
-                      </p>
-                    </div>
-                  )}
-
-                  {msg.status === "closed" && (
-                    <p className="text-xs flex items-center gap-1" style={{ color: "var(--app-text-secondary)" }}>
-                      <CheckCircle className="w-3 h-3" /> Ticket closed
-                    </p>
-                  )}
-                </div>
-              )}
+                <p className="text-[10px] mt-1 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
+                  {msg.is_from_admin ? "Support" : "You"} · {new Date(msg.created_date).toLocaleString("pt-BR")}
+                </p>
+              </div>
             </div>
           ))}
         </div>
