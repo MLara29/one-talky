@@ -307,7 +307,7 @@ export default function AdminSupport() {
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 ${
                       m.is_from_admin
                         ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm"
-                        : "bg-white/8 border border-white/10 text-gray-200 rounded-bl-sm"
+                        : "bg-white border border-black/10 text-black rounded-bl-sm"
                     }`}>
                       <p className="text-sm whitespace-pre-wrap break-words">{m.message}</p>
                       <p className={`text-[10px] mt-1 ${m.is_from_admin ? "text-orange-100/70" : "text-gray-500"}`}>
