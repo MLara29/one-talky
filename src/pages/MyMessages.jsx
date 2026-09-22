@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { MessageSquare, Clock, CheckCircle, Send, Plus, X, Bell, Trash2 } from "lucide-react";
+import { MessageSquare, Clock, CheckCircle, Send, Plus, X, Bell, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -19,6 +19,9 @@ export default function MyMessages() {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState("");
+  const [replying, setReplying] = useState(false);
 
   useEffect(() => { load(); }, [user]);
 
@@ -81,6 +84,45 @@ export default function MyMessages() {
     setSent(true);
     setMessage("");
     load();
+  };
+
+  const handleReply = async (n) => {
+    if (!replyText.trim()) return;
+    setReplying(true);
+    try {
+      await base44.entities.SupportChatMessage.create({
+        user_id: user.id,
+        user_name: user.full_name || user.email,
+        user_role: user.role === "tutor" ? "tutor" : "student",
+        is_from_admin: false,
+        sender_name: user.full_name || user.email,
+        message: replyText.trim(),
+        is_read_by_admin: false,
+      });
+      // Notify admins about the reply
+      try {
+        const admins = await base44.entities.User.filter({ role: "admin" });
+        await base44.entities.Notification.bulkCreate(
+          admins.map(a => ({
+            user_id: a.id,
+            title: `💬 Resposta de ${user.full_name || user.email}`,
+            message: replyText.trim().substring(0, 100),
+            type: "general",
+            is_read: false,
+            link: "/admin/support",
+          }))
+        );
+      } catch {}
+      // Mark the original notification as read
+      if (!n.is_read) await markAdminMsgRead(n);
+      setReplyText("");
+      setReplyingTo(null);
+      load();
+    } catch (e) {
+      console.error("[MyMessages] reply", e);
+    } finally {
+      setReplying(false);
+    }
   };
 
   if (loading) return (
@@ -239,6 +281,46 @@ export default function MyMessages() {
                         {new Date(n.created_date).toLocaleString("pt-BR")}
                       </p>
                     </div>
+                  </div>
+                  {/* Reply to support */}
+                  <div onClick={e => e.stopPropagation()} className="mt-3">
+                    {replyingTo === n.id ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={replyText}
+                          onChange={e => setReplyText(e.target.value)}
+                          placeholder="Digite sua resposta para o suporte..."
+                          rows={2}
+                          className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500/50 resize-none"
+                          style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
+                        />
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={() => { setReplyingTo(null); setReplyText(""); }}
+                            className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-white/5"
+                            style={{ color: "var(--app-text-secondary)" }}
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={() => handleReply(n)}
+                            disabled={replying || !replyText.trim()}
+                            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white disabled:opacity-40 flex items-center gap-1.5"
+                          >
+                            {replying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                            Enviar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setReplyingTo(n.id); setReplyText(""); if (!n.is_read) markAdminMsgRead(n); }}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                        style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)", color: "#F26A1B" }}
+                      >
+                        <Send className="w-3 h-3" /> Responder
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
