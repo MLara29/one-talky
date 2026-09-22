@@ -24,15 +24,15 @@ import {
 
 const STUDENT_NAV = (lang) => {
   const labels = {
-    en:    ["Find Tutors", "My Lessons", "Progress", "Plans", "My Profile", "Support"],
-    pt_br: ["Encontrar Tutores", "Minhas Aulas", "Progresso", "Planos", "Meu Perfil", "Suporte"],
-    pt_pt: ["Encontrar Tutores", "As Minhas Aulas", "Progresso", "Planos", "Meu Perfil", "Suporte"],
-    es:    ["Encontrar Tutores", "Mis Clases", "Progreso", "Planes", "Mi Perfil", "Soporte"],
-    fr:    ["Trouver des tuteurs", "Mes Leçons", "Progrès", "Plans", "Mon Profil", "Support"],
-    de:    ["Tutoren finden", "Meine Lektionen", "Fortschritt", "Pläne", "Mein Profil", "Support"],
-    it:    ["Trova tutors", "Le Mie Lezioni", "Progresso", "Piani", "Il Mio Profilo", "Supporto"],
-    ja:    ["講師を探す", "マイレッスン", "進捗", "プラン", "プロフィール", "サポート"],
-    ko:    ["튜터 찾기", "내 수업", "진행 상황", "요금제", "내 프로필", "지원"],
+    en:    ["Find Tutors", "My Lessons", "Progress", "Plans", "My Profile", "Notifications", "Support"],
+    pt_br: ["Encontrar Tutores", "Minhas Aulas", "Progresso", "Planos", "Meu Perfil", "Notificações", "Suporte"],
+    pt_pt: ["Encontrar Tutores", "As Minhas Aulas", "Progresso", "Planos", "Meu Perfil", "Notificações", "Suporte"],
+    es:    ["Encontrar Tutores", "Mis Clases", "Progreso", "Planes", "Mi Perfil", "Notificaciones", "Soporte"],
+    fr:    ["Trouver des tuteurs", "Mes Leçons", "Progrès", "Plans", "Mon Profil", "Notifications", "Support"],
+    de:    ["Tutoren finden", "Meine Lektionen", "Fortschritt", "Pläne", "Mein Profil", "Benachrichtigungen", "Support"],
+    it:    ["Trova tutors", "Le Mie Lezioni", "Progresso", "Piani", "Il Mio Profilo", "Notifiche", "Supporto"],
+    ja:    ["講師を探す", "マイレッスン", "進捗", "プラン", "プロフィール", "通知", "サポート"],
+    ko:    ["튜터 찾기", "내 수업", "진행 상황", "요금제", "내 프로필", "알림", "지원"],
   };
   const l = labels[lang] || labels["en"];
   return [
@@ -41,7 +41,8 @@ const STUDENT_NAV = (lang) => {
     { label: l[2], path: "/progress", icon: BarChart3 },
     { label: l[3], path: "/plans", icon: DollarSign },
     { label: l[4], path: "/student/personal-info", icon: User },
-    { label: l[5], path: "/my-messages", icon: Inbox },
+    { label: l[5], path: "/notifications", icon: Bell },
+    { label: l[6], path: "/my-messages", icon: Inbox },
   ];
 };
 
@@ -52,6 +53,7 @@ const TUTOR_NAV = [
   { label: "Earnings", path: "/earnings", icon: DollarSign },
   { label: "Reviews", path: "/reviews", icon: Star },
   { label: "Personal Info", path: "/tutor-bank-info", icon: User },
+  { label: "Notifications", path: "/notifications", icon: Bell },
   { label: "Support", path: "/my-messages", icon: Inbox },
 ];
 

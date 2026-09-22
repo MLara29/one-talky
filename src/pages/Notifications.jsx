@@ -1,16 +1,91 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { Bell, Check, Trash2, Clock, Send, Loader2 } from "lucide-react";
+import { useLang } from "@/lib/LanguageContext";
+import { Bell, Check, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const L = {
+  en: {
+    title: "Notifications",
+    subtitle: "Announcements and messages from the support team",
+    clearAll: "Clear all",
+    allClear: "All clear!",
+    noNotifications: "No notifications yet",
+    locale: "en-US",
+  },
+  pt_br: {
+    title: "Notificações",
+    subtitle: "Avisos e mensagens da equipe de suporte",
+    clearAll: "Limpar tudo",
+    allClear: "Tudo certo!",
+    noNotifications: "Nenhuma notificação ainda",
+    locale: "pt-BR",
+  },
+  pt_pt: {
+    title: "Notificações",
+    subtitle: "Avisos e mensagens da equipa de suporte",
+    clearAll: "Limpar tudo",
+    allClear: "Tudo certo!",
+    noNotifications: "Nenhuma notificação ainda",
+    locale: "pt-PT",
+  },
+  es: {
+    title: "Notificaciones",
+    subtitle: "Anuncios y mensajes del equipo de soporte",
+    clearAll: "Borrar todo",
+    allClear: "¡Todo claro!",
+    noNotifications: "Sin notificaciones aún",
+    locale: "es-ES",
+  },
+  fr: {
+    title: "Notifications",
+    subtitle: "Annonces et messages de l'équipe de support",
+    clearAll: "Tout effacer",
+    allClear: "Tout est clair !",
+    noNotifications: "Aucune notification",
+    locale: "fr-FR",
+  },
+  de: {
+    title: "Benachrichtigungen",
+    subtitle: "Ankündigungen und Nachrichten vom Support-Team",
+    clearAll: "Alle löschen",
+    allClear: "Alles erledigt!",
+    noNotifications: "Noch keine Benachrichtigungen",
+    locale: "de-DE",
+  },
+  it: {
+    title: "Notifiche",
+    subtitle: "Annunci e messaggi dal team di supporto",
+    clearAll: "Cancella tutto",
+    allClear: "Tutto chiaro!",
+    noNotifications: "Nessuna notifica ancora",
+    locale: "it-IT",
+  },
+  ja: {
+    title: "通知",
+    subtitle: "サポートチームからのお知らせとメッセージ",
+    clearAll: "すべて削除",
+    allClear: "すべて確認済み！",
+    noNotifications: "通知はまだありません",
+    locale: "ja-JP",
+  },
+  ko: {
+    title: "알림",
+    subtitle: "지원팀의 공지 및 메시지",
+    clearAll: "모두 삭제",
+    allClear: "모두 확인했습니다!",
+    noNotifications: "아직 알림이 없습니다",
+    locale: "ko-KR",
+  },
+};
 
 export default function Notifications() {
   const { user } = useAuth();
+  const { lang } = useLang();
+  const tr = L[lang] || L.en;
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [replyText, setReplyText] = useState("");
-  const [replying, setReplying] = useState(false);
 
   useEffect(() => { loadNotifications(); }, [user]);
 
@@ -35,42 +110,6 @@ export default function Notifications() {
     setNotifications([]);
   };
 
-  const handleReply = async (n) => {
-    if (!replyText.trim()) return;
-    setReplying(true);
-    try {
-      await base44.entities.SupportChatMessage.create({
-        user_id: user.id,
-        user_name: user.full_name || user.email,
-        user_role: user.role === "tutor" ? "tutor" : "student",
-        is_from_admin: false,
-        sender_name: user.full_name || user.email,
-        message: replyText.trim(),
-        is_read_by_admin: false,
-      });
-      try {
-        const admins = await base44.entities.User.filter({ role: "admin" });
-        await base44.entities.Notification.bulkCreate(
-          admins.map(a => ({
-            user_id: a.id,
-            title: `💬 Resposta de ${user.full_name || user.email}`,
-            message: replyText.trim().substring(0, 100),
-            type: "general",
-            is_read: false,
-            link: "/admin/support",
-          }))
-        );
-      } catch {}
-      if (!n.is_read) await markRead(n.id);
-      setReplyText("");
-      setReplyingTo(null);
-    } catch (e) {
-      console.error("[Notifications] reply", e);
-    } finally {
-      setReplying(false);
-    }
-  };
-
   if (loading) return (
     <div className="flex items-center justify-center py-24">
       <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
@@ -81,9 +120,9 @@ export default function Notifications() {
     <div>
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold">Notifications</h1>
+          <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold">{tr.title}</h1>
           <p className="theme-subtext text-sm mt-1" style={{ color: "var(--app-text-secondary)" }}>
-            Announcements and messages from the support team
+            {tr.subtitle}
           </p>
         </div>
         {notifications.length > 0 && (
@@ -91,7 +130,7 @@ export default function Notifications() {
             onClick={clearAll}
             className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-red-500/10 text-red-400 shrink-0"
           >
-            <Trash2 className="w-3 h-3" /> Clear all
+            <Trash2 className="w-3 h-3" /> {tr.clearAll}
           </button>
         )}
       </div>
@@ -99,8 +138,8 @@ export default function Notifications() {
       {notifications.length === 0 ? (
         <div className="theme-empty text-center py-20 rounded-3xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
           <Bell className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
-          <h3 className="theme-heading font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>All clear!</h3>
-          <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>No notifications yet</p>
+          <h3 className="theme-heading font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>{tr.allClear}</h3>
+          <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>{tr.noNotifications}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -124,53 +163,13 @@ export default function Notifications() {
                   <p className="text-sm whitespace-pre-wrap mt-1.5" style={{ color: "var(--app-text-primary)" }}>{n.message}</p>
                   <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
                     <Clock className="w-3 h-3" />
-                    {new Date(n.created_date).toLocaleString("pt-BR")}
+                    {new Date(n.created_date).toLocaleString(tr.locale)}
                   </p>
                 </div>
                 {!n.is_read && (
                   <Button size="sm" variant="ghost" onClick={() => markRead(n.id)} className="shrink-0 text-orange-400 hover:text-orange-500 hover:bg-orange-500/10">
                     <Check className="w-4 h-4" />
                   </Button>
-                )}
-              </div>
-              {/* Reply to support */}
-              <div className="mt-3">
-                {replyingTo === n.id ? (
-                  <div className="space-y-2">
-                    <textarea
-                      value={replyText}
-                      onChange={e => setReplyText(e.target.value)}
-                      placeholder="Digite sua resposta para o suporte..."
-                      rows={2}
-                      className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500/50 resize-none"
-                      style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
-                    />
-                    <div className="flex gap-2 justify-end">
-                      <button
-                        onClick={() => { setReplyingTo(null); setReplyText(""); }}
-                        className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-white/5"
-                        style={{ color: "var(--app-text-secondary)" }}
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        onClick={() => handleReply(n)}
-                        disabled={replying || !replyText.trim()}
-                        className="text-xs font-medium px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white disabled:opacity-40 flex items-center gap-1.5"
-                      >
-                        {replying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                        Enviar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => { setReplyingTo(n.id); setReplyText(""); if (!n.is_read) markRead(n.id); }}
-                    className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                    style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)", color: "#F26A1B" }}
-                  >
-                    <Send className="w-3 h-3" /> Responder
-                  </button>
                 )}
               </div>
             </div>
