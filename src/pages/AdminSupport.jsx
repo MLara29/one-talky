@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Send, Search, MessageSquare, Users, GraduationCap, Loader2, ArrowLeft, Sparkles } from "lucide-react";
+import { Send, Search, MessageSquare, Users, GraduationCap, Loader2, ArrowLeft, Sparkles, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import SupportAIAssistant from "@/components/admin/SupportAIAssistant";
@@ -42,6 +42,8 @@ export default function AdminSupport() {
   const [sending, setSending] = useState(false);
   const [profilesMap, setProfilesMap] = useState({});
   const [showAI, setShowAI] = useState(false);
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [newChatSearch, setNewChatSearch] = useState("");
   const scrollRef = useRef(null);
 
   const load = async () => {
@@ -54,7 +56,8 @@ export default function AdminSupport() {
         base44.entities.StudentProfile.list("-created_date", 500),
       ]);
       const map = {};
-      [...tutors, ...students].forEach(p => { map[p.user_id] = p; });
+      tutors.forEach(p => { map[p.user_id] = { ...p, _role: "tutor" }; });
+      students.forEach(p => { map[p.user_id] = { ...p, _role: "student" }; });
       setProfilesMap(map);
     } catch (e) {
       console.error("[AdminSupport] load", e);
@@ -103,7 +106,23 @@ export default function AdminSupport() {
     return true;
   });
 
-  const selectedConversation = conversations.find(c => c.user_id === selectedUserId);
+  const allProfilesForRole = useMemo(() => {
+    return Object.values(profilesMap)
+      .filter(p => p && p.user_id && p.full_name && p._role === roleFilter)
+      .filter(p => !newChatSearch || p.full_name?.toLowerCase().includes(newChatSearch.toLowerCase()))
+      .sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
+  }, [profilesMap, roleFilter, newChatSearch]);
+
+  const selectedConversation = conversations.find(c => c.user_id === selectedUserId) ||
+    (selectedUserId && profilesMap[selectedUserId] ? {
+      user_id: selectedUserId,
+      user_name: profilesMap[selectedUserId].full_name || "Usuário",
+      user_role: profilesMap[selectedUserId]._role || roleFilter,
+      messages: [],
+      unreadCount: 0,
+      lastMessageAt: null,
+      lastMessage: null,
+    } : null);
   const unreadByRole = {
     tutor: conversations.filter(c => c.user_role === "tutor").reduce((s, c) => s + c.unreadCount, 0),
     student: conversations.filter(c => c.user_role === "student").reduce((s, c) => s + c.unreadCount, 0),
@@ -113,6 +132,7 @@ export default function AdminSupport() {
     setSelectedUserId(userId);
     setDraft("");
     setShowAI(false);
+    setShowNewChat(false);
     const conv = conversations.find(c => c.user_id === userId);
     if (conv && conv.unreadCount > 0) {
       try {
@@ -218,14 +238,60 @@ export default function AdminSupport() {
             <Input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar..."
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 pl-8 h-8 text-xs"
+              placeholder="Buscar conversa..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 pl-8 pr-8 h-8 text-xs"
             />
+            <button
+              onClick={() => { setShowNewChat(true); setNewChatSearch(""); }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-400 transition-colors"
+              title="Nova conversa"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Conversation list */}
           <div className="flex-1 overflow-y-auto min-h-0">
-            {filteredConversations.length === 0 ? (
+            {showNewChat ? (
+              <div className="flex flex-col h-full">
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 shrink-0">
+                  <button onClick={() => setShowNewChat(false)} className="p-1 rounded-lg hover:bg-white/10 text-gray-400">
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                  <Input
+                    autoFocus
+                    value={newChatSearch}
+                    onChange={e => setNewChatSearch(e.target.value)}
+                    placeholder={`Buscar ${roleFilter === "tutor" ? "tutor" : "aluno"}...`}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 h-8 text-xs flex-1"
+                  />
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  {allProfilesForRole.length === 0 ? (
+                    <div className="text-center py-12 px-4">
+                      <Users className="w-8 h-8 text-gray-700 mx-auto mb-2" />
+                      <p className="text-gray-600 text-xs">Nenhum {roleFilter === "tutor" ? "tutor" : "aluno"} encontrado</p>
+                    </div>
+                  ) : (
+                    allProfilesForRole.map(p => (
+                      <button
+                        key={p.user_id}
+                        onClick={() => selectConversation(p.user_id)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/5 border-b border-white/5 transition-colors"
+                      >
+                        <Avatar name={p.full_name} photoUrl={p.photo_url} role={roleFilter} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{p.full_name}</p>
+                          <p className="text-xs text-gray-600">
+                            {conversations.find(c => c.user_id === p.user_id) ? "Continuar conversa" : "Iniciar nova conversa"}
+                          </p>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : filteredConversations.length === 0 ? (
               <div className="text-center py-12 px-4">
                 <MessageSquare className="w-8 h-8 text-gray-700 mx-auto mb-2" />
                 <p className="text-gray-600 text-xs">Nenhuma conversa {roleFilter === "tutor" ? "de tutor" : "de aluno"}</p>
@@ -302,7 +368,11 @@ export default function AdminSupport() {
 
               {/* Chat history */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 px-4 py-4 space-y-2">
-                {selectedConversation.messages.map(m => (
+                {selectedConversation.messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-center">
+                    <p className="text-gray-600 text-sm">Nenhuma mensagem ainda. Envie a primeira!</p>
+                  </div>
+                ) : selectedConversation.messages.map(m => (
                   <div key={m.id} className={`flex ${m.is_from_admin ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 ${
                       m.is_from_admin
