@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
         message: messageText,
         type: 'general',
         is_read: false,
-        link: '/my-messages',
+        link: '/notifications',
       }));
       if (records.length > 0) await base44.asServiceRole.entities.Notification.bulkCreate(records);
       return Response.json({ success: true, sent: records.length });
@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
         message: messageText,
         type: 'general',
         is_read: false,
-        link: '/my-messages',
+        link: '/notifications',
       });
       return Response.json({ success: true, sent: 1 });
     }

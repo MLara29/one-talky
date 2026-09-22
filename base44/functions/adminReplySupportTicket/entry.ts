@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
           message: replyText,
           type: 'general',
           is_read: false,
-          link: '/my-messages',
+          link: '/my-messages?tab=ticket',
         });
       } catch {}
 

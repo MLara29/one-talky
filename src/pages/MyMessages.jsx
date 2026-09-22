@@ -2,58 +2,53 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { MessageSquare, Clock, CheckCircle, Send, Plus, X, Bell, Trash2, Loader2 } from "lucide-react";
+import { MessageSquare, Clock, CheckCircle, Send, Plus, X, Loader2, Ticket, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-
+const STATUS_STYLES = {
+  open: "bg-amber-500/10 border-amber-500/20 text-amber-500",
+  replied: "bg-blue-500/10 border-blue-500/20 text-blue-500",
+  closed: "bg-gray-500/10 border-gray-500/20 text-gray-500",
+};
+const STATUS_LABELS = { open: "Open", replied: "Replied", closed: "Closed" };
 
 export default function MyMessages() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState(searchParams.get("tab") === "ticket" ? "ticket" : "chat");
+
+  // Chat state
   const [messages, setMessages] = useState([]);
-  const [adminMessages, setAdminMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState(searchParams.get("tab") === "admin" ? "admin" : "support"); // "support" | "admin"
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [replyText, setReplyText] = useState("");
-  const [replying, setReplying] = useState(false);
+
+  // Ticket state
+  const [tickets, setTickets] = useState([]);
+  const [showTicketForm, setShowTicketForm] = useState(false);
+  const [ticketSubject, setTicketSubject] = useState("");
+  const [ticketMessage, setTicketMessage] = useState("");
+  const [ticketSending, setTicketSending] = useState(false);
+  const [ticketSent, setTicketSent] = useState(false);
+  const [expandedTicket, setExpandedTicket] = useState(null);
 
   useEffect(() => { load(); }, [user]);
 
   const load = async () => {
     try {
-      const [chat, notifs] = await Promise.all([
+      const [chat, supportMsgs] = await Promise.all([
         base44.entities.SupportChatMessage.filter({ user_id: user.id }, "-created_date", 100),
-        base44.entities.Notification.filter({ user_id: user.id, link: "/my-messages" }, "-created_date", 50),
+        base44.entities.SupportMessage.filter({ sender_id: user.id }, "-created_date", 50),
       ]);
       setMessages(chat.slice().reverse());
-      setAdminMessages(notifs);
+      setTickets(supportMsgs);
     } catch {} finally { setLoading(false); }
   };
 
-  const markAdminMsgRead = async (n) => {
-    if (!n.is_read) {
-      await base44.entities.Notification.update(n.id, { is_read: true });
-      setAdminMessages(prev => prev.map(a => a.id === n.id ? { ...a, is_read: true } : a));
-    }
-  };
-
-  const deleteAdminMsg = async (id, e) => {
-    e.stopPropagation();
-    await base44.entities.Notification.delete(id);
-    setAdminMessages(prev => prev.filter(n => n.id !== id));
-  };
-
-  const clearAllAdminMsgs = async () => {
-    await Promise.all(adminMessages.map(n => base44.entities.Notification.delete(n.id)));
-    setAdminMessages([]);
-  };
-
+  // Chat send
   const handleSend = async () => {
     if (!message.trim()) return;
     setSending(true);
@@ -66,7 +61,6 @@ export default function MyMessages() {
       message: message.trim(),
       is_read_by_admin: false,
     });
-    // Notify admins about new support message
     try {
       const admins = await base44.entities.User.filter({ role: "admin" });
       await base44.entities.Notification.bulkCreate(
@@ -86,42 +80,39 @@ export default function MyMessages() {
     load();
   };
 
-  const handleReply = async (n) => {
-    if (!replyText.trim()) return;
-    setReplying(true);
+  // Ticket send
+  const handleTicketSend = async () => {
+    if (!ticketSubject.trim() || !ticketMessage.trim()) return;
+    setTicketSending(true);
     try {
-      await base44.entities.SupportChatMessage.create({
-        user_id: user.id,
-        user_name: user.full_name || user.email,
-        user_role: user.role === "tutor" ? "tutor" : "student",
-        is_from_admin: false,
+      await base44.entities.SupportMessage.create({
+        sender_id: user.id,
         sender_name: user.full_name || user.email,
-        message: replyText.trim(),
-        is_read_by_admin: false,
+        sender_role: user.role === "tutor" ? "tutor" : "student",
+        subject: ticketSubject.trim(),
+        message: ticketMessage.trim(),
       });
-      // Notify admins about the reply
       try {
         const admins = await base44.entities.User.filter({ role: "admin" });
         await base44.entities.Notification.bulkCreate(
           admins.map(a => ({
             user_id: a.id,
-            title: `💬 Resposta de ${user.full_name || user.email}`,
-            message: replyText.trim().substring(0, 100),
+            title: `🎫 Novo ticket: ${ticketSubject.trim()}`,
+            message: `${user.full_name || user.email} abriu um ticket de suporte`,
             type: "general",
             is_read: false,
             link: "/admin/support",
           }))
         );
       } catch {}
-      // Mark the original notification as read
-      if (!n.is_read) await markAdminMsgRead(n);
-      setReplyText("");
-      setReplyingTo(null);
+      setTicketSending(false);
+      setTicketSent(true);
+      setTicketSubject("");
+      setTicketMessage("");
       load();
     } catch (e) {
-      console.error("[MyMessages] reply", e);
-    } finally {
-      setReplying(false);
+      console.error("[MyMessages] ticket", e);
+      setTicketSending(false);
     }
   };
 
@@ -137,10 +128,10 @@ export default function MyMessages() {
         <div>
           <h1 className="theme-heading font-display text-2xl sm:text-3xl font-bold">My Messages</h1>
           <p className="theme-subtext text-sm mt-1" style={{ color: "var(--app-text-secondary)" }}>
-            Track your support messages and replies from our team
+            Chat with support or open a support ticket
           </p>
         </div>
-        {tab === "support" && (
+        {tab === "chat" && (
           <Button
             onClick={() => { setShowForm(true); setSent(false); }}
             className="shrink-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20"
@@ -148,42 +139,51 @@ export default function MyMessages() {
             <Plus className="w-4 h-4 mr-2" /> New message
           </Button>
         )}
+        {tab === "ticket" && (
+          <Button
+            onClick={() => { setShowTicketForm(true); setTicketSent(false); }}
+            className="shrink-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20"
+          >
+            <Plus className="w-4 h-4 mr-2" /> New ticket
+          </Button>
+        )}
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
         <button
-          onClick={() => setTab("support")}
+          onClick={() => setTab("chat")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-            tab === "support"
+            tab === "chat"
               ? "bg-orange-500/20 border-orange-500/30 text-orange-500"
               : "border-transparent text-gray-400 hover:bg-white/5"
           }`}
-          style={{ background: tab === "support" ? undefined : "var(--app-card-bg)" }}
+          style={{ background: tab === "chat" ? undefined : "var(--app-card-bg)" }}
         >
           <MessageSquare className="w-4 h-4" />
-          Support
+          Instant Message
         </button>
         <button
-          onClick={() => setTab("admin")}
+          onClick={() => setTab("ticket")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-            tab === "admin"
+            tab === "ticket"
               ? "bg-orange-500/20 border-orange-500/30 text-orange-500"
               : "border-transparent text-gray-400 hover:bg-white/5"
           }`}
-          style={{ background: tab === "admin" ? undefined : "var(--app-card-bg)" }}
+          style={{ background: tab === "ticket" ? undefined : "var(--app-card-bg)" }}
         >
-          <Bell className="w-4 h-4" />
-          From Support
-          {adminMessages.filter(n => !n.is_read).length > 0 && (
-            <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
-              {adminMessages.filter(n => !n.is_read).length}
+          <Ticket className="w-4 h-4" />
+          Ticket
+          {tickets.filter(t => t.status === "replied").length > 0 && (
+            <span className="w-4 h-4 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center">
+              {tickets.filter(t => t.status === "replied").length}
             </span>
           )}
         </button>
       </div>
 
-      {showForm && tab === "support" && (
+      {/* === CHAT TAB === */}
+      {tab === "chat" && showForm && (
         <div className="rounded-2xl p-5 mb-6" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>Contact Support</h2>
@@ -226,140 +226,173 @@ export default function MyMessages() {
         </div>
       )}
 
-      {/* Admin messages tab */}
-      {tab === "admin" && (
-        adminMessages.length === 0 ? (
+      {tab === "chat" && (
+        messages.length === 0 ? (
           <div className="theme-empty text-center py-20 rounded-3xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
-            <Bell className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
-            <h3 className="font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No messages from support</h3>
-            <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>Messages sent directly by the platform team will appear here.</p>
+            <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
+            <h3 className="theme-heading font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No messages yet</h3>
+            <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>
+              You haven't sent any support messages yet.
+            </p>
           </div>
         ) : (
-          <>
-            <div className="flex justify-end mb-3">
-              <button
-                onClick={clearAllAdminMsgs}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-red-500/10 text-red-400"
-              >
-                <Trash2 className="w-3 h-3" /> Clear all
-              </button>
-            </div>
-            <div className="space-y-3">
-              {adminMessages.map(n => (
-                <div
-                  key={n.id}
-                  onClick={() => markAdminMsgRead(n)}
-                  className="rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
-                  style={{
-                    background: n.is_read ? "var(--app-card-bg)" : "rgba(242,106,27,0.08)",
-                    border: `1px solid ${n.is_read ? "var(--app-border)" : "rgba(242,106,27,0.25)"}`,
-                  }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: "rgba(242,106,27,0.12)", border: "1px solid rgba(242,106,27,0.2)" }}>
-                      <Bell className="w-4 h-4 text-orange-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="font-semibold text-sm" style={{ color: n.is_read ? "var(--app-text-secondary)" : "var(--app-text-primary)" }}>
-                          {n.title}
-                        </p>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-orange-500" />}
-                          <button
-                            onClick={(e) => deleteAdminMsg(n.id, e)}
-                            className="p-1 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                      <p className="text-sm mt-1.5 whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{n.message}</p>
-                      <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
-                        <Clock className="w-3 h-3" />
-                        {new Date(n.created_date).toLocaleString("pt-BR")}
-                      </p>
-                    </div>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
+            {messages.map(msg => (
+              <div key={msg.id} className={`flex ${msg.is_from_admin ? "justify-start" : "justify-end"}`}>
+                <div className="max-w-[80%]">
+                  <div
+                    className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
+                    style={
+                      msg.is_from_admin
+                        ? { background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }
+                        : { background: "#F26A1B", color: "#fff" }
+                    }
+                  >
+                    {msg.message}
                   </div>
-                  {/* Reply to support */}
-                  <div onClick={e => e.stopPropagation()} className="mt-3">
-                    {replyingTo === n.id ? (
-                      <div className="space-y-2">
-                        <textarea
-                          value={replyText}
-                          onChange={e => setReplyText(e.target.value)}
-                          placeholder="Digite sua resposta para o suporte..."
-                          rows={2}
-                          className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500/50 resize-none"
-                          style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
-                        />
-                        <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={() => { setReplyingTo(null); setReplyText(""); }}
-                            className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-white/5"
-                            style={{ color: "var(--app-text-secondary)" }}
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            onClick={() => handleReply(n)}
-                            disabled={replying || !replyText.trim()}
-                            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white disabled:opacity-40 flex items-center gap-1.5"
-                          >
-                            {replying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                            Enviar
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => { setReplyingTo(n.id); setReplyText(""); if (!n.is_read) markAdminMsgRead(n); }}
-                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                        style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)", color: "#F26A1B" }}
-                      >
-                        <Send className="w-3 h-3" /> Responder
-                      </button>
-                    )}
-                  </div>
+                  <p className="text-[10px] mt-1 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
+                    {msg.is_from_admin ? "Support" : "You"} · {new Date(msg.created_date).toLocaleString("pt-BR")}
+                  </p>
                 </div>
-              ))}
-            </div>
-          </>
+              </div>
+            ))}
+          </div>
         )
       )}
 
-      {tab === "support" && messages.length === 0 ? (
-        <div className="theme-empty text-center py-20 rounded-3xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
-          <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
-          <h3 className="theme-heading font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No messages yet</h3>
-          <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>
-            You haven't sent any support messages yet.
-          </p>
-        </div>
-      ) : tab === "support" ? (
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
-          {messages.map(msg => (
-            <div key={msg.id} className={`flex ${msg.is_from_admin ? "justify-start" : "justify-end"}`}>
-              <div className="max-w-[80%]">
-                <div
-                  className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
-                  style={
-                    msg.is_from_admin
-                      ? { background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }
-                      : { background: "#F26A1B", color: "#fff" }
-                  }
-                >
-                  {msg.message}
-                </div>
-                <p className="text-[10px] mt-1 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
-                  {msg.is_from_admin ? "Support" : "You"} · {new Date(msg.created_date).toLocaleString("pt-BR")}
-                </p>
-              </div>
+      {/* === TICKET TAB === */}
+      {tab === "ticket" && showTicketForm && (
+        <div className="rounded-2xl p-5 mb-6" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display font-bold text-base" style={{ color: "var(--app-text-primary)" }}>Open a Ticket</h2>
+            <button onClick={() => { setShowTicketForm(false); setTicketSent(false); }} style={{ color: "var(--app-text-muted)" }}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          {ticketSent ? (
+            <div className="text-center py-6">
+              <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
+              <p className="font-semibold mb-1" style={{ color: "var(--app-text-primary)" }}>Ticket opened!</p>
+              <p className="text-sm mb-4" style={{ color: "var(--app-text-secondary)" }}>Our team will review and reply soon.</p>
+              <Button size="sm" onClick={() => { setShowTicketForm(false); setTicketSent(false); }} className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0">
+                Close
+              </Button>
             </div>
-          ))}
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Subject</label>
+                <Input
+                  value={ticketSubject}
+                  onChange={e => setTicketSubject(e.target.value)}
+                  placeholder="e.g. Payment issue"
+                  style={{ background: "var(--app-nav-hover-bg)", borderColor: "var(--app-border)", color: "var(--app-text-primary)" }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--app-text-secondary)" }}>Message</label>
+                <textarea
+                  value={ticketMessage}
+                  onChange={e => setTicketMessage(e.target.value)}
+                  placeholder="Describe your issue or question..."
+                  rows={4}
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 resize-none"
+                  style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
+                />
+              </div>
+              <Button
+                onClick={handleTicketSend}
+                disabled={ticketSending || !ticketSubject.trim() || !ticketMessage.trim()}
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {ticketSending ? "Sending..." : "Open ticket"}
+              </Button>
+            </div>
+          )}
         </div>
-      ) : null}
+      )}
+
+      {tab === "ticket" && (
+        tickets.length === 0 ? (
+          <div className="theme-empty text-center py-20 rounded-3xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
+            <Ticket className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />
+            <h3 className="theme-heading font-display font-bold mb-1" style={{ color: "var(--app-text-primary)" }}>No tickets yet</h3>
+            <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>
+              Open a ticket when you need async support.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {tickets.map(t => (
+              <div key={t.id} className="rounded-2xl overflow-hidden" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
+                <button
+                  onClick={() => setExpandedTicket(expandedTicket === t.id ? null : t.id)}
+                  className="w-full text-left flex items-center justify-between gap-4 p-4 transition-colors"
+                  style={{ color: "var(--app-text-primary)" }}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: "rgba(242,106,27,0.1)", border: "1px solid rgba(242,106,27,0.2)" }}>
+                      <Ticket className="w-4 h-4 text-orange-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate" style={{ color: "var(--app-text-primary)" }}>{t.subject}</p>
+                      <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: "var(--app-text-secondary)" }}>
+                        <Clock className="w-3 h-3" />
+                        {new Date(t.created_date).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {t.status === "replied" && (
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" title="Nova resposta" />
+                    )}
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_STYLES[t.status]}`}>
+                      {STATUS_LABELS[t.status]}
+                    </span>
+                    {expandedTicket === t.id
+                      ? <ChevronUp className="w-4 h-4" style={{ color: "var(--app-text-muted)" }} />
+                      : <ChevronDown className="w-4 h-4" style={{ color: "var(--app-text-muted)" }} />
+                    }
+                  </div>
+                </button>
+
+                {expandedTicket === t.id && (
+                  <div className="px-4 pb-4 pt-4 space-y-3" style={{ borderTop: "1px solid var(--app-border)" }}>
+                    <div className="rounded-xl p-3" style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)" }}>
+                      <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--app-text-secondary)" }}>Your message</p>
+                      <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{t.message}</p>
+                    </div>
+                    {t.admin_reply ? (
+                      <div className="rounded-xl p-3" style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)" }}>
+                        <p className="text-xs font-semibold text-orange-400 mb-1.5">Support Reply</p>
+                        <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{t.admin_reply}</p>
+                        {t.replied_at && (
+                          <p className="text-[10px] mt-2" style={{ color: "var(--app-text-secondary)" }}>
+                            {new Date(t.replied_at).toLocaleString("pt-BR")}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl p-3 text-center" style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)" }}>
+                        <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>
+                          {t.status === "closed" ? "Ticket closed without reply." : "Waiting for a reply from the support team..."}
+                        </p>
+                      </div>
+                    )}
+                    {t.status === "closed" && (
+                      <p className="text-xs flex items-center gap-1" style={{ color: "var(--app-text-secondary)" }}>
+                        <CheckCircle className="w-3 h-3" /> Ticket closed
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Send, Search, MessageSquare, Users, GraduationCap, Loader2, ArrowLeft, 
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import SupportAIAssistant from "@/components/admin/SupportAIAssistant";
+import SupportTicketsPanel from "@/components/admin/SupportTicketsPanel";
 
 const timeAgo = (dateStr) => {
   const d = new Date(dateStr);
@@ -44,6 +45,7 @@ export default function AdminSupport() {
   const [showAI, setShowAI] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
   const [newChatSearch, setNewChatSearch] = useState("");
+  const [viewMode, setViewMode] = useState("chat"); // "chat" | "tickets"
   const scrollRef = useRef(null);
 
   const load = async () => {
@@ -203,10 +205,27 @@ export default function AdminSupport() {
       <div className="flex items-center justify-between mb-3 shrink-0">
         <div>
           <h1 className="font-display text-xl sm:text-2xl font-bold text-white">Suporte</h1>
-          <p className="text-gray-500 text-xs mt-0.5">{unreadByRole.tutor + unreadByRole.student} não lida(s)</p>
+          <p className="text-gray-500 text-xs mt-0.5">{viewMode === "chat" ? `${unreadByRole.tutor + unreadByRole.student} não lida(s)` : "Tickets de suporte"}</p>
+        </div>
+        <div className="flex gap-1 p-1 rounded-xl bg-white/5 border border-white/10">
+          <button
+            onClick={() => setViewMode("chat")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${viewMode === "chat" ? "bg-orange-500/20 text-orange-400" : "text-gray-500 hover:text-gray-300"}`}
+          >
+            Chat
+          </button>
+          <button
+            onClick={() => setViewMode("tickets")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${viewMode === "tickets" ? "bg-orange-500/20 text-orange-400" : "text-gray-500 hover:text-gray-300"}`}
+          >
+            Tickets
+          </button>
         </div>
       </div>
 
+      {viewMode === "tickets" ? (
+        <SupportTicketsPanel />
+      ) : (
       <div className="flex-1 flex gap-3 min-h-0 border border-white/10 rounded-2xl overflow-hidden bg-white/[0.02]">
         {/* LEFT COLUMN — conversation list */}
         <div className={`w-full sm:w-80 border-r border-white/10 flex flex-col min-h-0 shrink-0 ${selectedUserId ? "hidden sm:flex" : "flex"}`}>
@@ -422,6 +441,7 @@ export default function AdminSupport() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

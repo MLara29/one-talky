@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
         message: msg,
         type: 'general',
         is_read: false,
-        link: '/my-messages',
+        link: '/notifications',
       });
     } catch (e) {
       console.error('[adminSendChatMessage] notification', e.message);

@@ -67,7 +67,7 @@ export default function NotificationBell() {
         }, 60000);
       } catch {}
     }
-    if (n.type === "general") navigate("/my-messages?tab=admin");
+    if (n.type === "general") navigate("/notifications");
     else if (n.link) navigate(n.link);
     setOpen(false);
   };
