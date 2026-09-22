@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { X, Bell } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 /**
  * LiveNotificationToast
@@ -12,12 +13,31 @@ import { X, Bell } from "lucide-react";
  */
 export default function LiveNotificationToast() {
   const { user } = useAuth();
+  const location = useLocation();
+  const pathnameRef = useRef(location.pathname);
+  useEffect(() => { pathnameRef.current = location.pathname; }, [location.pathname]);
   const [queue, setQueue] = useState([]);      // pending toasts
   const [current, setCurrent] = useState(null); // currently visible toast
   const [visible, setVisible] = useState(false);
   const seenIds = useRef(new Set());
   const timerRef = useRef(null);
   const lastCheck = useRef(Date.now());
+
+  const playSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
+    } catch {}
+  };
 
   const dismiss = useCallback(() => {
     clearTimeout(timerRef.current);
@@ -45,6 +65,7 @@ export default function LiveNotificationToast() {
         const since = new Date(lastCheck.current).toISOString();
         lastCheck.current = Date.now();
         const notifs = await base44.entities.Notification.filter({ user_id: user.id, is_read: false });
+        const isOnMessages = pathnameRef.current === "/my-messages";
         const fresh = notifs.filter(n => {
           if (seenIds.current.has(n.id)) return false;
           // Only show notifications created after page load
@@ -52,10 +73,17 @@ export default function LiveNotificationToast() {
             seenIds.current.add(n.id); // mark old ones as seen so they don't flash later
             return false;
           }
+          // Suppress support notifications when already on the support page
+          if (isOnMessages && n.link?.startsWith("/my-messages")) {
+            seenIds.current.add(n.id);
+            return false;
+          }
           seenIds.current.add(n.id);
           return true;
         });
         if (fresh.length > 0) {
+          // Play sound only for support-related notifications
+          if (fresh.some(n => n.link?.startsWith("/my-messages"))) playSound();
           setQueue(prev => [...prev, ...fresh.map(n => ({ id: n.id, title: n.title, message: n.message }))]);
         }
       } catch {}

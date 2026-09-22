@@ -67,8 +67,7 @@ export default function NotificationBell() {
         }, 60000);
       } catch {}
     }
-    if (n.type === "general") navigate("/notifications");
-    else if (n.link) navigate(n.link);
+    if (n.link) navigate(n.link);
     setOpen(false);
   };
 

@@ -28,6 +28,31 @@ export function useUnreadSupportCount(role, userId) {
   return count;
 }
 
+export function useUnreadSupportBadge(role, userId) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!userId || role === "admin") return;
+    const load = async () => {
+      try {
+        const data = await base44.entities.Notification.filter(
+          { user_id: userId, is_read: false },
+          "-created_date",
+          50
+        );
+        const supportNotifs = data.filter(n => n.link?.startsWith("/my-messages"));
+        setCount(supportNotifs.length);
+      } catch {}
+    };
+    load();
+    return safeSubscribe(() => base44.entities.Notification.subscribe((event) => {
+      if (event?.data?.user_id === userId) load();
+    }));
+  }, [role, userId]);
+
+  return count;
+}
+
 export default function SupportBadge({ count }) {
   if (!count) return null;
   return (

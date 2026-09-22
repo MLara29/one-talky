@@ -14,7 +14,7 @@ import { appParams } from "@/lib/app-params";
 import LiveNotificationToast from "@/components/LiveNotificationToast";
 import { ttqIdentify } from "@/lib/tiktokPixel";
 import NotificationBell from "@/components/NotificationBell";
-import SupportBadge, { useUnreadSupportCount } from "@/components/SupportBadge";
+import SupportBadge, { useUnreadSupportCount, useUnreadSupportBadge } from "@/components/SupportBadge";
 import LessonReminderPopup from "@/components/LessonReminderPopup";
 import Footer from "@/components/Footer";
 import {
@@ -85,7 +85,7 @@ const LANG_LABELS = { en: "EN", pt_br: "PT", es: "ES", fr: "FR", de: "DE", it: "
 const LANG_FULL_LABELS = { en: "English", pt_br: "Português", es: "Español", fr: "Français", de: "Deutsch", it: "Italiano", ja: "日本語", ko: "한국어" };
 
 // Shared pill nav used by all roles
-function TopPillNav({ nav, location, supportCount }) {
+function TopPillNav({ nav, location, supportCount, supportBadgeCount }) {
   return (
     <nav className="hidden lg:flex items-center gap-1 flex-wrap justify-center" style={{
       background: "rgba(255,255,255,0.7)",
@@ -119,6 +119,9 @@ function TopPillNav({ nav, location, supportCount }) {
             <item.icon style={{ width: 14, height: 14 }} />
             {item.label}
             {item.path === "/admin/support" && <SupportBadge count={supportCount} />}
+            {item.path === "/my-messages" && supportBadgeCount > 0 && (
+              <span className="w-2 h-2 bg-red-500 rounded-full" style={{ marginLeft: 2 }} />
+            )}
           </Link>
         );
       })}
@@ -137,6 +140,7 @@ export default function AppLayout() {
   useInactivityLogout(role);
 
   const supportCount = useUnreadSupportCount(role, user?.id);
+  const supportBadgeCount = useUnreadSupportBadge(role, user?.id);
 
   // Students blocked by an admin (StudentProfile.is_blocked) are denied access
   // to the entire app — checked here since AppLayout wraps every protected page.
@@ -294,7 +298,7 @@ export default function AppLayout() {
           </div>
 
           {/* Center: pill nav for all roles */}
-          <TopPillNav nav={nav} location={location} supportCount={supportCount} />
+          <TopPillNav nav={nav} location={location} supportCount={supportCount} supportBadgeCount={supportBadgeCount} />
 
           {/* Right: lang switcher (student only) + icons */}
           <div className="flex items-center gap-1">
@@ -391,6 +395,9 @@ export default function AppLayout() {
                     <item.icon className="w-4 h-4" style={{ color: active ? "#F26A1B" : "#aaa" }} />
                     {item.label}
                     {item.path === "/admin/support" && <SupportBadge count={supportCount} />}
+                    {item.path === "/my-messages" && supportBadgeCount > 0 && (
+                      <span className="w-2 h-2 bg-red-500 rounded-full ml-auto" />
+                    )}
                   </Link>
                 );
               })}
