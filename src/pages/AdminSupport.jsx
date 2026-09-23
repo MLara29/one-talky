@@ -182,6 +182,28 @@ export default function AdminSupport() {
     }
   };
 
+  const [togglingChat, setTogglingChat] = useState(false);
+  const toggleInstantChat = async (userId, enable) => {
+    setTogglingChat(true);
+    try {
+      const res = await base44.functions.invoke("adminToggleInstantChat", { user_id: userId, enabled: enable });
+      if (res.data?.error === "otp_required") {
+        toast({ title: "Confirmação 2FA necessária", description: "Verifique seu código de autenticação.", variant: "destructive" });
+        return;
+      }
+      if (res.data?.error) throw new Error(res.data.error);
+      setProfilesMap(prev => ({
+        ...prev,
+        [userId]: { ...prev[userId], instant_chat_enabled: enable },
+      }));
+      toast({ title: enable ? "Chat liberado" : "Chat desativado", description: enable ? "O aluno agora vê a aba Mensagem Instantânea." : "O aluno não vê mais a aba Mensagem Instantânea." });
+    } catch (e) {
+      toast({ title: "Erro", description: e?.message || "Não foi possível alterar", variant: "destructive" });
+    } finally {
+      setTogglingChat(false);
+    }
+  };
+
   const lastIncomingMessage = useMemo(() => {
     if (!selectedConversation) return null;
     for (let i = selectedConversation.messages.length - 1; i >= 0; i--) {
@@ -375,6 +397,20 @@ export default function AdminSupport() {
                     {selectedConversation.user_role === "tutor" ? "Tutor" : "Aluno"}
                   </p>
                 </div>
+                {selectedConversation.user_role === "student" && (
+                  <button
+                    onClick={() => toggleInstantChat(selectedConversation.user_id, !profilesMap[selectedConversation.user_id]?.instant_chat_enabled)}
+                    disabled={togglingChat}
+                    className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors border whitespace-nowrap ${
+                      profilesMap[selectedConversation.user_id]?.instant_chat_enabled
+                        ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/20"
+                        : "bg-white/5 text-gray-400 hover:bg-white/10 border-transparent"
+                    }`}
+                  >
+                    {togglingChat ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
+                    {profilesMap[selectedConversation.user_id]?.instant_chat_enabled ? "Chat liberado ✓" : "Liberar chat"}
+                  </button>
+                )}
                 <button
                   onClick={() => setShowAI(s => !s)}
                   className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${

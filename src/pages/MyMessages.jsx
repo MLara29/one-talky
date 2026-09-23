@@ -193,7 +193,11 @@ export default function MyMessages() {
   const tr = user?.role === "student" ? (L[lang] || L.en) : L.en;
   const statusLabels = { open: tr.statusOpen, replied: tr.statusReplied, closed: tr.statusClosed };
   const [searchParams] = useSearchParams();
-  const [tab, setTab] = useState(searchParams.get("tab") === "ticket" ? "ticket" : "chat");
+  const [tab, setTab] = useState(() => {
+    // Students default to "ticket" until their profile confirms access
+    if (user?.role === "student") return "ticket";
+    return searchParams.get("tab") === "ticket" ? "ticket" : "chat";
+  });
 
   // Chat state
   const [messages, setMessages] = useState([]);
@@ -211,6 +215,8 @@ export default function MyMessages() {
   const [ticketSent, setTicketSent] = useState(false);
   const [expandedTicket, setExpandedTicket] = useState(null);
 
+  const [studentProfile, setStudentProfile] = useState(null);
+
   // Window timer: re-evaluate every 60 seconds
   const [now, setNow] = useState(Date.now());
 
@@ -223,7 +229,7 @@ export default function MyMessages() {
     } catch {}
   };
 
-  useEffect(() => { load(); markSupportNotifsRead(); }, [user]);
+  useEffect(() => { load(); markSupportNotifsRead(); if (user?.role === "student") loadStudentProfile(); }, [user]);
 
   // Re-evaluate window active status every 60 seconds
   useEffect(() => {
@@ -242,6 +248,13 @@ export default function MyMessages() {
     });
     return () => { unsubChat(); unsubTicket(); };
   }, [user?.id]);
+
+  const loadStudentProfile = async () => {
+    try {
+      const profiles = await base44.entities.StudentProfile.filter({ user_id: user.id });
+      if (profiles.length > 0) setStudentProfile(profiles[0]);
+    } catch {}
+  };
 
   const load = async () => {
     try {
@@ -322,6 +335,22 @@ export default function MyMessages() {
     }
   };
 
+  // Students can only access the chat tab if the admin enabled it for them.
+  // Tutors always have access to both tabs.
+  const canAccessChat = user?.role !== "student" || !!studentProfile?.instant_chat_enabled;
+
+  // After profile loads, honor ?tab=chat for students with access
+  useEffect(() => {
+    if (user?.role === "student" && studentProfile?.instant_chat_enabled && searchParams.get("tab") === "chat") {
+      setTab("chat");
+    }
+  }, [studentProfile]);
+
+  // Safety: redirect students without access who somehow have tab=chat
+  useEffect(() => {
+    if (tab === "chat" && !canAccessChat) setTab("ticket");
+  }, [tab, canAccessChat]);
+
   // Chat window: active if last message < 30 min ago
   const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
   const isWindowActive = lastMessage && (now - new Date(lastMessage.created_date).getTime()) < 30 * 60 * 1000;
@@ -341,7 +370,7 @@ export default function MyMessages() {
             {tr.subtitle}
           </p>
         </div>
-        {tab === "chat" && !isWindowActive && !showForm && (
+        {tab === "chat" && canAccessChat && !isWindowActive && !showForm && (
           <Button
             onClick={() => setShowForm(true)}
             className="shrink-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg shadow-orange-500/20"
@@ -361,6 +390,7 @@ export default function MyMessages() {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
+        {canAccessChat && (
         <button
           onClick={() => setTab("chat")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
@@ -373,6 +403,7 @@ export default function MyMessages() {
           <MessageSquare className="w-4 h-4" />
           {tr.tabChat}
         </button>
+        )}
         <button
           onClick={() => setTab("ticket")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
@@ -393,7 +424,7 @@ export default function MyMessages() {
       </div>
 
       {/* === CHAT TAB === */}
-      {tab === "chat" && (
+      {tab === "chat" && canAccessChat && (
         messages.length === 0 && !showForm ? (
           <div className="theme-empty text-center py-20 rounded-3xl" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
             <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--app-text-muted)" }} />

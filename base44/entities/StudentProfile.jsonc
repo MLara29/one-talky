@@ -209,6 +209,11 @@
       "type": "boolean",
       "default": false,
       "description": "True ap\u00f3s o modal de boas-vindas ser exibido pela primeira vez. Verificado na Home e na Plans para exibir o modal apenas uma vez por aluno."
+    },
+    "instant_chat_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "True quando o admin liberou o acesso \u00e0 aba 'Mensagem instant\u00e2nea' (chat em tempo real) para este aluno no MyMessages. Por padr\u00e3o, alunos s\u00f3 veem a aba 'Ticket'. O admin ativa individualmente via AdminSupport."
     }
   },
   "required": [
