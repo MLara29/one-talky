@@ -217,6 +217,11 @@ export default function MyMessages() {
 
   const [studentProfile, setStudentProfile] = useState(null);
 
+  // Ticket replies (continuous conversation)
+  const [ticketReplies, setTicketReplies] = useState({});
+  const [replyText, setReplyText] = useState("");
+  const [replySending, setReplySending] = useState(false);
+
   // Window timer: re-evaluate every 60 seconds
   const [now, setNow] = useState(Date.now());
 
@@ -246,8 +251,22 @@ export default function MyMessages() {
     const unsubTicket = base44.entities.SupportMessage.subscribe((event) => {
       if (event?.data?.sender_id === user.id) { load(); markSupportNotifsRead(); }
     });
-    return () => { unsubChat(); unsubTicket(); };
+    const unsubReply = base44.entities.SupportTicketReply.subscribe((event) => {
+      if (event?.data?.ticket_owner_id === user.id) {
+        load();
+        if (event?.data?.ticket_id) loadTicketReplies(event.data.ticket_id);
+        markSupportNotifsRead();
+      }
+    });
+    return () => { unsubChat(); unsubTicket(); unsubReply(); };
   }, [user?.id]);
+
+  const loadTicketReplies = async (ticketId) => {
+    try {
+      const replies = await base44.entities.SupportTicketReply.filter({ ticket_id: ticketId }, "created_date", 100);
+      setTicketReplies(prev => ({ ...prev, [ticketId]: replies }));
+    } catch {}
+  };
 
   const loadStudentProfile = async () => {
     try {
@@ -332,6 +351,23 @@ export default function MyMessages() {
     } catch (e) {
       console.error("[MyMessages] ticket", e);
       setTicketSending(false);
+    }
+  };
+
+  // Send a new reply to an existing ticket (continuous conversation)
+  const handleTicketReply = async (ticketId) => {
+    if (!replyText.trim()) return;
+    setReplySending(true);
+    try {
+      const res = await base44.functions.invoke("sendTicketReply", { ticket_id: ticketId, message: replyText.trim() });
+      if (res.data?.error) throw new Error(res.data.error);
+      setReplyText("");
+      loadTicketReplies(ticketId);
+      load();
+    } catch (e) {
+      console.error("[MyMessages] ticket reply", e);
+    } finally {
+      setReplySending(false);
     }
   };
 
@@ -606,7 +642,15 @@ export default function MyMessages() {
             {tickets.map(t => (
               <div key={t.id} className="rounded-2xl overflow-hidden" style={{ background: "var(--app-card-bg)", border: "1px solid var(--app-border)" }}>
                 <button
-                  onClick={() => setExpandedTicket(expandedTicket === t.id ? null : t.id)}
+                  onClick={() => {
+                    if (expandedTicket === t.id) {
+                      setExpandedTicket(null);
+                    } else {
+                      setExpandedTicket(t.id);
+                      loadTicketReplies(t.id);
+                      setReplyText("");
+                    }
+                  }}
                   className="w-full text-left flex items-center justify-between gap-4 p-4 transition-colors"
                   style={{ color: "var(--app-text-primary)" }}
                 >
@@ -639,27 +683,86 @@ export default function MyMessages() {
 
                 {expandedTicket === t.id && (
                   <div className="px-4 pb-4 pt-4 space-y-3" style={{ borderTop: "1px solid var(--app-border)" }}>
-                    <div className="rounded-xl p-3" style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)" }}>
-                      <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--app-text-secondary)" }}>{tr.yourMessage}</p>
-                      <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{t.message}</p>
-                    </div>
-                    {t.admin_reply ? (
-                      <div className="rounded-xl p-3" style={{ background: "rgba(242,106,27,0.08)", border: "1px solid rgba(242,106,27,0.2)" }}>
-                        <p className="text-xs font-semibold text-orange-400 mb-1.5">{tr.supportReply}</p>
-                        <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--app-text-primary)" }}>{t.admin_reply}</p>
-                        {t.replied_at && (
-                          <p className="text-[10px] mt-2" style={{ color: "var(--app-text-secondary)" }}>
-                            {new Date(t.replied_at).toLocaleString(tr.locale)}
-                          </p>
-                        )}
+                    {/* Original message (user, right side) */}
+                    <div className="flex justify-end">
+                      <div className="max-w-[80%]">
+                        <div className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap" style={{ background: "#F26A1B", color: "#fff" }}>
+                          {t.message}
+                        </div>
+                        <p className="text-[10px] mt-1 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
+                          {tr.you} · {new Date(t.created_date).toLocaleString(tr.locale)}
+                        </p>
                       </div>
-                    ) : (
+                    </div>
+
+                    {/* First admin reply (stored in admin_reply field, left side) */}
+                    {t.admin_reply && (
+                      <div className="flex justify-start">
+                        <div className="max-w-[80%]">
+                          <div className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap" style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}>
+                            {t.admin_reply}
+                          </div>
+                          <p className="text-[10px] mt-1 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
+                            {tr.support} · {t.replied_at ? new Date(t.replied_at).toLocaleString(tr.locale) : ""}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Subsequent replies (SupportTicketReply entity) */}
+                    {(ticketReplies[t.id] || []).map(r => (
+                      <div key={r.id} className={`flex ${r.is_from_admin ? "justify-start" : "justify-end"}`}>
+                        <div className="max-w-[80%]">
+                          <div
+                            className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
+                            style={r.is_from_admin
+                              ? { background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }
+                              : { background: "#F26A1B", color: "#fff" }
+                            }
+                          >
+                            {r.message}
+                          </div>
+                          <p className="text-[10px] mt-1 flex items-center gap-1" style={{ color: "var(--app-text-muted)" }}>
+                            {r.is_from_admin ? tr.support : tr.you} · {new Date(r.created_date).toLocaleString(tr.locale)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Waiting message (only when no admin_reply and no replies yet) */}
+                    {!t.admin_reply && (ticketReplies[t.id] || []).length === 0 && (
                       <div className="rounded-xl p-3 text-center" style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)" }}>
                         <p className="text-sm" style={{ color: "var(--app-text-secondary)" }}>
                           {t.status === "closed" ? tr.ticketClosedNoReply : tr.waitingReply}
                         </p>
                       </div>
                     )}
+
+                    {/* Reply form (open tickets only) */}
+                    {t.status !== "closed" && (
+                      <div className="flex items-end gap-2 pt-2" style={{ borderTop: "1px solid var(--app-border)" }}>
+                        <textarea
+                          value={expandedTicket === t.id ? replyText : ""}
+                          onChange={e => setReplyText(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleTicketReply(t.id); }
+                          }}
+                          placeholder={tr.typePlaceholder}
+                          rows={1}
+                          className="flex-1 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 resize-none max-h-32"
+                          style={{ background: "var(--app-nav-hover-bg)", border: "1px solid var(--app-border)", color: "var(--app-text-primary)" }}
+                        />
+                        <button
+                          onClick={() => handleTicketReply(t.id)}
+                          disabled={replySending || !replyText.trim()}
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center disabled:opacity-40 shrink-0 hover:opacity-90 transition-opacity"
+                        >
+                          {replySending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Closed ticket footer */}
                     {t.status === "closed" && (
                       <p className="text-xs flex items-center gap-1" style={{ color: "var(--app-text-secondary)" }}>
                         <CheckCircle className="w-3 h-3" /> {tr.ticketClosed}

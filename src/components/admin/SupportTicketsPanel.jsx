@@ -19,6 +19,7 @@ export default function SupportTicketsPanel() {
   const [reply, setReply] = useState("");
   const [replying, setReplying] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [replies, setReplies] = useState([]);
 
   const load = async () => {
     try {
@@ -33,10 +34,26 @@ export default function SupportTicketsPanel() {
 
   useEffect(() => { load(); }, []);
 
+  const loadReplies = async (ticketId) => {
+    try {
+      const data = await base44.entities.SupportTicketReply.filter({ ticket_id: ticketId }, "created_date", 100);
+      setReplies(data);
+    } catch {}
+  };
+
   useEffect(() => {
-    const unsub = base44.entities.SupportMessage.subscribe(() => { load(); });
-    return unsub;
-  }, []);
+    if (selectedTicket) loadReplies(selectedTicket.id);
+    else setReplies([]);
+  }, [selectedTicket?.id]);
+
+  useEffect(() => {
+    const unsubMsg = base44.entities.SupportMessage.subscribe(() => { load(); });
+    const unsubReply = base44.entities.SupportTicketReply.subscribe(() => {
+      if (selectedTicket) loadReplies(selectedTicket.id);
+      load();
+    });
+    return () => { unsubMsg(); unsubReply(); };
+  }, [selectedTicket?.id]);
 
   const filteredTickets = useMemo(() => {
     if (statusFilter === "all") return tickets;
@@ -55,11 +72,12 @@ export default function SupportTicketsPanel() {
       if (res.data?.error) throw new Error(res.data.error);
       setSelectedTicket(prev => prev ? {
         ...prev,
-        admin_reply: reply.trim(),
+        admin_reply: prev.admin_reply || reply.trim(),
         status: "replied",
-        replied_at: new Date().toISOString(),
+        replied_at: prev.replied_at || new Date().toISOString(),
       } : null);
       setReply("");
+      loadReplies(selectedTicket.id);
       toast({ title: "Resposta enviada", description: "O aluno/tutor foi notificado." });
       load();
     } catch (e) {
@@ -184,7 +202,7 @@ export default function SupportTicketsPanel() {
                 <p className="text-sm whitespace-pre-wrap">{selectedTicket.message}</p>
               </div>
 
-              {/* Admin reply */}
+              {/* Admin reply (first reply, stored in admin_reply field) */}
               {selectedTicket.admin_reply && (
                 <div className="flex justify-end">
                   <div className="max-w-[75%] rounded-2xl px-4 py-2.5 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm">
@@ -198,6 +216,26 @@ export default function SupportTicketsPanel() {
                   </div>
                 </div>
               )}
+
+              {/* Subsequent replies (SupportTicketReply entity) */}
+              {replies.map(r => (
+                <div key={r.id} className={`flex ${r.is_from_admin ? "justify-end" : "justify-start"}`}>
+                  <div className="max-w-[75%]">
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                        r.is_from_admin
+                          ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-sm"
+                          : "bg-white border border-black/10 text-black rounded-bl-sm"
+                      }`}
+                    >
+                      {r.message}
+                    </div>
+                    <p className={`text-[10px] mt-1 ${r.is_from_admin ? "text-orange-100/70 text-right" : "text-gray-600"}`}>
+                      {r.is_from_admin ? "Suporte" : r.sender_name} · {new Date(r.created_date).toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Reply form */}

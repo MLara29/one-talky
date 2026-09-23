@@ -25,11 +25,26 @@ Deno.serve(async (req) => {
       const replyText = String(reply || '').trim();
       if (!replyText) return Response.json({ error: 'reply is required' }, { status: 400 });
 
-      await base44.asServiceRole.entities.SupportMessage.update(message_id, {
-        admin_reply: replyText,
-        status: 'replied',
-        replied_at: new Date().toISOString(),
-      });
+      const isFirstReply = !msg.admin_reply;
+
+      if (isFirstReply) {
+        // First reply: fill admin_reply + set status (preserves existing behavior)
+        await base44.asServiceRole.entities.SupportMessage.update(message_id, {
+          admin_reply: replyText,
+          status: 'replied',
+          replied_at: new Date().toISOString(),
+        });
+      } else {
+        // Subsequent replies: append as a new SupportTicketReply
+        await base44.asServiceRole.entities.SupportTicketReply.create({
+          ticket_id: message_id,
+          ticket_owner_id: msg.sender_id,
+          sender_id: user.id,
+          sender_name: user.full_name || user.email,
+          is_from_admin: true,
+          message: replyText,
+        });
+      }
 
       try {
         await base44.asServiceRole.entities.Notification.create({
