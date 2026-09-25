@@ -1,0 +1,40 @@
+{
+  "name": "WhatsAppLead",
+  "type": "object",
+  "properties": {
+    "phone": {
+      "type": "string",
+      "description": "N\u00famero do remetente no formato WhatsApp (ex: 5511999999999)"
+    },
+    "message": {
+      "type": "string",
+      "description": "Texto da mensagem recebida"
+    }
+  },
+  "required": [
+    "phone",
+    "message"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
