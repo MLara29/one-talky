@@ -226,17 +226,6 @@ export default function Oferta() {
       {/* FOOTER */}
       <footer style={{ background: "#101115", color: "#8E8B84", padding: "40px 24px" }}>
         <div style={{ maxWidth: 1080, margin: "0 auto" }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: 28, textAlign: "center" }}>
-            <Image
-              src={GUARANTY_SEAL_URL}
-              alt="Selo de garantia de 7 dias — reembolso integral"
-              fittingType="fit"
-              style={{ width: 90, height: 90, display: "block" }}
-            />
-            <p style={{ fontSize: 14, color: "#B7B3AB", margin: 0, fontWeight: 600 }}>
-              7 dias de garantia · cancele quando quiser · reembolso integral
-            </p>
-          </div>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
             <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style={{ height: 28, width: "auto" }} />
             <div style={{ display: "flex", flexWrap: "wrap", gap: 18, fontSize: 13 }}>
