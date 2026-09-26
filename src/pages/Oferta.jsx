@@ -41,12 +41,42 @@ export default function Oferta() {
 
   const goToRegister = () => navigate(`/register?coupon=${COUPON_CODE}`);
 
+  const flags = ["🇺🇸", "🇬🇧", "🇦🇺", "🇨🇦", "🇮🇪", "🇳🇿"];
+  const GUARANTY_SEAL_URL = "https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/b20e6fb98_Selo_de_Garantia_de_7_Dias_PNG_Transparente_Sem_Fundo.png";
+
+  const offerCard = (
+    <div style={{ background: `linear-gradient(135deg, ${ACCENT}, #DC5109)`, borderRadius: 26, padding: "44px 32px", color: "#fff", textAlign: "center", boxShadow: "0 30px 60px -30px rgba(242,106,27,.6)" }}>
+      <div style={{ display: "inline-block", fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", background: "rgba(255,255,255,.2)", padding: "6px 14px", borderRadius: 999, marginBottom: 20 }}>Sua oferta</div>
+      <p style={{ fontSize: "clamp(20px,3vw,26px)", fontWeight: 800, lineHeight: 1.3, margin: 0 }}>
+        Cadastre-se agora e ganhe uma <span style={{ background: "rgba(255,255,255,.2)", padding: "2px 10px", borderRadius: 8 }}>aula de presente de 15 minutos grátis</span> para testar com qualquer tutor da nossa plataforma.
+      </p>
+      <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 26, fontSize: 32, lineHeight: 1 }}>
+        {flags.map((f, i) => <span key={i}>{f}</span>)}
+      </div>
+      <div style={{ marginTop: 28, marginBottom: 4 }}>
+        <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: ".05em", textTransform: "uppercase", color: "#FCE7D8", margin: "0 0 12px" }}>
+          {expired ? "Oferta expirada — recarregue a página para tentar novamente" : "Esta oferta expira em"}
+        </p>
+        <div className={expired ? "" : "ot-timer-pulse"} style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 160, height: 160, borderRadius: "50%",
+          background: expired ? "rgba(255,255,255,.15)" : "rgba(255,255,255,.12)",
+          border: "3px solid rgba(255,255,255,.35)",
+        }}>
+          <span style={{ fontSize: 48, fontWeight: 800, letterSpacing: "-.02em", fontVariantNumeric: "tabular-nums" }}>
+            {expired ? "00:00" : timerDisplay}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
   const steps = [
     { n: "1", title: "Faça seu cadastro", body: "Criação da conta leva menos de 2 minutos. Sem cartão de crédito." },
-    { n: "2", title: "Ganhe 15 minutos grátis", body: "Os 15 minutos entram automaticamente na sua conta ao concluir o cadastro." },
+    { n: "2", title: "Ganhe uma aula experimental grátis de 15 minutos", body: "Agende uma aula com qualquer um de nossos tutores." },
     { n: "3", title: "Agende uma aula com o tutor que preferir", body: "Escolha entre tutores nativos do mundo todo, pela disponibilidade que funciona pra você." },
     { n: "4", title: "Teste a plataforma de verdade", body: "Entre na videochamada, converse 1 a 1 e sinta na prática como funciona." },
-    { n: "5", title: "Se gostar, assine com 30% de desconto", body: "Garantido para quem veio por este anúncio — no primeiro mês, sem fidelidade." },
+    { n: "5", title: "Se gostar, você pode assinar quando quiser", body: "Sem pressão, sem fidelidade — você decide se quer continuar." },
   ];
 
   const benefits = [
@@ -101,12 +131,12 @@ export default function Oferta() {
       {/* 3. BENEFÍCIOS / CONDIÇÕES */}
       <section style={{ background: "#F7F2EB", borderTop: "1px solid #EFEAE3", borderBottom: "1px solid #EFEAE3" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "56px 24px" }}>
-          <h2 style={{ fontSize: "clamp(24px,3vw,32px)", fontWeight: 800, letterSpacing: "-.02em", textAlign: "center", margin: "0 0 32px" }}>O que você tem com a One Talky</h2>
+          <h2 style={{ fontSize: "clamp(24px,3vw,32px)", fontWeight: 800, letterSpacing: "-.02em", textAlign: "center", margin: "0 0 32px" }}>O que você ganha com a One Talky</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {benefits.map((b, i) => (
-              <div key={i} style={{ display: "flex", gap: 14, background: "#fff", border: "1px solid #EEE7DD", borderRadius: 14, padding: "18px 22px", alignItems: "flex-start" }}>
-                <span style={{ flexShrink: 0, width: 26, height: 26, borderRadius: "50%", background: "#FDECE0", color: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14 }}>✓</span>
-                <p style={{ fontSize: 16, color: "#3E3F49", margin: 0, lineHeight: 1.45 }}>{b}</p>
+              <div key={i} style={{ display: "flex", gap: 16, background: "#fff", border: "1px solid #EEE7DD", borderRadius: 14, padding: "20px 24px", alignItems: "center" }}>
+                <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: "50%", background: "#EAF7EE", color: "#16A34A", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18 }}>✓</span>
+                <p style={{ fontSize: 17, color: "#2A2B35", margin: 0, lineHeight: 1.45, fontWeight: 500 }}>{b}</p>
               </div>
             ))}
           </div>
@@ -115,33 +145,7 @@ export default function Oferta() {
 
       {/* 4. BLOCO DE OFERTA + CRONÔMETRO */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "64px 24px" }}>
-        <div style={{ background: `linear-gradient(135deg, ${ACCENT}, #DC5109)`, borderRadius: 26, padding: "48px 36px", color: "#fff", textAlign: "center", boxShadow: "0 30px 60px -30px rgba(242,106,27,.6)" }}>
-          <div style={{ display: "inline-block", fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", background: "rgba(255,255,255,.2)", padding: "6px 14px", borderRadius: 999, marginBottom: 20 }}>Sua oferta</div>
-
-          <p style={{ fontSize: "clamp(20px,3vw,26px)", fontWeight: 800, lineHeight: 1.3, margin: "0 0 12px" }}>
-            Cadastre-se agora e ganhe <span style={{ background: "rgba(255,255,255,.2)", padding: "2px 10px", borderRadius: 8 }}>15 minutos grátis</span> para testar uma aula com qualquer tutor.
-          </p>
-          <p style={{ fontSize: "clamp(18px,2.5vw,22px)", fontWeight: 700, lineHeight: 1.35, margin: "8px 0 0", color: "#FCE7D8" }}>
-            Feche conosco hoje e garanta <span style={{ color: "#fff", textDecoration: "underline", textDecorationThickness: 2 }}>30% de desconto no primeiro mês</span> — oferta exclusiva para quem chegou por este anúncio.
-          </p>
-
-          {/* CRONÔMETRO */}
-          <div style={{ marginTop: 32, marginBottom: 8 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: ".05em", textTransform: "uppercase", color: "#FCE7D8", margin: "0 0 12px" }}>
-              {expired ? "Oferta expirada — recarregue a página para tentar novamente" : "Esta oferta expira em"}
-            </p>
-            <div className={expired ? "" : "ot-timer-pulse"} style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              width: 160, height: 160, borderRadius: "50%",
-              background: expired ? "rgba(255,255,255,.15)" : "rgba(255,255,255,.12)",
-              border: "3px solid rgba(255,255,255,.35)",
-            }}>
-              <span style={{ fontSize: 48, fontWeight: 800, letterSpacing: "-.02em", fontVariantNumeric: "tabular-nums" }}>
-                {expired ? "00:00" : timerDisplay}
-              </span>
-            </div>
-          </div>
-        </div>
+        {offerCard}
       </section>
 
       {/* 5. PASSO A PASSO */}
@@ -177,41 +181,70 @@ export default function Oferta() {
 
       {/* 6. CTA FINAL */}
       <section style={{ background: "#17181C", color: "#fff" }}>
-        <div style={{ maxWidth: 680, margin: "0 auto", padding: "80px 24px", textAlign: "center" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", padding: "72px 24px 64px", textAlign: "center" }}>
           <h2 style={{ fontSize: "clamp(28px,4vw,40px)", fontWeight: 800, letterSpacing: "-.025em", lineHeight: 1.1, margin: 0 }}>
             Pronto para destravar seu inglês falado?
           </h2>
           <p style={{ marginTop: 18, fontSize: 17, color: "#C2BEB6", maxWidth: 480, marginInline: "auto" }}>
-            Comece grátis agora. Sem cartão, sem compromisso — só você e um tutor nativo conversando por vídeo.
+            Registre-se grátis, sem compromisso. Teste a plataforma. Resgate seu presente. 🎁
           </p>
+
+          {/* Cronômetro duplicado acima do botão */}
+          <div style={{ marginTop: 40, maxWidth: 560, marginInline: "auto" }}>
+            {offerCard}
+          </div>
+
           <button
             onClick={goToRegister}
             disabled={expired}
             style={{
-              marginTop: 32, padding: "18px 40px", borderRadius: 999,
+              marginTop: 36, padding: "18px 40px", borderRadius: 999,
               background: expired ? "#555" : ACCENT, color: "#fff",
               fontWeight: 800, fontSize: 18, border: "none", cursor: expired ? "not-allowed" : "pointer",
               boxShadow: expired ? "none" : "0 14px 30px -10px rgba(242,106,27,.6)",
               fontFamily: "inherit", transition: "opacity .2s",
             }}
           >
-            {expired ? "Oferta expirada" : "Quero começar agora"} →
+            {expired ? "Oferta expirada" : "Resgatar minha aula grátis"} →
           </button>
-          <div style={{ marginTop: 16, fontSize: 13.5, color: "#8E8B84", fontWeight: 600 }}>
-            15 minutos grátis · 30% off no primeiro mês · Sem fidelidade · Garantia de 7 dias
+
+          {/* Selo de garantia */}
+          <div style={{ marginTop: 28, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <Image
+              src={GUARANTY_SEAL_URL}
+              alt="Selo de garantia de 7 dias — reembolso integral"
+              fittingType="fit"
+              style={{ width: 110, height: 110, display: "block" }}
+            />
+            <p style={{ fontSize: 14, color: "#C2BEB6", margin: 0, fontWeight: 600 }}>
+              7 dias de garantia · cancele quando quiser · reembolso integral
+            </p>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer style={{ background: "#101115", color: "#8E8B84", padding: "32px 24px" }}>
-        <div style={{ maxWidth: 1080, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
-          <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style={{ height: 28, width: "auto" }} />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 18, fontSize: 13 }}>
-            <a href="/privacidade" style={{ color: "#B7B3AB", textDecoration: "none" }}>Privacidade</a>
-            <a href="/termos" style={{ color: "#B7B3AB", textDecoration: "none" }}>Termos</a>
-            <a href="/faq" style={{ color: "#B7B3AB", textDecoration: "none" }}>FAQ</a>
-            <a href="/reembolso" style={{ color: "#B7B3AB", textDecoration: "none" }}>Reembolso</a>
+      <footer style={{ background: "#101115", color: "#8E8B84", padding: "40px 24px" }}>
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: 28, textAlign: "center" }}>
+            <Image
+              src={GUARANTY_SEAL_URL}
+              alt="Selo de garantia de 7 dias — reembolso integral"
+              fittingType="fit"
+              style={{ width: 90, height: 90, display: "block" }}
+            />
+            <p style={{ fontSize: 14, color: "#B7B3AB", margin: 0, fontWeight: 600 }}>
+              7 dias de garantia · cancele quando quiser · reembolso integral
+            </p>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+            <img src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/1dd8a0bc2_onetalky-logo.png" alt="One Talky" style={{ height: 28, width: "auto" }} />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 18, fontSize: 13 }}>
+              <a href="/privacidade" style={{ color: "#B7B3AB", textDecoration: "none" }}>Privacidade</a>
+              <a href="/termos" style={{ color: "#B7B3AB", textDecoration: "none" }}>Termos</a>
+              <a href="/faq" style={{ color: "#B7B3AB", textDecoration: "none" }}>FAQ</a>
+              <a href="/reembolso" style={{ color: "#B7B3AB", textDecoration: "none" }}>Reembolso</a>
+            </div>
           </div>
         </div>
       </footer>
