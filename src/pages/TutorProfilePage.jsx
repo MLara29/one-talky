@@ -125,6 +125,13 @@ export default function TutorProfilePage() {
       }
       setShowSchedule(false);
       toast({ title: t(lang, "lessonScheduledToast"), description: t(lang, "checkMyLessonsDesc") });
+      // Google Ads — BOOK_APPOINTMENT conversion (lesson booking confirmed)
+      if (typeof window !== 'undefined' && window.gtag && bookRes.data?.lesson?.id) {
+        window.gtag('event', 'conversion', {
+          send_to: 'AW-18476963679/iS8bCN3A-oYdEN-uwOpE',
+          transaction_id: bookRes.data.lesson.id,
+        });
+      }
       // Notify tutor via email (fire and forget) — pass the real lesson_id so the
       // backend can verify the lesson exists instead of trusting client fields.
       if (bookRes.data?.lesson?.id) {

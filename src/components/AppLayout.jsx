@@ -22,6 +22,41 @@ import {
   GraduationCap, DollarSign, Star, Menu, X, Home, TrendingUp, Inbox, Tag, Mail, MessageCircle, Users, Bell, Bug, CreditCard, Bot, Gift
 } from "lucide-react";
 
+// ── Google Ads gtag bootstrap (module scope, runs once on app load) ──
+// Fires conversions for: SIGNUP, BEGIN_CHECKOUT, PURCHASE, SUBSCRIBE_PAID,
+// BOOK_APPOINTMENT. The script loads here so window.gtag is available before
+// any conversion fires (a child effect that fires on mount would race).
+if (typeof document !== 'undefined' && !window.__gads_loaded) {
+    window.__gads_loaded = true;
+    window.dataLayer = window.dataLayer || [];
+    const inIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
+    window.gtag = function gtag() {
+        window.dataLayer.push(arguments);
+        if (inIframe) {
+            try {
+                const args = Array.prototype.slice.call(arguments);
+                const cmd = args[0];
+                window.parent.postMessage({
+                    type: 'base44_gtag_event',
+                    event: {
+                        source: 'gtag',
+                        timestamp: new Date().toLocaleTimeString(),
+                        command: cmd,
+                        params: args.slice(1),
+                        type: cmd === 'event' ? (args[1] || 'event') : cmd,
+                    },
+                }, '*');
+            } catch (_e) { /* relay must not break gtag */ }
+        }
+    };
+    const s = document.createElement('script');
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=AW-18476963679';
+    s.async = true;
+    document.head.appendChild(s);
+    window.gtag('js', new Date());
+    window.gtag('config', 'AW-18476963679', { send_page_view: false });
+}
+
 const STUDENT_NAV = (lang) => {
   const labels = {
     en:    ["Find Tutors", "My Lessons", "Progress", "Plans", "My Profile", "Notifications", "Support"],
@@ -166,6 +201,32 @@ export default function AppLayout() {
     if (!user?.id) return;
     ttqIdentify({ email: user.email, userId: user.id });
   }, [user?.id, user?.email]);
+
+  // Google Ads — SIGNUP conversion: fires on the first authenticated render
+  // for a brand-new signup (created_date within 24h), never on returning login.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user || !user.id) return;
+    const createdDate = String(user.created_date || '');
+    const createdDateUtc = /(?:Z|[+-]\d{2}:?\d{2})$/.test(createdDate)
+        ? createdDate
+        : createdDate + 'Z';
+    const createdAtMs = Date.parse(createdDateUtc);
+    const isNewSignup = Number.isFinite(createdAtMs) &&
+        Date.now() - createdAtMs < 24 * 60 * 60 * 1000;
+    const key = '_aw_signup_fired_AW-18476963679/yVgPCNrA-oYdEN-uwOpE_' + user.id;
+    if (!isNewSignup || localStorage.getItem(key)) return;
+    let tries = 0;
+    const fire = () => {
+        if (!window.gtag) { if (tries++ < 20) setTimeout(fire, 250); return; }
+        if (localStorage.getItem(key)) return;
+        localStorage.setItem(key, '1');
+        window.gtag('event', 'conversion', {
+            send_to: 'AW-18476963679/yVgPCNrA-oYdEN-uwOpE',
+            transaction_id: user.id,
+        });
+    };
+    fire();
+  }, [user]);
 
   // Tab/window close: fire a keepalive fetch to mark the tutor offline
   // before the page unloads. The AuthContext cleanup on unmount tries this

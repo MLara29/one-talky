@@ -37,6 +37,14 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
       value: displayPrice,
       currency: displayCurrency,
     });
+    // Google Ads — BEGIN_CHECKOUT conversion
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-18476963679/RANhCNfA-oYdEN-uwOpE',
+        value: displayPrice,
+        currency: displayCurrency,
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -91,6 +99,18 @@ export default function StripeCheckoutModal({ item, onClose, onSuccess, userEmai
       value: displayPrice,
       currency: displayCurrency,
     });
+    // Google Ads — PURCHASE (packs) or SUBSCRIBE_PAID (plans), based on the
+    // external_reference prefix ("plan:" = subscription, "pack:" = one-time).
+    if (typeof window !== 'undefined' && window.gtag) {
+      const isSubscription = String(item.external_reference || '').startsWith('plan:');
+      window.gtag('event', 'conversion', {
+        send_to: isSubscription
+          ? 'AW-18476963679/kT2WCLLC-oYdEN-uwOpE'
+          : 'AW-18476963679/jVRECJHW9YYdEN-uwOpE',
+        value: displayPrice,
+        currency: displayCurrency,
+      });
+    }
     setTimeout(() => { onSuccess?.(); onClose?.(); }, 2000);
   };
 

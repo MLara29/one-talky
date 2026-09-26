@@ -84,6 +84,14 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
       value: item.price,
       currency: item.currency || "BRL",
     });
+    // Google Ads — BEGIN_CHECKOUT conversion
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-18476963679/RANhCNfA-oYdEN-uwOpE',
+        value: item.price,
+        currency: item.currency || 'BRL',
+      });
+    }
   }, []);
 
   // TikTok Pixel: AddPaymentInfo + Purchase — fire when the payment form is
@@ -96,7 +104,20 @@ export default function CheckoutModal({ item, onClose, onSuccess, userEmail, aff
       currency: item.currency || "BRL",
     };
     if (step === "form") ttqTrack("AddPaymentInfo", params);
-    if (step === "success") ttqTrack("Purchase", params);
+    if (step === "success") {
+      ttqTrack("Purchase", params);
+      // Google Ads — PURCHASE (packs) or SUBSCRIBE_PAID (plans)
+      if (typeof window !== 'undefined' && window.gtag) {
+        const isSubscription = String(item.external_reference || '').startsWith('plan:');
+        window.gtag('event', 'conversion', {
+          send_to: isSubscription
+            ? 'AW-18476963679/kT2WCLLC-oYdEN-uwOpE'
+            : 'AW-18476963679/jVRECJHW9YYdEN-uwOpE',
+          value: item.price,
+          currency: item.currency || 'BRL',
+        });
+      }
+    }
   }, [step]);
 
   // Card submit
