@@ -1,15 +1,10 @@
 import { base44 } from "@/api/base44Client";
 
-// ⚠️ CHAVE MESTRA — desligada de propósito em 2026-08-29, a pedido do
-// Miqueias: a plataforma vende só pro Brasil por enquanto, e a detecção de
-// região por IP gratuita estava classificando visitantes brasileiros (por
-// IPv6/operadora móvel) como se fossem dos EUA, mostrando preço em dólar
-// por engano. Em vez de tentar corrigir a detecção gratuita, ela foi
-// pausada por completo — todo mundo vê R$/português, sempre, até aqui virar
-// `true` de novo. TODO o código de detecção continua intacto, pronto pra
-// reativar quando a expansão internacional começar (idealmente já trocando
-// pra um provedor pago tipo IPinfo.io nesse momento, ver conversa).
-export const REGION_DETECTION_ENABLED = false;
+// Detecção de região reativada em 2026-09-26: o IPinfo.io (provedor pago,
+// base mais precisa) agora é a fonte primária em base44/shared/regionDetect.js,
+// resolvendo o problema original de IPv6 de operadora móvel brasileira ser
+// classificado como EUA. Fallbacks mantidos (cf-ipcountry → ipwho.is → ipapi.co).
+export const REGION_DETECTION_ENABLED = true;
 
 // ⚠️ SIBLING: base44/shared/regionalPricing.js is the backend source of truth.
 // This file mirrors the same config for the frontend. If you change prices

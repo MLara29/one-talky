@@ -1,3 +1,4 @@
+import { secrets } from "base44:runtime";
 import { getRegionForCountry, getRegionalConfig } from "./regionalPricing.js";
 
 // Detects the visitor's region from their IP address (geolocation, NOT
@@ -62,7 +63,7 @@ export async function detectRegionFromRequest(req) {
 // null se a chave não estiver configurada, a chamada falhar, ou a
 // resposta não contiver um país válido.
 async function lookupCountryCodeIpinfo(ip) {
-  const apiKey = process.env.IPINFO_API_KEY;
+  const apiKey = secrets.get("IPINFO_API_KEY");
   if (!apiKey) return null;
   try {
     const res = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}/json?token=${encodeURIComponent(apiKey)}`);
