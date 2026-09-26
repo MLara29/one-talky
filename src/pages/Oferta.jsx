@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Image } from "@/components/ui/image";
 
 const ACCENT = "#F26A1B";
 const STORAGE_KEY = "ot_oferta_timer_start";
@@ -68,24 +69,32 @@ export default function Oferta() {
         </nav>
       </header>
 
-      {/* 1. HEADLINE DE DOR */}
-      <section style={{ maxWidth: 760, margin: "0 auto", padding: "64px 24px 40px", textAlign: "center" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FDECE0", color: "#C4520B", fontWeight: 700, fontSize: 13, padding: "7px 14px", borderRadius: 999, marginBottom: 24 }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: ACCENT }} /> Oferta exclusiva · tráfego pago
-        </div>
-        <h1 style={{ fontSize: "clamp(32px,5vw,48px)", fontWeight: 800, letterSpacing: "-.025em", lineHeight: 1.08, margin: 0 }}>
-          Precisa se expressar em inglês com confiança? <span style={{ color: ACCENT }}>A prática que faltou está aqui.</span>
-        </h1>
-      </section>
-
-      {/* 2. POSICIONAMENTO */}
-      <section style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 56px" }}>
-        <div style={{ background: "#fff", border: "1px solid #EEE7DD", borderRadius: 20, padding: "32px 28px", boxShadow: "0 10px 30px -20px rgba(23,24,28,.15)" }}>
-          <p style={{ fontSize: 18, lineHeight: 1.6, color: "#3E3F49", margin: 0 }}>
-            A <strong style={{ color: "#17181C" }}>One Talky</strong> <strong style={{ color: ACCENT }}>NÃO é uma escola</strong>, não é um curso.
-            É uma plataforma de prática de <strong style={{ color: "#17181C" }}>CONVERSAÇÃO</strong> em inglês, com aulas individuais
-            (<strong style={{ color: "#17181C" }}>um a um</strong>) com tutores nativos do mundo todo.
-          </p>
+      {/* 1. HEADLINE DE DOR + POSICIONAMENTO (com imagem) */}
+      <section style={{ maxWidth: 1080, margin: "0 auto", padding: "56px 24px 48px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 40, alignItems: "center" }}>
+          <div style={{ flex: "1 1 420px", minWidth: 300 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FDECE0", color: "#C4520B", fontWeight: 700, fontSize: 13, padding: "7px 14px", borderRadius: 999, marginBottom: 24 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: ACCENT }} /> Oferta exclusiva · tráfego pago
+            </div>
+            <h1 style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, letterSpacing: "-.025em", lineHeight: 1.08, margin: "0 0 28px" }}>
+              Precisa se expressar em inglês com confiança? <span style={{ color: ACCENT }}>A prática que faltou está aqui.</span>
+            </h1>
+            <div style={{ background: "#fff", border: "1px solid #EEE7DD", borderRadius: 20, padding: "28px 26px", boxShadow: "0 10px 30px -20px rgba(23,24,28,.15)" }}>
+              <p style={{ fontSize: 17, lineHeight: 1.6, color: "#3E3F49", margin: 0 }}>
+                A <strong style={{ color: "#17181C" }}>One Talky</strong> <strong style={{ color: ACCENT }}>NÃO é uma escola</strong>, não é um curso.
+                É uma plataforma de prática de <strong style={{ color: "#17181C" }}>CONVERSAÇÃO</strong> em inglês, com aulas individuais
+                (<strong style={{ color: "#17181C" }}>um a um</strong>) com tutores nativos do mundo todo.
+              </p>
+            </div>
+          </div>
+          <div style={{ flex: "1 1 380px", minWidth: 280 }}>
+            <Image
+              src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/a3feba42a_ChatGPTImage2desetde202620_19_05.png"
+              alt="Aluna em videochamada 1 a 1 com tutor nativo One Talky"
+              fittingType="fill"
+              style={{ width: "100%", aspectRatio: "4 / 3", borderRadius: 20, display: "block", boxShadow: "0 24px 50px -22px rgba(23,24,28,.35)" }}
+            />
+          </div>
         </div>
       </section>
 
@@ -149,6 +158,19 @@ export default function Oferta() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Ilustração: como agendar uma aula */}
+          <div style={{ marginTop: 36, background: "#fff", border: "1px solid #EEE7DD", borderRadius: 20, padding: "20px", boxShadow: "0 10px 30px -20px rgba(23,24,28,.15)" }}>
+            <Image
+              src="https://media.base44.com/images/public/6a4fc6aa5fb7f4a4ff85ed0d/b9b612b3e_ChatGPTImage26desetde202606_51_44.png"
+              alt="Dashboard One Talky com cards de tutores e botão Agendar aula"
+              fittingType="fit"
+              style={{ width: "100%", aspectRatio: "16 / 10", borderRadius: 14, display: "block", background: "#F9F6F2" }}
+            />
+            <p style={{ textAlign: "center", fontSize: 14, color: "#8A847B", marginTop: 14, marginBottom: 0, fontWeight: 600 }}>
+              Escolha seu tutor nativo e agende em poucos cliques — no horário que funciona pra você.
+            </p>
           </div>
         </div>
       </section>
