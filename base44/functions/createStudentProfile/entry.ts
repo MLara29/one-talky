@@ -109,6 +109,9 @@ Deno.serve(async (req) => {
       ? new Date(Date.now() + bonusExpiryDays * 24 * 60 * 60 * 1000).toISOString()
       : null;
 
+    const VALID_UI_LANGS = ["en", "pt_br", "es", "fr", "de", "it", "ja", "ko"];
+    const uiLanguage = VALID_UI_LANGS.includes(profile.ui_language) ? profile.ui_language : "en";
+
     const created = await base44.asServiceRole.entities.StudentProfile.create({
       user_id: user.id,
       full_name: String(profile.full_name || "").slice(0, 200),
@@ -119,6 +122,7 @@ Deno.serve(async (req) => {
       objective: String(profile.objective || "").slice(0, 200),
       accent_preference: String(profile.accent_preference || "").slice(0, 100),
       conversation_topics: Array.isArray(profile.conversation_topics) ? profile.conversation_topics.slice(0, 30) : [],
+      ui_language: uiLanguage,
       plan_credits_minutes: 0,
       prepaid_credits_minutes: freeCredits,
       // Teto de referência (100%) da barra visual — precisa ser gravado aqui

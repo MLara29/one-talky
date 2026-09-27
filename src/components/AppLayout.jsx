@@ -179,14 +179,22 @@ export default function AppLayout() {
 
   // Students blocked by an admin (StudentProfile.is_blocked) are denied access
   // to the entire app — checked here since AppLayout wraps every protected page.
+  // Também aplica o ui_language salvo no perfil (herdado da detecção por IP no
+  // cadastro) se o aluno ainda não fez uma escolha manual de idioma — assim a
+  // janela de boas-vindas e o dashboard já nascem no idioma certo, mesmo de
+  // outro dispositivo, sem esperar o aluno mexer no seletor.
   const [studentBlocked, setStudentBlocked] = useState(false);
   const [tutorProfile, setTutorProfile] = useState(null);
   useEffect(() => {
     if (role !== "student" || !user?.id) return;
     base44.entities.StudentProfile.filter({ user_id: user.id }).then(profiles => {
-      if (profiles[0]?.is_blocked) setStudentBlocked(true);
+      const profile = profiles[0];
+      if (profile?.is_blocked) setStudentBlocked(true);
+      if (profile?.ui_language && !localStorage.getItem("ui_lang_manual")) {
+        changeLang(profile.ui_language);
+      }
     }).catch(() => {});
-  }, [role, user?.id]);
+  }, [role, user?.id, changeLang]);
 
   useEffect(() => {
     if (role !== "tutor" || !user?.id) return;

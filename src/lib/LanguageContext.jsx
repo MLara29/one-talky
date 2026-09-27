@@ -61,6 +61,9 @@ export const LanguageProvider = ({ children }) => {
   const changeLang = (code) => {
     setLang(code);
     localStorage.setItem("ui_lang", code);
+    // Marca que houve escolha manual — a preferência de ui_language salva no
+    // StudentProfile nunca sobrescreve uma escolha manual já feita.
+    localStorage.setItem("ui_lang_manual", "true");
     window.dispatchEvent(new CustomEvent("ui_lang_change", { detail: code }));
   };
 

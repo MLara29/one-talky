@@ -124,6 +124,12 @@ export default function OnboardingStudent() {
           objective: form.objective,
           accent_preference: "",
           conversation_topics: form.conversation_topics,
+          // Idioma detectado por IP (ou escolhido manualmente no seletor do
+          // onboarding) — salvo no perfil pra persistir por conta, não só por
+          // navegador. No próximo login (mesmo de outro dispositivo), o
+          // AppLayout aplica este idioma se o aluno não tiver feito uma
+          // escolha manual depois.
+          ui_language: lang,
         },
         coupon_code: couponStatus === "valid" ? couponCode : null,
       });
