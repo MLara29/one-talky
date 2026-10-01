@@ -63,6 +63,8 @@ export default function Classroom() {
   const localVideoTrackRef = useRef(null);
   const screenVideoTrackRef = useRef(null);
   const screenAudioTrackRef = useRef(null);
+  const mixedAudioTrackRef = useRef(null);   // Agora custom audio track (mic + screen audio mixed via Web Audio API)
+  const audioContextRef = useRef(null);        // Web Audio API context used to mix mic + screen audio
   const localVideoDiv = useRef(null);
   const remoteVideoDiv = useRef(null);
   const chatBottomRef = useRef(null);
@@ -630,9 +632,22 @@ export default function Classroom() {
       screenVideoTrackRef.current = null;
     }
     if (screenAudio) {
-      try { await client.unpublish(screenAudio); } catch {}
-      screenAudio.close();
+      // Close and unpublish the mixed audio track (mic + screen audio)
+      const mixedTrack = mixedAudioTrackRef.current;
+      if (mixedTrack) {
+        try { await client.unpublish(mixedTrack); } catch {}
+        try { mixedTrack.close(); } catch {}
+        mixedAudioTrackRef.current = null;
+      }
+      // Close the Web Audio API context (disconnects mic + screen sources)
+      if (audioContextRef.current) {
+        try { await audioContextRef.current.close(); } catch {}
+        audioContextRef.current = null;
+      }
+      // Close the raw screen audio track
+      try { screenAudio.close(); } catch {}
       screenAudioTrackRef.current = null;
+      // Republish the original mic track so the student hears the tutor's voice again
       if (localAudioTrackRef.current) {
         try { await client.publish(localAudioTrackRef.current); } catch {}
       }
@@ -672,8 +687,33 @@ export default function Classroom() {
       }
 
       if (screenAudio) {
+        // Mix mic + screen audio into a single Agora track using the Web Audio API,
+        // so the student hears BOTH the tutor's voice and the shared system audio.
         try { await client.unpublish(localAudioTrackRef.current); } catch {}
-        await client.publish([screenTrack, screenAudio]);
+
+        const audioContext = new AudioContext();
+        audioContextRef.current = audioContext;
+        const destination = audioContext.createMediaStreamDestination();
+
+        // Route the mic track through the Web Audio graph
+        const micSource = audioContext.createMediaStreamSource(
+          new MediaStream([localAudioTrackRef.current.getMediaStreamTrack()])
+        );
+        micSource.connect(destination);
+
+        // Route the screen audio track through the same Web Audio graph
+        const screenSource = audioContext.createMediaStreamSource(
+          new MediaStream([screenAudio.getMediaStreamTrack()])
+        );
+        screenSource.connect(destination);
+
+        // Create a single custom Agora track from the mixed stream and publish it
+        const mixedTrack = await AgoraRTC.createCustomAudioTrack({
+          mediaStreamTrack: destination.stream.getAudioTracks()[0],
+        });
+        mixedAudioTrackRef.current = mixedTrack;
+
+        await client.publish([screenTrack, mixedTrack]);
       } else {
         await client.publish(screenTrack);
       }
@@ -708,6 +748,14 @@ export default function Classroom() {
     if (screenAudioTrackRef.current) {
       try { screenAudioTrackRef.current.close(); } catch {}
       screenAudioTrackRef.current = null;
+    }
+    if (mixedAudioTrackRef.current) {
+      try { mixedAudioTrackRef.current.close(); } catch {}
+      mixedAudioTrackRef.current = null;
+    }
+    if (audioContextRef.current) {
+      try { audioContextRef.current.close(); } catch {}
+      audioContextRef.current = null;
     }
     localAudioTrackRef.current?.close();
     localVideoTrackRef.current?.close();
