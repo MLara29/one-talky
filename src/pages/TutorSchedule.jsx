@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronLeft, ChevronRight, Clock, Info, FileText, Copy, Snowflake, PlayCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Info, FileText, Copy, Snowflake, PlayCircle, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import TimezoneSelector from "@/components/tutors/TimezoneSelector";
 
@@ -89,6 +89,13 @@ export default function TutorSchedule() {
   const [saving, setSaving] = useState(false);
   const [copying, setCopying] = useState(false);
 
+  // Timezone mismatch detection — compares browser tz with saved profile tz
+  // every time the page loads. Never auto-updates; only warns and waits for
+  // explicit confirmation from the tutor.
+  const [tzMismatch, setTzMismatch] = useState(null); // detected tz string if different
+  const [tzDismissed, setTzDismissed] = useState(false); // session-only dismiss
+  const [updatingTz, setUpdatingTz] = useState(false);
+
   // Map of "YYYY-MM-DD" → ["HH:MM", ...] — per-date availability
   const [dateAvailability, setDateAvailability] = useState({});
 
@@ -111,6 +118,12 @@ export default function TutorSchedule() {
           p.timezone = tz;
         }
         setProfile(p);
+
+        // Detect timezone mismatch — compare browser tz with saved profile tz
+        const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (p.timezone && browserTz && p.timezone !== browserTz) {
+          setTzMismatch(browserTz);
+        }
 
         // Load per-date availability from TutorAvailabilityDate
         const records = await base44.entities.TutorAvailabilityDate.filter({ tutor_id: user.id }, "date", 500);
@@ -263,6 +276,24 @@ export default function TutorSchedule() {
     } finally { setSavingNotice(false); }
   };
 
+  // Update the tutor's timezone to match the browser-detected one, then reload
+  // availability so the calendar reflects the new timezone.
+  const updateTz = async () => {
+    if (!tzMismatch || !profile) return;
+    setUpdatingTz(true);
+    try {
+      await base44.functions.invoke('updateMyProfile', { updates: { timezone: tzMismatch } });
+      const newTz = tzMismatch;
+      setProfile(prev => ({ ...prev, timezone: newTz }));
+      setTzMismatch(null);
+      toast({ title: "Timezone updated! ✅", description: `Your timezone is now ${newTz}.` });
+      // Reload availability with the updated timezone
+      await loadProfile();
+    } catch (err) {
+      toast({ title: "Error updating timezone", description: err?.message || "Please try again.", variant: "destructive" });
+    } finally { setUpdatingTz(false); }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center py-24">
       <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
@@ -308,6 +339,32 @@ export default function TutorSchedule() {
           <Switch checked={profile?.is_available_now} onCheckedChange={toggleAvailableNow} />
         </div>
       </div>
+
+      {/* Timezone mismatch warning — non-blocking, session-dismissable */}
+      {tzMismatch && !tzDismissed && (
+        <div className="mb-5 px-4 py-4 rounded-2xl flex flex-col sm:flex-row sm:items-start gap-3"
+          style={{ background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.30)" }}>
+          <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="theme-heading font-semibold text-white text-sm">
+              We detected a different timezone
+            </p>
+            <p className="theme-subtext text-xs text-gray-500 mt-1 leading-relaxed">
+              Your profile timezone is <strong className="text-amber-300">{profile?.timezone}</strong>, but your device is now in <strong className="text-amber-300">{tzMismatch}</strong>.
+              This may cause your schedule to appear at wrong times. Would you like to update?
+            </p>
+            <div className="flex gap-2 mt-3">
+              <Button onClick={updateTz} disabled={updatingTz} size="sm"
+                className="bg-amber-500 hover:bg-amber-600 text-white border-0">
+                {updatingTz ? "Updating..." : "Update timezone"}
+              </Button>
+              <Button onClick={() => setTzDismissed(true)} variant="outline" size="sm">
+                Ignore for now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Link
         to="/tutor-agreement"
