@@ -54,6 +54,7 @@ export default function TutorDashboard() {
   const shownLiveRef = useRef(new Set());
   const lessonsRef = useRef([]);
   const [tick, setTick] = useState(0);
+  const [showAvailableHint, setShowAvailableHint] = useState(false);
   const today = new Date();
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -133,6 +134,9 @@ export default function TutorDashboard() {
       const profiles = await base44.entities.TutorProfile.filter({ user_id: user.id });
       if (profiles.length > 0) {
         setProfile(profiles[0]);
+        if (profiles[0].is_available_now === false) {
+          setShowAvailableHint(true);
+        }
         const [live, sched] = await Promise.all([
           base44.entities.Lesson.filter({ tutor_id: user.id, status: "in_progress" }),
           base44.entities.Lesson.filter({ tutor_id: user.id, status: "scheduled" }),
@@ -277,6 +281,18 @@ export default function TutorDashboard() {
             {t(lang, "welcomeBack")}, {profile.full_name?.split(" ")[0]}
           </h1>
           <p className="theme-subtext text-gray-500 text-sm mt-1">{t(lang, "teachingOverview")}</p>
+          {showAvailableHint && (
+            <AutoDismissAlert onDismiss={() => setShowAvailableHint(false)}
+              className="mt-3 flex items-start gap-2 max-w-md bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-2.5">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-300 leading-relaxed">
+                Your "Available Now" is off. Turn it on if you'd like to take instant lessons with students online right now, without prior scheduling.
+              </p>
+              <button onClick={() => setShowAvailableHint(false)} className="text-amber-400/60 hover:text-amber-300 shrink-0 ml-auto">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </AutoDismissAlert>
+          )}
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <button

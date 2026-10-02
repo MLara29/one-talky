@@ -50,6 +50,10 @@ export default function Classroom() {
   const [studentLevel, setStudentLevel] = useState(null);
   const [cameraError, setCameraError] = useState(null);
   const [micError, setMicError] = useState(null);
+  // Dica temporária (~3s) pro tutor sobre o botão "Reconnect video" — aparece
+  // uma vez assim que ele entra na sala, independente de a câmera ter aparecido
+  // ou não. É só um aviso preventivo de baixo custo.
+  const [showReconnectHint, setShowReconnectHint] = useState(false);
   const chatOpenRef = useRef(false);
 
   const isEnglish = user?.role === "tutor";
@@ -144,6 +148,15 @@ export default function Classroom() {
       localVideoTrackRef.current.play(localVideoDiv.current);
     }
   }, [joined, cameraOn]);
+
+  // Dica temporária do botão "Reconnect video" — só pro tutor, 3s, uma vez.
+  useEffect(() => {
+    if (joined && user?.role === "tutor") {
+      setShowReconnectHint(true);
+      const timer = setTimeout(() => setShowReconnectHint(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [joined, user?.role]);
 
   useEffect(() => {
     loadLesson();
@@ -1098,6 +1111,14 @@ export default function Classroom() {
                 ? (isEnglish ? "Requesting…" : "Solicitando…")
                 : (isEnglish ? "Reconnect video" : "Reconectar vídeo")}
             </button>
+          )}
+
+          {/* Dica temporária apontando para o botão "Reconnect video" — só tutor */}
+          {showReconnectHint && user?.role === "tutor" && (
+            <div className="absolute top-12 right-3 z-30 max-w-[220px] bg-ot-primary text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-lg animate-fade-up">
+              <div className="absolute -top-1.5 right-4 w-3 h-3 bg-ot-primary rotate-45" />
+              If you can't see your student's camera, click "Reconnect video" to fix it.
+            </div>
           )}
 
           {/* Local video (PiP) — nested inside the remote video area so it stays
