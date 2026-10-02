@@ -154,7 +154,7 @@ export default function Classroom() {
   useEffect(() => {
     if (joined && user?.role === "tutor") {
       setShowReconnectHint(true);
-      const timer = setTimeout(() => setShowReconnectHint(false), 3000);
+      const timer = setTimeout(() => setShowReconnectHint(false), 6000);
       return () => clearTimeout(timer);
     }
   }, [joined, user?.role]);

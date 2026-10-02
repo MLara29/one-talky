@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
-function AutoDismissAlert({ children, onDismiss, className }) {
+function AutoDismissAlert({ children, onDismiss, className, duration = 5000 }) {
   useEffect(() => {
-    const t = setTimeout(onDismiss, 5000);
+    const t = setTimeout(onDismiss, duration);
     return () => clearTimeout(t);
   }, []);
   return <div className={className}>{children}</div>;
@@ -281,18 +281,6 @@ export default function TutorDashboard() {
             {t(lang, "welcomeBack")}, {profile.full_name?.split(" ")[0]}
           </h1>
           <p className="theme-subtext text-gray-500 text-sm mt-1">{t(lang, "teachingOverview")}</p>
-          {showAvailableHint && (
-            <AutoDismissAlert onDismiss={() => setShowAvailableHint(false)}
-              className="mt-3 flex items-start gap-2 max-w-md bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-2.5">
-              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-300 leading-relaxed">
-                Your "Available Now" is off. Turn it on if you'd like to take instant lessons with students online right now, without prior scheduling.
-              </p>
-              <button onClick={() => setShowAvailableHint(false)} className="text-amber-400/60 hover:text-amber-300 shrink-0 ml-auto">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </AutoDismissAlert>
-          )}
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <button
@@ -301,10 +289,24 @@ export default function TutorDashboard() {
           >
             <MessageSquare className="w-4 h-4" /> {t(lang, "speakWithSupport")}
           </button>
-          <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
-            <div className={`w-2.5 h-2.5 rounded-full ${profile.is_available_now ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`} />
-            <Label className="theme-subtext text-sm font-medium text-gray-500">{t(lang, "availableNowToggle")}</Label>
-            <Switch checked={profile.is_available_now} onCheckedChange={toggleAvailability} />
+          <div className="relative">
+            <div className="theme-card flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl">
+              <div className={`w-2.5 h-2.5 rounded-full ${profile.is_available_now ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`} />
+              <Label className="theme-subtext text-sm font-medium text-gray-500">{t(lang, "availableNowToggle")}</Label>
+              <Switch checked={profile.is_available_now} onCheckedChange={toggleAvailability} />
+            </div>
+            {showAvailableHint && (
+              <AutoDismissAlert onDismiss={() => setShowAvailableHint(false)} duration={6000}
+                className="absolute top-full right-0 mt-2 z-20 w-[280px] flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-2.5 shadow-lg backdrop-blur-sm">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-300 leading-relaxed">
+                  Your "Available Now" is off. Turn it on if you'd like to take instant lessons with students online right now, without prior scheduling.
+                </p>
+                <button onClick={() => setShowAvailableHint(false)} className="text-amber-400/60 hover:text-amber-300 shrink-0 ml-auto">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </AutoDismissAlert>
+            )}
           </div>
         </div>
       </div>
