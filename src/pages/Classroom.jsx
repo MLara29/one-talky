@@ -54,6 +54,7 @@ export default function Classroom() {
   // uma vez assim que ele entra na sala, independente de a câmera ter aparecido
   // ou não. É só um aviso preventivo de baixo custo.
   const [showReconnectHint, setShowReconnectHint] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const chatOpenRef = useRef(false);
 
   const isEnglish = user?.role === "tutor";
@@ -843,6 +844,28 @@ export default function Classroom() {
     }
   };
 
+  const handleTranslate = async () => {
+    const text = msgInput.trim();
+    if (!text) return;
+    if (text.length > 300) {
+      toast({ title: isEnglish ? "Text too long" : "Texto muito longo", description: isEnglish ? "Max 300 characters for translation." : "Máximo de 300 caracteres para tradução.", variant: "destructive" });
+      return;
+    }
+    setTranslating(true);
+    try {
+      const res = await base44.functions.invoke('translateChatMessage', { text });
+      if (res.data?.translation) {
+        setMsgInput(res.data.translation);
+      } else {
+        toast({ title: isEnglish ? "Translation failed" : "Não foi possível traduzir agora, tente novamente", variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: isEnglish ? "Translation failed" : "Não foi possível traduzir agora, tente novamente", variant: "destructive" });
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   const sendMessage = async () => {
     if (!msgInput.trim()) return;
     const text = msgInput.trim();
@@ -1239,6 +1262,18 @@ export default function Classroom() {
                   placeholder={isEnglish ? "Type a message..." : "Digite uma mensagem..."}
                   className="bg-[#F7F5F2] border-ot-border text-ot-text placeholder:text-ot-text-secondary text-sm"
                 />
+                {user?.role === "student" && (
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={handleTranslate}
+                    disabled={translating || !msgInput.trim()}
+                    title={isEnglish ? "Translate to English" : "Traduzir para inglês"}
+                    className="border-ot-border text-ot-primary hover:bg-ot-tint shrink-0"
+                  >
+                    {translating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
+                  </Button>
+                )}
                 <Button size="icon" onClick={sendMessage} className="bg-gradient-to-br from-ot-primary to-[#FB9A3C] hover:brightness-95 text-white border-0 shrink-0">
                   <Send className="w-4 h-4" />
                 </Button>
