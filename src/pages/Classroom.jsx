@@ -692,6 +692,10 @@ export default function Classroom() {
         try { await client.unpublish(localAudioTrackRef.current); } catch {}
 
         const audioContext = new AudioContext();
+        // Garante que o contexto não fique "suspended" (políticas de autoplay do navegador)
+        if (audioContext.state === "suspended") {
+          await audioContext.resume();
+        }
         audioContextRef.current = audioContext;
         const destination = audioContext.createMediaStreamDestination();
 
