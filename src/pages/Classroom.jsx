@@ -58,6 +58,9 @@ export default function Classroom() {
   const clientRef = useRef(null);
   const reconcileRef = useRef(null);
   const joinGuardRef = useRef(false);
+  // Garante que o auto-reconnect silencioso da câmera só dispare UMA vez por aula
+  // (quando os dois participantes estão na sala mas o vídeo remoto não aparece).
+  const autoReconnectTriggeredRef = useRef(false);
   const remoteVideoTrackRef = useRef(null);
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
@@ -93,6 +96,47 @@ export default function Classroom() {
       remoteVideoTrack.play(remoteVideoDiv.current);
     }
   }, [remoteVideoTrack]);
+
+  // ── Auto-reconnect silencioso da câmera ──────────────────────────────
+  // Quando os dois participantes estão na sala (joined + remoteUserPresent)
+  // mas o vídeo remoto não aparece, espera 5s pra o reconcile natural tentar
+  // inscrever a faixa. Se ainda assim não vier vídeo, dispara AUTOMATICAMENTE
+  // (e de forma invisível) o mesmo sinal que o botão "Reconnect video" envia,
+  // pedindo pro outro lado fazer o toggle silencioso na própria câmera dele.
+  // Só dispara uma vez por aula — depois disso o tutor pode acionar o botão
+  // manualmente se o problema persistir.
+  useEffect(() => {
+    if (!joined || !remoteUserPresent || autoReconnectTriggeredRef.current) return;
+
+    // Vídeo remoto já apareceu — satisfeito, tranca pra nunca mais disparar.
+    if (remoteVideoTrack) {
+      autoReconnectTriggeredRef.current = true;
+      return;
+    }
+
+    // Ambos presentes, sem vídeo remoto — dá 5s de margem pro reconcile.
+    const timer = setTimeout(async () => {
+      // Reconfere via ref (state pode estar stale dentro do timeout).
+      if (remoteVideoTrackRef.current) {
+        autoReconnectTriggeredRef.current = true;
+        return;
+      }
+      autoReconnectTriggeredRef.current = true;
+      try {
+        const targetRole = user?.role === "tutor" ? "student" : "tutor";
+        await base44.functions.invoke("sendClassroomMessage", {
+          lesson_id: id,
+          sender_name: "__system",
+          text: `__TOGGLE_CAMERA_REQUEST:${targetRole}`,
+        });
+        console.log(`[Classroom] auto camera reconnect triggered (role=${user?.role})`);
+      } catch (e) {
+        console.error("[Classroom] auto camera reconnect failed:", e);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [joined, remoteUserPresent, remoteVideoTrack, id, user?.role]);
 
   // Play local video
   useEffect(() => {
