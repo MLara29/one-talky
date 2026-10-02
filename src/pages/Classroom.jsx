@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, AlertTriangle, Monitor, MonitorOff, RefreshCw } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, AlertTriangle, Monitor, MonitorOff, RefreshCw, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import UrgencyOfferModal from "@/components/classroom/UrgencyOfferModal";
