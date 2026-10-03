@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Send, Search, MessageSquare, Users, GraduationCap, Loader2, ArrowLeft, Sparkles, Plus } from "lucide-react";
+import { Send, Search, MessageSquare, Users, GraduationCap, Loader2, ArrowLeft, Sparkles, Plus, Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import SupportAIAssistant from "@/components/admin/SupportAIAssistant";
@@ -46,6 +46,9 @@ export default function AdminSupport() {
   const [showNewChat, setShowNewChat] = useState(false);
   const [newChatSearch, setNewChatSearch] = useState("");
   const [viewMode, setViewMode] = useState("chat"); // "chat" | "tickets"
+  const [showClassroomAlert, setShowClassroomAlert] = useState(false);
+  const [alertText, setAlertText] = useState("");
+  const [sendingAlert, setSendingAlert] = useState(false);
   const scrollRef = useRef(null);
 
   const load = async () => {
@@ -172,6 +175,25 @@ export default function AdminSupport() {
       toast({ title: "Erro", description: e?.message || "Não foi possível enviar", variant: "destructive" });
     } finally {
       setSending(false);
+    }
+  };
+
+  const sendClassroomAlert = async () => {
+    if (!alertText.trim() || !selectedConversation) return;
+    setSendingAlert(true);
+    try {
+      const res = await base44.functions.invoke("adminSendClassroomMessage", {
+        tutor_id: selectedConversation.user_id,
+        message: alertText.trim(),
+      });
+      if (res.data?.error) throw new Error(res.data.error);
+      toast({ title: "Aviso enviado", description: "O tutor verá a mensagem no topo da sala de aula." });
+      setAlertText("");
+      setShowClassroomAlert(false);
+    } catch (e) {
+      toast({ title: "Erro", description: e?.message || "Não foi possível enviar", variant: "destructive" });
+    } finally {
+      setSendingAlert(false);
     }
   };
 
@@ -419,7 +441,40 @@ export default function AdminSupport() {
                 >
                   <Sparkles className="w-3.5 h-3.5" /> IA
                 </button>
+                {selectedConversation.user_role === "tutor" && (
+                  <button
+                    onClick={() => setShowClassroomAlert(s => !s)}
+                    className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
+                      showClassroomAlert ? "bg-violet-500/15 text-violet-300 border border-violet-500/20" : "bg-white/5 text-gray-400 hover:bg-white/10 border border-transparent"
+                    }`}
+                  >
+                    <Bell className="w-3.5 h-3.5" /> Avisar na sala
+                  </button>
+                )}
               </div>
+
+              {/* Classroom alert input — tutors only */}
+              {showClassroomAlert && selectedConversation.user_role === "tutor" && (
+                <div className="px-4 py-3 border-b border-white/5 shrink-0 bg-violet-500/5">
+                  <p className="text-xs text-violet-300 font-semibold mb-2">Aviso na sala de aula — visível apenas para este tutor durante uma aula ativa</p>
+                  <div className="flex items-end gap-2">
+                    <textarea
+                      value={alertText}
+                      onChange={e => setAlertText(e.target.value)}
+                      placeholder="Digite a mensagem que aparecerá no topo da sala de aula do tutor..."
+                      rows={1}
+                      className="flex-1 bg-white/5 border border-violet-500/20 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-violet-500/50 resize-none max-h-32"
+                    />
+                    <button
+                      onClick={sendClassroomAlert}
+                      disabled={sendingAlert || !alertText.trim()}
+                      className="w-10 h-10 rounded-xl bg-violet-500 hover:bg-violet-600 text-white flex items-center justify-center disabled:opacity-40 shrink-0 transition-colors"
+                    >
+                      {sendingAlert ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Chat history */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 px-4 py-4 space-y-2">

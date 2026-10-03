@@ -3,7 +3,7 @@ import { completeLesson } from "../../shared/completeLesson.js";
 
 // Any lesson still "in_progress" longer than this is considered forgotten/stuck
 // (student or tutor left without ending the call) and gets force-completed.
-const STALE_THRESHOLD_MS = 3 * 60 * 60 * 1000; // 3 hours
+const STALE_THRESHOLD_MS = 1 * 60 * 60 * 1000; // 1 hour
 
 Deno.serve(async (req) => {
   try {

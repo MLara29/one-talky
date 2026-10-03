@@ -38,6 +38,29 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Lesson.update(lesson_id, { [field]: new Date().toISOString() });
     }
 
+    // If both participants have now joined, compute and persist the
+    // credit-capped end time — the absolute moment this lesson should end,
+    // based on the student's available credits. The EnforceLessonCreditCap
+    // workflow reads this to force-close lessons server-side, independent of
+    // any browser being open. Matches the client-side calculation in
+    // Classroom.jsx (mutualJoinAt + min(scheduledMins, studentCredits)).
+    const refreshed = await base44.asServiceRole.entities.Lesson.get(lesson_id);
+    if (refreshed.tutor_joined_at && refreshed.student_joined_at && !refreshed.credit_capped_end_at) {
+      const mutualJoinMs = Math.max(
+        new Date(refreshed.tutor_joined_at).getTime(),
+        new Date(refreshed.student_joined_at).getTime()
+      );
+      const scheduledMins = refreshed.duration_minutes || 30;
+      const studentProfiles = await base44.asServiceRole.entities.StudentProfile.filter({ user_id: refreshed.student_id });
+      const sp = studentProfiles[0];
+      const studentCredits = sp
+        ? (sp.plan_credits_minutes ?? 0) + (sp.prepaid_credits_minutes ?? 0) + (sp.admin_gift_minutes ?? 0)
+        : scheduledMins;
+      const effectiveMins = Math.min(scheduledMins, studentCredits);
+      const creditCappedEndAt = new Date(mutualJoinMs + effectiveMins * 60 * 1000).toISOString();
+      await base44.asServiceRole.entities.Lesson.update(lesson_id, { credit_capped_end_at: creditCappedEndAt });
+    }
+
     return Response.json({ success: true });
   } catch (error) {
     console.error('[markLessonJoined]', error.message);

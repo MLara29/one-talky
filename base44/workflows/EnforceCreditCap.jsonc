@@ -1,0 +1,45 @@
+{
+  "name": "Enforce Lesson Credit Cap",
+  "description": "A cada 5 minutos, forca o encerramento de aulas em andamento cujo credit_capped_end_at ja passou. Garante que o aluno nunca seja cobrado alem do seu credito mesmo se o cronometro do cliente falhar.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "America/Sao_Paulo",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "enforce_lesson_credit_cap",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "enforce_cap": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "enforceLessonCreditCap",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Encerrar aulas pelo credito",
+            "description": "Forca conclusao de aulas cujo credit_capped_end_at passou"
+          }
+        }
+      }
+    ]
+  }
+}

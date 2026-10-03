@@ -17,13 +17,13 @@
           "then": "end",
           "x-base44": {
             "title": "Encerrar aulas travadas",
-            "description": "For\u00e7a conclus\u00e3o de aulas em in_progress h\u00e1 mais de 3h"
+            "description": "For\u00e7a conclus\u00e3o de aulas em in_progress h\u00e1 mais de 1h"
           }
         }
       }
     ]
   },
-  "description": "Every 30 minutes, force-completes any lesson stuck in_progress for over 3 hours (forgotten calls), capping charged duration and clearing tutor in_lesson state.",
+  "description": "Every 30 minutes, force-completes any lesson stuck in_progress for over 1 hour (forgotten calls), capping charged duration and clearing tutor in_lesson state.",
   "name": "Timeout Stale Lessons",
   "trigger": {
     "condition": null,

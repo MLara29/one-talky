@@ -1,0 +1,59 @@
+{
+  "name": "ClassroomAdminMessage",
+  "type": "object",
+  "properties": {
+    "tutor_id": {
+      "type": "string",
+      "description": "ID do User (tutor) destinat\u00e1rio da mensagem. S\u00f3 este tutor v\u00ea a mensagem, e s\u00f3 enquanto estiver dentro da sala de aula."
+    },
+    "message": {
+      "type": "string",
+      "description": "Texto do aviso enviado pelo admin, exibido como banner no topo da sala de aula do tutor."
+    },
+    "acknowledged": {
+      "type": "boolean",
+      "default": false,
+      "description": "True quando o tutor clicou em 'Ok, entendi' \u2014 esconde o banner e impede que volte a aparecer."
+    }
+  },
+  "required": [
+    "tutor_id",
+    "message"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.tutor_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.tutor_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -51,6 +51,11 @@
       "format": "date-time",
       "description": "Timestamp de quando o aluno entrou na sala (Agora). Usado pelo processNoShow para determinar culpa."
     },
+    "credit_capped_end_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Hor\u00e1rio-alvo absoluto em que a aula deve terminar, calculado quando tutor E aluno j\u00e1 entraram na sala (mutualJoinAt + dura\u00e7\u00e3o permitida pelo cr\u00e9dito do aluno). Usado pelo workflow EnforceLessonCreditCap para for\u00e7ar o encerramento server-side, independente de qualquer navegador estar aberto."
+    },
     "duration_minutes": {
       "type": "number",
       "default": 0

@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, AlertTriangle, Monitor, MonitorOff, RefreshCw, Globe } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, PhoneOff, MessageCircle, Clock, Send, X, AlertTriangle, Monitor, MonitorOff, RefreshCw, Globe, Bell } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ReviewModal from "@/components/classroom/ReviewModal";
 import UrgencyOfferModal from "@/components/classroom/UrgencyOfferModal";
@@ -55,6 +55,9 @@ export default function Classroom() {
   // ou não. É só um aviso preventivo de baixo custo.
   const [showReconnectHint, setShowReconnectHint] = useState(false);
   const [translating, setTranslating] = useState(false);
+  // Mensagem do admin endereçada a este tutor — exibida como banner no topo
+  // da sala. Só tutors veem; students nunca recebem nem buscam essas mensagens.
+  const [adminMessage, setAdminMessage] = useState(null);
   const chatOpenRef = useRef(false);
 
   const isEnglish = user?.role === "tutor";
@@ -302,6 +305,47 @@ export default function Classroom() {
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // ── Poll de mensagem do admin (só tutor) ─────────────────────────────
+  // A cada 5s, busca ClassroomAdminMessage não reconhecida endereçada a este
+  // tutor. Exibe a mais recente como banner no topo da sala. O aluno nunca
+  // entra aqui (user.role !== "tutor" retorna cedo). O banner some quando o
+  // tutor clica "Ok, entendi" (acknowledge = true).
+  useEffect(() => {
+    if (user?.role !== "tutor") return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const msgs = await base44.entities.ClassroomAdminMessage.filter({
+          tutor_id: user.id,
+          acknowledged: false,
+        });
+        if (!cancelled && msgs.length > 0) {
+          const latest = msgs.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
+          setAdminMessage(latest);
+        }
+      } catch {}
+    };
+    poll();
+    const interval = setInterval(poll, 5000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [user?.id, user?.role]);
+
+  // ── Dedicated end-lesson checker (independente do render cycle) ──────
+  // Checa lessonEndTargetRef diretamente a cada segundo — não depende de
+  // state updates ou re-renders para disparar. Se o cronômetro chegou a zero
+  // mas o effect-based trigger não disparou (bug confirmado em aula real),
+  // este intervalo pega e chama endLesson() de forma confiável.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (endingRef.current) return;
+      const target = lessonEndTargetRef.current;
+      if (target !== null && Date.now() >= target) {
+        endLesson();
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const audioCtxRef = useRef(null);
   const playMessageAlert = () => {
@@ -866,6 +910,15 @@ export default function Classroom() {
     }
   };
 
+  const acknowledgeAdminMessage = async (msgId) => {
+    try {
+      await base44.entities.ClassroomAdminMessage.update(msgId, { acknowledged: true });
+      setAdminMessage(null);
+    } catch (e) {
+      console.error("[Classroom] acknowledgeAdminMessage failed:", e);
+    }
+  };
+
   const sendMessage = async () => {
     if (!msgInput.trim()) return;
     const text = msgInput.trim();
@@ -906,7 +959,10 @@ export default function Classroom() {
     endingRef.current = true;
     setLessonEnding(true);
 
-    await leaveChannel();
+    // Fire-and-forget: limpeza local do Agora nunca pode bloquear a chamada
+    // server-side que realmente encerra a aula. Se leaveChannel pendurar, o
+    // endLesson do servidor ainda assim executa e completa a aula.
+    leaveChannel().catch(() => {});
 
     let success = false;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -1037,6 +1093,25 @@ export default function Classroom() {
           </div>
           <button onClick={() => setShowCreditWarning(false)} className="text-ot-warn-text/60 hover:text-ot-warn-text shrink-0">
             <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Admin message banner — tutors only */}
+      {user?.role === "tutor" && adminMessage && (
+        <div className="flex items-start gap-3 px-5 py-3 bg-violet-500/10 border-b border-violet-500/30">
+          <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center shrink-0">
+            <Bell className="w-4 h-4 text-violet-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-violet-300 uppercase tracking-wide mb-0.5">Message from administrator</p>
+            <p className="text-sm text-white font-medium break-words">{adminMessage.message}</p>
+          </div>
+          <button
+            onClick={() => acknowledgeAdminMessage(adminMessage.id)}
+            className="bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shrink-0"
+          >
+            Ok, got it
           </button>
         </div>
       )}
